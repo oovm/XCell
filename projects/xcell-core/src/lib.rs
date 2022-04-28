@@ -1,3 +1,6 @@
-mod errors;
+#![feature(box_syntax)]
 
-pub use errors::{Error, Result};
+mod errors;
+pub mod find_table;
+
+pub use errors::{XError, XErrorKind, XResult};

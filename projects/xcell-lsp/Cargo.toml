@@ -1,6 +1,5 @@
 [package]
-name = "xcell-core"
-publish = false
+name = "xcell-lsp"
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "..."
@@ -11,8 +10,6 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-calamine = "0.18.0"
-lsp-types = "0.93.1"
 
 [dev-dependencies]
 

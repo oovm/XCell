@@ -1,6 +1,7 @@
 #![feature(box_syntax)]
 
+pub mod codegen;
 mod errors;
-pub mod find_table;
-
+mod x_table;
+pub use self::x_table::{typing::XCellType, XCellHeader, XCellTable};
 pub use errors::{XError, XErrorKind, XResult};

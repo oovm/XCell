@@ -1,16 +1,15 @@
-use calamine::{open_workbook_auto, DataType, Reader};
 use std::path::PathBuf;
-use xcell_core::{
-    find_table::{find_first_row, find_first_table},
-    XResult,
-};
+
+use calamine::{open_workbook_auto, DataType, Reader};
+
+use xcell_core::{XCellTable, XResult};
 
 #[test]
 fn test2() -> XResult {
     // opens a new workbook
     let path = "tests/test_buffer/BuffTable.xlsx"; // we do not know the file type
-    let ranges = find_first_table(&PathBuf::from(path))?;
-    find_first_row(&ranges)?;
+    let xc = XCellTable::load_file(&PathBuf::from(path))?;
+    println!("{:#?}", xc);
     Ok(())
 }
 

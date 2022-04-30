@@ -1,7 +1,10 @@
 #![feature(box_syntax)]
 
+pub use self::{
+    errors::{XError, XErrorKind, XResult},
+    x_table::{XCellHeader, XCellTable, XCellType},
+};
+
 pub mod codegen;
 mod errors;
 mod x_table;
-pub use self::x_table::{typing::XCellType, XCellHeader, XCellTable};
-pub use errors::{XError, XErrorKind, XResult};

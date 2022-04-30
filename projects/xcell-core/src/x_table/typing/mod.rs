@@ -1,23 +1,12 @@
 use super::*;
 
-#[derive(Debug, Clone)]
-pub enum XCellType {
-    Boolean,
-    String,
-    Integer8,
-    Integer16,
-    Integer32,
-    Integer64,
-    Unsigned8,
-    Unsigned16,
-    Unsigned32,
-    Unsigned64,
-}
-
 impl From<&DataType> for XCellType {
+    // noinspection SpellCheckingInspection
     fn from(data: &DataType) -> Self {
         let s = data.to_string();
         match s.to_ascii_lowercase().as_str() {
+            "str" | "string" => Self::String,
+            "languageid" | "language" | "languagestring" => Self::LanguageString,
             "bool" | "boolean" => Self::Boolean,
             // int
             "byte" | "i8" => Self::Integer8,
@@ -29,8 +18,11 @@ impl From<&DataType> for XCellType {
             "ushort" | "u16" => Self::Unsigned16,
             "uint" | "u32" => Self::Unsigned32,
             "ulong" | "u64" => Self::Unsigned64,
-
-            _ => Self::String,
+            // float
+            "float" | "f32" => Self::Float32,
+            "double" | "f64" => Self::Float64,
+            "decimal" | "f128" => Self::Float128,
+            _ => Self::Custom(s),
         }
     }
 }

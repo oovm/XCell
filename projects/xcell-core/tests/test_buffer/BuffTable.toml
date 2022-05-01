@@ -1,0 +1,4 @@
+
+[types.bool]
+"true" = ["true"]
+"false" = ["false"]

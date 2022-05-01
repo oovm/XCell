@@ -4,19 +4,19 @@ use std::{
 };
 
 use calamine::{open_workbook_auto, DataType, Reader};
+use serde::{Deserialize, Serialize};
 
 use crate::*;
 
 pub mod header;
+pub mod meta_info;
 pub mod table;
 pub mod typing;
 
-type CalamineTable = calamine::Range<calamine::DataType>;
-
 #[derive(Clone)]
 pub struct XCellTable {
-    table: CalamineTable,
-    headers: Vec<XCellHeader>,
+    pub table: CalamineTable,
+    pub headers: Vec<XCellHeader>,
 }
 
 #[derive(Debug, Clone)]
@@ -42,6 +42,9 @@ pub enum XCellType {
     Float64,
     Float128,
     String,
-    LanguageString,
+    LanguageID,
     Custom(String),
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct XCellMetaInfo {}

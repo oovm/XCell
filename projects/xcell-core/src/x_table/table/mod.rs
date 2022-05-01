@@ -1,4 +1,5 @@
 use super::*;
+use crate::utils::find_first_table;
 
 impl Debug for XCellTable {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -39,13 +40,4 @@ impl XCellTable {
         }
         Ok(())
     }
-}
-
-fn find_first_table(path: &Path) -> XResult<CalamineTable> {
-    let mut workbook = open_workbook_auto(path)?;
-    let ranges = match workbook.worksheet_range_at(0) {
-        None => return Err(XError::table_error("找不到配置表, 文件是空的, 或者表格式非法")),
-        Some(s) => s?,
-    };
-    Ok(ranges)
 }

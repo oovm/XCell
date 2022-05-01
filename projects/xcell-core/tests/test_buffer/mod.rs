@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use xcell_core::{utils::first_is_nil, XCellTable, XResult};
+use xcell_core::{utils::first_is_nil, XCellMetaInfo, XCellTable, XResult};
 
 #[test]
 fn test2() -> XResult {
@@ -11,5 +11,13 @@ fn test2() -> XResult {
         }
         println!("{:?}", row);
     }
+    Ok(())
+}
+
+#[test]
+fn dump_toml() -> XResult {
+    let path = "tests/test_buffer/BuffTable.toml";
+    let cfg = XCellMetaInfo::load_file(&PathBuf::from(path))?;
+    println!("{:#?}", cfg);
     Ok(())
 }

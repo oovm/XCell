@@ -1,6 +1,8 @@
 use lsp_types::Url;
 
 mod for_calamine;
+mod for_std;
+mod for_toml;
 
 #[derive(Debug)]
 pub struct XError {

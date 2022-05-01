@@ -1,8 +1,10 @@
 #![feature(box_syntax)]
 
+use crate::x_table::meta_info::{BooleanMetaInfo, TypeMetaInfo};
+
 pub use self::{
     errors::{XError, XErrorKind, XResult},
-    x_table::{XCellHeader, XCellTable, XCellType},
+    x_table::{XCellHeader, XCellMetaInfo, XCellTable, XCellType},
 };
 
 pub mod codegen;

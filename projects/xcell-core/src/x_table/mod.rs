@@ -3,7 +3,7 @@ use std::{
     path::Path,
 };
 
-use calamine::{open_workbook_auto, DataType, Reader};
+use calamine::{DataType, Reader};
 use serde::{Deserialize, Serialize};
 
 use crate::*;
@@ -46,5 +46,8 @@ pub enum XCellType {
     Custom(String),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct XCellMetaInfo {}
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct XCellMetaInfo {
+    #[serde(default, alias = "type", alias = "types")]
+    typing: TypeMetaInfo,
+}

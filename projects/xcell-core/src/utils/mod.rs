@@ -1,5 +1,4 @@
 use std::path::Path;
-pub mod visitors;
 
 use calamine::{open_workbook_auto, DataType, Reader};
 

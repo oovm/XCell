@@ -1,9 +1,9 @@
 use std::{
     fmt::{Debug, Formatter},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
-use calamine::{DataType, Reader};
+use calamine::DataType;
 use serde::{Deserialize, Serialize};
 
 use crate::*;
@@ -13,10 +13,12 @@ pub mod meta_info;
 pub mod table;
 pub mod typing;
 
-#[derive(Clone)]
 pub struct XCellTable {
+    pub path: PathBuf,
     pub table: CalamineTable,
     pub headers: Vec<XCellHeader>,
+    pub config: XCellMetaInfo,
+    pub errors: Vec<XError>,
 }
 
 #[derive(Debug, Clone)]
@@ -43,11 +45,12 @@ pub enum XCellType {
     Float128,
     String,
     LanguageID,
+    Datetime,
     Custom(String),
 }
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct XCellMetaInfo {
     #[serde(default, alias = "type", alias = "types")]
-    typing: TypeMetaInfo,
+    pub typing: TypeMetaInfo,
 }

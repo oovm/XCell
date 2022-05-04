@@ -28,7 +28,7 @@ impl From<&DataType> for XCellType {
 }
 
 impl XCellType {
-    pub fn parse_cell(&self, cell: &DataType) {
+    pub fn parse_cell(&self, _: &DataType) {
         match self {
             XCellType::Boolean => {}
             XCellType::Integer8 => {}
@@ -45,21 +45,45 @@ impl XCellType {
             XCellType::String => {}
             XCellType::LanguageID => {}
             XCellType::Custom(_) => {}
+            XCellType::Datetime => {}
         }
     }
 }
 
 impl XCellTable {
-    pub fn parse_bool(&self, cell: &DataType) -> bool {
-        // match cell {
-        //     DataType::Int(_) => {}
-        //     DataType::Float(_) => {}
-        //     DataType::String(_) => {}
-        //     DataType::Bool(v) => *v,
-        //     DataType::DateTime(_) => {}
-        //     DataType::Error(_) => {}
-        //     DataType::Empty => {}
-        // }
-        todo!()
+    pub fn parse_bool(&mut self, cell: &DataType) -> bool {
+        let cfg = &self.config.typing.boolean;
+        match cell {
+            DataType::Int(_) => {
+                self.errors.push(XError::type_mismatch(0, 0, XCellType::Boolean, XCellType::Integer32, &self.path));
+                cfg.default
+            }
+            DataType::Float(_) => {
+                self.errors.push(XError::type_mismatch(0, 0, XCellType::Boolean, XCellType::Float32, &self.path));
+                cfg.default
+            }
+            DataType::String(s) => {
+                if cfg.r#true.contains(s) {
+                    true
+                }
+                else if cfg.r#false.contains(s) {
+                    false
+                }
+                else {
+                    self.errors.push(XError::type_mismatch(0, 0, XCellType::Boolean, XCellType::String, &self.path));
+                    cfg.default
+                }
+            }
+            DataType::Bool(v) => *v,
+            DataType::DateTime(_) => {
+                self.errors.push(XError::type_mismatch(0, 0, XCellType::Boolean, XCellType::Datetime, &self.path));
+                cfg.default
+            }
+            DataType::Error(e) => {
+                self.errors.push(XError::type_mismatch(0, 0, XCellType::Boolean, XCellType::Custom(e.to_string()), &self.path));
+                cfg.default
+            }
+            DataType::Empty => cfg.default,
+        }
     }
 }

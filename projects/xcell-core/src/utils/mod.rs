@@ -1,13 +1,13 @@
-use std::path::Path;
+use std::path::PathBuf;
 
 use calamine::{open_workbook_auto, DataType, Reader};
 
 use crate::{CalamineTable, XError, XResult};
 
-pub fn find_first_table(path: &Path) -> XResult<CalamineTable> {
-    let mut workbook = open_workbook_auto(path)?;
+pub fn find_first_table(path: PathBuf) -> XResult<CalamineTable> {
+    let mut workbook = open_workbook_auto(&path)?;
     let ranges = match workbook.worksheet_range_at(0) {
-        None => return Err(XError::table_error("找不到配置表, 文件是空的, 或者表格式非法")),
+        None => return Err(XError::table_error("找不到配置表, 文件是空的, 或者表格式非法", &path)),
         Some(s) => s?,
     };
     Ok(ranges)

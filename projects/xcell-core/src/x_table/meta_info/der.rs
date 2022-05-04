@@ -1,5 +1,7 @@
 use super::*;
 
+use serde::de::{MapAccess, Visitor};
+
 impl Default for BooleanMetaInfo {
     fn default() -> Self {
         Self { r#true: Default::default(), r#false: Default::default(), default: false }
@@ -11,8 +13,7 @@ impl<'de> Deserialize<'de> for BooleanMetaInfo {
     where
         D: Deserializer<'de>,
     {
-        let info = BooleanMetaInfo::default();
-        deserializer.deserialize_any(info)
+        deserializer.deserialize_any(BooleanMetaInfo::default())
     }
 }
 
@@ -41,14 +42,14 @@ impl<'de> Visitor<'de> for BooleanMetaInfo {
                         self.r#true.insert(o);
                     }
                     Helper::Many(o) => self.r#true.extend(o),
-                    Helper::Bool(_) => {}
+                    _ => {}
                 },
                 "false" => match value {
                     Helper::One(o) => {
                         self.r#false.insert(o);
                     }
                     Helper::Many(o) => self.r#false.extend(o),
-                    Helper::Bool(_) => {}
+                    _ => {}
                 },
                 "default" => match value {
                     Helper::Bool(o) => self.default = o,

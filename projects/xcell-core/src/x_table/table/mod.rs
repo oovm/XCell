@@ -1,5 +1,6 @@
-use super::*;
 use crate::utils::find_first_table;
+
+use super::*;
 
 impl Debug for XCellTable {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -9,12 +10,18 @@ impl Debug for XCellTable {
 
 impl Default for XCellTable {
     fn default() -> Self {
-        Self { table: Default::default(), headers: vec![] }
+        Self {
+            path: Default::default(),
+            table: Default::default(),
+            headers: vec![],
+            config: Default::default(),
+            errors: vec![],
+        }
     }
 }
 
 impl XCellTable {
-    pub fn load_file(path: &Path) -> XResult<Self> {
+    pub fn load_file(path: PathBuf) -> XResult<Self> {
         let mut xcell = Self::default();
         xcell.table = find_first_table(path)?;
         xcell.read_headers()?;
@@ -23,7 +30,7 @@ impl XCellTable {
     fn read_headers(&mut self) -> XResult<()> {
         let row = match self.table.rows().nth(0) {
             Some(s) => s,
-            None => return Err(XError::table_error("找不到描述, 表第一行格式非法")),
+            None => return Err(XError::table_error("找不到描述, 表第一行格式非法", &self.path)),
         };
         for (i, data) in row.iter().enumerate() {
             if !data.is_empty() {

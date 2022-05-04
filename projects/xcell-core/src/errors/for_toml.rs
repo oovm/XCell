@@ -1,7 +1,9 @@
-use crate::XError;
+use toml::de::Error;
 
-impl From<toml::de::Error> for XError {
-    fn from(e: toml::de::Error) -> Self {
-        todo!()
+use crate::{XError, XErrorKind};
+
+impl From<Error> for XError {
+    fn from(e: Error) -> Self {
+        XError { kind: Box::new(XErrorKind::TableError(e.to_string())), path: None }
     }
 }

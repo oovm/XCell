@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::typing::XCellType;
+use crate::typing::XCellTyped;
 
 mod for_calamine;
 mod for_std;
@@ -17,7 +17,7 @@ pub struct XError {
 pub enum XErrorKind {
     IOError(std::io::Error),
     TableError(String),
-    TypeMismatch { except: XCellType, current: XCellType },
+    TypeMismatch { except: XCellTyped, current: XCellTyped },
     UnknownError,
 }
 
@@ -33,7 +33,7 @@ impl XError {
     pub fn table_error<S: Into<String>>(msg: S) -> Self {
         Self { kind: box XErrorKind::TableError(msg.into()), path: None, position: None }
     }
-    pub fn type_mismatch(except: XCellType, current: XCellType) -> XError {
+    pub fn type_mismatch(except: XCellTyped, current: XCellTyped) -> XError {
         Self { kind: box XErrorKind::TypeMismatch { except, current }, path: None, position: None }
     }
 }

@@ -1,6 +1,5 @@
 #![feature(box_syntax)]
 
-use self::x_table::global_config::ProjectConfig;
 pub use self::{
     errors::{XError, XErrorKind, XResult},
     x_table::{
@@ -8,7 +7,7 @@ pub use self::{
         XCellHeader, XCellTable,
     },
 };
-
+use self::{typing::boolean::BooleanDescription, x_table::global_config::ProjectConfig};
 pub mod codegen;
 mod errors;
 pub mod typing;

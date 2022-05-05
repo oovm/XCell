@@ -1,33 +1,14 @@
 use std::str::FromStr;
 
 use calamine::DataType;
+use serde::{Deserialize, Serialize};
 
 use crate::*;
 
-mod boolean;
+pub(crate) mod boolean;
 
 #[derive(Debug, Clone)]
-pub enum XCellValue {
-    Boolean(bool),
-    Integer8(i8),
-    Integer16(i16),
-    Integer32(i8),
-    Integer64(i8),
-    Unsigned8(i8),
-    Unsigned16(i8),
-    Unsigned32(i8),
-    Unsigned64(i8),
-    Float32(i8),
-    Float64(i8),
-    Float128(i8),
-    String(String),
-    LanguageID(String),
-    Datetime(i8),
-    Color,
-}
-
-#[derive(Debug, Clone)]
-pub enum XCellType {
+pub enum XCellTyped {
     Boolean(BooleanDescription),
     Integer8,
     Integer16,
@@ -47,50 +28,19 @@ pub enum XCellType {
     Custom(CustomDescription),
 }
 
-#[derive(Debug, Clone)]
-pub struct BooleanDescription {
-    r#true: Vec<String>,
-    r#false: Vec<String>,
-    default: bool,
-}
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct CustomDescription {
     name: String,
 }
 
-impl BooleanDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> Result<bool, XCellType> {
-        match cell {
-            DataType::Int(_) => Err(XCellType::Integer32),
-            DataType::Float(_) => Err(XCellType::Float32),
-            DataType::String(s) => {
-                if self.r#true.contains(s) {
-                    Ok(true)
-                }
-                else if self.r#false.contains(s) {
-                    Ok(false)
-                }
-                else {
-                    Err(XCellType::String)
-                }
-            }
-            DataType::Bool(v) => Ok(*v),
-            DataType::DateTime(_) => Err(XCellType::Datetime),
-            DataType::Error(e) => Err(XCellType::Custom(e.to_string())),
-            DataType::Empty => Ok(self.default),
-        }
-    }
-}
-
-impl FromStr for XCellType {
+impl FromStr for XCellTyped {
     type Err = XError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let out = match s.to_ascii_lowercase().as_str() {
             "str" | "string" => Self::String,
             "languageid" | "language" | "languagestring" => Self::LanguageID,
-            "bool" | "boolean" => Self::Boolean,
+            "bool" | "boolean" => Self::Boolean(Default::default()),
             // int
             "byte" | "i8" => Self::Integer8,
             "short" | "i16" => Self::Integer16,
@@ -105,86 +55,88 @@ impl FromStr for XCellType {
             "float" | "f32" => Self::Float32,
             "double" | "f64" => Self::Float64,
             "decimal" | "f128" => Self::Float128,
-            _ => Self::Custom(s.to_string()),
+            _ => Self::Custom(CustomDescription { name: s.to_string() }),
         };
         Ok(out)
     }
 }
 
-impl From<&DataType> for XCellType {
+impl From<&DataType> for XCellTyped {
     // noinspection SpellCheckingInspection
     fn from(data: &DataType) -> Self {
         let s = data.to_string();
+        todo!()
     }
 }
 
-impl XCellType {
-    pub fn parse_cell(&self, cell: &DataType) -> Result<XCellValue, XError> {
+impl XCellTyped {
+    pub fn parse_cell(&self, cell: &DataType) -> Result<XCellTyped, XErrorKind> {
         match self {
-            XCellType::Boolean(b) => match b.parse_cell(cell) {
-                Ok(o) => {}
-                Err(_) => {}
+            XCellTyped::Boolean(b) => match b.parse_cell(cell) {
+                Ok(o) => Ok(XCellValue::Boolean(o)),
+                Err(e) => Err(XErrorKind::TypeMismatch { except: XCellTyped::Boolean(Default::default()), current: e }),
             },
-            XCellType::Integer8 => {
+            XCellTyped::Integer8 => {
                 todo!()
             }
-            XCellType::Integer16 => {
+            XCellTyped::Integer16 => {
                 todo!()
             }
-            XCellType::Integer32 => {
+            XCellTyped::Integer32 => {
                 todo!()
             }
-            XCellType::Integer64 => {
+            XCellTyped::Integer64 => {
                 todo!()
             }
-            XCellType::Unsigned8 => {
+            XCellTyped::Unsigned8 => {
                 todo!()
             }
-            XCellType::Unsigned16 => {
+            XCellTyped::Unsigned16 => {
                 todo!()
             }
-            XCellType::Unsigned32 => {
+            XCellTyped::Unsigned32 => {
                 todo!()
             }
-            XCellType::Unsigned64 => {
+            XCellTyped::Unsigned64 => {
                 todo!()
             }
-            XCellType::Float32 => {
+            XCellTyped::Float32 => {
                 todo!()
             }
-            XCellType::Float64 => {
+            XCellTyped::Float64 => {
                 todo!()
             }
-            XCellType::Float128 => {
+            XCellTyped::Float128 => {
                 todo!()
             }
-            XCellType::String => {
+            XCellTyped::String => {
                 todo!()
             }
-            XCellType::LanguageID => {
+            XCellTyped::LanguageID => {
                 todo!()
             }
-            XCellType::Datetime => {
+            XCellTyped::Datetime => {
                 todo!()
             }
-            XCellType::Color => {
+            XCellTyped::Color => {
                 todo!()
             }
-            XCellType::Custom(_) => {
+            XCellTyped::Custom(_) => {
                 todo!()
             }
         }
+        todo!()
     }
 }
 
-impl XCellType {}
+impl XCellTyped {}
 
 impl XCellTable {
     pub fn parse_color(&mut self, cell: &DataType) -> bool {
         todo!()
     }
 
-    fn type_mismatch<T>(&mut self, x: u32, y: u32, except: XCellType, current: XCellType, default: T) -> T {
+    fn type_mismatch<T>(&mut self, x: u32, y: u32, except: XCellTyped, current: XCellTyped, default: T) -> T {
         self.errors.push(XError::type_mismatch(x, y, except, current, &self.path));
         return default;
     }

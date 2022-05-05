@@ -6,7 +6,7 @@ use std::{
 use calamine::DataType;
 use serde::{Deserialize, Serialize};
 
-use crate::{x_table::table_config::TableConfig, *};
+use crate::{typing::XCellTyped, x_table::table_config::TableConfig, *};
 
 pub mod global_config;
 pub mod header;
@@ -25,6 +25,6 @@ pub struct XCellTable {
 pub struct XCellHeader {
     pub column: usize,
     pub comment: String,
-    pub typing: XCellType,
+    pub typing: XCellTyped,
     pub field_name: String,
 }

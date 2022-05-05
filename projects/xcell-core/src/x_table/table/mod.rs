@@ -58,7 +58,7 @@ impl XCellTable {
         for (i, data) in row.iter().enumerate() {
             if !data.is_empty() {
                 let typing = match self.table.get_value((1, i as u32)) {
-                    Some(s) => XCellType::from(s),
+                    Some(s) => XCellTyped::from(s),
                     None => continue,
                 };
                 let field_name = match self.table.get_value((2, i as u32)) {

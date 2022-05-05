@@ -26,6 +26,6 @@ impl From<Error> for XError {
             }
             Error::Msg(e) => XErrorKind::TableError(e.to_string()),
         };
-        XError { kind: box kind, path: None }
+        XError { kind: box kind, path: None, position: None }
     }
 }

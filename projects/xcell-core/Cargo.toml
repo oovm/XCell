@@ -11,9 +11,9 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-calamine = "0.18.0"
-lsp-types = "0.93.1"
-serde = {version = "1.0.145", features = ["derive"]}
+calamine = "0.19.1"
+lsp-types = "0.93.2"
+serde = { version = "1.0.147", features = ["derive"] }
 toml = "0.5.9"
 
 

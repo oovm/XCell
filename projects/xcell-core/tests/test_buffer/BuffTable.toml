@@ -1,4 +1,3 @@
-
-[types.bool]
+[field.id]
 "true" = ["true"]
 "false" = ["false"]

@@ -1,0 +1,5 @@
+[type.bool]
+"true" = ["true", "√"]
+"false" = ["false", "x"]
+
+[type.string]

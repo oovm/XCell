@@ -1,15 +1,17 @@
 #![feature(box_syntax)]
 
+use self::x_table::global_config::ProjectConfig;
 pub use self::{
     errors::{XError, XErrorKind, XResult},
     x_table::{
-        meta_info::{BooleanMetaInfo, TypeMetaInfo},
-        XCellHeader, XCellMetaInfo, XCellTable, XCellType,
+        table_config::{BooleanMetaInfo, TableConfig, TypeMetaInfo},
+        XCellHeader, XCellTable,
     },
 };
 
 pub mod codegen;
 mod errors;
+pub mod typing;
 pub mod utils;
 mod x_table;
 

@@ -7,13 +7,25 @@ use super::*;
 
 mod der;
 
-impl XCellMetaInfo {
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct TableConfig {
+    #[serde(default, alias = "type", alias = "types")]
+    pub typing: TypeMetaInfo,
+}
+
+impl From<&ProjectConfig> for TableConfig {
+    fn from(global: &ProjectConfig) -> Self {
+        todo!()
+    }
+}
+
+impl TableConfig {
     pub fn load_file(path: &Path) -> XResult<Self> {
         read_to_string(path)?.parse::<Self>()
     }
 }
 
-impl FromStr for XCellMetaInfo {
+impl FromStr for TableConfig {
     type Err = XError;
 
     fn from_str(s: &str) -> XResult<Self> {

@@ -24,9 +24,7 @@ impl From<Error> for XError {
             Error::De(_) => {
                 todo!()
             }
-            Error::Msg(_) => {
-                todo!()
-            }
+            Error::Msg(e) => XErrorKind::TableError(e.to_string()),
         };
         XError { kind: box kind, path: None }
     }

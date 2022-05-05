@@ -16,6 +16,7 @@ lsp-types = "0.93.1"
 serde = {version = "1.0.145", features = ["derive"]}
 toml = "0.5.9"
 
+
 [dev-dependencies]
 
 [features]

@@ -6,18 +6,18 @@ use std::{
 use calamine::DataType;
 use serde::{Deserialize, Serialize};
 
-use crate::*;
+use crate::{x_table::table_config::TableConfig, *};
 
+pub mod global_config;
 pub mod header;
-pub mod meta_info;
 pub mod table;
-pub mod typing;
+pub mod table_config;
 
 pub struct XCellTable {
     pub path: PathBuf,
     pub table: CalamineTable,
     pub headers: Vec<XCellHeader>,
-    pub config: XCellMetaInfo,
+    pub config: TableConfig,
     pub errors: Vec<XError>,
 }
 
@@ -27,30 +27,4 @@ pub struct XCellHeader {
     pub comment: String,
     pub typing: XCellType,
     pub field_name: String,
-}
-
-#[derive(Debug, Clone)]
-pub enum XCellType {
-    Boolean,
-    Integer8,
-    Integer16,
-    Integer32,
-    Integer64,
-    Unsigned8,
-    Unsigned16,
-    Unsigned32,
-    Unsigned64,
-    Float32,
-    Float64,
-    Float128,
-    String,
-    LanguageID,
-    Datetime,
-    Custom(String),
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct XCellMetaInfo {
-    #[serde(default, alias = "type", alias = "types")]
-    pub typing: TypeMetaInfo,
 }

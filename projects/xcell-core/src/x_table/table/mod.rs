@@ -1,10 +1,15 @@
-use crate::utils::find_first_table;
+use crate::{utils::find_first_table, x_table::global_config::ProjectConfig};
 
 use super::*;
 
 impl Debug for XCellTable {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("XCellTable").field("headers", &self.headers).finish()
+        f.debug_struct("XCellTable")
+            .field("path", &self.path)
+            .field("config", &self.config)
+            .field("headers", &self.headers)
+            .field("errors", &self.errors)
+            .finish()
     }
 }
 
@@ -21,12 +26,30 @@ impl Default for XCellTable {
 }
 
 impl XCellTable {
-    pub fn load_file(path: PathBuf) -> XResult<Self> {
+    pub fn load_file(path: PathBuf, global: Option<&ProjectConfig>) -> XResult<Self> {
         let mut xcell = Self::default();
         xcell.table = find_first_table(path)?;
         xcell.read_headers()?;
+        xcell.load_config(global)?;
         Ok(xcell)
     }
+    fn load_config(&mut self, _global: Option<&ProjectConfig>) -> XResult<()> {
+        let mut dir = self.path.clone();
+        let name = match self.path.file_stem() {
+            None => "",
+            Some(s) => match s.to_str() {
+                None => "",
+                Some(s) => s,
+            },
+        };
+        dir.pop();
+        let config = dir.join(format!("{}.toml", name));
+        if config.exists() {
+            self.config = TableConfig::load_file(&config)?;
+        }
+        Ok(())
+    }
+
     fn read_headers(&mut self) -> XResult<()> {
         let row = match self.table.rows().nth(0) {
             Some(s) => s,

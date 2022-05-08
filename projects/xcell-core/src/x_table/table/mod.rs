@@ -20,18 +20,54 @@ impl Default for XCellTable {
             table: Default::default(),
             headers: vec![],
             config: Default::default(),
+            sum_excel: 0,
+            sum_config: 0,
             errors: vec![],
         }
     }
 }
 
 impl XCellTable {
+    /// 加载配置表
+    ///
+    /// # Arguments
+    ///
+    /// * `path`: Excel 路径
+    /// * `global`: 全局设置
+    ///
+    /// returns: Result<XCellTable, XError>
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use xcell_core::XCellTable;
+    /// ```
     pub fn load_file(path: PathBuf, global: Option<&ProjectConfig>) -> XResult<Self> {
         let mut xcell = Self::default();
         xcell.table = find_first_table(&path)?;
         xcell.read_headers()?;
         xcell.load_config(global)?;
+        if xcell.check_sum_change() {}
         Ok(xcell)
+    }
+    pub fn check_sum_change(&mut self) -> bool {
+        self.check_excel_change() || self.check_config_change()
+    }
+    pub fn check_excel_change(&mut self) -> bool {
+        let sum = 0;
+        let changed = self.sum_excel != sum;
+        if changed {
+            self.sum_excel = sum;
+        }
+        changed
+    }
+    pub fn check_config_change(&mut self) -> bool {
+        let sum = 0;
+        let changed = self.sum_excel != sum;
+        if changed {
+            self.sum_excel = sum;
+        }
+        changed
     }
     fn load_config(&mut self, _global: Option<&ProjectConfig>) -> XResult<()> {
         let mut dir = self.path.clone();
@@ -65,7 +101,13 @@ impl XCellTable {
                     Some(s) => s.to_string(),
                     None => continue,
                 };
-                self.headers.push(XCellHeader { comment: data.to_string(), column: i, typing, field_name })
+                self.headers.push(XCellHeader {
+                    comment: data.to_string(),
+                    column: i,
+                    typing,
+                    field_name,
+                    details: "".to_string(),
+                })
             }
         }
         Ok(())

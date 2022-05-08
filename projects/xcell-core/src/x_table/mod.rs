@@ -18,6 +18,10 @@ pub struct XCellTable {
     pub table: CalamineTable,
     pub headers: Vec<XCellHeader>,
     pub config: TableConfig,
+    /// Excel 的校验和
+    pub sum_excel: u64,
+    /// 全局配置和本地配置的校验和
+    pub sum_config: u64,
     pub errors: Vec<XError>,
 }
 

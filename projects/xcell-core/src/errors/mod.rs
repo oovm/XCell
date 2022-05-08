@@ -33,7 +33,7 @@ impl XError {
     pub fn table_error<S: Into<String>>(msg: S) -> Self {
         Self { kind: box XErrorKind::TableError(msg.into()), path: None, position: None }
     }
-    pub fn type_mismatch(except: XCellTyped, current: XCellTyped) -> XError {
-        Self { kind: box XErrorKind::TypeMismatch { except, current }, path: None, position: None }
+    pub fn type_mismatch(except: XCellTyped, current: XCellTyped, x: u32, y: u32, path: PathBuf) -> XError {
+        Self { kind: box XErrorKind::TypeMismatch { except, current }, path: Some(path), position: Some((x, y)) }
     }
 }

@@ -25,6 +25,7 @@ pub struct XCellTable {
 pub struct XCellHeader {
     pub column: usize,
     pub comment: String,
+    pub details: String,
     pub typing: XCellTyped,
     pub field_name: String,
 }

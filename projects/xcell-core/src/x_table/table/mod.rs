@@ -28,7 +28,7 @@ impl Default for XCellTable {
 impl XCellTable {
     pub fn load_file(path: PathBuf, global: Option<&ProjectConfig>) -> XResult<Self> {
         let mut xcell = Self::default();
-        xcell.table = find_first_table(path)?;
+        xcell.table = find_first_table(&path)?;
         xcell.read_headers()?;
         xcell.load_config(global)?;
         Ok(xcell)
@@ -53,7 +53,7 @@ impl XCellTable {
     fn read_headers(&mut self) -> XResult<()> {
         let row = match self.table.rows().nth(0) {
             Some(s) => s,
-            None => return Err(XError::table_error("找不到描述, 表第一行格式非法", &self.path)),
+            None => return Err(XError::table_error("找不到描述, 表第一行格式非法")),
         };
         for (i, data) in row.iter().enumerate() {
             if !data.is_empty() {

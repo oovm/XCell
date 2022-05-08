@@ -33,13 +33,19 @@ pub struct CustomDescription {
     name: String,
 }
 
+impl Default for XCellTyped {
+    fn default() -> Self {
+        Self::String
+    }
+}
+
 impl FromStr for XCellTyped {
     type Err = XError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let out = match s.to_ascii_lowercase().as_str() {
             "str" | "string" => Self::String,
-            "languageid" | "language" | "languagestring" => Self::LanguageID,
+            "language" | "languagestring" | "languageid" => Self::LanguageID,
             "bool" | "boolean" => Self::Boolean(Default::default()),
             // int
             "byte" | "i8" => Self::Integer8,
@@ -62,15 +68,17 @@ impl FromStr for XCellTyped {
 }
 
 impl From<&DataType> for XCellTyped {
-    // noinspection SpellCheckingInspection
     fn from(data: &DataType) -> Self {
-        let s = data.to_string();
-        todo!()
+        XCellTyped::from_str(&data.to_string()).unwrap()
     }
 }
 
+pub enum XCellValue {
+    Boolean(bool),
+}
+
 impl XCellTyped {
-    pub fn parse_cell(&self, cell: &DataType) -> Result<XCellTyped, XErrorKind> {
+    pub fn parse_cell(&self, cell: &DataType) -> Result<XCellValue, XErrorKind> {
         match self {
             XCellTyped::Boolean(b) => match b.parse_cell(cell) {
                 Ok(o) => Ok(XCellValue::Boolean(o)),
@@ -125,7 +133,6 @@ impl XCellTyped {
                 todo!()
             }
         }
-        todo!()
     }
 }
 
@@ -137,7 +144,7 @@ impl XCellTable {
     }
 
     fn type_mismatch<T>(&mut self, x: u32, y: u32, except: XCellTyped, current: XCellTyped, default: T) -> T {
-        self.errors.push(XError::type_mismatch(x, y, except, current, &self.path));
+        self.errors.push(XError::type_mismatch(except, current, x, y, self.path.clone()));
         return default;
     }
 }

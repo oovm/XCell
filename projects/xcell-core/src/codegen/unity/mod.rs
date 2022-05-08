@@ -1,12 +1,15 @@
-use crate::{codegen::UnityCodegen, XCellTable, XError};
 use std::io::Write;
 
-impl UnityCodegen for XCellTable {
-    fn write_xml(&self, f: impl Write) -> Result<(), XError> {
+use crate::{codegen::UnityCodegen, XCellTable, XError};
+
+impl UnityCodegen {
+    pub fn write_xml(&self, table: &XCellTable, f: impl Write) -> Result<(), XError> {
         todo!()
     }
-
-    fn write_bin(&self, f: impl Write) -> Result<(), XError> {
+    pub fn write_bin(&self, table: &XCellTable, f: impl Write) -> Result<(), XError> {
+        todo!()
+    }
+    pub fn write_csharp(&self, table: &XCellTable, f: impl Write) -> Result<(), XError> {
         todo!()
     }
 }

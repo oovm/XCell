@@ -2,6 +2,7 @@
 members = ["projects/*"]
 default-members = [
     "projects/xcell-core",
+    "projects/xcell-cli",
 ]
 exclude = [
     "projects/.DS_Store",

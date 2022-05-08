@@ -1,6 +1,5 @@
 [package]
 name = "xcell-core"
-publish = false
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "..."
@@ -15,10 +14,17 @@ calamine = "0.19.1"
 lsp-types = "0.93.2"
 serde = { version = "1.0.147", features = ["derive"] }
 toml = "0.5.9"
+num = "0.4.0"
+diagnostic = "0.3.9"
+twox-hash = "1.6.3"
 
-
+[dependencies.sled-typed]
+#version = ""
+git = "https://github.com/oovm/disk-map"
+rev = "0c4cc29b"
 
 [dev-dependencies]
+#tokio = { version = "1.21.2", features = ["full"] }
 
 [features]
 default = []

@@ -42,7 +42,7 @@ impl XCellTable {
     /// ```
     /// use xcell_core::XCellTable;
     /// ```
-    pub fn load_file(path: PathBuf, global: Option<&ProjectConfig>) -> XResult<Self> {
+    pub fn load_file(path: PathBuf, global: &ProjectConfig) -> XResult<Self> {
         let mut xcell = Self::default();
         xcell.table = find_first_table(&path)?;
         xcell.read_headers()?;
@@ -69,7 +69,7 @@ impl XCellTable {
         }
         changed
     }
-    fn load_config(&mut self, _global: Option<&ProjectConfig>) -> XResult<()> {
+    fn load_config(&mut self, global: &ProjectConfig) -> XResult<()> {
         let mut dir = self.path.clone();
         let name = match self.path.file_stem() {
             None => "",

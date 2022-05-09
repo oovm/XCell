@@ -15,7 +15,6 @@ pub mod table_config;
 
 pub struct XCellTable {
     pub path: PathBuf,
-    pub table: CalamineTable,
     pub headers: Vec<XCellHeader>,
     pub config: TableConfig,
     /// Excel 的校验和

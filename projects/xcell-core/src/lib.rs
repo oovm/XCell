@@ -2,12 +2,14 @@
 
 pub use self::{
     errors::{XError, XErrorKind, XResult},
+    typing::boolean::BooleanDescription,
     x_table::{
+        global_config::ProjectConfig,
         table_config::{BooleanMetaInfo, TableConfig, TypeMetaInfo},
         XCellHeader, XCellTable,
     },
 };
-use self::{typing::boolean::BooleanDescription, x_table::global_config::ProjectConfig};
+
 pub mod codegen;
 mod errors;
 pub mod typing;

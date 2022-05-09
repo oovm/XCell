@@ -1,31 +1,11 @@
-use crate::{utils::find_first_table, x_table::global_config::ProjectConfig};
+use crate::{
+    utils::{find_first_table, read_table_headers},
+    x_table::global_config::ProjectConfig,
+};
 
 use super::*;
 
-impl Debug for XCellTable {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("XCellTable")
-            .field("path", &self.path)
-            .field("config", &self.config)
-            .field("headers", &self.headers)
-            .field("errors", &self.errors)
-            .finish()
-    }
-}
-
-impl Default for XCellTable {
-    fn default() -> Self {
-        Self {
-            path: Default::default(),
-            table: Default::default(),
-            headers: vec![],
-            config: Default::default(),
-            sum_excel: 0,
-            sum_config: 0,
-            errors: vec![],
-        }
-    }
-}
+mod display;
 
 impl XCellTable {
     /// 加载配置表
@@ -44,15 +24,18 @@ impl XCellTable {
     /// ```
     pub fn load_file(path: PathBuf, global: &ProjectConfig) -> XResult<Self> {
         let mut xcell = Self::default();
-        xcell.table = find_first_table(&path)?;
-        xcell.read_headers()?;
+        xcell.path = path.canonicalize()?;
+        let table = find_first_table(&xcell.path)?;
+        xcell.headers = read_table_headers(&table)?;
         xcell.load_config(global)?;
         if xcell.check_sum_change() {}
         Ok(xcell)
     }
+    /// 检测是否要重新加载表格
     pub fn check_sum_change(&mut self) -> bool {
         self.check_excel_change() || self.check_config_change()
     }
+    /// 检测表格是否发生变化
     pub fn check_excel_change(&mut self) -> bool {
         let sum = 0;
         let changed = self.sum_excel != sum;
@@ -61,6 +44,7 @@ impl XCellTable {
         }
         changed
     }
+    /// 检查配置是否发生变化
     pub fn check_config_change(&mut self) -> bool {
         let sum = 0;
         let changed = self.sum_excel != sum;
@@ -69,6 +53,9 @@ impl XCellTable {
         }
         changed
     }
+    /// 获取同路径下的配置文件
+    ///
+    /// 要在 [`find_table_headers`] 之后执行, 以防类型被覆盖
     fn load_config(&mut self, global: &ProjectConfig) -> XResult<()> {
         let mut dir = self.path.clone();
         let name = match self.path.file_stem() {
@@ -85,31 +72,6 @@ impl XCellTable {
         }
         Ok(())
     }
-
-    fn read_headers(&mut self) -> XResult<()> {
-        let row = match self.table.rows().nth(0) {
-            Some(s) => s,
-            None => return Err(XError::table_error("找不到描述, 表第一行格式非法")),
-        };
-        for (i, data) in row.iter().enumerate() {
-            if !data.is_empty() {
-                let typing = match self.table.get_value((1, i as u32)) {
-                    Some(s) => XCellTyped::from(s),
-                    None => continue,
-                };
-                let field_name = match self.table.get_value((2, i as u32)) {
-                    Some(s) => s.to_string(),
-                    None => continue,
-                };
-                self.headers.push(XCellHeader {
-                    comment: data.to_string(),
-                    column: i,
-                    typing,
-                    field_name,
-                    details: "".to_string(),
-                })
-            }
-        }
-        Ok(())
-    }
+    /// 加载表格数据
+    fn read_excel(&mut self) {}
 }

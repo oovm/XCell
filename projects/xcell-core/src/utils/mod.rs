@@ -1,9 +1,13 @@
-use std::path::{Path, PathBuf};
+use std::{
+    hash::{Hash, Hasher},
+    path::{Path, PathBuf},
+};
 
 use calamine::{open_workbook_auto, DataType, Reader};
 use pathdiff::diff_paths;
+use twox_hash::XxHash64;
 
-use crate::{typing::XCellTyped, CalamineTable, XCellHeader, XError, XResult};
+use crate::{typing::XCellTyped, CalamineTable, Validation, XCellHeader, XError, XResult};
 
 /// 读取 Excel 文件里的第一张表
 ///
@@ -63,8 +67,19 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<Vec<XCellHeader>> {
     Ok(headers)
 }
 
-pub fn read_table_data(table: &CalamineTable) {}
+pub fn read_table_data(table: &CalamineTable) -> Validation<()> {
+    for row in table.rows().skip(3) {
+        if first_is_nil(row) {
+            continue;
+        }
+        println!("{:?}", row);
+    }
+    Validation::Success { value: (), diagnostics: vec![] }
+}
 
+/// 确保第一行的 id 不是空的
+///
+/// 如果是空的, 那么就认为数据非法
 pub fn first_is_nil(row: &[DataType]) -> bool {
     match row.first() {
         Some(s) => match s {
@@ -78,6 +93,15 @@ pub fn first_is_nil(row: &[DataType]) -> bool {
         },
         None => true,
     }
+}
+
+pub fn xx_hash<T>(body: T) -> u64
+where
+    T: Hash,
+{
+    let mut hasher = XxHash64::default();
+    body.hash(&mut hasher);
+    hasher.finish()
 }
 
 /// 取得相对路径

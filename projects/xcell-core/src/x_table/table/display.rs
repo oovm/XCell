@@ -1,25 +1,29 @@
 use super::*;
 
-impl Debug for XCellTable {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("XCellTable")
-            .field("path", &self.path)
-            .field("config", &self.config)
-            .field("headers", &self.headers)
-            .field("errors", &self.errors)
-            .finish()
+impl Default for XCellTable {
+    fn default() -> Self {
+        Self { path: Default::default(), headers: vec![], config: Default::default(), sum_excel: 0, sum_config: 0 }
     }
 }
 
-impl Default for XCellTable {
-    fn default() -> Self {
-        Self {
-            path: Default::default(),
-            headers: vec![],
-            config: Default::default(),
-            sum_excel: 0,
-            sum_config: 0,
-            errors: vec![],
-        }
+impl Display for XCellTable {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
+
+impl PartialEq<Self> for XCellTable {
+    fn eq(&self, other: &Self) -> bool {
+        self.id().eq(&other.id())
+    }
+}
+
+impl Eq for XCellTable {}
+
+impl Hash for XCellTable {
+    /// 是否要重新加载只取决于表格和配置是否发生变化
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write_u64(self.sum_excel);
+        state.write_u64(self.sum_config);
     }
 }

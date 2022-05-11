@@ -7,7 +7,7 @@ use crate::*;
 
 pub(crate) mod boolean;
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XCellTyped {
     Boolean(BooleanDescription),
     Integer8,
@@ -28,7 +28,7 @@ pub enum XCellTyped {
     Custom(CustomDescription),
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CustomDescription {
     name: String,
 }
@@ -141,10 +141,5 @@ impl XCellTyped {}
 impl XCellTable {
     pub fn parse_color(&mut self, cell: &DataType) -> bool {
         todo!()
-    }
-
-    fn type_mismatch<T>(&mut self, x: u32, y: u32, except: XCellTyped, current: XCellTyped, default: T) -> T {
-        self.errors.push(XError::type_mismatch(except, current, x, y, self.path.clone()));
-        return default;
     }
 }

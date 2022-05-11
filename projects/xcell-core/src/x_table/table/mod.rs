@@ -1,8 +1,3 @@
-use crate::{
-    utils::{find_first_table, read_table_headers},
-    x_table::global_config::ProjectConfig,
-};
-
 use super::*;
 
 mod display;
@@ -22,14 +17,40 @@ impl XCellTable {
     /// ```
     /// use xcell_core::XCellTable;
     /// ```
-    pub fn load_file(path: PathBuf, global: &ProjectConfig) -> XResult<Self> {
+    pub fn load_file(path: PathBuf, global: &ProjectConfig) -> Validation<Self> {
+        let mut errors = vec![];
         let mut xcell = Self::default();
-        xcell.path = path.canonicalize()?;
-        let table = find_first_table(&xcell.path)?;
-        xcell.headers = read_table_headers(&table)?;
-        xcell.load_config(global)?;
-        if xcell.check_sum_change() {}
-        Ok(xcell)
+        let fatal: XResult<()> = try {
+            xcell.path = path.canonicalize()?;
+            xcell.load_config(global)?;
+        };
+        match fatal {
+            Ok(_) => {}
+            Err(fatal) => {
+                return Failure { fatal, diagnostics: errors };
+            }
+        }
+
+        if xcell.check_sum_change() {
+            match xcell.load_data() {
+                Success { diagnostics, .. } => errors.extend(diagnostics),
+                Failure { diagnostics, fatal } => {
+                    errors.extend(diagnostics);
+                    return Failure { fatal, diagnostics: errors };
+                }
+            }
+        }
+        Success { value: xcell, diagnostics: errors }
+    }
+    /// 强制重新加载表格中的数据
+    pub fn load_data(&self) -> Validation<()> {
+        match find_first_table(&self.path) {
+            Ok(table) => read_table_data(&table),
+            Err(e) => Validation::Failure { fatal: e, diagnostics: vec![] },
+        }
+    }
+    pub fn id(&self) -> u64 {
+        xx_hash(self)
     }
     /// 检测是否要重新加载表格
     pub fn check_sum_change(&mut self) -> bool {
@@ -53,10 +74,23 @@ impl XCellTable {
         }
         changed
     }
-    /// 获取同路径下的配置文件
+
+    /// 获取文档的类型以及同路径下的配置文件
     ///
-    /// 要在 [`find_table_headers`] 之后执行, 以防类型被覆盖
-    fn load_config(&mut self, global: &ProjectConfig) -> XResult<()> {
+    /// # Arguments
+    ///
+    /// * `global`:
+    ///
+    /// returns: Result<(), XError>
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use xcell_core;
+    /// ```
+    pub fn load_config(&mut self, global: &ProjectConfig) -> XResult<()> {
+        let table = find_first_table(&self.path)?;
+        self.headers = read_table_headers(&table)?;
         let mut dir = self.path.clone();
         let name = match self.path.file_stem() {
             None => "",

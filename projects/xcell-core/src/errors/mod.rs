@@ -1,4 +1,8 @@
-use std::path::PathBuf;
+use std::{
+    error::Error,
+    fmt::{Debug, Display, Formatter},
+    path::PathBuf,
+};
 
 use crate::typing::XCellTyped;
 
@@ -23,6 +27,8 @@ pub enum XErrorKind {
 
 pub type XResult<T = ()> = Result<T, XError>;
 
+pub type Validation<T> = diagnostic::Validation<T, XError>;
+
 impl XError {
     pub fn with_path(self, path: PathBuf) -> Self {
         Self { kind: self.kind, path: Some(path), position: self.position }
@@ -37,3 +43,11 @@ impl XError {
         Self { kind: box XErrorKind::TypeMismatch { except, current }, path: Some(path), position: Some((x, y)) }
     }
 }
+
+impl Display for XError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
+
+impl Error for XError {}

@@ -1,7 +1,10 @@
 #![feature(box_syntax)]
+#![feature(try_blocks)]
+
+pub use diagnostic::Validation::{Failure, Success};
 
 pub use self::{
-    errors::{XError, XErrorKind, XResult},
+    errors::{Validation, XError, XErrorKind, XResult},
     typing::boolean::BooleanDescription,
     x_table::{
         global_config::ProjectConfig,

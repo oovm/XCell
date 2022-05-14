@@ -43,10 +43,13 @@ impl XCellTable {
         Success { value: xcell, diagnostics: errors }
     }
     /// 强制重新加载表格中的数据
-    pub fn load_data(&self) -> Validation<()> {
+    pub fn load_data(&mut self) -> Validation<()> {
         match find_first_table(&self.path) {
-            Ok(table) => read_table_data(&table),
-            Err(e) => Validation::Failure { fatal: e, diagnostics: vec![] },
+            Ok(table) => {
+                let result = read_table_data(&table, &self.headers);
+                read_table_data(&table, &self.headers).map(|v| self.data = v)
+            }
+            Err(e) => Failure { fatal: e, diagnostics: vec![] },
         }
     }
     pub fn id(&self) -> u64 {

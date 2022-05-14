@@ -12,13 +12,12 @@ use calamine::DataType;
 use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::{
-    typing::XCellTyped,
+    typing::{XCellTyped, XCellValue},
     utils::{find_first_table, read_table_data, read_table_headers, xx_hash},
-    x_table::{global_config::ProjectConfig, table_config::TableConfig},
+    x_table::table_config::{ProjectConfig, TableConfig},
     Failure, Success, Validation, XError, XResult,
 };
 
-pub mod global_config;
 pub mod header;
 pub mod table;
 pub mod table_config;
@@ -27,10 +26,12 @@ pub mod table_config;
 pub struct XCellTable {
     /// 表格的绝对路径
     pub path: PathBuf,
-    /// 所有需要导出的类型
-    pub headers: Vec<XCellHeader>,
     /// 表格的额外配置
     pub config: TableConfig,
+    /// 所有需要导出的类型
+    pub headers: Vec<XCellHeader>,
+    /// 表格中的有效数据
+    pub data: Vec<Vec<XCellValue>>,
     /// Excel 的校验和
     pub sum_excel: u64,
     /// 全局配置和本地配置的校验和
@@ -39,9 +40,14 @@ pub struct XCellTable {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XCellHeader {
+    /// 位置
     pub column: usize,
+    /// 短描述
     pub comment: String,
+    /// 长描述, 鼠标悬浮时显示
     pub details: String,
+    /// 类型信息
     pub typing: XCellTyped,
+    /// 字段名
     pub field_name: String,
 }

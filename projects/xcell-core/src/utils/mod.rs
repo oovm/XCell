@@ -7,7 +7,10 @@ use calamine::{open_workbook_auto, DataType, Reader};
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 
-use crate::{typing::XCellTyped, CalamineTable, Validation, XCellHeader, XError, XResult};
+use crate::{
+    typing::{XCellTyped, XCellValue},
+    CalamineTable, Validation, XCellHeader, XError, XResult,
+};
 
 /// 读取 Excel 文件里的第一张表
 ///
@@ -67,14 +70,22 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<Vec<XCellHeader>> {
     Ok(headers)
 }
 
-pub fn read_table_data(table: &CalamineTable) -> Validation<()> {
-    for row in table.rows().skip(3) {
-        if first_is_nil(row) {
+pub fn read_table_data(table: &CalamineTable, typing: &[XCellHeader]) -> Validation<Vec<Vec<XCellValue>>> {
+    let mut lines = vec![];
+    for row_raw in table.rows().skip(3) {
+        if first_is_nil(row_raw) {
             continue;
         }
-        println!("{:?}", row);
+        let mut row = vec![];
+        for typed in typing {
+            match typed.parse_cell(row_raw) {
+                Ok(o) => row.push(o),
+                Err(_) => {}
+            }
+        }
+        lines.push(row)
     }
-    Validation::Success { value: (), diagnostics: vec![] }
+    Validation::Success { value: lines, diagnostics: vec![] }
 }
 
 /// 确保第一行的 id 不是空的

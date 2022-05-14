@@ -73,67 +73,9 @@ impl From<&DataType> for XCellTyped {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub enum XCellValue {
     Boolean(bool),
-}
-
-impl XCellTyped {
-    pub fn parse_cell(&self, cell: &DataType) -> Result<XCellValue, XErrorKind> {
-        match self {
-            XCellTyped::Boolean(b) => match b.parse_cell(cell) {
-                Ok(o) => Ok(XCellValue::Boolean(o)),
-                Err(e) => Err(XErrorKind::TypeMismatch { except: XCellTyped::Boolean(Default::default()), current: e }),
-            },
-            XCellTyped::Integer8 => {
-                todo!()
-            }
-            XCellTyped::Integer16 => {
-                todo!()
-            }
-            XCellTyped::Integer32 => {
-                todo!()
-            }
-            XCellTyped::Integer64 => {
-                todo!()
-            }
-            XCellTyped::Unsigned8 => {
-                todo!()
-            }
-            XCellTyped::Unsigned16 => {
-                todo!()
-            }
-            XCellTyped::Unsigned32 => {
-                todo!()
-            }
-            XCellTyped::Unsigned64 => {
-                todo!()
-            }
-            XCellTyped::Float32 => {
-                todo!()
-            }
-            XCellTyped::Float64 => {
-                todo!()
-            }
-            XCellTyped::Float128 => {
-                todo!()
-            }
-            XCellTyped::String => {
-                todo!()
-            }
-            XCellTyped::LanguageID => {
-                todo!()
-            }
-            XCellTyped::Datetime => {
-                todo!()
-            }
-            XCellTyped::Color => {
-                todo!()
-            }
-            XCellTyped::Custom(_) => {
-                todo!()
-            }
-        }
-    }
 }
 
 impl XCellTyped {}

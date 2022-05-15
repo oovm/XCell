@@ -7,6 +7,6 @@ fn test2() -> XResult {
     let path = "tests/test_buffer/BuffTable.xlsx";
     let config = ProjectConfig::default();
     let xc = XCellTable::load_file(PathBuf::from(path), &config).unwrap();
-    println!("{:#?}", xc);
+    println!("{:#?}", xc.data);
     Ok(())
 }

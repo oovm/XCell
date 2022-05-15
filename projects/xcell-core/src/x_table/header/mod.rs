@@ -16,7 +16,7 @@ impl XCellHeader {
 impl XCellTyped {
     pub fn parse_cell(&self, cell: &DataType) -> Result<XCellValue, XErrorKind> {
         match self {
-            XCellTyped::Boolean(b) => match b.parse_cell(cell) {
+            XCellTyped::Boolean(typing) => match typing.parse_cell(cell) {
                 Ok(o) => Ok(XCellValue::Boolean(o)),
                 Err(e) => Err(XErrorKind::TypeMismatch { except: XCellTyped::Boolean(Default::default()), current: e }),
             },
@@ -62,9 +62,10 @@ impl XCellTyped {
             XCellTyped::Datetime => {
                 todo!()
             }
-            XCellTyped::Color => {
-                todo!()
-            }
+            XCellTyped::Color(typing) => match typing.parse_cell(cell) {
+                Ok(o) => Ok(XCellValue::Boolean(o)),
+                Err(e) => Err(XErrorKind::TypeMismatch { except: XCellTyped::Boolean(Default::default()), current: e }),
+            },
             XCellTyped::Custom(_) => {
                 todo!()
             }

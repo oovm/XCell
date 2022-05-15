@@ -3,9 +3,14 @@ use std::str::FromStr;
 use calamine::DataType;
 use serde::{Deserialize, Serialize};
 
+use csscolorparser::Color;
+
 use crate::*;
 
-pub(crate) mod boolean;
+pub use self::{boolean::BooleanDescription, color::ColorDescription};
+
+mod boolean;
+mod color;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XCellTyped {
@@ -24,7 +29,7 @@ pub enum XCellTyped {
     String,
     LanguageID,
     Datetime,
-    Color,
+    Color(ColorDescription),
     Custom(CustomDescription),
 }
 
@@ -61,6 +66,7 @@ impl FromStr for XCellTyped {
             "float" | "f32" => Self::Float32,
             "double" | "f64" => Self::Float64,
             "decimal" | "f128" => Self::Float128,
+            "color" => Self::Color(Default::default()),
             _ => Self::Custom(CustomDescription { name: s.to_string() }),
         };
         Ok(out)
@@ -76,12 +82,23 @@ impl From<&DataType> for XCellTyped {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum XCellValue {
     Boolean(bool),
+    Color(Color),
 }
 
 impl XCellTyped {}
 
 impl XCellTable {
     pub fn parse_color(&mut self, cell: &DataType) -> bool {
+        match cell {
+            DataType::Int(_) => {}
+            DataType::Float(_) => {}
+            DataType::String(_) => {}
+            DataType::Bool(_) => {}
+            DataType::DateTime(_) => {}
+            DataType::Error(_) => {}
+            DataType::Empty => {}
+        }
+
         todo!()
     }
 }

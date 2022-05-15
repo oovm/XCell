@@ -76,6 +76,7 @@ pub fn read_table_data(table: &CalamineTable, typing: &[XCellHeader]) -> Validat
         if first_is_nil(row_raw) {
             continue;
         }
+        println!("{row_raw:?}");
         let mut row = vec![];
         for typed in typing {
             match typed.parse_cell(row_raw) {

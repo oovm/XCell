@@ -5,7 +5,7 @@ pub use diagnostic::Validation::{Failure, Success};
 
 pub use self::{
     errors::{Validation, XError, XErrorKind, XResult},
-    typing::boolean::BooleanDescription,
+    typing::{BooleanDescription, ColorDescription, CustomDescription},
     x_table::{
         table_config::{BooleanMetaInfo, ProjectConfig, TableConfig, TypeMetaInfo},
         XCellHeader, XCellTable,

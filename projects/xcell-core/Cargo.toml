@@ -17,7 +17,7 @@ num = "0.4.0"
 pathdiff = "0.2.1" # 获取相对路径
 diagnostic = "0.3.10"
 twox-hash = "1.6.3"
-csscolorparser = "0.6.2"
+csscolorparser = { version = "0.6.2", features = ["serde"] }
 
 [dependencies.sled-typed]
 #version = ""

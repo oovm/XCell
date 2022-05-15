@@ -1,3 +1,5 @@
+use crate::utils::xx_file;
+
 use super::*;
 
 mod display;
@@ -54,7 +56,10 @@ impl XCellTable {
     }
     /// 检测表格是否发生变化
     pub fn check_excel_change(&mut self) -> bool {
-        let sum = 0;
+        let sum = match xx_file(&self.path) {
+            Ok(o) => o,
+            Err(_) => return false,
+        };
         let changed = self.sum_excel != sum;
         if changed {
             self.sum_excel = sum;

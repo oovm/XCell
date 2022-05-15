@@ -63,7 +63,7 @@ impl XCellTyped {
                 todo!()
             }
             XCellTyped::Color(typing) => match typing.parse_cell(cell) {
-                Ok(o) => Ok(XCellValue::Boolean(o)),
+                Ok(o) => Ok(XCellValue::Color(o)),
                 Err(e) => Err(XErrorKind::TypeMismatch { except: XCellTyped::Boolean(Default::default()), current: e }),
             },
             XCellTyped::Custom(_) => {

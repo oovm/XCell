@@ -1,12 +1,13 @@
 use super::*;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct ColorDescription {
-    pub alpha: bool,
+pub struct IntegerDescription {
+    pub min: BigInt,
+    pub max: BitInt,
     pub default: Color,
 }
 
-impl ColorDescription {
+impl IntegerDescription {
     pub fn gray<F>(color: F) -> Color
     where
         F: Into<f64>,

@@ -1,16 +1,16 @@
 use std::str::FromStr;
 
+use crate::{XCellTable, XError};
 use calamine::DataType;
+use csscolorparser::Color;
+use num::BigInt;
 use serde::{Deserialize, Serialize};
 
-use csscolorparser::Color;
-
-use crate::*;
-
-pub use self::{boolean::BooleanDescription, color::ColorDescription};
+pub use self::{boolean::BooleanDescription, color::ColorDescription, integer::IntegerDescription};
 
 mod boolean;
 mod color;
+mod integer;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XCellTyped {
@@ -82,6 +82,7 @@ impl From<&DataType> for XCellTyped {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum XCellValue {
     Boolean(bool),
+    Integer(BigInt),
     Color(Color),
 }
 

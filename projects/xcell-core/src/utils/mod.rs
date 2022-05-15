@@ -1,5 +1,7 @@
 use std::{
+    fs::File,
     hash::{Hash, Hasher},
+    io::{BufReader, Read},
     path::{Path, PathBuf},
 };
 
@@ -114,6 +116,21 @@ where
     let mut hasher = XxHash64::default();
     body.hash(&mut hasher);
     hasher.finish()
+}
+
+pub fn xx_file(path: &Path) -> XResult<u64> {
+    let mut hasher = XxHash64::default();
+    let input = File::open(path)?;
+    let mut reader = BufReader::new(input);
+    let mut buffer = [0; 1024];
+    loop {
+        let count = reader.read(&mut buffer)?;
+        if count == 0 {
+            break;
+        }
+        hasher.write(&buffer[..count]);
+    }
+    Ok(hasher.finish())
 }
 
 /// 取得相对路径

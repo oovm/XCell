@@ -1,3 +1,4 @@
+use calamine::DataType;
 use std::{
     error::Error,
     fmt::{Debug, Display, Formatter},
@@ -21,7 +22,7 @@ pub struct XError {
 pub enum XErrorKind {
     IOError(std::io::Error),
     TableError(String),
-    TypeMismatch { except: XCellTyped, current: XCellTyped },
+    TypeMismatch { except: XCellTyped, current: DataType },
     UnknownError,
 }
 
@@ -39,7 +40,7 @@ impl XError {
     pub fn table_error<S: Into<String>>(msg: S) -> Self {
         Self { kind: box XErrorKind::TableError(msg.into()), path: None, position: None }
     }
-    pub fn type_mismatch(except: XCellTyped, current: XCellTyped, x: u32, y: u32, path: PathBuf) -> XError {
+    pub fn type_mismatch(except: XCellTyped, current: DataType, x: u32, y: u32, path: PathBuf) -> XError {
         Self { kind: box XErrorKind::TypeMismatch { except, current }, path: Some(path), position: Some((x, y)) }
     }
 }

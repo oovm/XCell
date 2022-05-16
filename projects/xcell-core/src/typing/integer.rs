@@ -3,30 +3,28 @@ use super::*;
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct IntegerDescription {
     pub min: BigInt,
-    pub max: BitInt,
-    pub default: Color,
+    pub max: BigInt,
+    pub default: BigInt,
 }
 
 impl IntegerDescription {
-    pub fn gray<F>(color: F) -> Color
+    pub fn clamp<I>(&self, int: I) -> BigInt
     where
-        F: Into<f64>,
+        I: Into<BigInt>,
     {
-        let c = color.into();
-        Color::new(c, c, c, c)
+        int.into().clamp(self.min.clone(), self.max.clone())
     }
-    pub fn parse_cell(&self, cell: &DataType) -> Result<Color, XCellTyped> {
+    pub fn parse_cell(&self, cell: &DataType) -> Result<BigInt, XErrorKind> {
         match cell {
-            DataType::Int(i) => Ok(Self::gray(*i as f64)),
-            DataType::Float(f) => Ok(Self::gray(*f)),
-            DataType::String(s) => match Color::from_str(s) {
+            DataType::Int(i) => Ok(self.clamp(i)),
+            DataType::Float(f) => Ok(self.clamp(f)),
+            DataType::String(s) => match BigInt::from_str(s) {
                 Ok(o) => Ok(o),
-                Err(_) => Err(XCellTyped::String),
+                Err(e) => todo!(),
             },
-            DataType::Bool(true) => Ok(Self::gray(1.0)),
-            DataType::Bool(false) => Ok(Self::gray(0.0)),
-            DataType::DateTime(_) => Err(XCellTyped::Datetime),
-            DataType::Error(e) => Err(XCellTyped::Custom(CustomDescription { name: e.to_string() })),
+            DataType::Bool(_) => todo!(),
+            DataType::DateTime(_) => todo!(),
+            DataType::Error(e) => todo!(),
             DataType::Empty => Ok(self.default.clone()),
         }
     }

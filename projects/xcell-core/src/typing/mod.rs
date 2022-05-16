@@ -1,10 +1,11 @@
 use std::str::FromStr;
 
-use crate::{XCellTable, XError};
 use calamine::DataType;
 use csscolorparser::Color;
 use num::BigInt;
 use serde::{Deserialize, Serialize};
+
+use crate::{XCellTable, XError, XErrorKind};
 
 pub use self::{boolean::BooleanDescription, color::ColorDescription, integer::IntegerDescription};
 
@@ -15,14 +16,14 @@ mod integer;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XCellTyped {
     Boolean(BooleanDescription),
-    Integer8,
-    Integer16,
-    Integer32,
-    Integer64,
-    Unsigned8,
-    Unsigned16,
-    Unsigned32,
-    Unsigned64,
+    Integer8(IntegerDescription),
+    Integer16(IntegerDescription),
+    Integer32(IntegerDescription),
+    Integer64(IntegerDescription),
+    Unsigned8(IntegerDescription),
+    Unsigned16(IntegerDescription),
+    Unsigned32(IntegerDescription),
+    Unsigned64(IntegerDescription),
     Float32,
     Float64,
     Float128,
@@ -31,6 +32,14 @@ pub enum XCellTyped {
     Datetime,
     Color(ColorDescription),
     Custom(CustomDescription),
+}
+
+fn type_mismatch<T, A, B>(this: &A, cell: &B) -> Result<T, XErrorKind>
+where
+    A: Clone + Into<XCellTyped>,
+    B: Clone,
+{
+    Err(XErrorKind::TypeMismatch { except: this.clone().into(), current: cell.clone() })
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -53,15 +62,15 @@ impl FromStr for XCellTyped {
             "language" | "languagestring" | "languageid" => Self::LanguageID,
             "bool" | "boolean" => Self::Boolean(Default::default()),
             // int
-            "byte" | "i8" => Self::Integer8,
-            "short" | "i16" => Self::Integer16,
-            "int" | "i32" => Self::Integer32,
-            "long" | "i64" => Self::Integer64,
+            "byte" | "i8" => Self::Integer8(Default::default()),
+            "short" | "i16" => Self::Integer16(Default::default()),
+            "int" | "i32" => Self::Integer32(Default::default()),
+            "long" | "i64" => Self::Integer64(Default::default()),
             // unsigned
-            "sbyte" | "u8" => Self::Unsigned8,
-            "ushort" | "u16" => Self::Unsigned16,
-            "uint" | "u32" => Self::Unsigned32,
-            "ulong" | "u64" => Self::Unsigned64,
+            "sbyte" | "u8" => Self::Unsigned8(Default::default()),
+            "ushort" | "u16" => Self::Unsigned16(Default::default()),
+            "uint" | "u32" => Self::Unsigned32(Default::default()),
+            "ulong" | "u64" => Self::Unsigned64(Default::default()),
             // float
             "float" | "f32" => Self::Float32,
             "double" | "f64" => Self::Float64,

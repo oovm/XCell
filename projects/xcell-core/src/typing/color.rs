@@ -14,7 +14,7 @@ impl ColorDescription {
         let c = color.into();
         Color::new(c, c, c, c)
     }
-    pub fn parse_cell(&self, cell: &DataType) -> Result<Color, XCellTyped> {
+    pub fn parse_cell(&self, cell: &DataType) -> Result<Color, XErrorKind> {
         match cell {
             DataType::Int(i) => Ok(Self::gray(*i as f64)),
             DataType::Float(f) => Ok(Self::gray(*f)),

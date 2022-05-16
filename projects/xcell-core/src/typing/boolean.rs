@@ -7,11 +7,15 @@ pub struct BooleanDescription {
     default: bool,
 }
 
+impl From<BooleanDescription> for XCellTyped {
+    fn from(value: BooleanDescription) -> Self {
+        Self::Boolean(value)
+    }
+}
+
 impl BooleanDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> Result<bool, XCellTyped> {
+    pub fn parse_cell(&self, cell: &DataType) -> Result<bool, XErrorKind> {
         match cell {
-            DataType::Int(_) => Err(XCellTyped::Integer32),
-            DataType::Float(_) => Err(XCellTyped::Float32),
             DataType::String(s) => {
                 if self.accept.contains(s) {
                     Ok(true)
@@ -19,14 +23,10 @@ impl BooleanDescription {
                 else if self.reject.contains(s) {
                     Ok(false)
                 }
-                else {
-                    Err(XCellTyped::String)
-                }
             }
             DataType::Bool(v) => Ok(*v),
-            DataType::DateTime(_) => Err(XCellTyped::Datetime),
-            DataType::Error(e) => Err(XCellTyped::Custom(CustomDescription { name: e.to_string() })),
             DataType::Empty => Ok(self.default),
+            _ => type_mismatch(self, cell),
         }
     }
 }

@@ -20,30 +20,14 @@ impl XCellTyped {
                 Ok(o) => Ok(XCellValue::Boolean(o)),
                 Err(e) => Err(XErrorKind::TypeMismatch { except: XCellTyped::Boolean(Default::default()), current: e }),
             },
-            XCellTyped::Integer8 => {
-                todo!()
-            }
-            XCellTyped::Integer16 => {
-                todo!()
-            }
-            XCellTyped::Integer32 => {
-                todo!()
-            }
-            XCellTyped::Integer64 => {
-                todo!()
-            }
-            XCellTyped::Unsigned8 => {
-                todo!()
-            }
-            XCellTyped::Unsigned16 => {
-                todo!()
-            }
-            XCellTyped::Unsigned32 => {
-                todo!()
-            }
-            XCellTyped::Unsigned64 => {
-                todo!()
-            }
+            XCellTyped::Integer8(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Integer16(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Integer32(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Integer64(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Unsigned8(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Unsigned16(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Unsigned32(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Unsigned64(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
             XCellTyped::Float32 => {
                 todo!()
             }

@@ -21,6 +21,7 @@ pub struct XError {
 #[derive(Debug)]
 pub enum XErrorKind {
     IOError(std::io::Error),
+    SyntaxError(String),
     TableError(String),
     TypeMismatch { except: XCellTyped, current: DataType },
     UnknownError,

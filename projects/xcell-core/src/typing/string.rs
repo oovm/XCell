@@ -3,13 +3,11 @@ use num::FromPrimitive;
 use super::*;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct IntegerDescription {
-    pub min: BigInt,
-    pub max: BigInt,
-    pub default: BigInt,
+pub struct StringDescription {
+    pub default: String,
 }
 
-impl IntegerDescription {
+impl StringDescription {
     pub fn clamp<I>(&self, int: I) -> BigInt
     where
         I: Into<BigInt>,

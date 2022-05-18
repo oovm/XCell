@@ -7,11 +7,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::{XCellTable, XError, XErrorKind};
 
-pub use self::{boolean::BooleanDescription, color::ColorDescription, integer::IntegerDescription};
+pub use self::{boolean::BooleanDescription, color::ColorDescription, integer::IntegerDescription, string::StringDescription};
 
 mod boolean;
 mod color;
 mod integer;
+mod string;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XCellTyped {
@@ -27,19 +28,25 @@ pub enum XCellTyped {
     Float32,
     Float64,
     Float128,
-    String,
+    String(StringDescription),
     LanguageID,
     Datetime,
     Color(ColorDescription),
     Custom(CustomDescription),
 }
 
-fn type_mismatch<T, A, B>(this: &A, cell: &B) -> Result<T, XErrorKind>
+fn type_mismatch<T, A>(this: &A, cell: &DataType) -> Result<T, XErrorKind>
 where
     A: Clone + Into<XCellTyped>,
-    B: Clone,
 {
     Err(XErrorKind::TypeMismatch { except: this.clone().into(), current: cell.clone() })
+}
+
+fn syntax_error<T, A>(msg: A) -> Result<T, XErrorKind>
+where
+    A: Into<String>,
+{
+    Err(XErrorKind::SyntaxError(msg.into()))
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

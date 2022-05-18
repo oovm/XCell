@@ -23,6 +23,9 @@ impl BooleanDescription {
                 else if self.reject.contains(s) {
                     Ok(false)
                 }
+                else {
+                    syntax_error(format!("{} 无法解析为 bool 类型", s))
+                }
             }
             DataType::Bool(v) => Ok(*v),
             DataType::Empty => Ok(self.default),

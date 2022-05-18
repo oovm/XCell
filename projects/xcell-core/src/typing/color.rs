@@ -6,6 +6,12 @@ pub struct ColorDescription {
     pub default: Color,
 }
 
+impl From<ColorDescription> for XCellTyped {
+    fn from(value: ColorDescription) -> Self {
+        Self::Color(value)
+    }
+}
+
 impl ColorDescription {
     pub fn gray<F>(color: F) -> Color
     where
@@ -20,13 +26,10 @@ impl ColorDescription {
             DataType::Float(f) => Ok(Self::gray(*f)),
             DataType::String(s) => match Color::from_str(s) {
                 Ok(o) => Ok(o),
-                Err(_) => Err(XCellTyped::String),
+                Err(_) => syntax_error(format!("{} 无法解析为 color 类型", s)),
             },
-            DataType::Bool(true) => Ok(Self::gray(1.0)),
-            DataType::Bool(false) => Ok(Self::gray(0.0)),
-            DataType::DateTime(_) => Err(XCellTyped::Datetime),
-            DataType::Error(e) => Err(XCellTyped::Custom(CustomDescription { name: e.to_string() })),
             DataType::Empty => Ok(self.default.clone()),
+            _ => type_mismatch(self, cell),
         }
     }
 }

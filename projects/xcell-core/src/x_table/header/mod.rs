@@ -34,19 +34,13 @@ impl XCellTyped {
             XCellTyped::Float128 => {
                 todo!()
             }
-            XCellTyped::String => {
-                todo!()
-            }
-            XCellTyped::LanguageID => {
-                todo!()
-            }
+            XCellTyped::String(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
+            XCellTyped::LanguageID(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
             XCellTyped::Datetime => {
                 todo!()
             }
             XCellTyped::Color(typing) => typing.parse_cell(cell).map(|v| XCellValue::Color(v)),
-            XCellTyped::Custom(_) => {
-                todo!()
-            }
+            XCellTyped::Custom(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
         }
     }
 }

@@ -10,6 +10,13 @@ pub struct IntegerDescription {
 }
 
 impl IntegerDescription {
+    pub fn range<A, B>(min: A, max: B) -> Self
+    where
+        A: Into<BigInt>,
+        B: Into<BigInt>,
+    {
+        Self { min: min.into(), max: max.into(), default: Default::default() }
+    }
     pub fn clamp<I>(&self, int: I) -> BigInt
     where
         I: Into<BigInt>,

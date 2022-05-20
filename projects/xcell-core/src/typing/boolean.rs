@@ -29,6 +29,7 @@ impl BooleanDescription {
             }
             DataType::Bool(v) => Ok(*v),
             DataType::Empty => Ok(self.default),
+            DataType::Error(e) => syntax_error(format!("未知错误 {e}")),
             _ => type_mismatch(self, cell),
         }
     }

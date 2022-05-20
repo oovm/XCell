@@ -7,10 +7,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::{XCellTable, XError, XErrorKind};
 
-pub use self::{boolean::BooleanDescription, color::ColorDescription, integer::IntegerDescription, string::StringDescription};
+pub use self::{
+    boolean::BooleanDescription, color::ColorDescription, custom::CustomDescription, integer::IntegerDescription,
+    string::StringDescription,
+};
 
 mod boolean;
 mod color;
+mod custom;
 mod integer;
 mod string;
 
@@ -29,7 +33,7 @@ pub enum XCellTyped {
     Float64,
     Float128,
     String(StringDescription),
-    LanguageID,
+    LanguageID(StringDescription),
     Datetime,
     Color(ColorDescription),
     Custom(CustomDescription),
@@ -49,41 +53,30 @@ where
     Err(XErrorKind::SyntaxError(msg.into()))
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CustomDescription {
-    name: String,
-}
-
-impl Default for XCellTyped {
-    fn default() -> Self {
-        Self::String
-    }
-}
-
 impl FromStr for XCellTyped {
     type Err = XError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let out = match s.to_ascii_lowercase().as_str() {
-            "str" | "string" => Self::String,
-            "language" | "languagestring" | "languageid" => Self::LanguageID,
+            "str" | "string" => Self::String(Default::default()),
+            "language" | "languagestring" | "languageid" => Self::LanguageID(Default::default()),
             "bool" | "boolean" => Self::Boolean(Default::default()),
             // int
-            "byte" | "i8" => Self::Integer8(Default::default()),
-            "short" | "i16" => Self::Integer16(Default::default()),
-            "int" | "i32" => Self::Integer32(Default::default()),
-            "long" | "i64" => Self::Integer64(Default::default()),
+            "byte" | "i8" => Self::Integer8(IntegerDescription::range(i8::MIN, i8::MAX)),
+            "short" | "i16" => Self::Integer16(IntegerDescription::range(i16::MIN, i16::MAX)),
+            "int" | "i32" => Self::Integer32(IntegerDescription::range(i32::MIN, i32::MAX)),
+            "long" | "i64" => Self::Integer64(IntegerDescription::range(i64::MIN, i64::MAX)),
             // unsigned
-            "sbyte" | "u8" => Self::Unsigned8(Default::default()),
-            "ushort" | "u16" => Self::Unsigned16(Default::default()),
-            "uint" | "u32" => Self::Unsigned32(Default::default()),
-            "ulong" | "u64" => Self::Unsigned64(Default::default()),
+            "sbyte" | "u8" => Self::Unsigned8(IntegerDescription::range(u8::MIN, u8::MAX)),
+            "ushort" | "u16" => Self::Unsigned16(IntegerDescription::range(u16::MIN, u16::MAX)),
+            "uint" | "u32" => Self::Unsigned32(IntegerDescription::range(u32::MIN, u32::MAX)),
+            "ulong" | "u64" => Self::Unsigned64(IntegerDescription::range(u64::MIN, u64::MAX)),
             // float
             "float" | "f32" => Self::Float32,
             "double" | "f64" => Self::Float64,
             "decimal" | "f128" => Self::Float128,
             "color" => Self::Color(Default::default()),
-            _ => Self::Custom(CustomDescription { name: s.to_string() }),
+            _ => Self::Custom(CustomDescription::new(s)),
         };
         Ok(out)
     }
@@ -99,7 +92,9 @@ impl From<&DataType> for XCellTyped {
 pub enum XCellValue {
     Boolean(bool),
     Integer(BigInt),
+    String(String),
     Color(Color),
+    Custom(String),
 }
 
 impl XCellTyped {}

@@ -8,13 +8,14 @@ use serde::{Deserialize, Serialize};
 use crate::{XCellTable, XError, XErrorKind};
 
 pub use self::{
-    boolean::BooleanDescription, color::ColorDescription, custom::CustomDescription, integer::IntegerDescription,
-    string::StringDescription,
+    boolean::BooleanDescription, color::ColorDescription, custom::CustomDescription, decimal::DecimalDescription,
+    integer::IntegerDescription, string::StringDescription,
 };
 
 mod boolean;
 mod color;
 mod custom;
+mod decimal;
 mod integer;
 mod string;
 
@@ -31,7 +32,7 @@ pub enum XCellTyped {
     Unsigned64(IntegerDescription),
     Float32,
     Float64,
-    Float128,
+    Decimal128,
     String(StringDescription),
     LanguageID(StringDescription),
     Datetime,
@@ -74,7 +75,7 @@ impl FromStr for XCellTyped {
             // float
             "float" | "f32" => Self::Float32,
             "double" | "f64" => Self::Float64,
-            "decimal" | "f128" => Self::Float128,
+            "decimal" | "f128" => Self::Decimal128,
             "color" => Self::Color(Default::default()),
             _ => Self::Custom(CustomDescription::new(s)),
         };

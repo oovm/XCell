@@ -31,7 +31,7 @@ impl XCellTyped {
             XCellTyped::Float64 => {
                 todo!()
             }
-            XCellTyped::Float128 => {
+            XCellTyped::Decimal128 => {
                 todo!()
             }
             XCellTyped::String(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),

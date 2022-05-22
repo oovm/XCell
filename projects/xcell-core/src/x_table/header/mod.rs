@@ -25,20 +25,12 @@ impl XCellTyped {
             XCellTyped::Unsigned16(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
             XCellTyped::Unsigned32(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
             XCellTyped::Unsigned64(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Float32 => {
-                todo!()
-            }
-            XCellTyped::Float64 => {
-                todo!()
-            }
-            XCellTyped::Decimal128 => {
-                todo!()
-            }
+            XCellTyped::Float32(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Float64(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Decimal128(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
             XCellTyped::String(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
             XCellTyped::LanguageID(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
-            XCellTyped::Datetime => {
-                todo!()
-            }
+            XCellTyped::Datetime(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
             XCellTyped::Color(typing) => typing.parse_cell(cell).map(|v| XCellValue::Color(v)),
             XCellTyped::Custom(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
         }

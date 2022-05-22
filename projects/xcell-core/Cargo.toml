@@ -11,12 +11,14 @@ edition = "2021"
 
 [dependencies]
 calamine = "0.19.1"
-serde = { version = "1.0.147", features = ["derive"] }
 toml = "0.5.9"
-num = { version = "0.4.0", features = ["serde"] }
 pathdiff = "0.2.1" # 获取相对路径
 diagnostic = "0.3.10"
 twox-hash = "1.6.3"
+serde = { version = "1.0.147", features = ["derive"] }
+num = { version = "0.4.0", features = ["serde"] }
+ndarray = { version = "0.15.6", features = ["serde"] }
+chrono = { version = "0.4.22", features = ["serde"] }
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 
 [dependencies.sled-typed]

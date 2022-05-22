@@ -9,7 +9,7 @@ use crate::{XCellTable, XError, XErrorKind};
 
 pub use self::{
     boolean::BooleanDescription, color::ColorDescription, custom::CustomDescription, decimal::DecimalDescription,
-    integer::IntegerDescription, string::StringDescription,
+    integer::IntegerDescription, string::StringDescription, time::TimeDescription,
 };
 
 mod boolean;
@@ -18,6 +18,7 @@ mod custom;
 mod decimal;
 mod integer;
 mod string;
+mod time;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XCellTyped {
@@ -30,12 +31,12 @@ pub enum XCellTyped {
     Unsigned16(IntegerDescription),
     Unsigned32(IntegerDescription),
     Unsigned64(IntegerDescription),
-    Float32,
-    Float64,
-    Decimal128,
+    Float32(DecimalDescription),
+    Float64(DecimalDescription),
+    Decimal128(DecimalDescription),
     String(StringDescription),
     LanguageID(StringDescription),
-    Datetime,
+    Datetime(TimeDescription),
     Color(ColorDescription),
     Custom(CustomDescription),
 }
@@ -73,9 +74,9 @@ impl FromStr for XCellTyped {
             "uint" | "u32" => Self::Unsigned32(IntegerDescription::range(u32::MIN, u32::MAX)),
             "ulong" | "u64" => Self::Unsigned64(IntegerDescription::range(u64::MIN, u64::MAX)),
             // float
-            "float" | "f32" => Self::Float32,
-            "double" | "f64" => Self::Float64,
-            "decimal" | "f128" => Self::Decimal128,
+            "float" | "f32" => Self::Float32(Default::default()),
+            "double" | "f64" => Self::Float64(Default::default()),
+            "decimal" | "f128" => Self::Decimal128(Default::default()),
             "color" => Self::Color(Default::default()),
             _ => Self::Custom(CustomDescription::new(s)),
         };

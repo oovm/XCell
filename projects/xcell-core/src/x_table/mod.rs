@@ -8,19 +8,19 @@ use std::{
     str::FromStr,
 };
 
-use calamine::DataType;
-use serde::{Deserialize, Deserializer, Serialize};
-
 use crate::{
     typing::{XCellTyped, XCellValue},
     utils::{find_first_table, read_table_data, read_table_headers, xx_hash},
-    x_table::table_config::{ProjectConfig, TableConfig},
+    x_table::config::{ProjectConfig, TableConfig},
     Failure, Success, Validation, XError, XResult,
 };
+use array2d::Array2D;
+use calamine::DataType;
+use serde::{Deserialize, Deserializer, Serialize};
 
+pub mod config;
 pub mod header;
 pub mod table;
-pub mod table_config;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct XCellTable {
@@ -31,7 +31,7 @@ pub struct XCellTable {
     /// 所有需要导出的类型
     pub header: Vec<XCellHeader>,
     /// 表格中的有效数据
-    pub data: Vec<Vec<XCellValue>>,
+    pub data: Array2D<XCellValue>,
     /// Excel 的校验和
     pub sum_excel: u64,
     /// 全局配置和本地配置的校验和

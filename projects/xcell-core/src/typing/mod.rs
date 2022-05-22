@@ -90,7 +90,7 @@ impl From<&DataType> for XCellTyped {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XCellValue {
     Boolean(bool),
     Integer(BigInt),

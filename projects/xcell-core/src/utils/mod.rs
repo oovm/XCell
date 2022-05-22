@@ -9,6 +9,8 @@ use calamine::{open_workbook_auto, DataType, Reader};
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 
+use array2d::Array2D;
+
 use crate::{
     typing::{XCellTyped, XCellValue},
     CalamineTable, Validation, XCellHeader, XError, XResult,
@@ -72,21 +74,19 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<Vec<XCellHeader>> {
     Ok(headers)
 }
 
-pub fn read_table_data(table: &CalamineTable, typing: &[XCellHeader]) -> Validation<Vec<Vec<XCellValue>>> {
-    let mut lines = vec![];
-    for row_raw in table.rows().skip(3) {
-        if first_is_nil(row_raw) {
-            continue;
-        }
+pub fn read_table_data(table: &CalamineTable, typing: &[XCellHeader]) -> Validation<Array2D<XCellValue>> {
+    let rows = table.rows().skip(3).filter(|v| first_not_nil(v));
+    let row_count = table.rows().skip(3).filter(|v| first_not_nil(v)).count();
+    let col_count = typing.len();
+    let mut lines = Array2D::filled_with(XCellValue::Boolean(false), row_count, col_count);
+    for (x, row_raw) in rows.enumerate() {
         println!("{row_raw:?}");
-        let mut row = vec![];
-        for typed in typing {
+        for (y, typed) in typing.iter().enumerate() {
             match typed.parse_cell(row_raw) {
-                Ok(o) => row.push(o),
+                Ok(o) => {}
                 Err(_) => {}
             }
         }
-        lines.push(row)
     }
     Validation::Success { value: lines, diagnostics: vec![] }
 }
@@ -94,18 +94,18 @@ pub fn read_table_data(table: &CalamineTable, typing: &[XCellHeader]) -> Validat
 /// 确保第一行的 id 不是空的
 ///
 /// 如果是空的, 那么就认为数据非法
-pub fn first_is_nil(row: &[DataType]) -> bool {
+pub fn first_not_nil(row: &[DataType]) -> bool {
     match row.first() {
         Some(s) => match s {
-            DataType::Int(_) => false,
-            DataType::Float(_) => false,
-            DataType::String(s) => s.is_empty(),
-            DataType::Bool(_) => false,
-            DataType::DateTime(_) => false,
-            DataType::Error(_) => true,
-            DataType::Empty => true,
+            DataType::Int(_) => true,
+            DataType::Float(_) => true,
+            DataType::String(s) => !s.is_empty(),
+            DataType::Bool(_) => true,
+            DataType::DateTime(_) => true,
+            DataType::Error(_) => false,
+            DataType::Empty => false,
         },
-        None => true,
+        None => false,
     }
 }
 

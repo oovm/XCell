@@ -2,7 +2,15 @@ use super::*;
 
 impl Default for XCellTable {
     fn default() -> Self {
-        Self { path: Default::default(), header: vec![], config: Default::default(), sum_excel: 0, sum_config: 0, data: vec![] }
+        Self {
+            //
+            path: Default::default(),
+            header: Default::default(),
+            data: Array2D::filled_with(XCellValue::Boolean(false), 1, 1),
+            config: Default::default(),
+            sum_excel: 0,
+            sum_config: 0,
+        }
     }
 }
 

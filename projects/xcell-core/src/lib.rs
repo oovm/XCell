@@ -7,7 +7,7 @@ pub use self::{
     errors::{Validation, XError, XErrorKind, XResult},
     typing::{BooleanDescription, ColorDescription, CustomDescription},
     x_table::{
-        table_config::{BooleanMetaInfo, ProjectConfig, TableConfig, TypeMetaInfo},
+        config::{BooleanMetaInfo, ProjectConfig, TableConfig, TypeMetaInfo},
         XCellHeader, XCellTable,
     },
 };

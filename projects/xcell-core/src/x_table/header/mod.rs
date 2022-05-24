@@ -1,3 +1,5 @@
+use num::ToPrimitive;
+
 use crate::{typing::XCellValue, XErrorKind};
 
 use super::*;
@@ -17,16 +19,16 @@ impl XCellTyped {
     pub fn parse_cell(&self, cell: &DataType) -> Result<XCellValue, XErrorKind> {
         match self {
             XCellTyped::Boolean(typing) => typing.parse_cell(cell).map(|v| XCellValue::Boolean(v)),
-            XCellTyped::Integer8(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Integer16(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Integer32(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Integer64(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Unsigned8(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Unsigned16(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Unsigned32(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Unsigned64(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Float32(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
-            XCellTyped::Float64(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
+            XCellTyped::Integer8(typing) => typing.parse_i8(cell).map(|v| XCellValue::Integer8(v)),
+            XCellTyped::Integer16(typing) => typing.parse_i16(cell).map(|v| XCellValue::Integer16(v)),
+            XCellTyped::Integer32(typing) => typing.parse_i32(cell).map(|v| XCellValue::Integer32(v)),
+            XCellTyped::Integer64(typing) => typing.parse_i64(cell).map(|v| XCellValue::Integer64(v)),
+            XCellTyped::Unsigned8(typing) => typing.parse_u8(cell).map(|v| XCellValue::Unsigned8(v)),
+            XCellTyped::Unsigned16(typing) => typing.parse_u16(cell).map(|v| XCellValue::Unsigned16(v)),
+            XCellTyped::Unsigned32(typing) => typing.parse_u32(cell).map(|v| XCellValue::Unsigned32(v)),
+            XCellTyped::Unsigned64(typing) => typing.parse_u64(cell).map(|v| XCellValue::Unsigned64(v)),
+            XCellTyped::Float32(typing) => typing.parse_cell(cell).map(|v| XCellValue::Float32(v)),
+            XCellTyped::Float64(typing) => typing.parse_cell(cell).map(|v| XCellValue::Float64(v)),
             XCellTyped::Decimal128(typing) => typing.parse_cell(cell).map(|v| XCellValue::Integer(v)),
             XCellTyped::String(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
             XCellTyped::LanguageID(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),

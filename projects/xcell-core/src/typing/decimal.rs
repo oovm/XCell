@@ -38,4 +38,22 @@ impl DecimalDescription {
             _ => syntax_error(format!("{} 无法解析为 int 类型", cell.to_string())),
         }
     }
+    pub fn parse_f32(&self, cell: &DataType) -> Result<f32, XErrorKind> {
+        match self.parse_cell(cell) {
+            Ok(o) => Ok(o.to_i32().unwrap_or_default()),
+            Err(e) => Err(e),
+        }
+    }
+    pub fn parse_f64(&self, cell: &DataType) -> Result<f64, XErrorKind> {
+        match self.parse_cell(cell) {
+            Ok(o) => Ok(o.to_i64().unwrap_or_default()),
+            Err(e) => Err(e),
+        }
+    }
+    pub fn parse_d128(&self, cell: &DataType) -> Result<f64, XErrorKind> {
+        match self.parse_cell(cell) {
+            Ok(o) => Ok(o.to_i64().unwrap_or_default()),
+            Err(e) => Err(e),
+        }
+    }
 }

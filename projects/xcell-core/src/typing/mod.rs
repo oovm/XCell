@@ -16,6 +16,7 @@ mod boolean;
 mod color;
 mod custom;
 mod decimal;
+mod display;
 mod integer;
 mod string;
 mod time;
@@ -93,7 +94,16 @@ impl From<&DataType> for XCellTyped {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XCellValue {
     Boolean(bool),
-    Integer(BigInt),
+    Integer8(i8),
+    Integer16(i16),
+    Integer32(i32),
+    Integer64(i64),
+    Unsigned8(u8),
+    Unsigned16(u16),
+    Unsigned32(u32),
+    Unsigned64(u64),
+    Float32(f32),
+    Float64(u64),
     String(String),
     Color(Color),
     Custom(String),

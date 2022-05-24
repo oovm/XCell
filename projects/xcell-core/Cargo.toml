@@ -15,8 +15,12 @@ toml = "0.5.9"
 pathdiff = "0.2.1" # 获取相对路径
 diagnostic = "0.3.10"
 twox-hash = "1.6.3"
+byteorder = "1.4.3"
+new_string_template = "1.4.0"
+regex = "1.7.0"
 serde = { version = "1.0.147", features = ["derive"] }
 num = { version = "0.4.0", features = ["serde"] }
+decimal = { version = "2.1.0", features = ["serde"] }
 array2d = { version = "0.2.1", features = ["serde"] }
 #ndarray = { version = "0.15.6", features = ["serde"] }
 chrono = { version = "0.4.22", features = ["serde"] }

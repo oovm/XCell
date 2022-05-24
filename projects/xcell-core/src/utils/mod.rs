@@ -75,20 +75,23 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<Vec<XCellHeader>> {
 }
 
 pub fn read_table_data(table: &CalamineTable, typing: &[XCellHeader]) -> Validation<Array2D<XCellValue>> {
+    let mut errors = vec![];
     let rows = table.rows().skip(3).filter(|v| first_not_nil(v));
     let row_count = table.rows().skip(3).filter(|v| first_not_nil(v)).count();
     let col_count = typing.len();
-    let mut lines = Array2D::filled_with(XCellValue::Boolean(false), row_count, col_count);
+    let mut matrix = Array2D::filled_with(XCellValue::Boolean(false), row_count, col_count);
     for (x, row_raw) in rows.enumerate() {
         println!("{row_raw:?}");
         for (y, typed) in typing.iter().enumerate() {
             match typed.parse_cell(row_raw) {
-                Ok(o) => {}
-                Err(_) => {}
+                Ok(o) => {
+                    matrix.set(x, y, o).ok();
+                }
+                Err(e) => errors.push(XError { kind: Box::new(e), path: None, position: Some((x, y)) }),
             }
         }
     }
-    Validation::Success { value: lines, diagnostics: vec![] }
+    Validation::Success { value: matrix, diagnostics: vec![] }
 }
 
 /// 确保第一行的 id 不是空的

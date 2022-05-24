@@ -15,7 +15,7 @@ mod for_toml;
 pub struct XError {
     pub kind: Box<XErrorKind>,
     pub path: Option<PathBuf>,
-    pub position: Option<(u32, u32)>,
+    pub position: Option<(usize, usize)>,
 }
 
 #[derive(Debug)]
@@ -35,13 +35,13 @@ impl XError {
     pub fn with_path(self, path: PathBuf) -> Self {
         Self { kind: self.kind, path: Some(path), position: self.position }
     }
-    pub fn with_xy(self, x: u32, y: u32) -> Self {
+    pub fn with_xy(self, x: usize, y: usize) -> Self {
         Self { kind: self.kind, path: self.path, position: Some((x, y)) }
     }
     pub fn table_error<S: Into<String>>(msg: S) -> Self {
         Self { kind: box XErrorKind::TableError(msg.into()), path: None, position: None }
     }
-    pub fn type_mismatch(except: XCellTyped, current: DataType, x: u32, y: u32, path: PathBuf) -> XError {
+    pub fn type_mismatch(except: XCellTyped, current: DataType, x: usize, y: usize, path: PathBuf) -> XError {
         Self { kind: box XErrorKind::TypeMismatch { except, current }, path: Some(path), position: Some((x, y)) }
     }
 }

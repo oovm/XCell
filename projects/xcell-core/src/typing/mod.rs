@@ -2,8 +2,10 @@ use std::str::FromStr;
 
 use calamine::DataType;
 use csscolorparser::Color;
-use num::BigInt;
+use num::{BigInt, FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
+
+use bigdecimal::BigDecimal;
 
 use crate::{XCellTable, XError, XErrorKind};
 

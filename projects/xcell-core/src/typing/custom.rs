@@ -2,8 +2,8 @@ use super::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CustomDescription {
-    typing: String,
-    default: String,
+    pub typing: String,
+    pub default: String,
 }
 
 impl CustomDescription {

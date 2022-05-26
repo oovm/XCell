@@ -1,5 +1,4 @@
 use super::*;
-use std::ops::Add;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct DecimalDescription {
@@ -25,7 +24,10 @@ impl DecimalDescription {
     pub fn parse_cell(&self, cell: &DataType) -> Result<BigDecimal, XErrorKind> {
         match cell {
             DataType::Int(i) => Ok(self.clamp(*i)),
-            DataType::Float(f) => BigDecimal::from(*f),
+            DataType::Float(f) => match BigDecimal::from_f64(*f) {
+                Some(o) => Ok(o),
+                None => syntax_error(format!("{} 无法解析为 decimal 类型", f)),
+            },
             DataType::String(s) => match BigDecimal::from_str(s) {
                 Ok(o) => Ok(o),
                 Err(_) => syntax_error(format!("{} 无法解析为 decimal 类型", s)),

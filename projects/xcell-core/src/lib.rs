@@ -1,6 +1,6 @@
 #![feature(box_syntax)]
 #![feature(try_blocks)]
-
+#![feature(type_alias_impl_trait)]
 pub use diagnostic::Validation::{Failure, Success};
 
 pub use self::{

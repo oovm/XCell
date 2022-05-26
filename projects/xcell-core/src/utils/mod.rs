@@ -81,7 +81,6 @@ pub fn read_table_data(table: &CalamineTable, typing: &[XCellHeader]) -> Validat
     let col_count = typing.len();
     let mut matrix = Array2D::filled_with(XCellValue::Boolean(false), row_count, col_count);
     for (x, row_raw) in rows.enumerate() {
-        println!("{row_raw:?}");
         for (y, typed) in typing.iter().enumerate() {
             match typed.parse_cell(row_raw) {
                 Ok(o) => {

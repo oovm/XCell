@@ -29,7 +29,7 @@ pub struct XCellTable {
     /// 表格的额外配置
     pub config: TableConfig,
     /// 所有需要导出的类型
-    pub header: Vec<XCellHeader>,
+    pub headers: Vec<XCellHeader>,
     /// 表格中的有效数据
     pub data: Array2D<XCellValue>,
     /// Excel 的校验和

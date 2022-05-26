@@ -5,7 +5,7 @@ impl Default for XCellTable {
         Self {
             //
             path: Default::default(),
-            header: Default::default(),
+            headers: Default::default(),
             data: Array2D::filled_with(XCellValue::Boolean(false), 1, 1),
             config: Default::default(),
             sum_excel: 0,

@@ -15,6 +15,12 @@ pub struct UnityCodegen {
     pub support_binary: bool,
 }
 
+impl Default for UnityCodegen {
+    fn default() -> Self {
+        Self { namespace: vec!["DataTable".to_string()], support_binary: true }
+    }
+}
+
 pub struct CsvCodegen {}
 
 pub struct BinaryCodegen {}

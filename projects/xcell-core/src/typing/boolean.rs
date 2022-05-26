@@ -2,9 +2,9 @@ use super::*;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct BooleanDescription {
-    accept: Vec<String>,
-    reject: Vec<String>,
-    default: bool,
+    pub accept: Vec<String>,
+    pub reject: Vec<String>,
+    pub default: bool,
 }
 
 impl From<BooleanDescription> for XCellTyped {

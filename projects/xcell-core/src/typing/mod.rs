@@ -105,7 +105,7 @@ pub enum XCellValue {
     Unsigned32(u32),
     Unsigned64(u64),
     Float32(f32),
-    Float64(u64),
+    Float64(f64),
     String(String),
     Color(Color),
     Custom(String),

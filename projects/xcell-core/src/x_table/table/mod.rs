@@ -43,7 +43,7 @@ impl XCellTable {
     /// 强制重新加载表格中的数据
     pub fn load_data(&mut self) -> Validation<()> {
         match find_first_table(&self.path) {
-            Ok(table) => read_table_data(&table, &self.header).map(|v| self.data = v),
+            Ok(table) => read_table_data(&table, &self.headers).map(|v| self.data = v),
             Err(e) => Failure { fatal: e, diagnostics: vec![] },
         }
     }
@@ -91,7 +91,7 @@ impl XCellTable {
     /// ```
     pub fn load_config(&mut self, global: &ProjectConfig) -> XResult<()> {
         let table = find_first_table(&self.path)?;
-        self.header = read_table_headers(&table)?;
+        self.headers = read_table_headers(&table)?;
         let mut dir = self.path.clone();
         let name = match self.path.file_stem() {
             None => "",

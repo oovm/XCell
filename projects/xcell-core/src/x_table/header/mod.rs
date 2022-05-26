@@ -31,7 +31,6 @@ impl XCellTyped {
             XCellTyped::Float64(typing) => typing.parse_f64(cell).map(|v| XCellValue::Float64(v)),
             XCellTyped::Decimal128(typing) => typing.parse_f64(cell).map(|v| XCellValue::Float64(v)),
             XCellTyped::String(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
-            XCellTyped::LanguageID(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
             XCellTyped::Datetime(typing) => {
                 typing.parse_cell(cell).map(|v| XCellValue::Integer8(v.to_i8().unwrap_or_default()))
             }

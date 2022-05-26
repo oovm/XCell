@@ -1,9 +1,13 @@
-use std::{collections::HashMap, io::Write};
+use std::{collections::HashMap, fs::File, io::Write, path::Path};
 
+use byteorder::WriteBytesExt;
 use new_string_template::template::Template;
 use regex::Regex;
 
-use crate::{XCellTable, XError};
+use crate::{
+    typing::{XCellTyped, XCellValue},
+    XCellHeader, XCellTable, XError,
+};
 
 #[allow(unused_variables)]
 mod csv;
@@ -12,12 +16,13 @@ mod unity;
 
 pub struct UnityCodegen {
     pub namespace: Vec<String>,
+    pub namespace_legacy: bool,
     pub support_binary: bool,
 }
 
 impl Default for UnityCodegen {
     fn default() -> Self {
-        Self { namespace: vec!["DataTable".to_string()], support_binary: true }
+        Self { namespace: vec!["DataTable".to_string()], support_binary: true, namespace_legacy: true }
     }
 }
 

@@ -38,7 +38,6 @@ pub enum XCellTyped {
     Float64(DecimalDescription),
     Decimal128(DecimalDescription),
     String(StringDescription),
-    LanguageID(StringDescription),
     Datetime(TimeDescription),
     Color(ColorDescription),
     Custom(CustomDescription),
@@ -64,7 +63,7 @@ impl FromStr for XCellTyped {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let out = match s.to_ascii_lowercase().as_str() {
             "str" | "string" => Self::String(Default::default()),
-            "language" | "languagestring" | "languageid" => Self::LanguageID(Default::default()),
+            "language" | "languagestring" | "languageid" => Self::String(Default::default()),
             "bool" | "boolean" => Self::Boolean(Default::default()),
             // int
             "byte" | "i8" => Self::Integer8(IntegerDescription::range(i8::MIN, i8::MAX)),

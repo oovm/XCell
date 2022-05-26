@@ -1,10 +1,3 @@
-use std::{fs::File, path::Path};
-
-use crate::{
-    typing::{XCellTyped, XCellValue},
-    XCellHeader,
-};
-
 use super::*;
 
 impl UnityCodegen {
@@ -13,10 +6,21 @@ impl UnityCodegen {
     }
     pub fn write_csharp(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
         let mut file = File::create(path)?;
-        for header in &table.headers {
-            header.write_csharp(&mut file)?;
+        let indent = match self.namespace_legacy {
+            true => " ".repeat(12),
+            false => " ".repeat(8),
+        };
+        for (idx, header) in table.headers.iter().enumerate() {
+            if idx != 0 {
+                self.write_newline(&mut file)?
+            }
+
+            header.write_csharp(&mut file, &indent)?;
         }
         Ok(())
+    }
+    pub fn write_newline(&self, f: &mut impl Write) -> std::io::Result<()> {
+        f.write_u8(b'\n')
     }
     pub fn write_interface(&self, f: &mut impl Write) -> std::io::Result<usize> {
         let mut slots = HashMap::new();
@@ -27,7 +31,8 @@ impl UnityCodegen {
 }
 
 impl XCellHeader {
-    pub fn write_csharp(&self, f: &mut impl Write) -> std::io::Result<()> {
+    pub fn write_csharp(&self, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
+        f.write(indent.as_bytes())?;
         self.typing.write_csharp(f, &self.field_name)
     }
 }
@@ -72,10 +77,7 @@ impl XCellTyped {
                 todo!()
             }
             XCellTyped::String(v) => {
-                writeln!(f, "public string {} = {};", field, v.default)
-            }
-            XCellTyped::LanguageID(v) => {
-                writeln!(f, "public string {} = {};", field, v.default)
+                writeln!(f, "public string {} = {:?};", field, v.default)
             }
             XCellTyped::Datetime(_) => {
                 todo!()

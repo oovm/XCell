@@ -1,7 +1,3 @@
-use num::ToPrimitive;
-
-use crate::{typing::XCellValue, XErrorKind};
-
 use super::*;
 
 impl XCellHeader {
@@ -37,5 +33,12 @@ impl XCellTyped {
             XCellTyped::Color(typing) => typing.parse_cell(cell).map(|v| XCellValue::Color(v)),
             XCellTyped::Custom(typing) => typing.parse_cell(cell).map(|v| XCellValue::String(v)),
         }
+    }
+}
+impl Deref for XCellHeaders {
+    type Target = [XCellHeader];
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
     }
 }

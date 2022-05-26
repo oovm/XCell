@@ -4,7 +4,7 @@ use xcell_core::{codegen::UnityCodegen, ProjectConfig, XCellTable, XResult};
 
 #[test]
 fn test2() -> XResult {
-    let path = "tests/test_buffer/BuffTable.xlsx";
+    let path = "tests/test_buffer/Buff.xlsx";
     let config = ProjectConfig::default();
     let xc = XCellTable::load_file(PathBuf::from(path), &config).unwrap();
     let code = UnityCodegen::default();

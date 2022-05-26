@@ -8,7 +8,7 @@ pub use self::{
     typing::{BooleanDescription, ColorDescription, CustomDescription},
     x_table::{
         config::{BooleanMetaInfo, ProjectConfig, TableConfig, TypeMetaInfo},
-        XCellHeader, XCellTable,
+        XCellHeader, XCellHeaders, XCellTable,
     },
 };
 

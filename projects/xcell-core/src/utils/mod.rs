@@ -13,7 +13,7 @@ use array2d::Array2D;
 
 use crate::{
     typing::{XCellTyped, XCellValue},
-    CalamineTable, Validation, XCellHeader, XError, XResult,
+    CalamineTable, Validation, XCellHeader, XCellHeaders, XError, XResult,
 };
 
 /// 读取 Excel 文件里的第一张表
@@ -52,7 +52,7 @@ pub fn find_first_table(path: &PathBuf) -> XResult<CalamineTable> {
 /// ```
 /// use xcell_core;
 /// ```
-pub fn read_table_headers(table: &CalamineTable) -> XResult<Vec<XCellHeader>> {
+pub fn read_table_headers(table: &CalamineTable) -> XResult<XCellHeaders> {
     let mut headers = vec![];
     let row = match table.rows().nth(0) {
         Some(s) => s,
@@ -68,13 +68,13 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<Vec<XCellHeader>> {
                 Some(s) => s.to_string(),
                 None => continue,
             };
-            headers.push(XCellHeader { comment: data.to_string(), column: i, typing, field_name, details: "".to_string() })
+            headers.push(XCellHeader { summary: data.to_string(), column: i, typing, field_name, details: "".to_string() })
         }
     }
-    Ok(headers)
+    Ok(XCellHeaders { inner: headers })
 }
 
-pub fn read_table_data(table: &CalamineTable, typing: &[XCellHeader]) -> Validation<Array2D<XCellValue>> {
+pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> Validation<Array2D<XCellValue>> {
     let mut errors = vec![];
     let rows = table.rows().skip(3).filter(|v| first_not_nil(v));
     let row_count = table.rows().skip(3).filter(|v| first_not_nil(v)).count();

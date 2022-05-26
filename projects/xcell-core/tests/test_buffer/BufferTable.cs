@@ -1,13 +1,57 @@
-            public int id = 0;
+    [DataContract]
+    public partial class BuffTable
+    {
+        [DataMember] public readonly Dictionary<int, BuffElement> dict = new();
+        
+        [CanBeNull]
+        public BuffElement GetElement(int id)
+        {
+            return dict.TryGetValue(id, out var item) ? item : null;
+        }
+    }
 
-            public string name = "";
+    [DataContract]
+    public partial class BuffElement
+    {
+        /// <summary>
+        /// Buff ID
+        /// </summary>
+        [DataMember]
+        public int id = 0;
 
-            public int groupId = 0;
+        /// <summary>
+        /// 名字
+        /// </summary>
+        [DataMember]
+        public string name = "";
 
-            public string desc = "";
+        /// <summary>
+        /// Buff组
+        /// </summary>
+        [DataMember]
+        public int groupId = 0;
 
-            public string icon = "";
+        /// <summary>
+        /// 描述
+        /// </summary>
+        [DataMember]
+        public string desc = "";
 
-            public uint max = 0;
+        /// <summary>
+        /// 图标
+        /// </summary>
+        [DataMember]
+        public string icon = "";
 
-            public stringId actionId = ;
+        /// <summary>
+        /// 最大堆叠, 0 表示无限
+        /// </summary>
+        [DataMember]
+        public uint max = 0;
+
+        /// <summary>
+        /// behavior Id
+        /// </summary>
+        [DataMember]
+        public stringId actionId = ;
+    }

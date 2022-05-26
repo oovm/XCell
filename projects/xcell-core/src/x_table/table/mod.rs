@@ -1,5 +1,3 @@
-use crate::utils::xx_file;
-
 use super::*;
 
 mod display;
@@ -109,4 +107,14 @@ impl XCellTable {
     }
     /// 加载表格数据
     fn read_excel(&mut self) {}
+}
+
+impl XCellTable {
+    pub fn class_name(&self) -> String {
+        let path = self.path.with_extension("");
+        match path.file_name() {
+            Some(s) => s.to_string_lossy().to_string(),
+            None => String::new(),
+        }
+    }
 }

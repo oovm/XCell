@@ -4,19 +4,22 @@ use std::{
     fmt::{Debug, Display, Formatter},
     fs,
     hash::{Hash, Hasher},
+    ops::Deref,
     path::{Path, PathBuf},
     str::FromStr,
 };
 
-use crate::{
-    typing::{XCellTyped, XCellValue},
-    utils::{find_first_table, read_table_data, read_table_headers, xx_hash},
-    x_table::config::{ProjectConfig, TableConfig},
-    Failure, Success, Validation, XError, XResult,
-};
 use array2d::Array2D;
 use calamine::DataType;
+use num::ToPrimitive;
 use serde::{Deserialize, Deserializer, Serialize};
+
+use crate::{
+    typing::{XCellTyped, XCellValue},
+    utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
+    x_table::config::{ProjectConfig, TableConfig},
+    Failure, Success, Validation, XError, XErrorKind, XResult,
+};
 
 pub mod config;
 pub mod header;
@@ -29,7 +32,7 @@ pub struct XCellTable {
     /// 表格的额外配置
     pub config: TableConfig,
     /// 所有需要导出的类型
-    pub headers: Vec<XCellHeader>,
+    pub headers: XCellHeaders,
     /// 表格中的有效数据
     pub data: Array2D<XCellValue>,
     /// Excel 的校验和
@@ -38,12 +41,17 @@ pub struct XCellTable {
     pub sum_config: u64,
 }
 
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XCellHeaders {
+    pub inner: Vec<XCellHeader>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XCellHeader {
     /// 位置
     pub column: usize,
     /// 短描述
-    pub comment: String,
+    pub summary: String,
     /// 长描述, 鼠标悬浮时显示
     pub details: String,
     /// 类型信息

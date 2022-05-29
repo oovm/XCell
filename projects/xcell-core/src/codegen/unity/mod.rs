@@ -13,36 +13,13 @@ impl UnityCodegen {
             false => " ".repeat(0),
         };
         self.write_cs_base(table, &mut file, &indent)?;
+        if self.support_binary {
+            self.write_cs_binary(table, &mut file, &indent)?;
+        }
+
         Ok(())
     }
-    fn write_cs_base(&self, table: &XCellTable, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
-        let part_table = include_str!("PartBase.cs").trim();
-        let part_table = part_table
-            .replace("__TABLE_NAME__", &self.table_name(table))
-            .replace("__ELEMENT_NAME__", &self.element_name(table))
-            .replace("__ELEMENT_GETTER__", &self.element_getter(table));
-        for line in part_table.lines() {
-            writeln!(f, "{indent}{line}")?
-        }
-        write_newline(f)?;
-        let part_element = include_str!("PartElement1.cs").trim();
-        let part_element = part_element.replace("__ELEMENT_NAME__", &self.element_name(table));
-        for line in part_element.lines() {
-            writeln!(f, "{indent}{line}")?
-        }
-        table.headers.write_csharp(f, self.namespace_legacy)?;
-        writeln!(f, "{indent}}}")
-    }
 
-    fn table_name(&self, table: &XCellTable) -> String {
-        format!("{}{}", table.class_name(), self.table_suffix)
-    }
-    fn element_name(&self, table: &XCellTable) -> String {
-        format!("{}{}", table.class_name(), self.element_suffix)
-    }
-    fn element_getter(&self, _: &XCellTable) -> String {
-        format!("Get{}", self.element_suffix)
-    }
     pub fn write_interface(&self, f: &mut impl Write) -> std::io::Result<usize> {
         let mut slots = HashMap::new();
         slots.insert("NAMESPACE", self.namespace.join("."));
@@ -51,8 +28,34 @@ impl UnityCodegen {
     }
 }
 
+impl UnityCodegen {
+    fn write_cs_base(&self, table: &XCellTable, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
+        for line in self.templated(table, include_str!("PartBase.cs")).lines() {
+            writeln!(f, "{indent}{line}")?
+        }
+        table.headers.write_csharp(f, self.namespace_legacy)?;
+        writeln!(f, "{indent}}}")
+    }
+    fn write_cs_binary(&self, table: &XCellTable, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
+        for line in self.templated(table, include_str!("PartBinary1.cs")).lines() {
+            writeln!(f, "{indent}{line}")?
+        }
+        table.headers.write_csharp(f, self.namespace_legacy)?;
+        writeln!(f, "{indent}}}")
+    }
+    fn templated(&self, table: &XCellTable, template: &str) -> String {
+        let table_name = format!("{}{}", table.class_name(), self.table_suffix);
+        let element_name = format!("{}{}", table.class_name(), self.element_suffix);
+        let element_getter = format!("Get{}", self.element_suffix);
+        template
+            .replace("__TABLE_NAME__", &table_name)
+            .replace("__ELEMENT_NAME__", &element_name)
+            .replace("__ELEMENT_GETTER__", &element_getter)
+    }
+}
+
 impl XCellHeaders {
-    pub fn write_csharp(&self, f: &mut impl Write, namespace_legacy: bool) -> std::io::Result<()> {
+    fn write_csharp(&self, f: &mut impl Write, namespace_legacy: bool) -> std::io::Result<()> {
         let indent = match namespace_legacy {
             true => " ".repeat(8),
             false => " ".repeat(4),
@@ -61,7 +64,33 @@ impl XCellHeaders {
             if idx != 0 {
                 write_newline(f)?
             }
-            header.write_csharp(f, &indent)?;
+            header.write_cs_field(f, &indent)?;
+        }
+        Ok(())
+    }
+    fn write_cs_br(&self, f: &mut impl Write, namespace_legacy: bool) -> std::io::Result<()> {
+        let indent = match namespace_legacy {
+            true => " ".repeat(8),
+            false => " ".repeat(4),
+        };
+        for (idx, header) in self.iter().enumerate() {
+            if idx != 0 {
+                write_newline(f)?
+            }
+            header.write_cs_field(f, &indent)?;
+        }
+        Ok(())
+    }
+    fn write_cs_bw(&self, f: &mut impl Write, namespace_legacy: bool) -> std::io::Result<()> {
+        let indent = match namespace_legacy {
+            true => " ".repeat(8),
+            false => " ".repeat(4),
+        };
+        for (idx, header) in self.iter().enumerate() {
+            if idx != 0 {
+                write_newline(f)?
+            }
+            header.write_cs_field(f, &indent)?;
         }
         Ok(())
     }
@@ -73,22 +102,12 @@ impl XCellHeader {
     /// /// <remarks></remarks>
     /// [DataMember]
     /// ```
-    pub fn write_csharp(&self, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
-        // summary
-        if !self.summary.is_empty() {
-            writeln!(f, "{indent}/// <summary>")?;
-            for line in self.summary.lines() {
-                writeln!(f, "{indent}/// {}", line)?;
-            }
-            writeln!(f, "{indent}/// </summary>")?;
-        }
-        // remarks
-        if !self.details.is_empty() {
-            writeln!(f, "{indent}/// <remarks>")?;
-            for line in self.details.lines() {
-                writeln!(f, "{indent}/// {}", line)?;
-            }
-            writeln!(f, "{indent}/// </remarks>")?;
+    fn write_cs_field(&self, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
+        let docs = include_str!("WriteCsField.cs") //
+            .replace("__SUMMARY__", &self.summary)
+            .replace("__REMARKS__", &self.details);
+        for line in docs.lines() {
+            writeln!(f, "{indent}/// {}", line)?;
         }
         writeln!(f, "{indent}[DataMember]")?;
         // fields

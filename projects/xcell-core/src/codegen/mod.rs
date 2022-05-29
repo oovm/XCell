@@ -20,6 +20,7 @@ pub struct UnityCodegen {
     pub table_suffix: String,
     pub element_suffix: String,
     pub support_binary: bool,
+    pub support_clone: bool,
 }
 
 impl Default for UnityCodegen {
@@ -30,6 +31,7 @@ impl Default for UnityCodegen {
             namespace_legacy: true,
             table_suffix: "Table".to_string(),
             element_suffix: "Element".to_string(),
+            support_clone: true,
         }
     }
 }

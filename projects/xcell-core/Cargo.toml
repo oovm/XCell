@@ -16,8 +16,6 @@ pathdiff = "0.2.1" # 获取相对路径
 diagnostic = "0.3.10"
 twox-hash = "1.6.3"
 byteorder = "1.4.3"
-regex = "1.7.0"
-new_string_template = "1.4.0"
 serde = { version = "1.0.147", features = ["derive"] }
 num = { version = "0.4.0", features = ["serde"] }
 bigdecimal = { version = "0.3.0", features = ["serde"] }

@@ -1,8 +1,6 @@
-use std::{collections::HashMap, fs::File, io::Write, path::Path};
+use std::{fs::File, io::Write, path::Path};
 
 use byteorder::WriteBytesExt;
-use new_string_template::template::Template;
-use regex::Regex;
 
 use crate::{
     typing::{XCellTyped, XCellValue},
@@ -40,10 +38,10 @@ pub struct CsvCodegen {}
 
 pub struct BinaryCodegen {}
 
-pub fn build_template(template: &str) -> Template {
-    let db_line = Regex::new(r"(?mi)__\s+([^_]+)\s+__").unwrap();
-    Template::new(template).with_regex(&db_line)
-}
+// pub fn build_template(template: &str) -> Template {
+//     let db_line = Regex::new(r"(?mi)__\s+([^_]+)\s+__").unwrap();
+//     Template::new(template).with_regex(&db_line)
+// }
 
 pub fn write_newline(f: &mut impl Write) -> std::io::Result<()> {
     f.write_u8(b'\n')

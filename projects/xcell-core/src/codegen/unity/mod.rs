@@ -8,6 +8,11 @@ impl UnityCodegen {
     }
     pub fn write_csharp(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
         let mut file = File::create(path)?;
+        self.write_namespace(&mut file, include_str!("PartNamespace.cs"))?;
+        match self.namespace_legacy {
+            true => file.write("\n{\n".as_bytes())?,
+            false => file.write(";\n".as_bytes())?,
+        };
         let indent = match self.namespace_legacy {
             true => " ".repeat(4),
             false => " ".repeat(0),
@@ -17,18 +22,24 @@ impl UnityCodegen {
             self.write_cs_binary(table, &mut file, &indent)?;
         }
 
+        match self.namespace_legacy {
+            true => file.write("}\n".as_bytes())?,
+            false => file.write("\n".as_bytes())?,
+        };
         Ok(())
     }
 
     pub fn write_interface(&self, f: &mut impl Write) -> std::io::Result<usize> {
-        let mut slots = HashMap::new();
-        slots.insert("NAMESPACE", self.namespace.join("."));
-        let render = build_template(include_str!("DefineInterface.cs")).render_nofail(&slots);
-        f.write(render.as_bytes())
+        self.write_namespace(f, include_str!("DefineInterface.cs"))
     }
 }
 
 impl UnityCodegen {
+    fn write_namespace(&self, f: &mut impl Write, template: &str) -> std::io::Result<usize> {
+        let ns = self.namespace.join(".");
+        let define = template.replace("__NAMESPACE__", &ns);
+        f.write(define.as_bytes())
+    }
     fn write_cs_base(&self, table: &XCellTable, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
         for line in self.templated(table, include_str!("PartBase.cs")).lines() {
             writeln!(f, "{indent}{line}")?

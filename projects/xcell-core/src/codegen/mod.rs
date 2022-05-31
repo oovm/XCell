@@ -14,7 +14,6 @@ mod unity;
 
 pub struct UnityCodegen {
     pub namespace: Vec<String>,
-    pub namespace_legacy: bool,
     pub table_suffix: String,
     pub element_suffix: String,
     pub support_binary: bool,
@@ -26,7 +25,6 @@ impl Default for UnityCodegen {
         Self {
             namespace: vec!["DataTable".to_string()],
             support_binary: true,
-            namespace_legacy: true,
             table_suffix: "Table".to_string(),
             element_suffix: "Element".to_string(),
             support_clone: true,

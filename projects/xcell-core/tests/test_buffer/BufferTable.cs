@@ -4,7 +4,9 @@ using System.IO;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 
+// ReSharper disable RedundantDefaultMemberInitializer
 namespace DataTable
+{
 {
     [DataContract]
     public partial class BuffTable
@@ -112,67 +114,51 @@ namespace DataTable
     {
         public void BinaryRead(BinaryReader r)
         {
-        /// <summary>
-        /// Buff ID
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember]
-        public int id = 0;
+        id = r.Read();
 
-        /// <summary>
-        /// 名字
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember]
-        public string name = "";
+        name = r.Read();
 
-        /// <summary>
-        /// Buff组
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember]
-        public int groupId = 0;
+        groupId = r.Read();
 
-        /// <summary>
-        /// 描述
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember]
-        public string desc = "";
+        desc = r.Read();
 
-        /// <summary>
-        /// 图标
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember]
-        public string icon = "";
+        icon = r.Read();
 
-        /// <summary>
-        /// 最大堆叠, 0 表示无限
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember]
-        public uint max = 0;
+        max = r.Read();
 
-        /// <summary>
-        /// behavior Id
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember]
-        public stringId actionId = ;
+        actionId = r.Read();
+        }
+    
+        public void BinaryWrite(BinaryWriter w)
+        {
+        w.Write(id);
+
+        w.Write(name);
+
+        w.Write(groupId);
+
+        w.Write(desc);
+
+        w.Write(icon);
+
+        w.Write(max);
+
+        w.Write(actionId);
+        }
+    }
+    public partial class BuffTable : ICloneable
+    {
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
+    }
+    
+    partial class BuffElement : ICloneable
+    {
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }

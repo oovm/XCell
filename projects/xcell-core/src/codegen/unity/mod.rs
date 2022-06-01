@@ -9,7 +9,6 @@ impl UnityCodegen {
     pub fn write_csharp(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
         let mut file = File::create(path)?;
         self.write_namespace(&mut file, include_str!("PartNamespace.cs"))?;
-        file.write("\n{\n".as_bytes())?;
         self.write_cs_base(table, &mut file)?;
         if self.support_binary {
             self.write_cs_binary(table, &mut file)?;
@@ -17,7 +16,7 @@ impl UnityCodegen {
         if self.support_clone {
             self.write_cs_clone(table, &mut file)?;
         }
-        file.write("}\n".as_bytes())?;
+        file.write_all("}\n".as_bytes())?;
         Ok(())
     }
 
@@ -75,10 +74,7 @@ impl UnityCodegen {
 
 impl XCellHeaders {
     fn write_csharp(&self, f: &mut impl Write) -> std::io::Result<()> {
-        let indent = match true {
-            true => " ".repeat(8),
-            false => " ".repeat(4),
-        };
+        let indent = " ".repeat(8);
         for (idx, header) in self.iter().enumerate() {
             if idx != 0 {
                 write_newline(f)?
@@ -88,27 +84,15 @@ impl XCellHeaders {
         Ok(())
     }
     fn write_cs_br(&self, f: &mut impl Write) -> std::io::Result<()> {
-        let indent = match true {
-            true => " ".repeat(8),
-            false => " ".repeat(4),
-        };
-        for (idx, header) in self.iter().enumerate() {
-            if idx != 0 {
-                write_newline(f)?
-            }
+        let indent = " ".repeat(12);
+        for (_, header) in self.iter().enumerate() {
             header.write_cs_br(f, &indent)?;
         }
         Ok(())
     }
     fn write_cs_bw(&self, f: &mut impl Write) -> std::io::Result<()> {
-        let indent = match true {
-            true => " ".repeat(8),
-            false => " ".repeat(4),
-        };
-        for (idx, header) in self.iter().enumerate() {
-            if idx != 0 {
-                write_newline(f)?
-            }
+        let indent = " ".repeat(12);
+        for (_, header) in self.iter().enumerate() {
             header.write_cs_bw(f, &indent)?;
         }
         Ok(())
@@ -130,32 +114,33 @@ impl XCellHeader {
         }
         writeln!(f, "{indent}[DataMember]")?;
         // fields
-        write!(f, "{indent}")?;
-        self.typing.write_csharp(f, &self.field_name)
-    }
-    /// `testBool = r.ReadBoolean();`
-    fn write_cs_br(&self, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
-        match self.typing {
-            XCellTyped::Boolean(_) => writeln!(f, "{indent}{} = r.ReadBoolean();", self.field_name),
-            XCellTyped::Integer8(_) => {
-                todo!()
+        match &self.typing {
+            XCellTyped::Boolean(v) => {
+                writeln!(f, "{indent}public bool {} = {};", self.field_name, v.default)
             }
-            XCellTyped::Integer16(_) => {
-                todo!()
+            XCellTyped::Integer8(v) => {
+                writeln!(f, "{indent}public byte {} = {};", self.field_name, v.default)
             }
-            XCellTyped::Integer32(_) => writeln!(f, "{indent}{} = r.Read();", self.field_name),
-            XCellTyped::Integer64(_) => {
-                todo!()
+            XCellTyped::Integer16(v) => {
+                writeln!(f, "{indent}public short {} = {};", self.field_name, v.default)
             }
-            XCellTyped::Unsigned8(_) => {
-                todo!()
+            XCellTyped::Integer32(v) => {
+                writeln!(f, "{indent}public int {} = {};", self.field_name, v.default)
             }
-            XCellTyped::Unsigned16(_) => {
-                todo!()
+            XCellTyped::Integer64(v) => {
+                writeln!(f, "{indent}public long {} = {};", self.field_name, v.default)
             }
-            XCellTyped::Unsigned32(_) => writeln!(f, "{indent}{} = r.Read();", self.field_name),
-            XCellTyped::Unsigned64(_) => {
-                todo!()
+            XCellTyped::Unsigned8(v) => {
+                writeln!(f, "{indent}public sbyte {} = {};", self.field_name, v.default)
+            }
+            XCellTyped::Unsigned16(v) => {
+                writeln!(f, "{indent}public ushort {} = {};", self.field_name, v.default)
+            }
+            XCellTyped::Unsigned32(v) => {
+                writeln!(f, "{indent}public uint {} = {};", self.field_name, v.default)
+            }
+            XCellTyped::Unsigned64(v) => {
+                writeln!(f, "{indent}public ulong {} = {};", self.field_name, v.default)
             }
             XCellTyped::Float32(_) => {
                 todo!()
@@ -166,7 +151,54 @@ impl XCellHeader {
             XCellTyped::Decimal128(_) => {
                 todo!()
             }
-            XCellTyped::String(_) => writeln!(f, "{indent}{} = r.Read();", self.field_name),
+            XCellTyped::String(v) => {
+                writeln!(f, "{indent}public string {} = {:?};", self.field_name, v.default)
+            }
+            XCellTyped::Datetime(_) => {
+                todo!()
+            }
+            XCellTyped::Color(_) => {
+                todo!()
+            }
+            XCellTyped::Custom(v) => {
+                writeln!(f, "{indent}public {} {};", v.typing, self.field_name)
+            }
+        }
+    }
+    /// `testBool = r.ReadBoolean();`
+    fn write_cs_br(&self, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
+        match self.typing {
+            XCellTyped::Boolean(_) => writeln!(f, "{indent}{} = r.ReadBoolean();", self.field_name),
+            XCellTyped::Integer8(_) => {
+                writeln!(f, "{indent}{} = r.ReadByte();", self.field_name)
+            }
+            XCellTyped::Integer16(_) => {
+                writeln!(f, "{indent}{} = r.ReadInt16();", self.field_name)
+            }
+            XCellTyped::Integer32(_) => writeln!(f, "{indent}{} = r.ReadInt32();", self.field_name),
+            XCellTyped::Integer64(_) => {
+                writeln!(f, "{indent}{} = r.ReadUInt16();", self.field_name)
+            }
+            XCellTyped::Unsigned8(_) => {
+                writeln!(f, "{indent}{} = r.ReadSByte();", self.field_name)
+            }
+            XCellTyped::Unsigned16(_) => {
+                writeln!(f, "{indent}{} = r.ReadUInt16();", self.field_name)
+            }
+            XCellTyped::Unsigned32(_) => writeln!(f, "{indent}{} = r.ReadUInt32();", self.field_name),
+            XCellTyped::Unsigned64(_) => {
+                writeln!(f, "{indent}{} = r.ReadUInt64();", self.field_name)
+            }
+            XCellTyped::Float32(_) => {
+                todo!()
+            }
+            XCellTyped::Float64(_) => {
+                todo!()
+            }
+            XCellTyped::Decimal128(_) => {
+                todo!()
+            }
+            XCellTyped::String(_) => writeln!(f, "{indent}{} = r.ReadString();", self.field_name),
             XCellTyped::Datetime(_) => {
                 todo!()
             }
@@ -179,61 +211,6 @@ impl XCellHeader {
     /// `w.Write(testBool);`
     fn write_cs_bw(&self, f: &mut impl Write, indent: &str) -> std::io::Result<()> {
         writeln!(f, "{indent}w.Write({});", self.field_name)
-    }
-}
-
-impl XCellTyped {
-    fn write_csharp(&self, f: &mut impl Write, field: &str) -> std::io::Result<()> {
-        match self {
-            XCellTyped::Boolean(v) => {
-                writeln!(f, "public bool {} = {};", field, v.default)
-            }
-            XCellTyped::Integer8(_) => {
-                todo!()
-            }
-            XCellTyped::Integer16(_) => {
-                todo!()
-            }
-            XCellTyped::Integer32(v) => {
-                writeln!(f, "public int {} = {};", field, v.default)
-            }
-            XCellTyped::Integer64(_) => {
-                todo!()
-            }
-            XCellTyped::Unsigned8(_) => {
-                todo!()
-            }
-            XCellTyped::Unsigned16(_) => {
-                todo!()
-            }
-            XCellTyped::Unsigned32(v) => {
-                writeln!(f, "public uint {} = {};", field, v.default)
-            }
-            XCellTyped::Unsigned64(v) => {
-                writeln!(f, "public ulong {} = {};", field, v.default)
-            }
-            XCellTyped::Float32(_) => {
-                todo!()
-            }
-            XCellTyped::Float64(_) => {
-                todo!()
-            }
-            XCellTyped::Decimal128(_) => {
-                todo!()
-            }
-            XCellTyped::String(v) => {
-                writeln!(f, "public string {} = {:?};", field, v.default)
-            }
-            XCellTyped::Datetime(_) => {
-                todo!()
-            }
-            XCellTyped::Color(_) => {
-                todo!()
-            }
-            XCellTyped::Custom(v) => {
-                writeln!(f, "public {} {} = {};", v.typing, field, v.default)
-            }
-        }
     }
 }
 

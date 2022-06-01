@@ -6,9 +6,7 @@ using JetBrains.Annotations;
 
 // ReSharper disable RedundantDefaultMemberInitializer
 namespace DataTable
-{
-{
-    [DataContract]
+{    [DataContract]
     public partial class BuffTable
     {
         [DataMember] public readonly Dictionary<int, BuffElement> dict = new();
@@ -42,123 +40,90 @@ namespace DataTable
         public string name = "";
 
         /// <summary>
-        /// Buff组
+        /// boolean
         /// </summary>
         /// <remarks>
         /// 
         /// </remarks>
         [DataMember]
-        public int groupId = 0;
+        public bool test0 = false;
 
         /// <summary>
-        /// 描述
+        /// u8
         /// </summary>
         /// <remarks>
         /// 
         /// </remarks>
         [DataMember]
-        public string desc = "";
+        public sbyte test1 = 0;
 
         /// <summary>
-        /// 图标
+        /// u16
         /// </summary>
         /// <remarks>
         /// 
         /// </remarks>
         [DataMember]
-        public string icon = "";
+        public ushort test2 = 0;
 
         /// <summary>
-        /// 最大堆叠, 0 表示无限
+        /// u32
         /// </summary>
         /// <remarks>
         /// 
         /// </remarks>
         [DataMember]
-        public uint max = 0;
+        public uint test3 = 0;
 
         /// <summary>
-        /// behavior Id
+        /// u64
         /// </summary>
         /// <remarks>
         /// 
         /// </remarks>
         [DataMember]
-        public stringId actionId = ;
-    }
-    public partial class BuffTable : IBinarySupport
-    {
-        public void BinaryRead(BinaryReader r)
-        {
-            dict.Clear();
-            var count = r.Read();
-            for (var i = 0; i < count; i++)
-            {
-                var item = new TestElement();
-                item.BinaryRead(r);
-                dict[item.id] = item;
-            }
-        }
-    
-        public void BinaryWrite(BinaryWriter w)
-        {
-            w.Write(dict.Count);
-            foreach (var (_, item) in dict)
-            {
-                item.BinaryWrite(w);
-            }
-        }
-    }
-    
-    partial class TestElement : IBinarySupport
-    {
-        public void BinaryRead(BinaryReader r)
-        {
-        id = r.Read();
+        public ulong test4 = 0;
 
-        name = r.Read();
+        /// <summary>
+        /// i8
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        [DataMember]
+        public byte test5 = 0;
 
-        groupId = r.Read();
+        /// <summary>
+        /// i16
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        [DataMember]
+        public short test6 = 0;
 
-        desc = r.Read();
+        /// <summary>
+        /// i32
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        [DataMember]
+        public int test7 = 0;
 
-        icon = r.Read();
+        /// <summary>
+        /// i64
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        [DataMember]
+        public long test8 = 0;
 
-        max = r.Read();
-
-        actionId = r.Read();
-        }
-    
-        public void BinaryWrite(BinaryWriter w)
-        {
-        w.Write(id);
-
-        w.Write(name);
-
-        w.Write(groupId);
-
-        w.Write(desc);
-
-        w.Write(icon);
-
-        w.Write(max);
-
-        w.Write(actionId);
-        }
-    }
-    public partial class BuffTable : ICloneable
-    {
-        public object Clone()
-        {
-            return MemberwiseClone();
-        }
-    }
-    
-    partial class BuffElement : ICloneable
-    {
-        public object Clone()
-        {
-            return MemberwiseClone();
-        }
-    }
-}
+        /// <summary>
+        /// f32
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        [DataMember]

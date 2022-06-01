@@ -6,7 +6,7 @@ public partial class __TABLE_NAME__ : IBinarySupport
         var count = r.Read();
         for (var i = 0; i < count; i++)
         {
-            var item = new TestElement();
+            var item = new __ELEMENT_NAME__();
             item.BinaryRead(r);
             dict[item.id] = item;
         }
@@ -22,7 +22,7 @@ public partial class __TABLE_NAME__ : IBinarySupport
     }
 }
 
-partial class TestElement : IBinarySupport
+public partial class __ELEMENT_NAME__ : IBinarySupport
 {
     public void BinaryRead(BinaryReader r)
     {

@@ -10,6 +10,6 @@ fn test2() -> XResult {
     let code = UnityCodegen::default();
 
     // code.write_csharp(&xc, &PathBuf::from("tests/test_buffer/BufferTable.cs")).unwrap();
-    code.write_enum(&xc, &PathBuf::from("tests/test_buffer/BufferTable.cs")).unwrap();
+    code.write_class(&xc, &PathBuf::from("tests/test_buffer/BufferTable.cs")).unwrap();
     Ok(())
 }

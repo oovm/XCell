@@ -1,5 +1,6 @@
-use crate::XCellHeaders;
 use tera::Context;
+
+use crate::XCellHeaders;
 
 use super::*;
 
@@ -7,7 +8,7 @@ impl UnityCodegen {
     pub fn write_xml(&self, table: &XCellTable, f: &mut impl Write) -> Result<(), XError> {
         todo!()
     }
-    pub fn write_csharp(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
+    pub fn write_csharp2(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
         let mut file = File::create(path)?;
         self.write_namespace(&mut file, include_str!("PartNamespace.cs"))?;
         self.write_cs_base(table, &mut file)?;
@@ -20,30 +21,41 @@ impl UnityCodegen {
         file.write_all("}\n".as_bytes())?;
         Ok(())
     }
-
+    pub fn write_class(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
+        let mut file = File::create(path)?;
+        let mut tera = Tera::default();
+        tera.autoescape_on(vec![]);
+        tera.add_raw_template("T", include_str!("PartClass.cs")).unwrap();
+        let out = tera.render("T", &self.make_context(table)).unwrap();
+        file.write_all(out.as_bytes())?;
+        Ok(())
+    }
     pub fn write_enum(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
         let mut file = File::create(path)?;
         let mut tera = Tera::default();
         tera.autoescape_on(vec![]);
-        tera.add_raw_template("FILE", include_str!("PartEnum.cs")).unwrap();
-        let mut ctx = Context::new();
-
-        let element_name = format!("{}{}", table.class_name(), self.element_suffix);
-        let element_getter = format!("Get{}", self.element_suffix);
-        ctx.insert("NAMESPACE", &self.namespace.join("."));
-        ctx.insert("TABLE_NAME", &format!("{}{}", table.class_name(), self.table_suffix));
-
-        let out = tera.render("FILE", &ctx).unwrap();
+        tera.add_raw_template("T", include_str!("PartEnum.cs")).unwrap();
+        let out = tera.render("T", &self.make_context(table)).unwrap();
         file.write_all(out.as_bytes())?;
         Ok(())
     }
-
     pub fn write_interface(&self, f: &mut impl Write) -> std::io::Result<usize> {
         self.write_namespace(f, include_str!("DefineInterface.cs"))
     }
 }
 
 impl UnityCodegen {
+    fn make_context(&self, table: &XCellTable) -> Context {
+        let mut ctx = Context::new();
+        ctx.insert("SUPPORT_BINARY", &self.support_binary);
+        ctx.insert("SUPPORT_CLONE", &self.support_clone);
+        ctx.insert("NAMESPACE", &self.namespace.join("."));
+        ctx.insert("TABLE_NAME", &format!("{}{}", table.class_name(), self.table_suffix));
+        ctx.insert("ELEMENT_NAME", &format!("{}{}", table.class_name(), self.element_suffix));
+        ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.element_suffix));
+        ctx
+    }
+
     fn write_namespace(&self, f: &mut impl Write, template: &str) -> std::io::Result<usize> {
         let ns = self.namespace.join(".");
         let define = template.replace("__NAMESPACE__", &ns);
@@ -51,7 +63,7 @@ impl UnityCodegen {
     }
     fn write_cs_base(&self, table: &XCellTable, f: &mut impl Write) -> std::io::Result<()> {
         let indent = " ".repeat(4);
-        for line in self.templated(table, include_str!("PartBase.cs")).lines() {
+        for line in self.templated(table, include_str!("PartClass.cs")).lines() {
             writeln!(f, "{indent}{line}")?
         }
         table.headers.write_csharp(f)?;

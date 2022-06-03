@@ -7,22 +7,22 @@ using System.Runtime.Serialization;
 using JetBrains.Annotations;
 
 // ReSharper disable RedundantDefaultMemberInitializer
-namespace DataTable
+namespace {{ NAMESPACE }}
 {
     [DataContract]
-    public partial class BuffTable
+    public partial class {{ TABLE_NAME }}
     {
-        [DataMember] public readonly Dictionary<int, BuffElement> dict = new();
+        [DataMember] public readonly Dictionary<int, {{ELEMENT_NAME}}> dict = new();
 
         [CanBeNull]
-        public BuffElement GetElement(int id)
+        public {{ELEMENT_NAME}} {{ELEMENT_GETTER}}(int id)
         {
             return dict.TryGetValue(id, out var item) ? item : null;
         }
     }
 
     [DataContract]
-    public partial class BuffElement
+    public partial class {{ELEMENT_NAME}}
     {
         /// <summary>
         /// Buff ID
@@ -128,7 +128,8 @@ namespace DataTable
         /// </remarks>
         [DataMember] public ArchiveType test10 = 0;
     }
-    public partial class BuffTable : IBinarySupport
+{% if SUPPORT_BINARY %}
+    public partial class {{TABLE_NAME}} : IBinarySupport
     {
         public void BinaryRead(BinaryReader r)
         {
@@ -136,7 +137,7 @@ namespace DataTable
             var count = r.ReadUInt32();
             for (var i = 0; i < count; i++)
             {
-                var item = new BuffElement();
+                var item = new {{ELEMENT_NAME}}();
                 item.BinaryRead(r);
                 dict[item.id] = item;
             }
@@ -152,7 +153,7 @@ namespace DataTable
         }
     }
 
-    public partial class BuffElement : IBinarySupport
+    public partial class {{ELEMENT_NAME}} : IBinarySupport
     {
         public void BinaryRead(BinaryReader r)
         {
@@ -188,8 +189,9 @@ namespace DataTable
             w.Write((long) test10);
         }
     }
-
-    public partial class BuffTable : ICloneable
+{%- endif %}
+{% if SUPPORT_CLONE %}
+    public partial class {{TABLE_NAME}} : ICloneable
     {
         public object Clone()
         {
@@ -197,11 +199,12 @@ namespace DataTable
         }
     }
 
-    partial class BuffElement : ICloneable
+    partial class {{ELEMENT_NAME}} : ICloneable
     {
         public object Clone()
         {
             return MemberwiseClone();
         }
     }
+{%- endif %}
 }

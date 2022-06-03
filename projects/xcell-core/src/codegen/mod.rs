@@ -2,6 +2,8 @@ use std::{fs::File, io::Write, path::Path};
 
 use byteorder::WriteBytesExt;
 
+use tera::Tera;
+
 use crate::{
     typing::{XCellTyped, XCellValue},
     XCellHeader, XCellTable, XError,

@@ -9,6 +9,7 @@ fn test2() -> XResult {
     let xc = XCellTable::load_file(PathBuf::from(path), &config).unwrap();
     let code = UnityCodegen::default();
 
-    code.write_csharp(&xc, &PathBuf::from("tests/test_buffer/BufferTable.cs")).unwrap();
+    // code.write_csharp(&xc, &PathBuf::from("tests/test_buffer/BufferTable.cs")).unwrap();
+    code.write_enum(&xc, &PathBuf::from("tests/test_buffer/BufferTable.cs")).unwrap();
     Ok(())
 }

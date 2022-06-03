@@ -1,10 +1,10 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace DataTable
+namespace {{ NAMESPACE }}
 {
     [DataContract]
-    public enum BuffTable : long
+    public enum {{ TABLE_NAME }} : long
     {
 
         SSR = 1,
@@ -13,13 +13,13 @@ namespace DataTable
         SR = 2,
     }
 
-    public static class BuffTableExtension
+    public static class {{ TABLE_NAME }}Extension
     {
         public static __M_TYPE__ __M_NAME__(this __TABLE_NAME__ self)
         {
             return self switch
             {
-                BuffTable.__FIELD__ => __VALUE__,
+                {{ TABLE_NAME }}.__FIELD__ => __VALUE__,
                 _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
             };
         }

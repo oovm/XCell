@@ -1,4 +1,5 @@
 use crate::XCellHeaders;
+use tera::Context;
 
 use super::*;
 
@@ -17,6 +18,23 @@ impl UnityCodegen {
             self.write_cs_clone(table, &mut file)?;
         }
         file.write_all("}\n".as_bytes())?;
+        Ok(())
+    }
+
+    pub fn write_enum(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
+        let mut file = File::create(path)?;
+        let mut tera = Tera::default();
+        tera.autoescape_on(vec![]);
+        tera.add_raw_template("FILE", include_str!("PartEnum.cs")).unwrap();
+        let mut ctx = Context::new();
+
+        let element_name = format!("{}{}", table.class_name(), self.element_suffix);
+        let element_getter = format!("Get{}", self.element_suffix);
+        ctx.insert("NAMESPACE", &self.namespace.join("."));
+        ctx.insert("TABLE_NAME", &format!("{}{}", table.class_name(), self.table_suffix));
+
+        let out = tera.render("FILE", &ctx).unwrap();
+        file.write_all(out.as_bytes())?;
         Ok(())
     }
 
@@ -142,11 +160,11 @@ impl XCellHeader {
             XCellTyped::Unsigned64(v) => {
                 writeln!(f, "{indent}public ulong {} = {};", self.field_name, v.default)
             }
-            XCellTyped::Float32(_) => {
-                todo!()
+            XCellTyped::Float32(v) => {
+                writeln!(f, "{indent}public float {} = {};", self.field_name, v.default)
             }
-            XCellTyped::Float64(_) => {
-                todo!()
+            XCellTyped::Float64(v) => {
+                writeln!(f, "{indent}public double {} = {};", self.field_name, v.default)
             }
             XCellTyped::Decimal128(_) => {
                 todo!()
@@ -190,10 +208,10 @@ impl XCellHeader {
                 writeln!(f, "{indent}{} = r.ReadUInt64();", self.field_name)
             }
             XCellTyped::Float32(_) => {
-                todo!()
+                writeln!(f, "{indent}{} = r.ReadSingle();", self.field_name)
             }
             XCellTyped::Float64(_) => {
-                todo!()
+                writeln!(f, "{indent}{} = r.ReadDouble();", self.field_name)
             }
             XCellTyped::Decimal128(_) => {
                 todo!()

@@ -1,4 +1,6 @@
-// Generated File
+// 代码生成, 修改无效!
+// 当前版本: v0.0.0
+// 查看更新: https://github.com/oovm/XCell
 
 using System;
 using System.Collections.Generic;
@@ -28,106 +30,107 @@ namespace DataTable
         /// Buff ID
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public int id = 0;
-
+        [DataMember]
+        public RarityType enum;
         /// <summary>
         /// 名字
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public string name = "";
+        [DataMember]
+        public string name = "";
 
         /// <summary>
         /// boolean
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public bool test0 = false;
+        [DataMember]
+        public bool test0 = false;
 
         /// <summary>
         /// u8
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public sbyte test1 = 0;
+        [DataMember]
+        public sbyte test1 = 0;
 
         /// <summary>
         /// u16
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public ushort test2 = 0;
+        [DataMember]
+        public ushort test2 = 0;
 
         /// <summary>
         /// u32
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public uint test3 = 0;
+        [DataMember]
+        public uint test3 = 0;
 
         /// <summary>
         /// u64
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public ulong test4 = 0;
+        [DataMember]
+        public ulong test4 = 0;
 
         /// <summary>
         /// i8
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public byte test5 = 0;
+        [DataMember]
+        public byte test5 = 0;
 
         /// <summary>
         /// i16
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public short test6 = 0;
+        [DataMember]
+        public short test6 = 0;
 
         /// <summary>
         /// i32
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public int test7 = 0;
+        [DataMember]
+        public int test7 = 0;
 
         /// <summary>
         /// i64
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public long test8 = 0;
+        [DataMember]
+        public long test8 = 0;
 
         /// <summary>
         /// f32
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public float test9 = 0;
+        [DataMember]
+        public float test9 = 0;
 
         /// <summary>
         /// f64
         /// </summary>
         /// <remarks>
-        /// 
         /// </remarks>
-        [DataMember] public ArchiveType test10 = 0;
+        [DataMember]
+        public double test10 = 0;
+
     }
+
     public partial class BuffTable : IBinarySupport
     {
         public void BinaryRead(BinaryReader r)
@@ -156,7 +159,7 @@ namespace DataTable
     {
         public void BinaryRead(BinaryReader r)
         {
-            id = r.ReadInt32();
+            enum = ;
             name = r.ReadString();
             test0 = r.ReadBoolean();
             test1 = r.ReadSByte();
@@ -166,14 +169,14 @@ namespace DataTable
             test5 = r.ReadByte();
             test6 = r.ReadInt16();
             test7 = r.ReadInt32();
-            test8 = r.ReadUInt16();
+            test8 = r.ReadInt64();
             test9 = r.ReadSingle();
-            test10 = (ArchiveType) r.ReadInt64();
+            test10 = r.ReadDouble();
         }
 
         public void BinaryWrite(BinaryWriter w)
         {
-            w.Write(id);
+            w.Write(enum);
             w.Write(name);
             w.Write(test0);
             w.Write(test1);
@@ -185,7 +188,7 @@ namespace DataTable
             w.Write(test7);
             w.Write(test8);
             w.Write(test9);
-            w.Write((long) test10);
+            w.Write(test10);
         }
     }
 

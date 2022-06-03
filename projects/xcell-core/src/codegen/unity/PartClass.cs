@@ -1,4 +1,6 @@
-// Generated File
+// 代码生成, 修改无效!
+// 当前版本: v{{ VERSION }}
+// 查看更新: https://github.com/oovm/XCell
 
 using System;
 using System.Collections.Generic;
@@ -24,109 +26,24 @@ namespace {{ NAMESPACE }}
     [DataContract]
     public partial class {{ELEMENT_NAME}}
     {
+{%- for field in CLASS_FIELDS %}
         /// <summary>
-        /// Buff ID
+{%- for line in field.summary %}
+        /// {{line}}
+{%- endfor %}
         /// </summary>
         /// <remarks>
-        /// 
+{%- for line in field.remarks %}
+        /// {{line}}
+{%- endfor %}
         /// </remarks>
-        [DataMember] public int id = 0;
-
-        /// <summary>
-        /// 名字
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public string name = "";
-
-        /// <summary>
-        /// boolean
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public bool test0 = false;
-
-        /// <summary>
-        /// u8
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public sbyte test1 = 0;
-
-        /// <summary>
-        /// u16
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public ushort test2 = 0;
-
-        /// <summary>
-        /// u32
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public uint test3 = 0;
-
-        /// <summary>
-        /// u64
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public ulong test4 = 0;
-
-        /// <summary>
-        /// i8
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public byte test5 = 0;
-
-        /// <summary>
-        /// i16
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public short test6 = 0;
-
-        /// <summary>
-        /// i32
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public int test7 = 0;
-
-        /// <summary>
-        /// i64
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public long test8 = 0;
-
-        /// <summary>
-        /// f32
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public float test9 = 0;
-
-        /// <summary>
-        /// f64
-        /// </summary>
-        /// <remarks>
-        /// 
-        /// </remarks>
-        [DataMember] public ArchiveType test10 = 0;
+        [DataMember]
+{%- if field.has_default %}
+        public {{field.typing}} {{field.name}} = {{field.default}};
+{% else %}
+        public {{field.typing}} {{field.name}};
+{%- endif %}
+{%- endfor %}
     }
 {% if SUPPORT_BINARY %}
     public partial class {{TABLE_NAME}} : IBinarySupport
@@ -157,36 +74,16 @@ namespace {{ NAMESPACE }}
     {
         public void BinaryRead(BinaryReader r)
         {
-            id = r.ReadInt32();
-            name = r.ReadString();
-            test0 = r.ReadBoolean();
-            test1 = r.ReadSByte();
-            test2 = r.ReadUInt16();
-            test3 = r.ReadUInt32();
-            test4 = r.ReadUInt64();
-            test5 = r.ReadByte();
-            test6 = r.ReadInt16();
-            test7 = r.ReadInt32();
-            test8 = r.ReadUInt16();
-            test9 = r.ReadSingle();
-            test10 = (ArchiveType) r.ReadInt64();
+{%- for field in CLASS_FIELDS %}
+            {{ field.name }} = {{ field.reader }};
+{%- endfor %}
         }
 
         public void BinaryWrite(BinaryWriter w)
         {
-            w.Write(id);
-            w.Write(name);
-            w.Write(test0);
-            w.Write(test1);
-            w.Write(test2);
-            w.Write(test3);
-            w.Write(test4);
-            w.Write(test5);
-            w.Write(test6);
-            w.Write(test7);
-            w.Write(test8);
-            w.Write(test9);
-            w.Write((long) test10);
+{%- for field in CLASS_FIELDS %}
+            w.Write({{ field.name }});
+{%- endfor %}
         }
     }
 {%- endif %}

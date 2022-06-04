@@ -27,14 +27,14 @@ namespace DataTable
     public partial class BuffElement
     {
         /// <summary>
-        /// Buff ID
+        /// Buff 类型
         /// </summary>
         /// <remarks>
         /// </remarks>
         [DataMember]
         public RarityType enum;
         /// <summary>
-        /// 名字
+        /// 本地化
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -42,7 +42,7 @@ namespace DataTable
         public string name = "";
 
         /// <summary>
-        /// boolean
+        /// 布尔
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -50,7 +50,7 @@ namespace DataTable
         public bool test0 = false;
 
         /// <summary>
-        /// u8
+        /// 无符号 8 位
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -58,7 +58,7 @@ namespace DataTable
         public sbyte test1 = 0;
 
         /// <summary>
-        /// u16
+        /// 无符号 16 位
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -66,7 +66,7 @@ namespace DataTable
         public ushort test2 = 0;
 
         /// <summary>
-        /// u32
+        /// 无符号 32 位
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -74,7 +74,7 @@ namespace DataTable
         public uint test3 = 0;
 
         /// <summary>
-        /// u64
+        /// 无符号 64 位
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -82,7 +82,7 @@ namespace DataTable
         public ulong test4 = 0;
 
         /// <summary>
-        /// i8
+        /// 有符号 8 位
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -90,7 +90,7 @@ namespace DataTable
         public byte test5 = 0;
 
         /// <summary>
-        /// i16
+        /// 有符号 16 位
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -98,7 +98,7 @@ namespace DataTable
         public short test6 = 0;
 
         /// <summary>
-        /// i32
+        /// 有符号 32 位
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -106,7 +106,7 @@ namespace DataTable
         public int test7 = 0;
 
         /// <summary>
-        /// i64
+        /// 有符号 64 位
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -129,10 +129,21 @@ namespace DataTable
         [DataMember]
         public double test10 = 0;
 
+        /// <summary>
+        /// d128
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        [DataMember]
+        public d128 test11;
     }
 
     public partial class BuffTable : IBinarySupport
     {
+        /// <summary>
+        /// 以小端序 (LittleEndian) 读取二进制数据
+        /// </summary>
+        /// <param name="r">二进制读取流</param>
         public void BinaryRead(BinaryReader r)
         {
             dict.Clear();
@@ -144,7 +155,10 @@ namespace DataTable
                 dict[item.id] = item;
             }
         }
-
+        /// <summary>
+        /// 以小端序 (LittleEndian) 写入二进制数据
+        /// </summary>
+        /// <param name="w">二进制写入流</param>
         public void BinaryWrite(BinaryWriter w)
         {
             w.Write(Convert.ToUInt32(dict.Count));
@@ -157,6 +171,10 @@ namespace DataTable
 
     public partial class BuffElement : IBinarySupport
     {
+        /// <summary>
+        /// 以小端序 (LittleEndian) 读取二进制数据
+        /// </summary>
+        /// <param name="r">二进制读取流</param>
         public void BinaryRead(BinaryReader r)
         {
             enum = ;
@@ -172,8 +190,12 @@ namespace DataTable
             test8 = r.ReadInt64();
             test9 = r.ReadSingle();
             test10 = r.ReadDouble();
+            test11 = ;
         }
-
+        /// <summary>
+        /// 以小端序 (LittleEndian) 写入二进制数据
+        /// </summary>
+        /// <param name="w">二进制写入流</param>
         public void BinaryWrite(BinaryWriter w)
         {
             w.Write(enum);
@@ -189,6 +211,7 @@ namespace DataTable
             w.Write(test8);
             w.Write(test9);
             w.Write(test10);
+            w.Write(test11);
         }
     }
 

@@ -5,9 +5,3 @@ impl CsvCodegen {
         todo!()
     }
 }
-
-impl BinaryCodegen {
-    pub fn write_binary(&self, table: &XCellTable, f: impl Write) -> Result<(), XError> {
-        todo!()
-    }
-}

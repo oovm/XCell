@@ -48,6 +48,10 @@ namespace {{ NAMESPACE }}
 {% if SUPPORT_BINARY %}
     public partial class {{TABLE_NAME}} : IBinarySupport
     {
+        /// <summary>
+        /// 以小端序 (LittleEndian) 读取二进制数据
+        /// </summary>
+        /// <param name="r">二进制读取流</param>
         public void BinaryRead(BinaryReader r)
         {
             dict.Clear();
@@ -59,7 +63,10 @@ namespace {{ NAMESPACE }}
                 dict[item.id] = item;
             }
         }
-
+        /// <summary>
+        /// 以小端序 (LittleEndian) 写入二进制数据
+        /// </summary>
+        /// <param name="w">二进制写入流</param>
         public void BinaryWrite(BinaryWriter w)
         {
             w.Write(Convert.ToUInt32(dict.Count));
@@ -72,13 +79,20 @@ namespace {{ NAMESPACE }}
 
     public partial class {{ELEMENT_NAME}} : IBinarySupport
     {
+        /// <summary>
+        /// 以小端序 (LittleEndian) 读取二进制数据
+        /// </summary>
+        /// <param name="r">二进制读取流</param>
         public void BinaryRead(BinaryReader r)
         {
 {%- for field in CLASS_FIELDS %}
             {{ field.name }} = {{ field.reader }};
 {%- endfor %}
         }
-
+        /// <summary>
+        /// 以小端序 (LittleEndian) 写入二进制数据
+        /// </summary>
+        /// <param name="w">二进制写入流</param>
         public void BinaryWrite(BinaryWriter w)
         {
 {%- for field in CLASS_FIELDS %}

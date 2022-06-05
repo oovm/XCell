@@ -6,9 +6,6 @@ use crate::XCellHeaders;
 use super::*;
 
 impl UnityCodegen {
-    pub fn write_xml(&self, table: &XCellTable, f: &mut impl Write) -> Result<(), XError> {
-        todo!()
-    }
     pub fn write_class(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
         let mut file = File::create(path)?;
         let mut tera = Tera::default();
@@ -27,8 +24,14 @@ impl UnityCodegen {
         file.write_all(out.as_bytes())?;
         Ok(())
     }
-    pub fn write_interface(&self, f: &mut impl Write) -> std::io::Result<usize> {
-        self.write_namespace(f, include_str!("DefineInterface.cs"))
+    pub fn write_interface(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
+        let mut file = File::create(path)?;
+        let mut tera = Tera::default();
+        tera.autoescape_on(vec![]);
+        tera.add_raw_template("T", include_str!("PartShare.cs")).unwrap();
+        let out = tera.render("T", &self.make_context(table)).unwrap();
+        file.write_all(out.as_bytes())?;
+        Ok(())
     }
 }
 

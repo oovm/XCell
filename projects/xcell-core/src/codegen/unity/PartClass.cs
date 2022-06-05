@@ -1,6 +1,8 @@
 // 代码生成, 修改无效!
 // 当前版本: v{{ VERSION }}
 // 查看更新: https://github.com/oovm/XCell
+// ReSharper disable RedundantDefaultMemberInitializer
+// ReSharper disable RedundantUsingDirective
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
 
-// ReSharper disable RedundantDefaultMemberInitializer
 namespace {{ NAMESPACE }}
 {
     [DataContract]
@@ -49,9 +50,24 @@ namespace {{ NAMESPACE }}
     public partial class {{TABLE_NAME}} : IBinarySupport
     {
         /// <summary>
-        /// 以小端序 (LittleEndian) 读取二进制数据
+        /// 从二进制文件中读取静态数据
         /// </summary>
-        /// <param name="r">二进制读取流</param>
+        /// <param name="path">二进制文件包路径</param>
+        ///
+        /// <example>
+        /// <code>
+        /// AssetDatabase.GetAssetPath    // 根据 Asset 路径
+        /// AssetDatabase.GUIDToAssetPath // 根据 GUID
+        /// </code>
+        /// </example>
+        public void BinaryRead(string path)
+        {
+            using var stream = File.Open(path, FileMode.Open);
+            using var reader = new BinaryReader(stream, Encoding.UTF8, false);
+            BinaryRead(reader);
+        }
+
+		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
             dict.Clear();
@@ -63,10 +79,8 @@ namespace {{ NAMESPACE }}
                 dict[item.id] = item;
             }
         }
-        /// <summary>
-        /// 以小端序 (LittleEndian) 写入二进制数据
-        /// </summary>
-        /// <param name="w">二进制写入流</param>
+
+		/// <inheritdoc cref="IBinarySupport.BinaryWriter"/>
         public void BinaryWrite(BinaryWriter w)
         {
             w.Write(Convert.ToUInt32(dict.Count));
@@ -79,20 +93,15 @@ namespace {{ NAMESPACE }}
 
     public partial class {{ELEMENT_NAME}} : IBinarySupport
     {
-        /// <summary>
-        /// 以小端序 (LittleEndian) 读取二进制数据
-        /// </summary>
-        /// <param name="r">二进制读取流</param>
+		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
 {%- for field in CLASS_FIELDS %}
             {{ field.name }} = {{ field.reader }};
 {%- endfor %}
         }
-        /// <summary>
-        /// 以小端序 (LittleEndian) 写入二进制数据
-        /// </summary>
-        /// <param name="w">二进制写入流</param>
+
+		/// <inheritdoc cref="IBinarySupport.BinaryWriter"/>
         public void BinaryWrite(BinaryWriter w)
         {
 {%- for field in CLASS_FIELDS %}

@@ -24,7 +24,7 @@ pub struct UnityCodegen {
 impl Default for UnityCodegen {
     fn default() -> Self {
         Self {
-            namespace: vec!["DataTable".to_string()],
+            namespace: vec!["DataTable".to_string(), "Generated".to_string()],
             support_binary: true,
             table_suffix: "Table".to_string(),
             element_suffix: "Element".to_string(),

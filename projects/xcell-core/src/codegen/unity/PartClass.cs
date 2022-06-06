@@ -1,14 +1,17 @@
 // 代码生成, 修改无效!
 // 当前版本: v{{ VERSION }}
 // 查看更新: https://github.com/oovm/XCell
-// ReSharper disable RedundantDefaultMemberInitializer
-// ReSharper disable RedundantUsingDirective
+// ReSharper disable RedundantDefaultMemberInitializer, RedundantUsingDirective
+// ReSharper disable CheckNamespace
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Text;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace {{ NAMESPACE }}
 {
@@ -80,7 +83,7 @@ namespace {{ NAMESPACE }}
             }
         }
 
-		/// <inheritdoc cref="IBinarySupport.BinaryWriter"/>
+		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
             w.Write(Convert.ToUInt32(dict.Count));
@@ -101,11 +104,13 @@ namespace {{ NAMESPACE }}
 {%- endfor %}
         }
 
-		/// <inheritdoc cref="IBinarySupport.BinaryWriter"/>
+		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
 {%- for field in CLASS_FIELDS %}
-            w.Write({{ field.name }});
+{%- for line in field.writer %}
+            {{ line }}
+{%- endfor %}
 {%- endfor %}
         }
     }

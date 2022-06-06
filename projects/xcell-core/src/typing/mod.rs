@@ -1,11 +1,10 @@
 use std::str::FromStr;
 
+use bigdecimal::BigDecimal;
 use calamine::DataType;
 use csscolorparser::Color;
 use num::{BigInt, FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
-
-use bigdecimal::BigDecimal;
 
 use crate::{XCellTable, XError, XErrorKind};
 
@@ -78,7 +77,7 @@ impl FromStr for XCellTyped {
             // float
             "float" | "f32" => Self::Float32(Default::default()),
             "double" | "f64" => Self::Float64(Default::default()),
-            "decimal" | "f128" => Self::Decimal128(Default::default()),
+            "decimal" | "d128" | "f128" => Self::Decimal128(Default::default()),
             "color" => Self::Color(Default::default()),
             _ => Self::Custom(CustomDescription::new(s)),
         };

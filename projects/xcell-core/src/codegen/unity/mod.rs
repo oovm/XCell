@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tera::Context;
 
-use crate::XCellHeaders;
+use crate::{ColorDescription, XCellHeaders};
 
 use super::*;
 
@@ -60,6 +60,7 @@ impl UnityCodegen {
 struct CsField {
     summary: Vec<String>,
     remarks: Vec<String>,
+    writer: Vec<String>,
     typing: String,
     reader: String,
     name: String,
@@ -75,6 +76,7 @@ impl XCellHeader {
             remarks: self.details.lines().map(|v| v.to_string()).collect(),
             has_default: !default.is_empty(),
             typing: self.typing.make_cs_typing(),
+            writer: self.typing.make_cs_binary_writer(&self.field_name),
             reader: self.typing.make_cs_binary_reader(),
             name: self.field_name.clone(),
             default,
@@ -102,16 +104,12 @@ impl XCellTyped {
             XCellTyped::Unsigned64(_) => "ulong".to_string(),
             XCellTyped::Float32(_) => "float".to_string(),
             XCellTyped::Float64(_) => "double".to_string(),
-            XCellTyped::Decimal128(_) => {
-                todo!()
-            }
+            XCellTyped::Decimal128(_) => "decimal".to_string(),
             XCellTyped::String(_) => "string".to_string(),
             XCellTyped::Datetime(_) => {
                 todo!()
             }
-            XCellTyped::Color(_) => {
-                todo!()
-            }
+            XCellTyped::Color(_) => "Color32".to_string(),
             XCellTyped::Custom(v) => v.typing.to_owned(),
         }
     }
@@ -128,19 +126,33 @@ impl XCellTyped {
             XCellTyped::Unsigned64(v) => v.default.to_string(),
             XCellTyped::Float32(v) => v.default.to_string(),
             XCellTyped::Float64(v) => v.default.to_string(),
-            XCellTyped::Decimal128(_) => {
+            XCellTyped::Decimal128(v) => v.default.to_string(),
+            XCellTyped::String(v) => format!("{:?}", v.default),
+            XCellTyped::Datetime(_) => {
                 todo!()
             }
-            XCellTyped::String(v) => format!("{:?}", v.default),
-
+            XCellTyped::Color(v) => v.make_cs_color32(),
+            XCellTyped::Custom(v) => v.default.to_string(),
+        }
+    }
+    fn make_cs_binary_writer(&self, field: &str) -> Vec<String> {
+        let mut out = vec![];
+        match self {
             XCellTyped::Datetime(_) => {
                 todo!()
             }
             XCellTyped::Color(_) => {
-                todo!()
+                out.push(format!("w.Write({field}.r);"));
+                out.push(format!("w.Write({field}.g);"));
+                out.push(format!("w.Write({field}.b);"));
+                out.push(format!("w.Write({field}.a);"));
             }
-            XCellTyped::Custom(v) => v.default.to_string(),
+            XCellTyped::Custom(v) => out.push(v.default.to_string()),
+            _ => {
+                out.push(format!("w.Write({field});"));
+            }
         }
+        out
     }
     fn make_cs_binary_reader(&self) -> String {
         match self {
@@ -155,18 +167,21 @@ impl XCellTyped {
             XCellTyped::Unsigned64(_) => "r.ReadUInt64()".to_string(),
             XCellTyped::Float32(_) => "r.ReadSingle()".to_string(),
             XCellTyped::Float64(_) => "r.ReadDouble()".to_string(),
-            XCellTyped::Decimal128(_) => {
-                todo!()
-            }
+            XCellTyped::Decimal128(_) => "r.ReadDecimal()".to_string(),
             XCellTyped::String(_) => "r.ReadString()".to_string(),
 
             XCellTyped::Datetime(_) => {
                 todo!()
             }
-            XCellTyped::Color(_) => {
-                todo!()
-            }
+            XCellTyped::Color(_) => "new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
             XCellTyped::Custom(v) => v.default.to_string(),
         }
+    }
+}
+
+impl ColorDescription {
+    pub fn make_cs_color32(&self) -> String {
+        let [r, g, b, a] = self.default.to_rgba8();
+        format!("new Color32({r}, {g}, {b}, {a})")
     }
 }

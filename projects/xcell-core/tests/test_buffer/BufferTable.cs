@@ -1,14 +1,17 @@
 // 代码生成, 修改无效!
 // 当前版本: v0.0.0
 // 查看更新: https://github.com/oovm/XCell
-// ReSharper disable RedundantDefaultMemberInitializer
-// ReSharper disable RedundantUsingDirective
+// ReSharper disable RedundantDefaultMemberInitializer, RedundantUsingDirective
+// ReSharper disable CheckNamespace
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Text;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace DataTable.Generated
 {
@@ -28,12 +31,13 @@ namespace DataTable.Generated
     public partial class BuffElement
     {
         /// <summary>
-        /// Buff 类型
+        /// Item 类型
         /// </summary>
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public RarityType enum;
+        public int id = 0;
+
         /// <summary>
         /// 本地化
         /// </summary>
@@ -51,12 +55,20 @@ namespace DataTable.Generated
         public bool test0 = false;
 
         /// <summary>
+        /// 颜色
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        [DataMember]
+        public Color32 test1 = new Color32(0, 0, 0, 255);
+
+        /// <summary>
         /// 无符号 8 位
         /// </summary>
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public sbyte test1 = 0;
+        public sbyte test2 = 0;
 
         /// <summary>
         /// 无符号 16 位
@@ -64,7 +76,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public ushort test2 = 0;
+        public ushort test3 = 0;
 
         /// <summary>
         /// 无符号 32 位
@@ -72,7 +84,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public uint test3 = 0;
+        public uint test4 = 0;
 
         /// <summary>
         /// 无符号 64 位
@@ -80,7 +92,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public ulong test4 = 0;
+        public ulong test5 = 0;
 
         /// <summary>
         /// 有符号 8 位
@@ -88,7 +100,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public byte test5 = 0;
+        public byte test6 = 0;
 
         /// <summary>
         /// 有符号 16 位
@@ -96,7 +108,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public short test6 = 0;
+        public short test7 = 0;
 
         /// <summary>
         /// 有符号 32 位
@@ -104,7 +116,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public int test7 = 0;
+        public int test8 = 0;
 
         /// <summary>
         /// 有符号 64 位
@@ -112,31 +124,32 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public long test8 = 0;
+        public long test9 = 0;
 
         /// <summary>
-        /// f32
+        /// 32 位浮点数
         /// </summary>
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public float test9 = 0;
+        public float test10 = 0;
 
         /// <summary>
-        /// f64
+        /// 64 位浮点数
         /// </summary>
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public double test10 = 0;
+        public double test11 = 0;
 
         /// <summary>
-        /// d128
+        /// 128 位高精度
         /// </summary>
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public d128 test11;
+        public decimal test12 = 0;
+
     }
 
     public partial class BuffTable : IBinarySupport
@@ -172,7 +185,7 @@ namespace DataTable.Generated
             }
         }
 
-		/// <inheritdoc cref="IBinarySupport.BinaryWriter"/>
+		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
             w.Write(Convert.ToUInt32(dict.Count));
@@ -188,29 +201,33 @@ namespace DataTable.Generated
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
-            enum = ;
+            id = r.ReadInt32();
             name = r.ReadString();
             test0 = r.ReadBoolean();
-            test1 = r.ReadSByte();
-            test2 = r.ReadUInt16();
-            test3 = r.ReadUInt32();
-            test4 = r.ReadUInt64();
-            test5 = r.ReadByte();
-            test6 = r.ReadInt16();
-            test7 = r.ReadInt32();
-            test8 = r.ReadInt64();
-            test9 = r.ReadSingle();
-            test10 = r.ReadDouble();
-            test11 = ;
+            test1 = new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte());
+            test2 = r.ReadSByte();
+            test3 = r.ReadUInt16();
+            test4 = r.ReadUInt32();
+            test5 = r.ReadUInt64();
+            test6 = r.ReadByte();
+            test7 = r.ReadInt16();
+            test8 = r.ReadInt32();
+            test9 = r.ReadInt64();
+            test10 = r.ReadSingle();
+            test11 = r.ReadDouble();
+            test12 = r.ReadDecimal();
         }
 
-		/// <inheritdoc cref="IBinarySupport.BinaryWriter"/>
+		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
-            w.Write(enum);
+            w.Write(id);
             w.Write(name);
             w.Write(test0);
-            w.Write(test1);
+            w.Write(test1.r);
+            w.Write(test1.g);
+            w.Write(test1.b);
+            w.Write(test1.a);
             w.Write(test2);
             w.Write(test3);
             w.Write(test4);
@@ -221,6 +238,7 @@ namespace DataTable.Generated
             w.Write(test9);
             w.Write(test10);
             w.Write(test11);
+            w.Write(test12);
         }
     }
 

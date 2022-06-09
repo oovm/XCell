@@ -1,13 +1,13 @@
 use std::{fs::File, io::Write, path::Path};
 
-use byteorder::WriteBytesExt;
+use byteorder::{LittleEndian, WriteBytesExt};
+use serde::Serialize;
+use tera::{Context, Tera};
 
 use crate::{
     typing::{XCellTyped, XCellValue},
-    XCellHeader, XCellTable, XError,
+    ColorDescription, XCellHeader, XCellHeaders, XCellTable, XError, XResult,
 };
-use byteorder::LittleEndian;
-use tera::Tera;
 
 mod binary;
 mod readable;
@@ -41,6 +41,16 @@ pub struct BinaryCodegen {}
 //     let db_line = Regex::new(r"(?mi)__\s+([^_]+)\s+__").unwrap();
 //     Template::new(template).with_regex(&db_line)
 // }
+
+fn tera_render(template: &str, slots: &Context, output: &Path)  -> XResult<String> {
+    let mut file = File::create(output)?;
+    let mut tera = Tera::default();
+    tera.autoescape_on(vec![]);
+    tera.add_raw_template("T", template)?;
+    let result = tera.render("T", slots)?;
+    file.write_all(result.as_bytes())?;
+    Ok(result)
+}
 
 pub fn write_newline(f: &mut impl Write) -> std::io::Result<()> {
     f.write_u8(b'\n')

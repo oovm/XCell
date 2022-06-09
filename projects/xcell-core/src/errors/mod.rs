@@ -10,6 +10,7 @@ use crate::typing::XCellTyped;
 mod for_calamine;
 mod for_std;
 mod for_toml;
+mod for_tera;
 
 #[derive(Debug)]
 pub struct XError {

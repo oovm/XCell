@@ -1,36 +1,16 @@
-use serde::Serialize;
-use tera::Context;
-
-use crate::{ColorDescription, XCellHeaders};
-
 use super::*;
 
 impl UnityCodegen {
-    pub fn write_class(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
-        let mut file = File::create(path)?;
-        let mut tera = Tera::default();
-        tera.autoescape_on(vec![]);
-        tera.add_raw_template("T", include_str!("PartClass.cs")).unwrap();
-        let out = tera.render("T", &self.make_context(table)).unwrap();
-        file.write_all(out.as_bytes())?;
+    pub fn write_class(&self, table: &XCellTable, path: &Path) -> XResult<()> {
+        tera_render(include_str!("PartClass.cs"), &self.make_context(table), path)?;
         Ok(())
     }
-    pub fn write_enum(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
-        let mut file = File::create(path)?;
-        let mut tera = Tera::default();
-        tera.autoescape_on(vec![]);
-        tera.add_raw_template("T", include_str!("PartEnum.cs")).unwrap();
-        let out = tera.render("T", &self.make_context(table)).unwrap();
-        file.write_all(out.as_bytes())?;
+    pub fn write_enum(&self, table: &XCellTable, path: &Path) -> XResult<()> {
+        tera_render(include_str!("PartEnum.cs"), &self.make_context(table), path)?;
         Ok(())
     }
-    pub fn write_interface(&self, table: &XCellTable, path: &Path) -> Result<(), XError> {
-        let mut file = File::create(path)?;
-        let mut tera = Tera::default();
-        tera.autoescape_on(vec![]);
-        tera.add_raw_template("T", include_str!("PartShare.cs")).unwrap();
-        let out = tera.render("T", &self.make_context(table)).unwrap();
-        file.write_all(out.as_bytes())?;
+    pub fn write_interface(&self, table: &XCellTable, path: &Path) -> XResult<()> {
+        tera_render(include_str!("PartShare.cs"), &self.make_context(table), path)?;
         Ok(())
     }
 }
@@ -47,12 +27,6 @@ impl UnityCodegen {
         ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.element_suffix));
         ctx.insert("CLASS_FIELDS", &table.headers.make_class_field());
         ctx
-    }
-
-    fn write_namespace(&self, f: &mut impl Write, template: &str) -> std::io::Result<usize> {
-        let ns = self.namespace.join(".");
-        let define = template.replace("__NAMESPACE__", &ns);
-        f.write(define.as_bytes())
     }
 }
 

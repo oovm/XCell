@@ -105,8 +105,6 @@ impl XCellTable {
         }
         Ok(())
     }
-    /// 加载表格数据
-    fn read_excel(&mut self) {}
 }
 
 impl XCellTable {

@@ -1,37 +1,20 @@
 use std::{fs::File, io::Write, path::Path};
 
 use byteorder::{LittleEndian, WriteBytesExt};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
+use toml::Value;
 
 use crate::{
     typing::{XCellTyped, XCellValue},
     ColorDescription, XCellHeader, XCellHeaders, XCellTable, XError, XResult,
 };
 
+pub use self::unity::UnityCodegen;
+
 mod binary;
 mod readable;
 mod unity;
-
-pub struct UnityCodegen {
-    pub namespace: Vec<String>,
-    pub table_suffix: String,
-    pub element_suffix: String,
-    pub support_binary: bool,
-    pub support_clone: bool,
-}
-
-impl Default for UnityCodegen {
-    fn default() -> Self {
-        Self {
-            namespace: vec!["DataTable".to_string(), "Generated".to_string()],
-            support_binary: true,
-            table_suffix: "Table".to_string(),
-            element_suffix: "Element".to_string(),
-            support_clone: true,
-        }
-    }
-}
 
 pub struct CsvCodegen {}
 
@@ -42,7 +25,7 @@ pub struct BinaryCodegen {}
 //     Template::new(template).with_regex(&db_line)
 // }
 
-fn tera_render(template: &str, slots: &Context, output: &Path)  -> XResult<String> {
+fn tera_render(template: &str, slots: &Context, output: &Path) -> XResult<String> {
     let mut file = File::create(output)?;
     let mut tera = Tera::default();
     tera.autoescape_on(vec![]);
@@ -54,4 +37,24 @@ fn tera_render(template: &str, slots: &Context, output: &Path)  -> XResult<Strin
 
 pub fn write_newline(f: &mut impl Write) -> std::io::Result<()> {
     f.write_u8(b'\n')
+}
+pub fn split_file_name(s: &str) -> String {
+    let mut all = vec![];
+    for name in s.split(|c| c == '/' || c == '\\') {
+        if !name.trim().is_empty() {
+            all.push(name)
+        }
+    }
+    all.join("/")
+}
+pub fn split_namespace(s: &str) -> Vec<&str> {
+    let mut all = vec![];
+    for s in s.split("::") {
+        for name in s.split('.') {
+            if !name.trim().is_empty() {
+                all.push(name)
+            }
+        }
+    }
+    all
 }

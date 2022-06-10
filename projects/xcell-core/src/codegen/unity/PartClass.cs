@@ -2,8 +2,8 @@
 // 当前版本: v{{ VERSION }}
 // 查看更新: https://github.com/oovm/XCell
 // ReSharper disable RedundantDefaultMemberInitializer, RedundantUsingDirective
-// ReSharper disable CheckNamespace
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
+// ReSharper disable CheckNamespace
 
 using System;
 using System.Collections.Generic;
@@ -49,9 +49,13 @@ namespace {{ NAMESPACE }}
 {%- endif %}
 {%- endfor %}
     }
-{% if SUPPORT_BINARY %}
+{% if config.support_binary %}
     public partial class {{TABLE_NAME}} : IBinarySupport
     {
+        public BuffTable()
+        {
+            BinaryRead("Assets/Tables/Binary/{{TABLE_NAME}}.xcell");
+        }
         /// <summary>
         /// 从二进制文件中读取静态数据
         /// </summary>
@@ -115,7 +119,7 @@ namespace {{ NAMESPACE }}
         }
     }
 {%- endif %}
-{% if SUPPORT_CLONE %}
+{% if config.support_clone %}
     public partial class {{TABLE_NAME}} : ICloneable
     {
         public object Clone()

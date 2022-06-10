@@ -41,8 +41,21 @@ pub struct XCellTable {
     pub sum_config: u64,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum XCellKind {
+    SortedMap,
+    Enumerate,
+}
+
+impl Default for XCellKind {
+    fn default() -> Self {
+        Self::SortedMap
+    }
+}
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XCellHeaders {
+    pub kind: XCellKind,
     pub inner: Vec<XCellHeader>,
 }
 

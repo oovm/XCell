@@ -1,12 +1,25 @@
-use num::{FromPrimitive, ToPrimitive};
-
 use super::*;
+
+mod kind;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct IntegerDescription {
+    pub kind: IntegerKind,
     pub min: BigInt,
     pub max: BigInt,
     pub default: BigInt,
+}
+
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+pub enum IntegerKind {
+    Integer8,
+    Integer16,
+    Integer32,
+    Integer64,
+    Unsigned8,
+    Unsigned16,
+    Unsigned32,
+    Unsigned64,
 }
 
 impl IntegerDescription {
@@ -15,7 +28,7 @@ impl IntegerDescription {
         A: Into<BigInt>,
         B: Into<BigInt>,
     {
-        Self { min: min.into(), max: max.into(), default: Default::default() }
+        Self { kind: Default::default(), min: min.into(), max: max.into(), default: Default::default() }
     }
     pub fn clamp<I>(&self, int: I) -> BigInt
     where
@@ -85,5 +98,17 @@ impl IntegerDescription {
             Ok(o) => Ok(o.to_u64().unwrap_or_default()),
             Err(e) => Err(e),
         }
+    }
+}
+
+impl XCellTyped {
+    pub fn as_integer(&self) -> Option<&IntegerDescription> {
+        match self {
+            XCellTyped::Integer(e) => Some(e),
+            _ => None,
+        }
+    }
+    pub fn is_integer(&self) -> bool {
+        self.as_integer().is_some()
     }
 }

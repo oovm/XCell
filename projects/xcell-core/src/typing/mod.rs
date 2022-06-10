@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{ops::Deref, str::FromStr};
 
 use bigdecimal::BigDecimal;
 use calamine::DataType;
@@ -9,8 +9,14 @@ use serde::{Deserialize, Serialize};
 use crate::{XCellTable, XError, XErrorKind};
 
 pub use self::{
-    boolean::BooleanDescription, color::ColorDescription, custom::CustomDescription, decimal::DecimalDescription,
-    integer::IntegerDescription, string::StringDescription, time::TimeDescription,
+    boolean::BooleanDescription,
+    color::ColorDescription,
+    custom::CustomDescription,
+    decimal::DecimalDescription,
+    enumerate::EnumerateDescription,
+    integer::{IntegerDescription, IntegerKind},
+    string::StringDescription,
+    time::TimeDescription,
 };
 
 mod boolean;
@@ -18,6 +24,7 @@ mod color;
 mod custom;
 mod decimal;
 mod display;
+mod enumerate;
 mod integer;
 mod string;
 mod time;
@@ -25,20 +32,14 @@ mod time;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XCellTyped {
     Boolean(BooleanDescription),
-    Integer8(IntegerDescription),
-    Integer16(IntegerDescription),
-    Integer32(IntegerDescription),
-    Integer64(IntegerDescription),
-    Unsigned8(IntegerDescription),
-    Unsigned16(IntegerDescription),
-    Unsigned32(IntegerDescription),
-    Unsigned64(IntegerDescription),
+    Integer(IntegerDescription),
     Float32(DecimalDescription),
     Float64(DecimalDescription),
     Decimal128(DecimalDescription),
     String(StringDescription),
     Datetime(TimeDescription),
     Color(ColorDescription),
+    Enumerate(EnumerateDescription),
     Custom(CustomDescription),
 }
 
@@ -65,20 +66,21 @@ impl FromStr for XCellTyped {
             "language" | "languagestring" | "languageid" => Self::String(Default::default()),
             "bool" | "boolean" => Self::Boolean(Default::default()),
             // int
-            "byte" | "i8" => Self::Integer8(IntegerDescription::range(i8::MIN, i8::MAX)),
-            "short" | "i16" => Self::Integer16(IntegerDescription::range(i16::MIN, i16::MAX)),
-            "int" | "i32" => Self::Integer32(IntegerDescription::range(i32::MIN, i32::MAX)),
-            "long" | "i64" => Self::Integer64(IntegerDescription::range(i64::MIN, i64::MAX)),
+            "byte" | "i8" => Self::Integer(IntegerDescription::range(i8::MIN, i8::MAX)),
+            "short" | "i16" => Self::Integer(IntegerDescription::range(i16::MIN, i16::MAX)),
+            "int" | "i32" => Self::Integer(IntegerDescription::range(i32::MIN, i32::MAX)),
+            "long" | "i64" => Self::Integer(IntegerDescription::range(i64::MIN, i64::MAX)),
             // unsigned
-            "sbyte" | "u8" => Self::Unsigned8(IntegerDescription::range(u8::MIN, u8::MAX)),
-            "ushort" | "u16" => Self::Unsigned16(IntegerDescription::range(u16::MIN, u16::MAX)),
-            "uint" | "u32" => Self::Unsigned32(IntegerDescription::range(u32::MIN, u32::MAX)),
-            "ulong" | "u64" => Self::Unsigned64(IntegerDescription::range(u64::MIN, u64::MAX)),
+            "sbyte" | "u8" => Self::Integer(IntegerDescription::range(u8::MIN, u8::MAX)),
+            "ushort" | "u16" => Self::Integer(IntegerDescription::range(u16::MIN, u16::MAX)),
+            "uint" | "u32" => Self::Integer(IntegerDescription::range(u32::MIN, u32::MAX)),
+            "ulong" | "u64" => Self::Integer(IntegerDescription::range(u64::MIN, u64::MAX)),
             // float
             "float" | "f32" => Self::Float32(Default::default()),
             "double" | "f64" => Self::Float64(Default::default()),
             "decimal" | "d128" | "f128" => Self::Decimal128(Default::default()),
             "color" => Self::Color(Default::default()),
+            "enum" => Self::Enumerate(Default::default()),
             _ => Self::Custom(CustomDescription::new(s)),
         };
         Ok(out)

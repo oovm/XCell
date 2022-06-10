@@ -13,7 +13,7 @@ using System.Text;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace {{ NAMESPACE }}
+namespace {{ config.namespace }}
 {
     [DataContract]
     public partial class {{ TABLE_NAME }}

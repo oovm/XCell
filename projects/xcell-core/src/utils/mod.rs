@@ -71,7 +71,7 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<XCellHeaders> {
             headers.push(XCellHeader { summary: data.to_string(), column: i, typing, field_name, details: "".to_string() })
         }
     }
-    Ok(XCellHeaders { inner: headers })
+    Ok(XCellHeaders::new(headers).check_enumerate())
 }
 
 pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> Validation<Array2D<XCellValue>> {

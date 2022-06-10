@@ -16,19 +16,19 @@ using UnityEngine;
 namespace DataTable.Generated
 {
     [DataContract]
-    public partial class BuffTable
+    public partial class RarityTypeTable
     {
-        [DataMember] public readonly Dictionary<int, BuffElement> dict = new();
+        [DataMember] public readonly Dictionary<int, RarityTypeElement> dict = new();
 
         [CanBeNull]
-        public BuffElement GetElement(int id)
+        public RarityTypeElement GetElement(int id)
         {
             return dict.TryGetValue(id, out var item) ? item : null;
         }
     }
 
     [DataContract]
-    public partial class BuffElement
+    public partial class RarityTypeElement
     {
         /// <summary>
         /// Item 类型
@@ -36,7 +36,14 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public int id = 0;
+        public RarityType enum;
+        /// <summary>
+        /// 编号
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        [DataMember]
+        public uint id = 0;
 
         /// <summary>
         /// 本地化
@@ -68,7 +75,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public sbyte test2 = 0;
+        public uint test2 = 0;
 
         /// <summary>
         /// 无符号 16 位
@@ -76,7 +83,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public ushort test3 = 0;
+        public uint test3 = 0;
 
         /// <summary>
         /// 无符号 32 位
@@ -92,7 +99,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public ulong test5 = 0;
+        public uint test5 = 0;
 
         /// <summary>
         /// 有符号 8 位
@@ -100,7 +107,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public byte test6 = 0;
+        public uint test6 = 0;
 
         /// <summary>
         /// 有符号 16 位
@@ -108,7 +115,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public short test7 = 0;
+        public uint test7 = 0;
 
         /// <summary>
         /// 有符号 32 位
@@ -116,7 +123,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public int test8 = 0;
+        public uint test8 = 0;
 
         /// <summary>
         /// 有符号 64 位
@@ -124,7 +131,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public long test9 = 0;
+        public uint test9 = 0;
 
         /// <summary>
         /// 32 位浮点数
@@ -152,11 +159,11 @@ namespace DataTable.Generated
 
     }
 
-    public partial class BuffTable : IBinarySupport
+    public partial class RarityTypeTable : IBinarySupport
     {
         public BuffTable()
         {
-            BinaryRead("Assets/Tables/Binary/BuffTable.xcell");
+            BinaryRead("Assets/Tables/Binary/RarityTypeTable.xcell");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据
@@ -183,7 +190,7 @@ namespace DataTable.Generated
             var count = r.ReadUInt32();
             for (var i = 0; i < count; i++)
             {
-                var item = new BuffElement();
+                var item = new RarityTypeElement();
                 item.BinaryRead(r);
                 dict[item.id] = item;
             }
@@ -200,23 +207,24 @@ namespace DataTable.Generated
         }
     }
 
-    public partial class BuffElement : IBinarySupport
+    public partial class RarityTypeElement : IBinarySupport
     {
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
-            id = r.ReadInt32();
+            enum = ;
+            id = r.ReadUInt32();
             name = r.ReadString();
             test0 = r.ReadBoolean();
             test1 = new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte());
-            test2 = r.ReadSByte();
-            test3 = r.ReadUInt16();
+            test2 = r.ReadUInt32();
+            test3 = r.ReadUInt32();
             test4 = r.ReadUInt32();
-            test5 = r.ReadUInt64();
-            test6 = r.ReadByte();
-            test7 = r.ReadInt16();
-            test8 = r.ReadInt32();
-            test9 = r.ReadInt64();
+            test5 = r.ReadUInt32();
+            test6 = r.ReadUInt32();
+            test7 = r.ReadUInt32();
+            test8 = r.ReadUInt32();
+            test9 = r.ReadUInt32();
             test10 = r.ReadSingle();
             test11 = r.ReadDouble();
             test12 = r.ReadDecimal();
@@ -225,6 +233,7 @@ namespace DataTable.Generated
 		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
+            w.Write(enum);
             w.Write(id);
             w.Write(name);
             w.Write(test0);
@@ -246,7 +255,7 @@ namespace DataTable.Generated
         }
     }
 
-    public partial class BuffTable : ICloneable
+    public partial class RarityTypeTable : ICloneable
     {
         public object Clone()
         {
@@ -254,7 +263,7 @@ namespace DataTable.Generated
         }
     }
 
-    partial class BuffElement : ICloneable
+    partial class RarityTypeElement : ICloneable
     {
         public object Clone()
         {

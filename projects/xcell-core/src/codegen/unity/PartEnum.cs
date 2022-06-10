@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace {{ NAMESPACE }}
+namespace {{ config.namespace }}
 {
     [DataContract]
     public enum {{ TABLE_NAME }} : long

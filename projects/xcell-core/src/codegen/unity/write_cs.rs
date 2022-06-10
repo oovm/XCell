@@ -1,3 +1,5 @@
+use crate::typing::IntegerKind;
+
 use super::*;
 
 impl UnityCodegen {
@@ -66,14 +68,7 @@ impl XCellTyped {
     pub fn make_cs_typing(&self) -> String {
         match self {
             XCellTyped::Boolean(_) => "bool".to_string(),
-            XCellTyped::Integer8(_) => "byte".to_string(),
-            XCellTyped::Integer16(_) => "short".to_string(),
-            XCellTyped::Integer32(_) => "int".to_string(),
-            XCellTyped::Integer64(_) => "long".to_string(),
-            XCellTyped::Unsigned8(_) => "sbyte".to_string(),
-            XCellTyped::Unsigned16(_) => "ushort".to_string(),
-            XCellTyped::Unsigned32(_) => "uint".to_string(),
-            XCellTyped::Unsigned64(_) => "ulong".to_string(),
+            XCellTyped::Integer(v) => v.as_csharp_type().to_string(),
             XCellTyped::Float32(_) => "float".to_string(),
             XCellTyped::Float64(_) => "double".to_string(),
             XCellTyped::Decimal128(_) => "decimal".to_string(),
@@ -82,20 +77,14 @@ impl XCellTyped {
                 todo!()
             }
             XCellTyped::Color(_) => "Color32".to_string(),
+            XCellTyped::Enumerate(v) => v.typing.to_owned(),
             XCellTyped::Custom(v) => v.typing.to_owned(),
         }
     }
     pub fn make_cs_default(&self) -> String {
         match self {
             XCellTyped::Boolean(v) => v.default.to_string(),
-            XCellTyped::Integer8(v) => v.default.to_string(),
-            XCellTyped::Integer16(v) => v.default.to_string(),
-            XCellTyped::Integer32(v) => v.default.to_string(),
-            XCellTyped::Integer64(v) => v.default.to_string(),
-            XCellTyped::Unsigned8(v) => v.default.to_string(),
-            XCellTyped::Unsigned16(v) => v.default.to_string(),
-            XCellTyped::Unsigned32(v) => v.default.to_string(),
-            XCellTyped::Unsigned64(v) => v.default.to_string(),
+            XCellTyped::Integer(v) => v.default.to_string(),
             XCellTyped::Float32(v) => v.default.to_string(),
             XCellTyped::Float64(v) => v.default.to_string(),
             XCellTyped::Decimal128(v) => v.default.to_string(),
@@ -104,6 +93,7 @@ impl XCellTyped {
                 todo!()
             }
             XCellTyped::Color(v) => v.make_cs_color32(),
+            XCellTyped::Enumerate(v) => v.default.to_string(),
             XCellTyped::Custom(v) => v.default.to_string(),
         }
     }
@@ -119,7 +109,7 @@ impl XCellTyped {
                 out.push(format!("w.Write({field}.b);"));
                 out.push(format!("w.Write({field}.a);"));
             }
-            XCellTyped::Custom(v) => out.push(v.default.to_string()),
+            XCellTyped::Enumerate(v) => out.push(v.default.to_string()),
             _ => {
                 out.push(format!("w.Write({field});"));
             }
@@ -129,24 +119,44 @@ impl XCellTyped {
     fn make_cs_binary_reader(&self) -> String {
         match self {
             XCellTyped::Boolean(_) => "r.ReadBoolean()".to_string(),
-            XCellTyped::Integer8(_) => "r.ReadByte()".to_string(),
-            XCellTyped::Integer16(_) => "r.ReadInt16()".to_string(),
-            XCellTyped::Integer32(_) => "r.ReadInt32()".to_string(),
-            XCellTyped::Integer64(_) => "r.ReadInt64()".to_string(),
-            XCellTyped::Unsigned8(_) => "r.ReadSByte()".to_string(),
-            XCellTyped::Unsigned16(_) => "r.ReadUInt16()".to_string(),
-            XCellTyped::Unsigned32(_) => "r.ReadUInt32()".to_string(),
-            XCellTyped::Unsigned64(_) => "r.ReadUInt64()".to_string(),
+            XCellTyped::Integer(v) => format!("r.{}()", v.csharp_br()),
             XCellTyped::Float32(_) => "r.ReadSingle()".to_string(),
             XCellTyped::Float64(_) => "r.ReadDouble()".to_string(),
             XCellTyped::Decimal128(_) => "r.ReadDecimal()".to_string(),
             XCellTyped::String(_) => "r.ReadString()".to_string(),
-
             XCellTyped::Datetime(_) => {
                 todo!()
             }
             XCellTyped::Color(_) => "new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
+            XCellTyped::Enumerate(v) => v.default.to_string(),
             XCellTyped::Custom(v) => v.default.to_string(),
+        }
+    }
+}
+
+impl IntegerKind {
+    pub fn as_csharp_type(&self) -> &'static str {
+        match self {
+            IntegerKind::Integer8 => "byte",
+            IntegerKind::Integer16 => "short",
+            IntegerKind::Integer32 => "int",
+            IntegerKind::Integer64 => "long",
+            IntegerKind::Unsigned8 => "sbyte",
+            IntegerKind::Unsigned16 => "ushort",
+            IntegerKind::Unsigned32 => "uint",
+            IntegerKind::Unsigned64 => "ulong",
+        }
+    }
+    fn csharp_br(&self) -> &'static str {
+        match self {
+            IntegerKind::Integer8 => "ReadByte",
+            IntegerKind::Integer16 => "ReadInt16",
+            IntegerKind::Integer32 => "ReadInt32",
+            IntegerKind::Integer64 => "ReadInt64",
+            IntegerKind::Unsigned8 => "ReadSByte",
+            IntegerKind::Unsigned16 => "ReadUInt16",
+            IntegerKind::Unsigned32 => "ReadUInt32",
+            IntegerKind::Unsigned64 => "ReadUInt64",
         }
     }
 }

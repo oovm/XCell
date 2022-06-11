@@ -1,4 +1,4 @@
-use crate::typing::IntegerKind;
+use crate::{typing::IntegerKind, x_table::XCellKind};
 
 use super::*;
 
@@ -12,7 +12,7 @@ impl UnityCodegen {
         Ok(())
     }
     pub fn write_interface(&self, table: &XCellTable, path: &Path) -> XResult<()> {
-        tera_render(include_str!("PartShare.cs"), &self.make_context(table), path)?;
+        tera_render(include_str!("PartInterface.cs"), &self.make_context(table), path)?;
         Ok(())
     }
 }
@@ -22,16 +22,33 @@ impl UnityCodegen {
         let mut ctx = Context::new();
         ctx.insert("VERSION", env!("CARGO_PKG_VERSION"));
         ctx.insert("config", &self);
+        ctx.insert("CLASS_NAME", &table.class_name());
         ctx.insert("TABLE_NAME", &format!("{}{}", table.class_name(), self.suffix_table));
         ctx.insert("ELEMENT_NAME", &format!("{}{}", table.class_name(), self.suffix_element));
         ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.suffix_element));
-        ctx.insert("CLASS_FIELDS", &table.headers.make_class_field());
+        match table.headers.kind {
+            XCellKind::SortedMap => ctx.insert("CLASS_FIELDS", &table.headers.make_class_field()),
+            XCellKind::Enumerate => ctx.insert("CLASS_FIELDS", &table.headers.make_class_enum()),
+        }
+
         ctx
     }
 }
 
 #[derive(Serialize)]
 struct CsField {
+    summary: Vec<String>,
+    remarks: Vec<String>,
+    writer: Vec<String>,
+    typing: String,
+    reader: String,
+    name: String,
+    default: String,
+    has_default: bool,
+}
+
+#[derive(Serialize)]
+struct CsEnum {
     summary: Vec<String>,
     remarks: Vec<String>,
     writer: Vec<String>,
@@ -56,11 +73,27 @@ impl XCellHeader {
             default,
         }
     }
+    fn make_enum_field(&self) -> CsEnum {
+        let default = self.typing.make_cs_default();
+        CsEnum {
+            summary: self.summary.lines().map(|v| v.to_string()).collect(),
+            remarks: self.details.lines().map(|v| v.to_string()).collect(),
+            has_default: !default.is_empty(),
+            typing: self.typing.make_cs_typing(),
+            writer: self.typing.make_cs_binary_writer(&self.field_name),
+            reader: self.typing.make_cs_binary_reader(),
+            name: self.field_name.clone(),
+            default,
+        }
+    }
 }
 
 impl XCellHeaders {
     fn make_class_field(&self) -> Vec<CsField> {
         self.inner.iter().map(|v| v.make_class_field()).collect()
+    }
+    fn make_class_enum(&self) -> Vec<CsEnum> {
+        self.inner.iter().map(|v| v.make_enum_field()).collect()
     }
 }
 

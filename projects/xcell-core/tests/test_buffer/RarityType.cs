@@ -2,19 +2,32 @@
 // 当前版本: v0.0.0
 // 查看更新: https://github.com/oovm/XCell
 // ReSharper disable RedundantDefaultMemberInitializer, RedundantUsingDirective
-// ReSharper disable ArrangeObjectCreationWhenTypeEvident
+// ReSharper disable ArrangeTrailingCommaInMultilineLists
 // ReSharper disable CheckNamespace
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.Serialization;
-using System.Text;
+using DataTable.Generated;
 using JetBrains.Annotations;
-using UnityEngine;
 
 namespace DataTable.Generated
 {
+    [DataContract, Serializable]
+    public enum RarityType : long
+    {
+        SSR = 1,
+        SR = 2,
+    }
+
+    public static class RarityTypeExtension
+    {
+        public static string GetName(this ArchiveType self)
+        {
+            return DataTableManager.Instance.ArchiveTypeTable.GetElement(self)!.name;
+        }
+    }
+
     [DataContract]
     public partial class RarityTypeTable
     {

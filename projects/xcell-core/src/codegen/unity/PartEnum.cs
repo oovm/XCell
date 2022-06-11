@@ -1,40 +1,14 @@
-// 代码生成, 修改无效!
-// 当前版本: v{{ VERSION }}
-// 查看更新: https://github.com/oovm/XCell
-using System;
-using System.Runtime.Serialization;
-
-namespace {{ config.namespace }}
-{
-    [DataContract]
-    public enum {{ TABLE_NAME }} : long
+    [DataContract, Serializable]
+    public enum {{CLASS_NAME}} : long
     {
-
-        SSR = 1,
-
         SSR = 1,
         SR = 2,
     }
 
-    public static class {{ TABLE_NAME }}Extension
+    public static class {{CLASS_NAME}}Extension
     {
-        public static __M_TYPE__ __M_NAME__(this __TABLE_NAME__ self)
+        public static string GetName(this ArchiveType self)
         {
-            return self switch
-            {
-                {{ TABLE_NAME }}.__FIELD__ => __VALUE__,
-                _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
-            };
+            return DataTableManager.Instance.ArchiveTypeTable.GetElement(self)!.name;
         }
-
-        public static __M_TYPE__ __M_NAME__(this __TABLE_NAME__ self)
-        {
-            return self switch
-            {
-                __TABLE_NAME__.__FIELD__ => __VALUE__,
-                _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
-            };
-        }
-
     }
-}

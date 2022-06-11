@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace {{ config.namespace }}
 {
-    [DataContract]
+    [DataContract, Serializable]
     public partial class {{ TABLE_NAME }}
     {
         [DataMember] public readonly Dictionary<int, {{ELEMENT_NAME}}> dict = new();
@@ -27,7 +27,7 @@ namespace {{ config.namespace }}
         }
     }
 
-    [DataContract]
+    [DataContract, Serializable]
     public partial class {{ELEMENT_NAME}}
     {
 {%- for field in CLASS_FIELDS %}

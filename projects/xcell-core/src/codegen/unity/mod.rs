@@ -7,6 +7,7 @@ mod config;
 pub struct UnityCodegen {
     pub namespace: String,
     pub folder_binary: String,
+    pub manager_name: String,
     pub suffix_table: String,
     pub suffix_element: String,
     pub support_binary: bool,

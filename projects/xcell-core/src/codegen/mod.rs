@@ -4,7 +4,7 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
 use toml::Value;
-
+use convert_case::{Case, Casing};
 use crate::{
     typing::{XCellTyped, XCellValue},
     ColorDescription, XCellHeader, XCellHeaders, XCellTable, XError, XResult,

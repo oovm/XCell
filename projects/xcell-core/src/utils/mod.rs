@@ -5,14 +5,13 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 
-use array2d::Array2D;
-
 use crate::{
-    typing::{XCellTyped, XCellValue},
+    typing::{EnumerateDescription, XCellTyped, XCellValue},
     CalamineTable, Validation, XCellHeader, XCellHeaders, XError, XResult,
 };
 
@@ -54,22 +53,32 @@ pub fn find_first_table(path: &PathBuf) -> XResult<CalamineTable> {
 /// ```
 pub fn read_table_headers(table: &CalamineTable) -> XResult<XCellHeaders> {
     let mut headers = vec![];
-    let row = match table.rows().nth(0) {
+    let row = match table.rows().next() {
         Some(s) => s,
         None => return Err(XError::table_error("找不到描述, 表第一行格式非法")),
     };
     for (i, data) in row.iter().enumerate() {
-        if !data.is_empty() {
-            let typing = match table.get_value((1, i as u32)) {
-                Some(s) => XCellTyped::from(s),
-                None => continue,
-            };
-            let field_name = match table.get_value((2, i as u32)) {
-                Some(s) => s.to_string(),
-                None => continue,
-            };
-            headers.push(XCellHeader { summary: data.to_string(), column: i, typing, field_name, details: "".to_string() })
+        if data.is_empty() {
+            // 不要用 filter, column 不对
+            continue;
         }
+        let _: Option<()> = try {
+            let field_type = table.get_value((1, i as u32))?;
+            let field_name = table.get_value((2, i as u32))?;
+            let typing = if field_name.eq("enum") {
+                XCellTyped::Enumerate(EnumerateDescription::new(field_type.to_string()))
+            }
+            else {
+                XCellTyped::from(field_type)
+            };
+            headers.push(XCellHeader {
+                summary: data.to_string(),
+                column: i,
+                typing,
+                field_name: field_name.to_string(),
+                details: "".to_string(),
+            })
+        };
     }
     Ok(XCellHeaders::new(headers).check_enumerate())
 }

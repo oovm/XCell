@@ -1,14 +1,10 @@
-use crate::{typing::IntegerKind, x_table::XCellKind};
+use crate::typing::IntegerKind;
 
 use super::*;
 
 impl UnityCodegen {
     pub fn write_class(&self, table: &XCellTable, path: &Path) -> XResult<()> {
         tera_render(include_str!("PartClass.cs"), &self.make_context(table), path)?;
-        Ok(())
-    }
-    pub fn write_enum(&self, table: &XCellTable, path: &Path) -> XResult<()> {
-        tera_render(include_str!("PartEnum.cs"), &self.make_context(table), path)?;
         Ok(())
     }
     pub fn write_interface(&self, table: &XCellTable, path: &Path) -> XResult<()> {
@@ -26,11 +22,18 @@ impl UnityCodegen {
         ctx.insert("TABLE_NAME", &format!("{}{}", table.class_name(), self.suffix_table));
         ctx.insert("ELEMENT_NAME", &format!("{}{}", table.class_name(), self.suffix_element));
         ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.suffix_element));
-        match table.headers.kind {
-            XCellKind::SortedMap => ctx.insert("CLASS_FIELDS", &table.headers.make_class_field()),
-            XCellKind::Enumerate => ctx.insert("CLASS_FIELDS", &table.headers.make_class_enum()),
+        ctx.insert("ID_TYPE", &table.headers.key_type());
+        let is_enum = table.is_enumerate();
+        match table.is_enumerate() {
+            true => {
+                ctx.insert("enumerate", &true);
+                ctx.insert("CLASS_FIELDS", &table.headers.make_enum_field());
+            }
+            false => {
+                ctx.insert("enumerate", &false);
+                ctx.insert("CLASS_FIELDS", &table.headers.make_class_field());
+            }
         }
-
         ctx
     }
 }
@@ -43,62 +46,45 @@ struct CsField {
     typing: String,
     reader: String,
     name: String,
+    getter: String,
     default: String,
     has_default: bool,
 }
 
-#[derive(Serialize)]
-struct CsEnum {
-    summary: Vec<String>,
-    remarks: Vec<String>,
-    writer: Vec<String>,
-    typing: String,
-    reader: String,
-    name: String,
-    default: String,
-    has_default: bool,
+impl XCellHeaders {
+    fn make_class_field(&self, is_enum: bool) -> Vec<CsField> {
+        self.inner.iter().map(|v| v.make_class_field(is_enum)).collect()
+    }
+    fn key_type(&self) -> String {
+        match self.inner.first() {
+            Some(s) => match &s.typing {
+                XCellTyped::Enumerate(e) => e.integer.as_csharp_type().to_string(),
+                _ => s.typing.as_csharp_type(),
+            },
+            None => "int".to_string(),
+        }
+    }
 }
 
 impl XCellHeader {
-    fn make_class_field(&self) -> CsField {
+    fn make_class_field(&self, is_enum: bool) -> CsField {
         let default = self.typing.make_cs_default();
         CsField {
             summary: self.summary.lines().map(|v| v.to_string()).collect(),
             remarks: self.details.lines().map(|v| v.to_string()).collect(),
             has_default: !default.is_empty(),
-            typing: self.typing.make_cs_typing(),
+            typing: self.typing.as_csharp_type(),
             writer: self.typing.make_cs_binary_writer(&self.field_name),
             reader: self.typing.make_cs_binary_reader(),
             name: self.field_name.clone(),
+            getter: format!("Get{}", self.field_name.to_case(Case::Pascal)),
             default,
         }
-    }
-    fn make_enum_field(&self) -> CsEnum {
-        let default = self.typing.make_cs_default();
-        CsEnum {
-            summary: self.summary.lines().map(|v| v.to_string()).collect(),
-            remarks: self.details.lines().map(|v| v.to_string()).collect(),
-            has_default: !default.is_empty(),
-            typing: self.typing.make_cs_typing(),
-            writer: self.typing.make_cs_binary_writer(&self.field_name),
-            reader: self.typing.make_cs_binary_reader(),
-            name: self.field_name.clone(),
-            default,
-        }
-    }
-}
-
-impl XCellHeaders {
-    fn make_class_field(&self) -> Vec<CsField> {
-        self.inner.iter().map(|v| v.make_class_field()).collect()
-    }
-    fn make_class_enum(&self) -> Vec<CsEnum> {
-        self.inner.iter().map(|v| v.make_enum_field()).collect()
     }
 }
 
 impl XCellTyped {
-    pub fn make_cs_typing(&self) -> String {
+    pub fn as_csharp_type(&self) -> String {
         match self {
             XCellTyped::Boolean(_) => "bool".to_string(),
             XCellTyped::Integer(v) => v.as_csharp_type().to_string(),

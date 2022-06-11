@@ -2,19 +2,21 @@
 // 当前版本: v0.0.0
 // 查看更新: https://github.com/oovm/XCell
 // ReSharper disable RedundantDefaultMemberInitializer, RedundantUsingDirective
-// ReSharper disable ArrangeTrailingCommaInMultilineLists
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident
 // ReSharper disable CheckNamespace
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization;
-using DataTable.Generated;
+using System.Text;
 using JetBrains.Annotations;
+using UnityEngine;
 
 namespace DataTable.Generated
 {
     [DataContract, Serializable]
-    public enum RarityType : long
+    public enum RarityType : uint
     {
         SSR = 1,
         SR = 2,
@@ -22,25 +24,85 @@ namespace DataTable.Generated
 
     public static class RarityTypeExtension
     {
-        public static string GetName(this ArchiveType self)
+        public static RarityType GetEnum(this RarityType self)
         {
-            return DataTableManager.Instance.ArchiveTypeTable.GetElement(self)!.name;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.enum;
+        }
+        public static uint GetId(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.id;
+        }
+        public static string GetName(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.name;
+        }
+        public static bool GetTest0(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test0;
+        }
+        public static Color32 GetTest1(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test1;
+        }
+        public static uint GetTest2(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test2;
+        }
+        public static uint GetTest3(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test3;
+        }
+        public static uint GetTest4(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test4;
+        }
+        public static uint GetTest5(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test5;
+        }
+        public static uint GetTest6(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test6;
+        }
+        public static uint GetTest7(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test7;
+        }
+        public static uint GetTest8(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test8;
+        }
+        public static uint GetTest9(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test9;
+        }
+        public static float GetTest10(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test10;
+        }
+        public static double GetTest11(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test11;
+        }
+        public static decimal GetTest12(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test12;
         }
     }
-
-    [DataContract]
+    [DataContract, Serializable]
     public partial class RarityTypeTable
     {
-        [DataMember] public readonly Dictionary<int, RarityTypeElement> dict = new();
+        [DataMember]
+        public readonly Dictionary<uint, RarityTypeElement> dict = new();
 
         [CanBeNull]
-        public RarityTypeElement GetElement(int id)
+        public RarityTypeElement GetElement(uint id)
         {
             return dict.TryGetValue(id, out var item) ? item : null;
         }
     }
 
-    [DataContract]
+    [DataContract, Serializable]
     public partial class RarityTypeElement
     {
         /// <summary>
@@ -174,7 +236,7 @@ namespace DataTable.Generated
 
     public partial class RarityTypeTable : IBinarySupport
     {
-        public BuffTable()
+        public RarityTypeTable()
         {
             BinaryRead("Assets/Tables/Binary/RarityTypeTable.xcell");
         }
@@ -246,7 +308,7 @@ namespace DataTable.Generated
 		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
-            w.Write(enum);
+            
             w.Write(id);
             w.Write(name);
             w.Write(test0);

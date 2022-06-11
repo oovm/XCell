@@ -15,13 +15,32 @@ using UnityEngine;
 
 namespace {{ config.namespace }}
 {
+{%- if enumerate %}
+    [DataContract, Serializable]
+    public enum {{CLASS_NAME}} : {{ ID_TYPE }}
+    {
+        SSR = 1,
+        SR = 2,
+    }
+
+    public static class {{CLASS_NAME}}Extension
+    {
+{%- for field in CLASS_FIELDS %}
+        public static {{ field.typing }} {{ field.getter }}(this {{CLASS_NAME}} self)
+        {
+            return {{ config.manager_name }}.Instance.{{ TABLE_NAME }}.{{ ELEMENT_GETTER }}(({{ ID_TYPE }})self)!.{{ field.name }};
+        }
+{%- endfor %}
+    }
+{%- endif %}
     [DataContract, Serializable]
     public partial class {{ TABLE_NAME }}
     {
-        [DataMember] public readonly Dictionary<int, {{ELEMENT_NAME}}> dict = new();
+        [DataMember]
+        public readonly Dictionary<{{ ID_TYPE }}, {{ELEMENT_NAME}}> dict = new();
 
         [CanBeNull]
-        public {{ELEMENT_NAME}} {{ELEMENT_GETTER}}(int id)
+        public {{ELEMENT_NAME}} {{ ELEMENT_GETTER }}({{ ID_TYPE }} id)
         {
             return dict.TryGetValue(id, out var item) ? item : null;
         }
@@ -52,9 +71,9 @@ namespace {{ config.namespace }}
 {% if config.support_binary %}
     public partial class {{TABLE_NAME}} : IBinarySupport
     {
-        public BuffTable()
+        public {{TABLE_NAME}}()
         {
-            BinaryRead("Assets/Tables/Binary/{{TABLE_NAME}}.xcell");
+            BinaryRead("Assets/{{ config.folder_binary }}/{{ TABLE_NAME }}.xcell");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据

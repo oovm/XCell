@@ -115,4 +115,5 @@ impl XCellTable {
             None => String::new(),
         }
     }
+
 }

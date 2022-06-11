@@ -47,6 +47,12 @@ pub enum XCellKind {
     Enumerate,
 }
 
+impl XCellTable {
+    pub fn is_enumerate(&self) -> bool {
+        matches!(self.headers.kind, XCellKind::Enumerate)
+    }
+}
+
 impl Default for XCellKind {
     fn default() -> Self {
         Self::SortedMap

@@ -23,12 +23,12 @@ pub enum IntegerKind {
 }
 
 impl IntegerDescription {
-    pub fn range<A, B>(min: A, max: B) -> Self
+    pub fn range<A, B>(min: A, max: B, kind: IntegerKind) -> Self
     where
         A: Into<BigInt>,
         B: Into<BigInt>,
     {
-        Self { kind: Default::default(), min: min.into(), max: max.into(), default: Default::default() }
+        Self { kind, min: min.into(), max: max.into(), default: Default::default() }
     }
     pub fn clamp<I>(&self, int: I) -> BigInt
     where

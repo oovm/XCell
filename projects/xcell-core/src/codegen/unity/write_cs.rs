@@ -1,4 +1,5 @@
-use crate::typing::IntegerKind;
+use crate::typing::{IntegerKind, TimeDescription};
+use chrono::{Datelike, Timelike};
 
 use super::*;
 
@@ -24,16 +25,8 @@ impl UnityCodegen {
         ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.suffix_element));
         ctx.insert("ID_TYPE", &table.headers.key_type());
         let is_enum = table.is_enumerate();
-        match table.is_enumerate() {
-            true => {
-                ctx.insert("enumerate", &true);
-                ctx.insert("CLASS_FIELDS", &table.headers.make_enum_field());
-            }
-            false => {
-                ctx.insert("enumerate", &false);
-                ctx.insert("CLASS_FIELDS", &table.headers.make_class_field());
-            }
-        }
+        ctx.insert("enumerate", &is_enum);
+        ctx.insert("CLASS_FIELDS", &table.headers.make_class_field(is_enum));
         ctx
     }
 }
@@ -53,7 +46,11 @@ struct CsField {
 
 impl XCellHeaders {
     fn make_class_field(&self, is_enum: bool) -> Vec<CsField> {
-        self.inner.iter().map(|v| v.make_class_field(is_enum)).collect()
+        let mut items = self.inner.iter();
+        if is_enum {
+            items.next();
+        }
+        items.map(|v| v.make_class_field(is_enum)).collect()
     }
     fn key_type(&self) -> String {
         match self.inner.first() {
@@ -67,7 +64,7 @@ impl XCellHeaders {
 }
 
 impl XCellHeader {
-    fn make_class_field(&self, is_enum: bool) -> CsField {
+    fn make_class_field(&self, _is_enum: bool) -> CsField {
         let default = self.typing.make_cs_default();
         CsField {
             summary: self.summary.lines().map(|v| v.to_string()).collect(),
@@ -92,9 +89,7 @@ impl XCellTyped {
             XCellTyped::Float64(_) => "double".to_string(),
             XCellTyped::Decimal128(_) => "decimal".to_string(),
             XCellTyped::String(_) => "string".to_string(),
-            XCellTyped::Datetime(_) => {
-                todo!()
-            }
+            XCellTyped::Time(_) => "DateTime".to_string(),
             XCellTyped::Color(_) => "Color32".to_string(),
             XCellTyped::Enumerate(v) => v.typing.to_owned(),
             XCellTyped::Custom(v) => v.typing.to_owned(),
@@ -108,9 +103,7 @@ impl XCellTyped {
             XCellTyped::Float64(v) => v.default.to_string(),
             XCellTyped::Decimal128(v) => v.default.to_string(),
             XCellTyped::String(v) => format!("{:?}", v.default),
-            XCellTyped::Datetime(_) => {
-                todo!()
-            }
+            XCellTyped::Time(v) => v.make_cs_datetime(),
             XCellTyped::Color(v) => v.make_cs_color32(),
             XCellTyped::Enumerate(v) => v.default.to_string(),
             XCellTyped::Custom(v) => v.default.to_string(),
@@ -119,8 +112,8 @@ impl XCellTyped {
     fn make_cs_binary_writer(&self, field: &str) -> Vec<String> {
         let mut out = vec![];
         match self {
-            XCellTyped::Datetime(_) => {
-                todo!()
+            XCellTyped::Time(_) => {
+                out.push(format!("w.Write({field}.Ticks);"));
             }
             XCellTyped::Color(_) => {
                 out.push(format!("w.Write({field}.r);"));
@@ -143,9 +136,7 @@ impl XCellTyped {
             XCellTyped::Float64(_) => "r.ReadDouble()".to_string(),
             XCellTyped::Decimal128(_) => "r.ReadDecimal()".to_string(),
             XCellTyped::String(_) => "r.ReadString()".to_string(),
-            XCellTyped::Datetime(_) => {
-                todo!()
-            }
+            XCellTyped::Time(_) => "new DateTime(r.ReadInt64(), DateTimeKind.Utc)".to_string(),
             XCellTyped::Color(_) => "new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
             XCellTyped::Enumerate(v) => v.default.to_string(),
             XCellTyped::Custom(v) => v.default.to_string(),
@@ -180,8 +171,20 @@ impl IntegerKind {
     }
 }
 
+impl TimeDescription {
+    fn make_cs_datetime(&self) -> String {
+        let y = self.default.year();
+        let m = self.default.month();
+        let d = self.default.day();
+        let h = self.default.hour();
+        let min = self.default.minute();
+        let s = self.default.second();
+        format!("new DateTime({y}, {m}, {d}, {h}, {min}, {s})")
+    }
+}
+
 impl ColorDescription {
-    pub fn make_cs_color32(&self) -> String {
+    fn make_cs_color32(&self) -> String {
         let [r, g, b, a] = self.default.to_rgba8();
         format!("new Color32({r}, {g}, {b}, {a})")
     }

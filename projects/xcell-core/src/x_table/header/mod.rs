@@ -59,9 +59,7 @@ impl XCellTyped {
             XCellTyped::Float64(typing) => typing.parse_f64(cell).map(XCellValue::Float64),
             XCellTyped::Decimal128(typing) => typing.parse_f64(cell).map(XCellValue::Float64),
             XCellTyped::String(typing) => typing.parse_cell(cell).map(XCellValue::String),
-            XCellTyped::Datetime(typing) => {
-                typing.parse_cell(cell).map(|v| XCellValue::Integer8(v.to_i8().unwrap_or_default()))
-            }
+            XCellTyped::Time(typing) => typing.parse_cell(cell).map(XCellValue::Time),
             XCellTyped::Color(typing) => typing.parse_cell(cell).map(XCellValue::Color),
             XCellTyped::Enumerate(typing) => typing.parse_cell(cell).map(XCellValue::String),
             XCellTyped::Custom(typing) => typing.parse_cell(cell).map(XCellValue::String),

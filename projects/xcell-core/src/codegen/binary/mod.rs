@@ -41,6 +41,9 @@ impl XCellValue {
             XCellValue::Color(_) => {
                 todo!()
             }
+            XCellValue::Time(_) => {
+                todo!()
+            }
             XCellValue::Custom(_) => {
                 todo!()
             }

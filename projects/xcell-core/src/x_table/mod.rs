@@ -11,7 +11,6 @@ use std::{
 
 use array2d::Array2D;
 use calamine::DataType;
-use num::ToPrimitive;
 use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::{

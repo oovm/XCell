@@ -16,7 +16,7 @@ using UnityEngine;
 namespace DataTable.Generated
 {
     [DataContract, Serializable]
-    public enum RarityType : uint
+    public enum RarityType : ulong
     {
         SSR = 1,
         SR = 2,
@@ -24,79 +24,79 @@ namespace DataTable.Generated
 
     public static class RarityTypeExtension
     {
-        public static RarityType GetEnum(this RarityType self)
+        public static ulong GetId(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.enum;
-        }
-        public static uint GetId(this RarityType self)
-        {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.id;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.id;
         }
         public static string GetName(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.name;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.name;
         }
         public static bool GetTest0(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test0;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test0;
         }
         public static Color32 GetTest1(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test1;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test1;
         }
-        public static uint GetTest2(this RarityType self)
+        public static sbyte GetTest2(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test2;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test2;
         }
-        public static uint GetTest3(this RarityType self)
+        public static ushort GetTest3(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test3;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test3;
         }
         public static uint GetTest4(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test4;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test4;
         }
-        public static uint GetTest5(this RarityType self)
+        public static ulong GetTest5(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test5;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test5;
         }
-        public static uint GetTest6(this RarityType self)
+        public static byte GetTest6(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test6;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test6;
         }
-        public static uint GetTest7(this RarityType self)
+        public static short GetTest7(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test7;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test7;
         }
-        public static uint GetTest8(this RarityType self)
+        public static int GetTest8(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test8;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test8;
         }
-        public static uint GetTest9(this RarityType self)
+        public static long GetTest9(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test9;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test9;
         }
         public static float GetTest10(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test10;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test10;
         }
         public static double GetTest11(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test11;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test11;
         }
         public static decimal GetTest12(this RarityType self)
         {
-            return DataTableManager.Instance.RarityTypeTable.GetElement((uint)self)!.test12;
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test12;
+        }
+        public static DateTime GetTest13(this RarityType self)
+        {
+            return DataTableManager.Instance.RarityTypeTable.GetElement((ulong)self)!.test13;
         }
     }
     [DataContract, Serializable]
     public partial class RarityTypeTable
     {
         [DataMember]
-        public readonly Dictionary<uint, RarityTypeElement> dict = new();
+        public readonly Dictionary<ulong, RarityTypeElement> dict = new();
 
         [CanBeNull]
-        public RarityTypeElement GetElement(uint id)
+        public RarityTypeElement GetElement(ulong id)
         {
             return dict.TryGetValue(id, out var item) ? item : null;
         }
@@ -106,19 +106,12 @@ namespace DataTable.Generated
     public partial class RarityTypeElement
     {
         /// <summary>
-        /// Item 类型
-        /// </summary>
-        /// <remarks>
-        /// </remarks>
-        [DataMember]
-        public RarityType enum;
-        /// <summary>
         /// 编号
         /// </summary>
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public uint id = 0;
+        public ulong id = 0;
 
         /// <summary>
         /// 本地化
@@ -150,7 +143,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public uint test2 = 0;
+        public sbyte test2 = 0;
 
         /// <summary>
         /// 无符号 16 位
@@ -158,7 +151,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public uint test3 = 0;
+        public ushort test3 = 0;
 
         /// <summary>
         /// 无符号 32 位
@@ -174,7 +167,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public uint test5 = 0;
+        public ulong test5 = 0;
 
         /// <summary>
         /// 有符号 8 位
@@ -182,7 +175,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public uint test6 = 0;
+        public byte test6 = 0;
 
         /// <summary>
         /// 有符号 16 位
@@ -190,7 +183,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public uint test7 = 0;
+        public short test7 = 0;
 
         /// <summary>
         /// 有符号 32 位
@@ -198,7 +191,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public uint test8 = 0;
+        public int test8 = 0;
 
         /// <summary>
         /// 有符号 64 位
@@ -206,7 +199,7 @@ namespace DataTable.Generated
         /// <remarks>
         /// </remarks>
         [DataMember]
-        public uint test9 = 0;
+        public long test9 = 0;
 
         /// <summary>
         /// 32 位浮点数
@@ -232,13 +225,21 @@ namespace DataTable.Generated
         [DataMember]
         public decimal test12 = 0;
 
+        /// <summary>
+        /// 日期
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        [DataMember]
+        public DateTime test13 = new DateTime(2022, 11, 12, 12, 49, 10);
+
     }
 
     public partial class RarityTypeTable : IBinarySupport
     {
         public RarityTypeTable()
         {
-            BinaryRead("Assets/Tables/Binary/RarityTypeTable.xcell");
+            BinaryRead("Assets/Tables/Binary/RarityTypeTable.binary");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据
@@ -287,28 +288,27 @@ namespace DataTable.Generated
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
-            enum = ;
-            id = r.ReadUInt32();
+            id = r.ReadUInt64();
             name = r.ReadString();
             test0 = r.ReadBoolean();
             test1 = new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte());
-            test2 = r.ReadUInt32();
-            test3 = r.ReadUInt32();
+            test2 = r.ReadSByte();
+            test3 = r.ReadUInt16();
             test4 = r.ReadUInt32();
-            test5 = r.ReadUInt32();
-            test6 = r.ReadUInt32();
-            test7 = r.ReadUInt32();
-            test8 = r.ReadUInt32();
-            test9 = r.ReadUInt32();
+            test5 = r.ReadUInt64();
+            test6 = r.ReadByte();
+            test7 = r.ReadInt16();
+            test8 = r.ReadInt32();
+            test9 = r.ReadInt64();
             test10 = r.ReadSingle();
             test11 = r.ReadDouble();
             test12 = r.ReadDecimal();
+            test13 = new DateTime(r.ReadInt64(), DateTimeKind.Utc);
         }
 
 		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
-            
             w.Write(id);
             w.Write(name);
             w.Write(test0);
@@ -327,6 +327,7 @@ namespace DataTable.Generated
             w.Write(test10);
             w.Write(test11);
             w.Write(test12);
+            w.Write(test13.Ticks);
         }
     }
 

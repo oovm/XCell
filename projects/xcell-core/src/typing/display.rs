@@ -32,17 +32,20 @@ impl Display for XCellValue {
             XCellValue::Unsigned64(v) => {
                 write!(f, "{v}u64")
             }
-            XCellValue::Float32(_) => {
-                todo!()
+            XCellValue::Float32(v) => {
+                write!(f, "{v}f32")
             }
-            XCellValue::Float64(_) => {
-                todo!()
+            XCellValue::Float64(v) => {
+                write!(f, "{v}f64")
             }
-            XCellValue::String(_) => {
-                todo!()
+            XCellValue::String(v) => {
+                write!(f, "{v:?}")
             }
-            XCellValue::Color(_) => {
-                todo!()
+            XCellValue::Color(v) => {
+                write!(f, "{v}")
+            }
+            XCellValue::Time(v) => {
+                write!(f, "{v}")
             }
             XCellValue::Custom(_) => {
                 todo!()

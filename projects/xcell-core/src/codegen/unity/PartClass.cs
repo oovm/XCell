@@ -28,7 +28,7 @@ namespace {{ config.namespace }}
 {%- for field in CLASS_FIELDS %}
         public static {{ field.typing }} {{ field.getter }}(this {{CLASS_NAME}} self)
         {
-            return {{ config.manager_name }}.Instance.{{ TABLE_NAME }}.{{ ELEMENT_GETTER }}(({{ ID_TYPE }})self)!.{{ field.name }};
+            return {{ config.manager_name }}.Instance.{{ TABLE_NAME }}.{{ ELEMENT_GETTER }}(({{ ID_TYPE }}) self)!.{{ field.name }};
         }
 {%- endfor %}
     }
@@ -73,7 +73,7 @@ namespace {{ config.namespace }}
     {
         public {{TABLE_NAME}}()
         {
-            BinaryRead("Assets/{{ config.folder_binary }}/{{ TABLE_NAME }}.xcell");
+            BinaryRead("Assets/{{ config.folder_binary }}/{{ TABLE_NAME }}.binary");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据

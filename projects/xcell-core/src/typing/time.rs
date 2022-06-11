@@ -1,41 +1,33 @@
-use num::FromPrimitive;
+use chrono::{NaiveDateTime, TimeZone};
 
 use super::*;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TimeDescription {
-    pub min: BigInt,
-    pub max: BigInt,
-    pub default: BigInt,
+    /// `new DateTime(1, 1, 1, 0, 0, 0, DateTimeKind.Utc)`
+    pub default: DateTime,
+}
+
+impl Default for TimeDescription {
+    fn default() -> Self {
+        TimeDescription { default: DateTime::from(SystemTime::now()) }
+    }
 }
 
 impl TimeDescription {
-    pub fn range<A, B>(min: A, max: B) -> Self
-    where
-        A: Into<BigInt>,
-        B: Into<BigInt>,
-    {
-        Self { min: min.into(), max: max.into(), default: Default::default() }
-    }
-    pub fn clamp<I>(&self, int: I) -> BigInt
-    where
-        I: Into<BigInt>,
-    {
-        int.into().clamp(self.min.clone(), self.max.clone())
-    }
-    pub fn parse_cell(&self, cell: &DataType) -> Result<BigInt, XErrorKind> {
+    pub fn parse_cell(&self, cell: &DataType) -> Result<DateTime, XErrorKind> {
         match cell {
-            DataType::Int(i) => Ok(self.clamp(*i)),
-            DataType::Float(f) => match BigInt::from_f64(*f) {
-                Some(o) => Ok(o),
-                None => syntax_error(format!("{} 无法解析为 int 类型", f)),
-            },
-            DataType::String(s) => match BigInt::from_str(s) {
+            DataType::DateTime(time) => {
+                let ntv = NaiveDateTime::from_timestamp(*time as i64, 0);
+                let utc = Utc.from_utc_datetime(&ntv);
+                Ok(utc)
+            }
+            DataType::String(s) => match DateTime::from_str(s) {
                 Ok(o) => Ok(o),
-                Err(_) => syntax_error(format!("{} 无法解析为 int 类型", s)),
+                Err(_) => syntax_error(format!("{} 无法解析为 time 类型", s)),
             },
             DataType::Empty => Ok(self.default.clone()),
-            _ => syntax_error(format!("{} 无法解析为 int 类型", cell.to_string())),
+            _ => syntax_error(format!("{} 无法解析为 time 类型", cell.to_string())),
         }
     }
 }

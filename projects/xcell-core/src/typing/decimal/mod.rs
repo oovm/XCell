@@ -1,7 +1,14 @@
 use super::*;
 
+pub enum DecimalKind {
+    Float32,
+    Float64,
+    Decimal128,
+}
+
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct DecimalDescription {
+    pub kind: DecimalKind,
     pub min: BigDecimal,
     pub max: BigDecimal,
     pub default: BigDecimal,
@@ -21,7 +28,7 @@ impl DecimalDescription {
     {
         int.into()
     }
-    pub fn parse_cell(&self, cell: &DataType) -> Result<BigDecimal, XErrorKind> {
+    pub fn parse_value(&self, cell: &DataType) -> Result<BigDecimal, XErrorKind> {
         match cell {
             DataType::Int(i) => Ok(self.clamp(*i)),
             DataType::Float(f) => match BigDecimal::from_f64(*f) {
@@ -37,13 +44,13 @@ impl DecimalDescription {
         }
     }
     pub fn parse_f32(&self, cell: &DataType) -> Result<f32, XErrorKind> {
-        match self.parse_cell(cell) {
+        match self.parse_value(cell) {
             Ok(o) => Ok(o.to_f32().unwrap_or_default()),
             Err(e) => Err(e),
         }
     }
     pub fn parse_f64(&self, cell: &DataType) -> Result<f64, XErrorKind> {
-        match self.parse_cell(cell) {
+        match self.parse_value(cell) {
             Ok(o) => Ok(o.to_f64().unwrap_or_default()),
             Err(e) => Err(e),
         }

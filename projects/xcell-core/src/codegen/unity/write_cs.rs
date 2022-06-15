@@ -85,7 +85,7 @@ impl XCellTyped {
         match self {
             XCellTyped::Boolean(_) => "bool".to_string(),
             XCellTyped::Integer(v) => v.as_csharp_type().to_string(),
-            XCellTyped::Float32(_) => "float".to_string(),
+            XCellTyped::Decimal(_) => "float".to_string(),
             XCellTyped::Float64(_) => "double".to_string(),
             XCellTyped::Decimal128(_) => "decimal".to_string(),
             XCellTyped::String(_) => "string".to_string(),
@@ -99,7 +99,7 @@ impl XCellTyped {
         match self {
             XCellTyped::Boolean(v) => v.default.to_string(),
             XCellTyped::Integer(v) => v.default.to_string(),
-            XCellTyped::Float32(v) => v.default.to_string(),
+            XCellTyped::Decimal(v) => v.default.to_string(),
             XCellTyped::Float64(v) => v.default.to_string(),
             XCellTyped::Decimal128(v) => v.default.to_string(),
             XCellTyped::String(v) => format!("{:?}", v.default),
@@ -132,7 +132,7 @@ impl XCellTyped {
         match self {
             XCellTyped::Boolean(_) => "r.ReadBoolean()".to_string(),
             XCellTyped::Integer(v) => format!("r.{}()", v.csharp_br()),
-            XCellTyped::Float32(_) => "r.ReadSingle()".to_string(),
+            XCellTyped::Decimal(_) => "r.ReadSingle()".to_string(),
             XCellTyped::Float64(_) => "r.ReadDouble()".to_string(),
             XCellTyped::Decimal128(_) => "r.ReadDecimal()".to_string(),
             XCellTyped::String(_) => "r.ReadString()".to_string(),

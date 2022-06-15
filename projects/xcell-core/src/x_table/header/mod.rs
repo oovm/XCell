@@ -46,16 +46,16 @@ impl XCellTyped {
         match self {
             XCellTyped::Boolean(typing) => typing.parse_cell(cell).map(XCellValue::Boolean),
             XCellTyped::Integer(typing) => match typing.kind {
-                IntegerKind::Integer8 => typing.parse_i8(cell).map(XCellValue::Integer8),
-                IntegerKind::Integer16 => typing.parse_i16(cell).map(XCellValue::Integer16),
-                IntegerKind::Integer32 => typing.parse_i32(cell).map(XCellValue::Integer32),
-                IntegerKind::Integer64 => typing.parse_i64(cell).map(XCellValue::Integer64),
-                IntegerKind::Unsigned8 => typing.parse_u8(cell).map(XCellValue::Unsigned8),
-                IntegerKind::Unsigned16 => typing.parse_u16(cell).map(XCellValue::Unsigned16),
-                IntegerKind::Unsigned32 => typing.parse_u32(cell).map(XCellValue::Unsigned32),
-                IntegerKind::Unsigned64 => typing.parse_u64(cell).map(XCellValue::Unsigned64),
+                IntegerKind::Integer8 => typing.parse_i8(cell),
+                IntegerKind::Integer16 => typing.parse_i16(cell),
+                IntegerKind::Integer32 => typing.parse_i32(cell),
+                IntegerKind::Integer64 => typing.parse_i64(cell),
+                IntegerKind::Unsigned8 => typing.parse_u8(cell),
+                IntegerKind::Unsigned16 => typing.parse_u16(cell),
+                IntegerKind::Unsigned32 => typing.parse_u32(cell),
+                IntegerKind::Unsigned64 => typing.parse_u64(cell),
             },
-            XCellTyped::Float32(typing) => typing.parse_f32(cell).map(XCellValue::Float32),
+            XCellTyped::Decimal(typing) => typing.parse_f32(cell).map(XCellValue::Float32),
             XCellTyped::Float64(typing) => typing.parse_f64(cell).map(XCellValue::Float64),
             XCellTyped::Decimal128(typing) => typing.parse_f64(cell).map(XCellValue::Float64),
             XCellTyped::String(typing) => typing.parse_cell(cell).map(XCellValue::String),
@@ -63,6 +63,7 @@ impl XCellTyped {
             XCellTyped::Color(typing) => typing.parse_cell(cell).map(XCellValue::Color),
             XCellTyped::Enumerate(typing) => typing.parse_cell(cell).map(XCellValue::String),
             XCellTyped::Custom(typing) => typing.parse_cell(cell).map(XCellValue::String),
+            XCellTyped::Array(_) => {}
         }
     }
 }

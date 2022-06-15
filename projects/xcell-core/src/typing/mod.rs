@@ -6,10 +6,11 @@ use chrono::Utc;
 use csscolorparser::Color;
 use num::{BigInt, FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
-mod array;
-use crate::{DateTime, XCellTable, XError, XErrorKind};
+
+use crate::{DateTime, XCellTable, XError, XErrorKind, XResult};
 
 pub use self::{
+    array::ArrayDescription,
     boolean::BooleanDescription,
     color::ColorDescription,
     custom::CustomDescription,
@@ -20,6 +21,7 @@ pub use self::{
     time::TimeDescription,
 };
 
+mod array;
 mod boolean;
 mod color;
 mod custom;
@@ -34,9 +36,7 @@ mod time;
 pub enum XCellTyped {
     Boolean(BooleanDescription),
     Integer(IntegerDescription),
-    Float32(DecimalDescription),
-    Float64(DecimalDescription),
-    Decimal128(DecimalDescription),
+    Decimal(DecimalDescription),
     String(StringDescription),
     Time(TimeDescription),
     Color(ColorDescription),
@@ -52,11 +52,11 @@ where
     Err(XErrorKind::TypeMismatch { except: this.clone().into(), current: cell.clone() })
 }
 
-fn syntax_error<T, A>(msg: A) -> Result<T, XErrorKind>
+fn syntax_error<T, A>(msg: A) -> XResult<T>
 where
     A: Into<String>,
 {
-    Err(XErrorKind::SyntaxError(msg.into()))
+    Err(XError { kind: box XErrorKind::SyntaxError(msg.into()), path: None, position: None })
 }
 
 impl FromStr for XCellTyped {
@@ -78,13 +78,18 @@ impl FromStr for XCellTyped {
             "uint" | "u32" => Self::Integer(IntegerDescription::range(u32::MIN, u32::MAX, IntegerKind::Unsigned32)),
             "ulong" | "u64" => Self::Integer(IntegerDescription::range(u64::MIN, u64::MAX, IntegerKind::Unsigned64)),
             // float
-            "float" | "f32" => Self::Float32(Default::default()),
+            "float" | "f32" => Self::Decimal(Default::default()),
             "double" | "f64" => Self::Float64(Default::default()),
             "decimal" | "d128" | "f128" => Self::Decimal128(Default::default()),
             // other
-            "color" => Self::Color(Default::default()),
+            "color" | "color32" => Self::Color(Default::default()),
             "date" | "time" | "datetime" => Self::Time(Default::default()),
-            "v2" | "v3" | "v4" | "q4" => Self::Custom(CustomDescription::new(s)),
+            // array
+            "v2" | "vec2" => Self::Custom(ArrayDescription::new(s)),
+            "v3" | "vec3" => Self::Custom(ArrayDescription::new(s)),
+            "v4" | "vec4" => Self::Custom(ArrayDescription::new(s)),
+            "q4" | "quaternion" => Self::Custom(ArrayDescription::new(s)),
+            "c4" | "color4" => Self::Custom(ArrayDescription::new(s)),
             // enum
             "enum" => Self::Enumerate(Default::default()),
             _ => Self::Custom(CustomDescription::new(s)),

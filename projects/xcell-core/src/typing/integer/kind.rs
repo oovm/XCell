@@ -1,6 +1,5 @@
 use super::*;
 
-
 impl Deref for IntegerDescription {
     type Target = IntegerKind;
 
@@ -40,6 +39,18 @@ impl IntegerKind {
             IntegerKind::Unsigned16 => 2,
             IntegerKind::Unsigned32 => 4,
             IntegerKind::Unsigned64 => 8,
+        }
+    }
+    pub fn as_csharp_type(&self) -> &'static str {
+        match self {
+            IntegerKind::Integer8 => "byte",
+            IntegerKind::Integer16 => "short",
+            IntegerKind::Integer32 => "int",
+            IntegerKind::Integer64 => "long",
+            IntegerKind::Unsigned8 => "sbyte",
+            IntegerKind::Unsigned16 => "ushort",
+            IntegerKind::Unsigned32 => "uint",
+            IntegerKind::Unsigned64 => "ulong",
         }
     }
 }

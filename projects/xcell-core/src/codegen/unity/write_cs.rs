@@ -85,7 +85,7 @@ impl XCellTyped {
         match self {
             XCellTyped::Boolean(_) => "bool".to_string(),
             XCellTyped::Integer(v) => v.as_csharp_type().to_string(),
-            XCellTyped::Decimal(_) => "float".to_string(),
+            XCellTyped::Decimal(v) => "float".to_string(),
             XCellTyped::Float64(_) => "double".to_string(),
             XCellTyped::Decimal128(_) => "decimal".to_string(),
             XCellTyped::String(_) => "string".to_string(),
@@ -145,18 +145,6 @@ impl XCellTyped {
 }
 
 impl IntegerKind {
-    pub fn as_csharp_type(&self) -> &'static str {
-        match self {
-            IntegerKind::Integer8 => "byte",
-            IntegerKind::Integer16 => "short",
-            IntegerKind::Integer32 => "int",
-            IntegerKind::Integer64 => "long",
-            IntegerKind::Unsigned8 => "sbyte",
-            IntegerKind::Unsigned16 => "ushort",
-            IntegerKind::Unsigned32 => "uint",
-            IntegerKind::Unsigned64 => "ulong",
-        }
-    }
     fn csharp_br(&self) -> &'static str {
         match self {
             IntegerKind::Integer8 => "ReadByte",

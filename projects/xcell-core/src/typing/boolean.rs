@@ -14,7 +14,8 @@ impl From<BooleanDescription> for XCellTyped {
 }
 
 impl BooleanDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> Result<bool, XErrorKind> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {}
+    pub fn parse_value(&self, cell: &DataType) -> Result<bool, XErrorKind> {
         match cell {
             DataType::String(s) => {
                 if self.accept.contains(s) {

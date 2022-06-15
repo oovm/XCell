@@ -1,23 +1,19 @@
 use super::*;
 
 impl IntegerDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<BigInt> {
-        match cell {
-            DataType::Int(i) => Ok(self.clamp(*i)),
-            DataType::Float(f) => match BigInt::from_f64(*f) {
-                Some(o) => Ok(o),
-                None => syntax_error(format!("{} 无法解析为 int 类型", f)),
-            },
-            DataType::String(s) => match BigInt::from_str(s) {
-                Ok(o) => Ok(o),
-                Err(_) => syntax_error(format!("{} 无法解析为 int 类型", s)),
-            },
-            DataType::Empty => Ok(self.default.clone()),
-            _ => syntax_error(format!("{} 无法解析为 int 类型", cell.to_string())),
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+        match self.kind {
+            IntegerKind::Integer8 => self.parse_i8(cell),
+            IntegerKind::Integer16 => self.parse_i16(cell),
+            IntegerKind::Integer32 => self.parse_i32(cell),
+            IntegerKind::Integer64 => self.parse_i64(cell),
+            IntegerKind::Unsigned8 => self.parse_u8(cell),
+            IntegerKind::Unsigned16 => self.parse_u16(cell),
+            IntegerKind::Unsigned32 => self.parse_u32(cell),
+            IntegerKind::Unsigned64 => self.parse_u64(cell),
         }
     }
-
-    fn parse_value(&self, cell: &DataType) -> XResult<BigInt> {
+    pub fn parse_value(&self, cell: &DataType) -> XResult<BigInt> {
         match cell {
             DataType::Int(i) => Ok(self.clamp(*i)),
             DataType::Float(f) => match BigInt::from_f64(*f) {

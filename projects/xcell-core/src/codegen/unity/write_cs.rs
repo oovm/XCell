@@ -85,12 +85,11 @@ impl XCellTyped {
         match self {
             XCellTyped::Boolean(_) => "bool".to_string(),
             XCellTyped::Integer(v) => v.as_csharp_type().to_string(),
-            XCellTyped::Decimal(v) => "float".to_string(),
-            XCellTyped::Float64(_) => "double".to_string(),
-            XCellTyped::Decimal128(_) => "decimal".to_string(),
+            XCellTyped::Decimal(v) => v.as_csharp_type().to_string(),
             XCellTyped::String(_) => "string".to_string(),
             XCellTyped::Time(_) => "DateTime".to_string(),
             XCellTyped::Color(_) => "Color32".to_string(),
+            XCellTyped::Array(_) => {}
             XCellTyped::Enumerate(v) => v.typing.to_owned(),
             XCellTyped::Custom(v) => v.typing.to_owned(),
         }
@@ -100,12 +99,11 @@ impl XCellTyped {
             XCellTyped::Boolean(v) => v.default.to_string(),
             XCellTyped::Integer(v) => v.default.to_string(),
             XCellTyped::Decimal(v) => v.default.to_string(),
-            XCellTyped::Float64(v) => v.default.to_string(),
-            XCellTyped::Decimal128(v) => v.default.to_string(),
             XCellTyped::String(v) => format!("{:?}", v.default),
             XCellTyped::Time(v) => v.make_cs_datetime(),
             XCellTyped::Color(v) => v.make_cs_color32(),
             XCellTyped::Enumerate(v) => v.default.to_string(),
+            XCellTyped::Array(_) => {}
             XCellTyped::Custom(v) => v.default.to_string(),
         }
     }
@@ -131,10 +129,8 @@ impl XCellTyped {
     fn make_cs_binary_reader(&self) -> String {
         match self {
             XCellTyped::Boolean(_) => "r.ReadBoolean()".to_string(),
-            XCellTyped::Integer(v) => format!("r.{}()", v.csharp_br()),
-            XCellTyped::Decimal(_) => "r.ReadSingle()".to_string(),
-            XCellTyped::Float64(_) => "r.ReadDouble()".to_string(),
-            XCellTyped::Decimal128(_) => "r.ReadDecimal()".to_string(),
+            XCellTyped::Integer(v) => format!("r.{}()", v.as_csharp_reader()),
+            XCellTyped::Decimal(v) => format!("r.{}()", v.as_csharp_reader()),
             XCellTyped::String(_) => "r.ReadString()".to_string(),
             XCellTyped::Time(_) => "new DateTime(r.ReadInt64(), DateTimeKind.Utc)".to_string(),
             XCellTyped::Color(_) => "new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
@@ -144,20 +140,7 @@ impl XCellTyped {
     }
 }
 
-impl IntegerKind {
-    fn csharp_br(&self) -> &'static str {
-        match self {
-            IntegerKind::Integer8 => "ReadByte",
-            IntegerKind::Integer16 => "ReadInt16",
-            IntegerKind::Integer32 => "ReadInt32",
-            IntegerKind::Integer64 => "ReadInt64",
-            IntegerKind::Unsigned8 => "ReadSByte",
-            IntegerKind::Unsigned16 => "ReadUInt16",
-            IntegerKind::Unsigned32 => "ReadUInt32",
-            IntegerKind::Unsigned64 => "ReadUInt64",
-        }
-    }
-}
+impl IntegerKind {}
 
 impl TimeDescription {
     fn make_cs_datetime(&self) -> String {

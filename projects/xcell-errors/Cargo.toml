@@ -1,0 +1,19 @@
+[package]
+name = "xcell-errors"
+publish = false
+version = "0.0.0"
+authors = ["Aster <192607617@qq.com>"]
+description = "..."
+repository = "https://github.com/oovm/XCell"
+documentation = "https://docs.rs/sub_projects"
+readme = "Readme.md"
+license = "MPL-2.0"
+edition = "2021"
+
+[dependencies]
+iced = "0.5.2"
+
+[dev-dependencies]
+
+[features]
+default = []

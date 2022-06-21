@@ -1,22 +1,19 @@
-use calamine::DataType;
 use std::{
     error::Error,
     fmt::{Debug, Display, Formatter},
     path::PathBuf,
 };
 
-use crate::typing::XCellTyped;
+use calamine::DataType;
 
-mod for_calamine;
-mod for_std;
-mod for_toml;
-mod for_tera;
+use crate::typing::XCellTyped;
 
 #[derive(Debug)]
 pub struct XError {
     pub kind: Box<XErrorKind>,
     pub path: Option<PathBuf>,
     pub position: Option<(usize, usize)>,
+    pub source: Option<Box<dyn Error>>,
 }
 
 #[derive(Debug)]
@@ -26,6 +23,18 @@ pub enum XErrorKind {
     TableError(String),
     TypeMismatch { except: XCellTyped, current: DataType },
     UnknownError,
+}
+
+impl Display for XError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
+}
+
+impl Error for XError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        self.source
+    }
 }
 
 pub type XResult<T = ()> = Result<T, XError>;

@@ -1,3 +1,7 @@
-mod errors;
+pub(crate) mod errors;
 
-pub use errors::{Error, Result};
+mod decimal;
+mod integer;
+mod parser;
+mod typing;
+mod value;

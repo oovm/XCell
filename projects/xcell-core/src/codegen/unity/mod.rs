@@ -1,9 +1,11 @@
 use super::*;
 
-mod write_cs;
 mod config;
+mod write_cs;
 
-#[derive(Debug, Serialize, Deserialize)]
+pub const UNITY_CODEGEN_CONFIG: &str = include_str!("config.toml");
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UnityCodegen {
     pub namespace: String,
     pub folder_binary: String,

@@ -5,11 +5,4 @@
 [type.string]
 
 
-[unity]
-namespace = "DataTable.Generated"
-folder_binary = ""
-suffix_table = "Table"
-suffix_element = "Element"
-support_binary = true
-support_clone = true
-legacy_using = false
+

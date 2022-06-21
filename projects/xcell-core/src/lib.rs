@@ -1,23 +1,18 @@
 #![feature(box_syntax)]
 #![feature(try_blocks)]
 #![feature(type_alias_impl_trait)]
+#![feature(once_cell)]
 
 pub use diagnostic::Validation::{Failure, Success};
 
-pub use self::{
-    errors::{Validation, XError, XErrorKind, XResult},
-    typing::{BooleanDescription, ColorDescription, CustomDescription},
-    x_table::{
-        config::{BooleanMetaInfo, ProjectConfig, TableConfig, TypeMetaInfo},
-        XCellHeader, XCellHeaders, XCellTable,
-    },
+pub use self::x_table::{
+    config::{BooleanMetaInfo, ProjectConfig, TableConfig, TypeMetaInfo},
+    XCellHeader, XCellHeaders, XCellTable,
 };
 
 pub type DateTime = chrono::DateTime<chrono::Utc>;
 
 pub mod codegen;
-mod errors;
-pub mod typing;
 pub mod utils;
 mod x_table;
 

@@ -1,17 +1,15 @@
 use super::*;
 
+static UNITY_CODEGEN_DEFAULT: LazyLock<UnityCodegen> = LazyLock::new(|| {
+    let mut empty = UnityCodegen::empty();
+    let config = from_str::<Value>(UNITY_CODEGEN_CONFIG).unwrap();
+    empty.load_config(&config);
+    empty
+});
+
 impl Default for UnityCodegen {
     fn default() -> Self {
-        Self {
-            namespace: "DataTable.Generated".to_string(),
-            folder_binary: "Tables/Binary".to_string(),
-            manager_name: "DataTableManager".to_string(),
-            suffix_table: "Table".to_string(),
-            suffix_element: "Element".to_string(),
-            support_binary: true,
-            support_clone: true,
-            legacy_using: false,
-        }
+        UNITY_CODEGEN_DEFAULT.clone()
     }
 }
 
@@ -30,5 +28,17 @@ impl UnityCodegen {
         let _: Option<()> = try { self.support_binary = root.get("support_binary")?.as_bool()? };
         let _: Option<()> = try { self.support_clone = root.get("support_clone")?.as_bool()? };
         let _: Option<()> = try { self.legacy_using = root.get("legacy_using")?.as_bool()? };
+    }
+    pub(crate) fn empty() -> UnityCodegen {
+        UnityCodegen {
+            namespace: "".to_string(),
+            folder_binary: "".to_string(),
+            manager_name: "".to_string(),
+            suffix_table: "".to_string(),
+            suffix_element: "".to_string(),
+            support_binary: false,
+            support_clone: false,
+            legacy_using: false,
+        }
     }
 }

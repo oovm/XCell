@@ -11,7 +11,7 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-iced = "0.5.2"
+calamine = { version = "0.19.1", optional = true }
 
 [dev-dependencies]
 

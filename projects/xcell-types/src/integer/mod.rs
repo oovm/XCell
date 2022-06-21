@@ -1,6 +1,6 @@
 use crate::XResult;
 
-use super::*;
+use crate::typing::*;
 
 mod kind;
 mod parse_cell;

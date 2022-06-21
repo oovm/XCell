@@ -1,6 +1,5 @@
 [package]
 name = "xcell-types"
-publish = false
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "..."
@@ -13,7 +12,14 @@ edition = "2021"
 [dependencies]
 
 
+[dependencies.xcell-errors]
+#version = ""
+git = ""
+rev = ""
+
+
 [dev-dependencies]
+
 
 [build-dependencies]
 

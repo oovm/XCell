@@ -1,17 +1,12 @@
 use std::{ops::Deref, str::FromStr, time::SystemTime};
 
-use bigdecimal::BigDecimal;
-use calamine::DataType;
-use chrono::Utc;
-use csscolorparser::Color;
-use num::{BigInt, FromPrimitive, ToPrimitive};
 use serde::{Deserialize, Serialize};
+use xcell_errors::for_3rd::{BigDecimal, BigInt, Color, DateTime, FromPrimitive, ToPrimitive, Utc};
 
 pub use crate::{
     decimal::{DecimalDescription, DecimalKind},
     integer::{IntegerDescription, IntegerKind},
 };
-use crate::{DateTime, XError, XErrorKind, XResult};
 
 pub use self::{
     array::{ArrayDescription, ArrayKind},

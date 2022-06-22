@@ -26,8 +26,9 @@ decimal = { version = "2.1.0", features = ["serde"] }
 array2d = { version = "0.2.1", features = ["serde"] }
 #ndarray = { version = "0.15.6", features = ["serde"] }
 chrono = { version = "0.4.22", features = ["serde"] }
-peginator = "0.3.0"
 csscolorparser = { version = "0.6.2", features = ["serde"] }
+peginator = "0.3.0"
+
 
 [dependencies.sled-typed]
 #version = ""

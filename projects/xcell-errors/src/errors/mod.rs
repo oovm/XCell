@@ -6,7 +6,7 @@ use std::{
 
 mod for_std;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct XError {
     pub kind: Box<XErrorKind>,
     pub path: Option<PathBuf>,
@@ -57,11 +57,3 @@ impl XError {
     //     Self { kind: box XErrorKind::TypeMismatch { except, current }, path: Some(path), position: Some((x, y)) }
     // }
 }
-
-// impl Display for XError {
-//     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-//         Debug::fmt(self, f)
-//     }
-// }
-//
-// impl Error for XError {}

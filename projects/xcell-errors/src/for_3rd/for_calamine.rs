@@ -1,3 +1,4 @@
+pub use calamine::DataType;
 use calamine::Error;
 
 use crate::{errors::XError, XErrorKind};

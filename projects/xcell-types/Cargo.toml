@@ -10,12 +10,12 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
+serde = { version = "1.0.147", features = ["derive"] }
 
-
-#[dependencies.xcell-errors]
-##version = ""
-#git = ""
-#rev = ""
+[dependencies.xcell-errors]
+#version = ""
+path = "../xcell-errors"
+features = ["num", "bigdecimal", "chrono", "csscolorparser"]
 
 
 [dev-dependencies]

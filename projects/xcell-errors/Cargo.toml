@@ -10,10 +10,19 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
+serde = "1.0.147"
 diagnostic = "0.3.10"
 calamine = { version = "0.19.1", optional = true }
 tera = { version = "1.17.1", optional = true }
 toml = { version = "0.5.9", optional = true }
+url = { version = "1.7.2", optional = true, features = ["serde"] }
+num = { version = "0.4.0", optional = true, features = ["serde"] }
+bigdecimal = { version = "0.3.0", optional = true, features = ["serde"] }
+#decimal = { version = "2.1.0", features = ["serde"] }
+array2d = { version = "0.2.1", optional = true, features = ["serde"] }
+#ndarray = { version = "0.15.6", features = ["serde"] }
+chrono = { version = "0.4.22", optional = true, features = ["serde"] }
+csscolorparser = { version = "0.6.2", optional = true, features = ["serde"] }
 
 [dev-dependencies]
 

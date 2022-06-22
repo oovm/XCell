@@ -2,9 +2,9 @@ use std::io::Error as IOError;
 
 use crate::{XError, XErrorKind};
 
-impl Default for XError {
+impl Default for XErrorKind {
     fn default() -> Self {
-        XError { kind: Box::new(XErrorKind::UnknownError), path: None, position: None, source: None }
+        XErrorKind::UnknownError
     }
 }
 

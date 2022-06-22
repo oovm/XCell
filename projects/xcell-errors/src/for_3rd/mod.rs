@@ -1,4 +1,6 @@
+#[cfg(feature = "calamine")]
 mod for_calamine;
-mod for_std;
+#[cfg(feature = "tera")]
 mod for_tera;
+#[cfg(feature = "toml")]
 mod for_toml;

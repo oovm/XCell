@@ -4,9 +4,7 @@ use std::{
     path::PathBuf,
 };
 
-use calamine::DataType;
-
-use crate::typing::XCellTyped;
+mod for_std;
 
 #[derive(Debug)]
 pub struct XError {
@@ -18,42 +16,11 @@ pub struct XError {
 
 #[derive(Debug)]
 pub enum XErrorKind {
-    IOError(std::io::Error),
+    IOError(String),
     SyntaxError(String),
     TableError(String),
-    TypeMismatch { except: XCellTyped, current: DataType },
+    TypeMismatch { except: String, current: String },
     UnknownError,
-}
-
-impl Display for XError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-
-impl Error for XError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.source
-    }
-}
-
-pub type XResult<T = ()> = Result<T, XError>;
-
-pub type Validation<T> = diagnostic::Validation<T, XError>;
-
-impl XError {
-    pub fn with_path(self, path: PathBuf) -> Self {
-        Self { kind: self.kind, path: Some(path), position: self.position }
-    }
-    pub fn with_xy(self, x: usize, y: usize) -> Self {
-        Self { kind: self.kind, path: self.path, position: Some((x, y)) }
-    }
-    pub fn table_error<S: Into<String>>(msg: S) -> Self {
-        Self { kind: box XErrorKind::TableError(msg.into()), path: None, position: None }
-    }
-    pub fn type_mismatch(except: XCellTyped, current: DataType, x: usize, y: usize, path: PathBuf) -> XError {
-        Self { kind: box XErrorKind::TypeMismatch { except, current }, path: Some(path), position: Some((x, y)) }
-    }
 }
 
 impl Display for XError {
@@ -62,4 +29,39 @@ impl Display for XError {
     }
 }
 
-impl Error for XError {}
+impl Error for XError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match &self.source {
+            Some(s) => Some(s.as_ref()),
+            None => None,
+        }
+    }
+}
+
+impl XError {
+    pub fn with_path(mut self, path: PathBuf) -> Self {
+        self.path = Some(path);
+        self
+    }
+    pub fn with_xy(mut self, x: usize, y: usize) -> Self {
+        self.position = Some((x, y));
+        self
+    }
+    // pub fn table_error<S>(msg: S) -> Self
+    // where
+    //     S: Into<String>,
+    // {
+    //     Self { kind: box XErrorKind::TableError(msg.into()), path: None, position: None }
+    // }
+    // pub fn type_mismatch(except: XCellTyped, current: DataType, x: usize, y: usize, path: PathBuf) -> XError {
+    //     Self { kind: box XErrorKind::TypeMismatch { except, current }, path: Some(path), position: Some((x, y)) }
+    // }
+}
+
+// impl Display for XError {
+//     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+//         Debug::fmt(self, f)
+//     }
+// }
+//
+// impl Error for XError {}

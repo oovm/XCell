@@ -1,9 +1,14 @@
-use toml::de::Error;
-
 use crate::{XError, XErrorKind};
+use toml::de::Error;
 
 impl From<Error> for XError {
     fn from(e: Error) -> Self {
-        XError { kind: Box::new(XErrorKind::TableError(e.to_string())), path: None, position: None }
+        Self { kind: Box::new(XErrorKind::from(&e)), path: None, position: None, source: Some(Box::new(e)) }
+    }
+}
+
+impl From<&Error> for XErrorKind {
+    fn from(e: &Error) -> Self {
+        XErrorKind::SyntaxError(e.to_string())
     }
 }

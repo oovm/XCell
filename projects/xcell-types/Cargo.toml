@@ -12,10 +12,10 @@ edition = "2021"
 [dependencies]
 
 
-[dependencies.xcell-errors]
-#version = ""
-git = ""
-rev = ""
+#[dependencies.xcell-errors]
+##version = ""
+#git = ""
+#rev = ""
 
 
 [dev-dependencies]

@@ -3,11 +3,18 @@ use tera::{Error, ErrorKind};
 use crate::{XError, XErrorKind};
 
 impl From<Error> for XError {
-    fn from(e: Error) -> Self {
-        let kind = box match e.kind {
-            ErrorKind::Io(e) => XErrorKind::IOError(std::io::Error::from(e)),
-            _ => XErrorKind::SyntaxError(e.to_string()),
-        };
-        Self { kind, path: None, position: None }
+    fn from(error: Error) -> Self {
+        let mut out = XError::default();
+        match error.kind {
+            ErrorKind::Io(e) => {
+                let error = std::io::Error::from(e);
+                out.kind = Box::new(XErrorKind::from(&error));
+            }
+            _ => {
+                out.kind = Box::new(XErrorKind::SyntaxError(error.to_string()));
+                out.source = Some(Box::new(error))
+            }
+        }
+        out
     }
 }

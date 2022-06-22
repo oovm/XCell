@@ -1,6 +1,8 @@
 [workspace]
 members = ["projects/*"]
 default-members = [
+    "projects/xcell-errors",
+    "projects/xcell-types",
     "projects/xcell-core",
     "projects/xcell-cli",
 ]

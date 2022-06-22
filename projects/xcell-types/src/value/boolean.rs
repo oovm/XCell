@@ -5,18 +5,13 @@ pub struct BooleanDescription {
     pub accept: Vec<String>,
     pub reject: Vec<String>,
     pub default: bool,
-    pub is_vector: bool,
-}
-
-impl From<BooleanDescription> for XCellTyped {
-    fn from(value: BooleanDescription) -> Self {
-        Self::Boolean(value)
-    }
 }
 
 impl BooleanDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {}
-    pub fn parse_value(&self, cell: &DataType) -> Result<bool, XErrorKind> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+        self.parse_value(cell).map(XCellValue::Boolean)
+    }
+    fn parse_value(&self, cell: &DataType) -> XResult<bool> {
         match cell {
             DataType::String(s) => {
                 if self.accept.contains(s) {
@@ -32,7 +27,7 @@ impl BooleanDescription {
             DataType::Bool(v) => Ok(*v),
             DataType::Empty => Ok(self.default),
             DataType::Error(e) => syntax_error(format!("未知错误 {e}")),
-            _ => type_mismatch(self, cell),
+            _ => type_mismatch("Boolean", cell),
         }
     }
 }

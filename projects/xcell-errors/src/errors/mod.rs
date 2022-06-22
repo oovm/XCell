@@ -17,7 +17,7 @@ pub struct XError {
 #[derive(Debug)]
 pub enum XErrorKind {
     IOError(String),
-    SyntaxError(String),
+    SyntaxError { message: String },
     TableError(String),
     TypeMismatch { except: String, current: String },
     UnknownError,
@@ -39,6 +39,10 @@ impl Error for XError {
 }
 
 impl XError {
+    pub fn new(kind: XErrorKind) -> Self {
+        Self { kind: Box::new(kind), path: None, position: None, source: None }
+    }
+
     pub fn with_path(mut self, path: PathBuf) -> Self {
         self.path = Some(path);
         self

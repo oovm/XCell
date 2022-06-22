@@ -1,5 +1,12 @@
-use crate::typing::*;
+use serde::{Deserialize, Serialize};
 
+use xcell_errors::{
+    for_3rd::{BigDecimal, DataType, FromPrimitive, ToPrimitive},
+    XResult,
+};
+
+use crate::{errors::syntax_error, XCellValue};
+use std::ops::Deref;
 mod kind;
 mod parse_cell;
 
@@ -15,7 +22,7 @@ pub struct DecimalDescription {
     pub kind: DecimalKind,
     pub min: BigDecimal,
     pub max: BigDecimal,
-    pub default: BigDecimal,
+    pub default: Option<BigDecimal>,
 }
 
 impl DecimalDescription {

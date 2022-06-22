@@ -12,10 +12,10 @@ edition = "2021"
 [dependencies]
 serde = "1.0.147"
 diagnostic = "0.3.10"
-calamine = { version = "0.19.1", optional = true }
+calamine = { version = "0.19.1", optional = true, features = ["dates"] }
 tera = { version = "1.17.1", optional = true }
 toml = { version = "0.5.9", optional = true }
-url = { version = "1.7.2", optional = true, features = ["serde"] }
+url = { version = "2.3.1", optional = true, features = ["serde"] }
 num = { version = "0.4.0", optional = true, features = ["serde"] }
 bigdecimal = { version = "0.3.0", optional = true, features = ["serde"] }
 #decimal = { version = "2.1.0", features = ["serde"] }

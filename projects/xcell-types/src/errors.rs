@@ -1,13 +1,17 @@
-pub fn type_mismatch<T, A>(this: &A, cell: &DataType) -> Result<T, XErrorKind>
+use xcell_errors::{for_3rd::DataType, XError, XErrorKind, XResult};
+
+pub fn type_mismatch<T, S>(except: S, cell: &DataType) -> XResult<T>
 where
-    A: Clone + Into<XCellTyped>,
+    S: Into<String>,
 {
-    Err(XErrorKind::TypeMismatch { except: this.clone().into(), current: cell.clone() })
+    let kind = XErrorKind::TypeMismatch { except: except.into(), current: cell.to_string() };
+    Err(XError::new(kind))
 }
 
 pub fn syntax_error<T, A>(msg: A) -> XResult<T>
 where
     A: Into<String>,
 {
-    Err(XError { kind: box XErrorKind::SyntaxError(msg.into()), path: None, position: None })
+    let kind = XErrorKind::SyntaxError { message: msg.into() };
+    Err(XError::new(kind))
 }

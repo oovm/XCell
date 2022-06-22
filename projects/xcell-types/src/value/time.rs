@@ -1,21 +1,27 @@
-use chrono::{NaiveDateTime, TimeZone};
-
 use super::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct TimeDescription {
     /// `new DateTime(1, 1, 1, 0, 0, 0, DateTimeKind.Utc)`
-    pub default: DateTime,
+    pub default: Option<DateTime>,
 }
 
-impl Default for TimeDescription {
-    fn default() -> Self {
-        TimeDescription { default: DateTime::from(SystemTime::now()) }
+impl TimeDescription {
+    pub fn with_default(mut self, time: &str) -> Self {
+        match DateTime::from_str(time) {
+            Ok(o) => self.default = Some(o),
+            Err(_) => {}
+        }
+        self
     }
 }
 
 impl TimeDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> Result<DateTime, XErrorKind> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+        self.parse_value(cell).map(XCellValue::Time)
+    }
+
+    fn parse_value(&self, cell: &DataType) -> XResult<DateTime> {
         match cell {
             DataType::DateTime(time) => {
                 let ntv = NaiveDateTime::from_timestamp(*time as i64, 0);
@@ -26,7 +32,10 @@ impl TimeDescription {
                 Ok(o) => Ok(o),
                 Err(_) => syntax_error(format!("{} 无法解析为 time 类型", s)),
             },
-            DataType::Empty => Ok(self.default.clone()),
+            DataType::Empty => match &self.default {
+                Some(s) => Ok(s.clone()),
+                None => Ok(DateTime::default()),
+            },
             _ => syntax_error(format!("{} 无法解析为 time 类型", cell.to_string())),
         }
     }

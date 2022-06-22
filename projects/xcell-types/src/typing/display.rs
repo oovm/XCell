@@ -1,55 +1,24 @@
-use std::fmt::{Display, Formatter};
-
 use super::*;
 
-impl Display for XCellValue {
+impl Debug for XCellTyped {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            XCellValue::Boolean(v) => {
-                write!(f, "{v}")
-            }
-            XCellValue::Integer8(v) => {
-                write!(f, "{v}i8")
-            }
-            XCellValue::Integer16(v) => {
-                write!(f, "{v}i16")
-            }
-            XCellValue::Integer32(v) => {
-                write!(f, "{v}i32")
-            }
-            XCellValue::Integer64(v) => {
-                write!(f, "{v}i64")
-            }
-            XCellValue::Unsigned8(v) => {
-                write!(f, "{v}u8")
-            }
-            XCellValue::Unsigned16(v) => {
-                write!(f, "{v}u16")
-            }
-            XCellValue::Unsigned32(v) => {
-                write!(f, "{v}u32")
-            }
-            XCellValue::Unsigned64(v) => {
-                write!(f, "{v}u64")
-            }
-            XCellValue::Float32(v) => {
-                write!(f, "{v}f32")
-            }
-            XCellValue::Float64(v) => {
-                write!(f, "{v}f64")
-            }
-            XCellValue::String(v) => {
-                write!(f, "{v:?}")
-            }
-            XCellValue::Color(v) => {
-                write!(f, "{v}")
-            }
-            XCellValue::Time(v) => {
-                write!(f, "{v}")
-            }
-            XCellValue::Custom(_) => {
-                todo!()
-            }
+            XCellTyped::Boolean(v) => Debug::fmt(v, f),
+            XCellTyped::Integer(v) => Debug::fmt(v, f),
+            XCellTyped::Decimal(v) => Debug::fmt(v, f),
+            XCellTyped::String(v) => Debug::fmt(v, f),
+            XCellTyped::Time(v) => Debug::fmt(v, f),
+            XCellTyped::Color(v) => Debug::fmt(v, f),
+            XCellTyped::Enumerate(v) => Debug::fmt(v, f),
+            XCellTyped::Array(v) => Debug::fmt(v, f),
+            XCellTyped::Vector(v) => Debug::fmt(v, f),
+            XCellTyped::Custom(v) => Debug::fmt(v, f),
         }
+    }
+}
+
+impl Display for XCellTyped {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(self, f)
     }
 }

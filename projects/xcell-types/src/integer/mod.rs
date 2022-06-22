@@ -1,7 +1,13 @@
-use crate::typing::XCellTyped;
+use std::{ops::Deref, str::FromStr};
+
 use serde::{Deserialize, Serialize};
-use std::ops::Deref;
-use xcell_errors::{for_3rd::BigInt, XResult};
+
+use xcell_errors::{
+    for_3rd::{BigInt, DataType, FromPrimitive, ToPrimitive},
+    XResult,
+};
+
+use crate::{errors::syntax_error, typing::XCellTyped, value::XCellValue};
 
 mod kind;
 mod parse_cell;

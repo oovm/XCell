@@ -1,4 +1,5 @@
 use super::*;
+use crate::IntegerKind;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct EnumerateDescription {
@@ -14,7 +15,7 @@ impl EnumerateDescription {
     {
         Self { integer: Default::default(), typing: typing.into(), default: "".to_string() }
     }
-    pub fn parse_cell(&self, cell: &DataType) -> Result<String, XErrorKind> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<String> {
         match cell {
             DataType::Int(v) => Ok(v.to_string()),
             DataType::Float(v) => Ok(v.to_string()),

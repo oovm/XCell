@@ -1,12 +1,19 @@
 use super::*;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct StringDescription {
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CustomDescription {
+    pub typing: String,
     pub default: String,
 }
 
-impl StringDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> Result<String, XErrorKind> {
+impl CustomDescription {
+    pub fn new<S>(typing: S) -> Self
+    where
+        S: Into<String>,
+    {
+        Self { typing: typing.into(), default: "".to_string() }
+    }
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<String> {
         match cell {
             DataType::Int(v) => Ok(v.to_string()),
             DataType::Float(v) => Ok(v.to_string()),

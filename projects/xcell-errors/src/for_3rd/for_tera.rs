@@ -11,7 +11,7 @@ impl From<Error> for XError {
                 out.kind = Box::new(XErrorKind::from(&error));
             }
             _ => {
-                out.kind = Box::new(XErrorKind::SyntaxError(error.to_string()));
+                out.kind = Box::new(XErrorKind::SyntaxError { message: error.to_string() });
                 out.source = Some(Box::new(error))
             }
         }

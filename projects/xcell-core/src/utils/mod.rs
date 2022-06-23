@@ -10,10 +10,7 @@ use calamine::{open_workbook_auto, DataType, Reader};
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 
-use crate::{
-    typing::{EnumerateDescription, XCellTyped, XCellValue},
-    CalamineTable, Validation, XCellHeader, XCellHeaders, XError, XResult,
-};
+use crate::{CalamineTable, XCellHeader, XCellHeaders};
 
 /// 读取 Excel 文件里的第一张表
 ///

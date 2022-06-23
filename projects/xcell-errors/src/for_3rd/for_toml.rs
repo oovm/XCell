@@ -9,6 +9,6 @@ impl From<Error> for XError {
 
 impl From<&Error> for XErrorKind {
     fn from(e: &Error) -> Self {
-        XErrorKind::SyntaxError(e.to_string())
+        XErrorKind::SyntaxError { message: e.to_string() }
     }
 }

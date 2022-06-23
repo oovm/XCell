@@ -14,10 +14,9 @@ use calamine::DataType;
 use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::{
-    typing::{XCellTyped, XCellValue},
     utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
     x_table::config::{ProjectConfig, TableConfig},
-    Failure, Success, Validation, XError, XErrorKind, XResult,
+    Failure, Success,
 };
 
 pub mod config;

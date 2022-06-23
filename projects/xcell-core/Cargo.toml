@@ -29,6 +29,15 @@ chrono = { version = "0.4.22", features = ["serde"] }
 csscolorparser = { version = "0.6.2", features = ["serde"] }
 peginator = "0.3.0"
 
+[dependencies.xcell-errors]
+#version = ""
+path = "../xcell-errors"
+features = []
+
+[dependencies.xcell-types]
+#version = ""
+path = "../xcell-types"
+features = ["csharp"]
 
 [dependencies.sled-typed]
 #version = ""
@@ -37,6 +46,8 @@ rev = "0c4cc29b"
 
 [dev-dependencies]
 #tokio = { version = "1.21.2", features = ["full"] }
+
+
 
 [build-dependencies]
 peginator = "0.3.0"

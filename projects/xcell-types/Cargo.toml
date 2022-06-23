@@ -2,20 +2,20 @@
 name = "xcell-types"
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
-description = "..."
+description = "Types definition for xcell"
 repository = "https://github.com/oovm/XCell"
-documentation = "https://docs.rs/sub_projects"
+documentation = "https://docs.rs/xcell-types"
 readme = "Readme.md"
 license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
 serde = { version = "1.0.147", features = ["derive"] }
-
+bytestream = "0.4.1"
 
 [dependencies.xcell-errors]
-#version = ""
-path = "../xcell-errors"
+version = "0.1.0"
+#path = "../xcell-errors"
 features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine"]
 
 
@@ -26,3 +26,4 @@ features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine"]
 
 [features]
 default = []
+csharp = []

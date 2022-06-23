@@ -1,10 +1,10 @@
 [package]
 name = "xcell-errors"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Aster <192607617@qq.com>"]
-description = "..."
+description = "Error handlers for xcell"
 repository = "https://github.com/oovm/XCell"
-documentation = "https://docs.rs/sub_projects"
+documentation = "https://docs.rs/xcell-errors"
 readme = "Readme.md"
 license = "MPL-2.0"
 edition = "2021"
@@ -28,3 +28,6 @@ csscolorparser = { version = "0.6.2", optional = true, features = ["serde"] }
 
 [features]
 default = []
+
+[package.metadata.docs.rs]
+all-features = true

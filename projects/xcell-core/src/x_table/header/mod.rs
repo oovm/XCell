@@ -1,5 +1,3 @@
-use crate::typing::IntegerKind;
-
 use super::*;
 
 impl XCellHeaders {
@@ -31,7 +29,7 @@ impl XCellHeaders {
 }
 
 impl XCellHeader {
-    pub fn parse_cell(&self, row: &[DataType]) -> Result<XCellValue, XErrorKind> {
+    pub fn parse_cell(&self, row: &[DataType]) -> XResult<XCellValue> {
         match row.get(self.column) {
             Some(cell) => self.typing.parse_cell(cell),
             None => {

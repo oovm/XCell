@@ -6,10 +6,7 @@ use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
 use toml::{from_str, Value};
 
-use crate::{
-    typing::{XCellTyped, XCellValue},
-    ColorDescription, XCellHeader, XCellHeaders, XCellTable, XError, XResult,
-};
+use crate::{XCellHeader, XCellHeaders, XCellTable};
 
 pub use self::unity::{UnityCodegen, UNITY_CODEGEN_CONFIG};
 

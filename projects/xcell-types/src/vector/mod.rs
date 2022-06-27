@@ -1,7 +1,4 @@
-use crate::{
-    errors::{syntax_error, type_mismatch},
-    XCellValue,
-};
+use crate::XCellValue;
 use serde::{Deserialize, Serialize};
 use xcell_errors::{for_3rd::DataType, XResult};
 

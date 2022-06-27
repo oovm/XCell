@@ -17,7 +17,7 @@ use crate::{
 
 pub mod boolean;
 pub mod color;
-mod convert;
+pub mod convert;
 pub mod custom;
 mod display;
 pub mod enumerate;

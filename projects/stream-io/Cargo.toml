@@ -1,5 +1,5 @@
 [package]
-name = "xcell-types"
+name = "stream-io"
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "Types definition for xcell"
@@ -10,13 +10,9 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-serde = { version = "1.0.147", features = ["derive"] }
 byteorder = "1.4.3"
+concat-idents = "1.1.4"
 
-[dependencies.xcell-errors]
-version = "0.1.0"
-#path = "../xcell-errors"
-features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine"]
 
 
 [dev-dependencies]

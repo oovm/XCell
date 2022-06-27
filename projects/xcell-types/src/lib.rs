@@ -1,11 +1,14 @@
-pub use bytestream::{ByteOrder, StreamReader, StreamWriter};
-
 pub use self::{
     array::{ArrayDescription, ArrayKind},
     decimal::{DecimalDescription, DecimalKind},
     integer::{IntegerDescription, IntegerKind},
     typing::XCellTyped,
-    value::{color::ColorDescription, time::TimeDescription, XCellValue},
+    value::{
+        color::ColorDescription,
+        convert::binary::{ByteOrder, StreamReader, StreamWriter},
+        time::TimeDescription,
+        XCellValue,
+    },
     vector::VectorDescription,
 };
 

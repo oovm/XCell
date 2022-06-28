@@ -1,8 +1,10 @@
-use byteorder::{ReadBytesExt, WriteBytesExt};
-use concat_idents::concat_idents;
-use std::io::{Read, Result, Write};
-
+#![allow(unused_variables)]
 use crate::{BigEndian, ByteOrder, LittleEndian};
+use byteorder::{ReadBytesExt, WriteBytesExt};
+use std::{
+    collections::VecDeque,
+    io::{Read, Result, Write},
+};
 
 mod reader;
 mod writer;

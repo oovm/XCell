@@ -6,6 +6,9 @@ use serde::{Deserialize, Serialize};
 use tera::{Context, Tera};
 use toml::{from_str, Value};
 
+use xcell_errors::XResult;
+use xcell_types::XCellTyped;
+
 use crate::{XCellHeader, XCellHeaders, XCellTable};
 
 pub use self::unity::{UnityCodegen, UNITY_CODEGEN_CONFIG};

@@ -28,6 +28,7 @@ impl UnityCodegen {
         let _: Option<()> = try { self.support_binary = root.get("support_binary")?.as_bool()? };
         let _: Option<()> = try { self.support_clone = root.get("support_clone")?.as_bool()? };
         let _: Option<()> = try { self.legacy_using = root.get("legacy_using")?.as_bool()? };
+        let _: Option<()> = try { self.legacy_null_null = root.get("legacy_null_null")?.as_bool()? };
     }
     pub(crate) fn empty() -> UnityCodegen {
         UnityCodegen {
@@ -39,6 +40,7 @@ impl UnityCodegen {
             support_binary: false,
             support_clone: false,
             legacy_using: false,
+            legacy_null_null: false,
         }
     }
 }

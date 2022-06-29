@@ -18,7 +18,6 @@ use crate::{
 pub mod boolean;
 pub mod color;
 pub mod convert;
-pub mod custom;
 mod display;
 pub mod enumerate;
 pub mod string;
@@ -44,7 +43,7 @@ pub enum XCellValue {
     Quaternion4([f32; 4]),
     String(String),
     Color(Color),
-    Time(DateTime),
+    // Time(DateTime),
     Custom(String),
     Vector(Vec<XCellValue>),
 }

@@ -1,4 +1,6 @@
-use super::*;
+use crate::{errors::syntax_error, XCellTyped};
+use serde::{Deserialize, Serialize};
+use xcell_errors::{for_3rd::DataType, XResult};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CustomDescription {
@@ -6,12 +8,19 @@ pub struct CustomDescription {
     pub default: String,
 }
 
+impl From<CustomDescription> for XCellTyped {
+    fn from(value: CustomDescription) -> Self {
+        Self::Custom(Box::new(value))
+    }
+}
+
 impl CustomDescription {
-    pub fn new<S>(typing: S) -> Self
+    pub fn new<S>(typing: S) -> XCellTyped
     where
         S: Into<String>,
     {
-        Self { typing: typing.into(), default: "".to_string() }
+        let custom = Self { typing: typing.into(), default: "".to_string() };
+        XCellTyped::Custom(Box::new(custom))
     }
     pub fn parse_cell(&self, cell: &DataType) -> XResult<String> {
         match cell {

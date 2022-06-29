@@ -51,13 +51,11 @@ impl XError {
         self.position = Some((x, y));
         self
     }
-    // pub fn table_error<S>(msg: S) -> Self
-    // where
-    //     S: Into<String>,
-    // {
-    //     Self { kind: box XErrorKind::TableError(msg.into()), path: None, position: None }
-    // }
-    // pub fn type_mismatch(except: XCellTyped, current: DataType, x: usize, y: usize, path: PathBuf) -> XError {
-    //     Self { kind: box XErrorKind::TypeMismatch { except, current }, path: Some(path), position: Some((x, y)) }
-    // }
+    pub fn table_error<S>(msg: S) -> Self
+    where
+        S: Into<String>,
+    {
+        let kind = XErrorKind::TableError(msg.into());
+        Self { kind: Box::new(kind), path: None, position: None, source: None }
+    }
 }

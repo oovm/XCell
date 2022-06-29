@@ -1,6 +1,5 @@
 use super::*;
 use std::str::FromStr;
-use xcell_errors::for_3rd::Zero;
 
 impl DecimalDescription {
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
@@ -21,10 +20,7 @@ impl DecimalDescription {
                 Ok(o) => Ok(o),
                 Err(_) => syntax_error(format!("{} 无法解析为 decimal 类型", s)),
             },
-            DataType::Empty => match &self.default {
-                Some(s) => Ok(s.clone()),
-                None => Ok(BigDecimal::zero()),
-            },
+            DataType::Empty => Ok(self.default.clone()),
             _ => syntax_error(format!("{} 无法解析为 decimal 类型", cell.to_string())),
         }
     }

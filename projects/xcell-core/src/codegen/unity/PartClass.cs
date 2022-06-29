@@ -26,6 +26,7 @@ namespace {{ config.namespace }}
     public static class {{CLASS_NAME}}Extension
     {
 {%- for field in CLASS_FIELDS %}
+        /// <inheritdoc cref="{{ELEMENT_NAME}}.{{ field.name }}"/>
         public static {{ field.typing }} {{ field.getter }}(this {{CLASS_NAME}} self)
         {
             return {{ config.manager_name }}.Instance.{{ TABLE_NAME }}.{{ ELEMENT_GETTER }}(({{ ID_TYPE }}) self)!.{{ field.name }};

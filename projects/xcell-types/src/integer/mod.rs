@@ -1,7 +1,6 @@
 use std::{ops::Deref, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-
 use xcell_errors::{
     for_3rd::{BigInt, DataType, FromPrimitive, ToPrimitive},
     XResult,
@@ -38,7 +37,7 @@ impl IntegerDescription {
         A: Into<BigInt>,
         B: Into<BigInt>,
     {
-        Self { kind, min: min.into(), max: max.into(), default: Default::default() }
+        IntegerDescription { kind, min: min.into(), max: max.into(), default: Default::default() }
     }
     pub fn clamp<I>(&self, int: I) -> BigInt
     where

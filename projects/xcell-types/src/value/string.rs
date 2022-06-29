@@ -5,8 +5,17 @@ pub struct StringDescription {
     pub default: String,
 }
 
+impl From<StringDescription> for XCellTyped {
+    fn from(value: StringDescription) -> Self {
+        Self::String(Box::new(value))
+    }
+}
+
 impl StringDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<String> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+        self.parse_value(cell).map(XCellValue::String)
+    }
+    pub fn parse_value(&self, cell: &DataType) -> XResult<String> {
         match cell {
             DataType::Int(v) => Ok(v.to_string()),
             DataType::Float(v) => Ok(v.to_string()),

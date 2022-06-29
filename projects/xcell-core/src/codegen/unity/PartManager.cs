@@ -9,12 +9,24 @@ using DataTable.Generated;
 namespace {{ config.namespace }}
 {
     /// <summary>
+    /// 热更新资源直接 set 即可
+    ///
     /// 释放资源直接将表设为 null 即可
     /// </summary>
     public partial class {{ config.manager_name }}
     {
+        /// <summary>
+        /// 配置表的版本号
+        /// </summary>
+        /// <remarks>手动配置</remarks>
         public const string TableVersion = "0.0.1";
+
+        /// <summary>
+        /// 配置表的最后修改时间
+        /// </summary>
+        /// <remarks>自动生成</remarks>
         public DateTime TableEditTime = new DateTime(2020, 1, 1, 0, 0, 0);
+
         private static readonly Lazy<{{ config.manager_name }}> singleton = new(() => new {{ config.manager_name }}());
         public static {{ config.manager_name }} Instance => singleton.Value;
 

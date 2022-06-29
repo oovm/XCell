@@ -13,10 +13,12 @@ use array2d::Array2D;
 use calamine::DataType;
 use serde::{Deserialize, Deserializer, Serialize};
 
+use xcell_types::{XCellTyped, XCellValue, XTableKind};
+
 use crate::{
     utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
     x_table::config::{ProjectConfig, TableConfig},
-    Failure, Success,
+    Failure, Success, Validation, XResult,
 };
 
 pub mod config;
@@ -39,27 +41,15 @@ pub struct XCellTable {
     pub sum_config: u64,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum XCellKind {
-    SortedMap,
-    Enumerate,
-}
-
 impl XCellTable {
     pub fn is_enumerate(&self) -> bool {
-        matches!(self.headers.kind, XCellKind::Enumerate)
-    }
-}
-
-impl Default for XCellKind {
-    fn default() -> Self {
-        Self::SortedMap
+        matches!(self.headers.kind, XTableKind::Enumerate)
     }
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XCellHeaders {
-    pub kind: XCellKind,
+    pub kind: XTableKind,
     pub inner: Vec<XCellHeader>,
 }
 

@@ -22,7 +22,7 @@ pub struct DecimalDescription {
     pub kind: DecimalKind,
     pub min: BigDecimal,
     pub max: BigDecimal,
-    pub default: Option<BigDecimal>,
+    pub default: BigDecimal,
 }
 
 impl DecimalDescription {

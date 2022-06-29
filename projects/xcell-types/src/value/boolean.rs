@@ -7,7 +7,17 @@ pub struct BooleanDescription {
     pub default: bool,
 }
 
+impl From<BooleanDescription> for XCellTyped {
+    fn from(value: BooleanDescription) -> Self {
+        Self::Boolean(Box::new(value))
+    }
+}
+
 impl BooleanDescription {
+    pub fn new(default: bool) -> BooleanDescription {
+        Self { accept: vec!["true".to_string()], reject: vec!["false".to_string()], default }
+    }
+
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         self.parse_value(cell).map(XCellValue::Boolean)
     }

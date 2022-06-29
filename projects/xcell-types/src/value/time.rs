@@ -8,9 +8,8 @@ pub struct TimeDescription {
 
 impl TimeDescription {
     pub fn with_default(mut self, time: &str) -> Self {
-        match DateTime::from_str(time) {
-            Ok(o) => self.default = Some(o),
-            Err(_) => {}
+        if let Ok(o) = DateTime::from_str(time) {
+            self.default = Some(o)
         }
         self
     }
@@ -18,7 +17,8 @@ impl TimeDescription {
 
 impl TimeDescription {
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
-        self.parse_value(cell).map(XCellValue::Time)
+        let _ = self.parse_value(cell)?;
+        todo!()
     }
 
     fn parse_value(&self, cell: &DataType) -> XResult<DateTime> {

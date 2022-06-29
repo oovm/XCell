@@ -42,9 +42,6 @@ impl Display for XCellValue {
             XCellValue::Color(v) => {
                 write!(f, "{v}")
             }
-            XCellValue::Time(v) => {
-                write!(f, "{v}")
-            }
             XCellValue::Vector2(_) => {
                 todo!()
             }

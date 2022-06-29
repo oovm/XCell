@@ -10,7 +10,10 @@ use calamine::{open_workbook_auto, DataType, Reader};
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 
-use crate::{CalamineTable, XCellHeader, XCellHeaders};
+use xcell_errors::{Validation, XError, XResult};
+use xcell_types::{EnumerateDescription, XCellTyped, XCellValue, XTableKind};
+
+use crate::{CalamineTable, Success, XCellHeader, XCellHeaders};
 
 /// 读取 Excel 文件里的第一张表
 ///
@@ -52,32 +55,30 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<XCellHeaders> {
     let mut headers = vec![];
     let row = match table.rows().next() {
         Some(s) => s,
-        None => return Err(XError::table_error("找不到描述, 表第一行格式非法")),
+        None => return Err(XError::table_error("找不到描述, 第一行格式非法")),
     };
+    let mut kind = XTableKind::default();
     for (i, data) in row.iter().enumerate() {
+        if i == 0 {
+            match table.get_value((1, i as u32)) {
+                Some(s) => {
+                    kind = XTableKind::new(&s.to_string());
+                }
+                None => return Err(XError::table_error("找不到表类型, 第三行格式非法")),
+            }
+        }
         if data.is_empty() {
             // 不要用 filter, column 不对
             continue;
         }
         let _: Option<()> = try {
             let field_type = table.get_value((1, i as u32))?;
-            let field_name = table.get_value((2, i as u32))?;
-            let typing = if field_name.eq("enum") {
-                XCellTyped::Enumerate(EnumerateDescription::new(field_type.to_string()))
-            }
-            else {
-                XCellTyped::from(field_type)
-            };
-            headers.push(XCellHeader {
-                summary: data.to_string(),
-                column: i,
-                typing,
-                field_name: field_name.to_string(),
-                details: "".to_string(),
-            })
+            let field_name = table.get_value((2, i as u32))?.to_string();
+            let typing = XCellTyped::parse(field_type);
+            headers.push(XCellHeader { summary: data.to_string(), column: i, typing, field_name, details: "".to_string() })
         };
     }
-    Ok(XCellHeaders::new(headers).check_enumerate())
+    Ok(XCellHeaders::new(headers).with_kind(kind).check_enumerate())
 }
 
 pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> Validation<Array2D<XCellValue>> {
@@ -92,11 +93,11 @@ pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> Validati
                 Ok(o) => {
                     matrix.set(x, y, o).ok();
                 }
-                Err(e) => errors.push(XError { kind: Box::new(e), path: None, position: Some((x, y)) }),
+                Err(e) => errors.push(e.with_xy(x, y)),
             }
         }
     }
-    Validation::Success { value: matrix, diagnostics: vec![] }
+    Success { value: matrix, diagnostics: vec![] }
 }
 
 /// 确保第一行的 id 不是空的

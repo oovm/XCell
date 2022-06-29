@@ -1,5 +1,11 @@
 use super::*;
 
+impl From<IntegerDescription> for XCellTyped {
+    fn from(desc: IntegerDescription) -> Self {
+        XCellTyped::Integer(Box::new(desc))
+    }
+}
+
 impl IntegerDescription {
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         match self.kind {

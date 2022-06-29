@@ -3,7 +3,7 @@
 #![feature(type_alias_impl_trait)]
 #![feature(once_cell)]
 
-pub use diagnostic::Validation::{Failure, Success};
+pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
 
 pub use self::x_table::{
     config::{BooleanMetaInfo, ProjectConfig, TableConfig, TypeMetaInfo},

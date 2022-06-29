@@ -1,8 +1,6 @@
-use std::{fs::File, io::Write, path::Path, sync::LazyLock};
-
-use byteorder::{LittleEndian, WriteBytesExt};
 use convert_case::{Case, Casing};
 use serde::{Deserialize, Serialize};
+use std::{fs::File, io::Write, path::Path, sync::LazyLock};
 use tera::{Context, Tera};
 use toml::{from_str, Value};
 
@@ -13,7 +11,9 @@ use crate::{XCellHeader, XCellHeaders, XCellTable};
 
 pub use self::unity::{UnityCodegen, UNITY_CODEGEN_CONFIG};
 
+#[allow(unused)]
 mod binary;
+#[allow(unused)]
 mod readable;
 mod unity;
 
@@ -36,8 +36,8 @@ fn tera_render(template: &str, slots: &Context, output: &Path) -> XResult<String
     Ok(result)
 }
 
-pub fn write_newline(f: &mut impl Write) -> std::io::Result<()> {
-    f.write_u8(b'\n')
+pub fn write_newline(f: &mut impl Write) -> std::io::Result<usize> {
+    f.write(b"\n")
 }
 pub fn split_file_name(s: &str) -> String {
     let mut all = vec![];

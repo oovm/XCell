@@ -56,9 +56,6 @@ impl StreamWriter for XCellValue {
                 v.b.write_to(buffer, order)?;
                 v.a.write_to(buffer, order)
             }
-            XCellValue::Time(_) => {
-                todo!()
-            }
             XCellValue::Custom(_) => {
                 todo!()
             }

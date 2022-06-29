@@ -14,8 +14,8 @@ serde = { version = "1.0.147", features = ["derive"] }
 stream-io = "0.0.0"
 
 [dependencies.xcell-errors]
-version = "0.1.0"
-#path = "../xcell-errors"
+#version = "0.1.0"
+path = "../xcell-errors"
 features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine"]
 
 

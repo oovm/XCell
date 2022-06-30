@@ -2,7 +2,8 @@ use super::*;
 
 impl XCellTyped {
     pub fn parse(input: &str) -> XResult<Self> {
-        let out: XCellTyped = match input.to_ascii_lowercase().trim() {
+        let typing = input.to_ascii_lowercase();
+        let out: XCellTyped = match typing.trim() {
             "str" | "string" => StringDescription::default().into(),
             "language" | "languagestring" | "languageid" => StringDescription::default().into(),
             "bool" | "boolean" => BooleanDescription::new(false).into(),
@@ -23,16 +24,16 @@ impl XCellTyped {
             // other
             "color" | "colour" => Self::Color(Default::default()),
             // "c4" | "color32" | "color4" => Self::Custom(ArrayDescription::new(s)),
-            "date" | "time" | "datetime" => Self::Time(Default::default()),
+            // "date" | "time" | "datetime" => Self::Time(Default::default()),
             // array
             // "v2" | "vec2" => Self::Custom(ArrayDescription::new(s)),
-            // "v3" | "vec3" => Self::Custom(ArrayDescription::new(s)),
+            "v3" | "vec3" => ArrayDescription::new(ArrayKind::Vector3).into(),
             // "v4" | "vec4" => Self::Custom(ArrayDescription::new(s)),
             // "q4" | "quaternion" => Self::Custom(ArrayDescription::new(s)),
 
             // enum
             "enum" => Self::Enumerate(Default::default()),
-            _ => CustomDescription::new(s).into(),
+            _ => CustomDescription::new(typing).into(),
         };
         Ok(out)
     }

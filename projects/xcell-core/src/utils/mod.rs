@@ -74,7 +74,7 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<XCellHeaders> {
         let _: Option<()> = try {
             let field_type = table.get_value((1, i as u32))?;
             let field_name = table.get_value((2, i as u32))?.to_string();
-            let typing = XCellTyped::parse(field_type);
+            let typing = XCellTyped::parse(&field_type.to_string()).ok()?;
             headers.push(XCellHeader { summary: data.to_string(), column: i, typing, field_name, details: "".to_string() })
         };
     }

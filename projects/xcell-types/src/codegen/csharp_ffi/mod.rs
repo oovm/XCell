@@ -16,9 +16,7 @@ impl XCellTyped {
             XCellTyped::Time(_) => "DateTime".to_string(),
             XCellTyped::Color(_) => "Color32".to_string(),
             XCellTyped::Enumerate(v) => v.typing.to_owned(),
-            XCellTyped::Array(_) => {
-                todo!()
-            }
+            XCellTyped::Array(v) => v.as_csharp_type().to_string(),
             XCellTyped::Vector(_) => {
                 todo!()
             }

@@ -1,7 +1,26 @@
 use super::*;
 
+impl From<ArrayDescription> for XCellTyped {
+    fn from(value: ArrayDescription) -> Self {
+        Self::Array(Box::new(value))
+    }
+}
+
 impl ArrayDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<Vec<f64>> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+        match self.kind {
+            ArrayKind::Vector2 => self.parse_vec2(cell),
+            ArrayKind::Vector3 => self.parse_vec3(cell),
+            ArrayKind::Vector4 => self.parse_vec4(cell),
+            ArrayKind::Color4 => {
+                todo!()
+            }
+            ArrayKind::Quaternion4 => {
+                todo!()
+            }
+        }
+    }
+    fn parse_value(&self, cell: &DataType) -> XResult<Vec<f64>> {
         match cell {
             DataType::Int(i) => Ok(vec![*i as f64]),
             DataType::Float(f) => Ok(vec![*f]),
@@ -19,37 +38,35 @@ impl ArrayDescription {
             _ => syntax_error(format!("{} 无法解析为 decimal 类型", cell)),
         }
     }
-    pub fn parse_vec2(&self, cell: &DataType) -> XResult<XCellValue> {
-        let vec = self.parse_cell(cell)?;
-        let v1 = vec.get(0).cloned().unwrap_or(0.0);
-        let v2 = vec.get(1).cloned().unwrap_or(0.0);
-        Ok(XCellValue::Vector2([v1 as f32, v2 as f32]))
+    fn parse_vec2(&self, cell: &DataType) -> XResult<XCellValue> {
+        let vec = self.parse_value(cell)?;
+        Ok(XCellValue::Vector2(fill_array(&vec)))
     }
-    pub fn parse_vec3(&self, cell: &DataType) -> XResult<XCellValue> {
-        let vec = self.parse_cell(cell)?;
-        let v1 = vec.get(0).cloned().unwrap_or(0.0);
-        let v2 = vec.get(1).cloned().unwrap_or(0.0);
-        let v3 = vec.get(2).cloned().unwrap_or(0.0);
-        Ok(XCellValue::Vector3([v1 as f32, v2 as f32, v3 as f32]))
+    fn parse_vec3(&self, cell: &DataType) -> XResult<XCellValue> {
+        let vec = self.parse_value(cell)?;
+        Ok(XCellValue::Vector3(fill_array(&vec)))
     }
-    pub fn parse_vec4(&self, cell: &DataType) -> XResult<XCellValue> {
-        let vec = self.parse_cell(cell)?;
-        Ok(XCellValue::Vector4(view4(&vec)))
+    fn parse_vec4(&self, cell: &DataType) -> XResult<XCellValue> {
+        let vec = self.parse_value(cell)?;
+        Ok(XCellValue::Vector4(fill_array(&vec)))
     }
-    pub fn parse_color4(&self, cell: &DataType) -> XResult<XCellValue> {
-        let vec = self.parse_cell(cell)?;
-        Ok(XCellValue::Color4(view4(&vec)))
+    fn parse_color4(&self, cell: &DataType) -> XResult<XCellValue> {
+        let vec = self.parse_value(cell)?;
+        Ok(XCellValue::Color4(fill_array(&vec)))
     }
-    pub fn parse_quaternion4(&self, cell: &DataType) -> XResult<XCellValue> {
-        let vec = self.parse_cell(cell)?;
-        Ok(XCellValue::Quaternion4(view4(&vec)))
+    fn parse_quaternion4(&self, cell: &DataType) -> XResult<XCellValue> {
+        let vec = self.parse_value(cell)?;
+        Ok(XCellValue::Quaternion4(fill_array(&vec)))
     }
 }
 
-fn view4(vec: &[f64]) -> [f32; 4] {
-    let v1 = vec.get(0).cloned().unwrap_or(0.0);
-    let v2 = vec.get(1).cloned().unwrap_or(0.0);
-    let v3 = vec.get(2).cloned().unwrap_or(0.0);
-    let v4 = vec.get(3).cloned().unwrap_or(0.0);
-    [v1 as f32, v2 as f32, v3 as f32, v4 as f32]
+fn fill_array<const N: usize>(vec: &[f64]) -> [f32; N] {
+    let mut out = [0.0; N];
+    for (i, v) in vec.iter().enumerate() {
+        if i >= N {
+            break;
+        }
+        out[i] = *v as f32;
+    }
+    out
 }

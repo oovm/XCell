@@ -1,8 +1,11 @@
-use crate::{errors::syntax_error, XCellValue};
+use std::{ops::Deref, str::FromStr};
+
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 use xcell_errors::{for_3rd::DataType, XResult};
 
+use crate::{errors::syntax_error, XCellTyped, XCellValue};
+
+mod kind;
 mod parse_cell;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12,12 +15,6 @@ pub enum ArrayKind {
     Vector4,
     Color4,
     Quaternion4,
-}
-
-impl Default for ArrayKind {
-    fn default() -> Self {
-        Self::Vector3
-    }
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]

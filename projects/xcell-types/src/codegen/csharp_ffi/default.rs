@@ -1,6 +1,8 @@
 use xcell_errors::for_3rd::{Datelike, Timelike, Zero};
 
-use crate::{ColorDescription, DecimalDescription, IntegerDescription, StringDescription, TimeDescription};
+use crate::{
+    ArrayDescription, ArrayKind, ColorDescription, DecimalDescription, IntegerDescription, StringDescription, TimeDescription,
+};
 
 use super::*;
 
@@ -15,9 +17,7 @@ impl XCellTyped {
             XCellTyped::Color(v) => v.as_csharp_default(),
             XCellTyped::Enumerate(v) => v.default.to_string(),
             XCellTyped::Custom(v) => v.default.to_string(),
-            XCellTyped::Array(_) => {
-                todo!()
-            }
+            XCellTyped::Array(v) => v.as_csharp_default(),
             XCellTyped::Vector(_) => {
                 todo!()
             }
@@ -80,6 +80,21 @@ impl ColorDescription {
     }
 }
 
+impl ArrayDescription {
+    fn as_csharp_default(&self) -> String {
+        // match self.kind {
+        //     ArrayKind::Vector2 => {}
+        //     ArrayKind::Vector3 => {}
+        //     ArrayKind::Vector4 => {}
+        //     ArrayKind::Color4 => {}
+        //     ArrayKind::Quaternion4 => {}
+        // }
+        //
+        // let [r, g, b, a] = self.default.to_rgba8();
+        format!("new ()")
+    }
+}
+
 impl XCellTyped {
     pub fn make_cs_binary_writer(&self, field: &str) -> Vec<String> {
         let mut out = vec![];
@@ -110,9 +125,7 @@ impl XCellTyped {
             XCellTyped::Color(_) => "new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
             XCellTyped::Enumerate(v) => v.default.to_string(),
             XCellTyped::Custom(v) => v.default.to_string(),
-            XCellTyped::Array(_) => {
-                todo!()
-            }
+            XCellTyped::Array(_) => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
             XCellTyped::Vector(_) => {
                 todo!()
             }

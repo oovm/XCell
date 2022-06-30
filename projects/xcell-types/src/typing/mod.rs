@@ -55,9 +55,7 @@ impl XCellTyped {
             XCellTyped::Color(typing) => typing.parse_cell(cell),
             XCellTyped::Enumerate(typing) => typing.parse_cell(cell).map(XCellValue::String),
             XCellTyped::Custom(typing) => typing.parse_cell(cell).map(XCellValue::String),
-            XCellTyped::Array(_) => {
-                todo!()
-            }
+            XCellTyped::Array(typing) => typing.parse_cell(cell),
             XCellTyped::Vector(_) => {
                 todo!()
             }

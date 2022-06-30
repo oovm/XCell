@@ -38,7 +38,7 @@ pub enum XCellTyped {
 
 mod display;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum XTableKind {
     SortedMap,
     Enumerate,
@@ -59,6 +59,12 @@ impl XCellTyped {
             XCellTyped::Vector(_) => {
                 todo!()
             }
+        }
+    }
+    pub fn as_custom(&self) -> Option<&CustomDescription> {
+        match self {
+            XCellTyped::Custom(v) => Some(v),
+            _ => None,
         }
     }
 }

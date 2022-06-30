@@ -1,4 +1,3 @@
-
 use super::*;
 
 impl Default for XCellTable {
@@ -6,6 +5,7 @@ impl Default for XCellTable {
         Self {
             //
             path: Default::default(),
+            name: "".to_string(),
             headers: Default::default(),
             data: Array2D::filled_with(XCellValue::Boolean(false), 1, 1),
             config: Default::default(),

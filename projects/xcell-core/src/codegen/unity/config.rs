@@ -1,9 +1,20 @@
 use super::*;
 
 static UNITY_CODEGEN_DEFAULT: LazyLock<UnityCodegen> = LazyLock::new(|| {
-    let mut empty = UnityCodegen::empty();
-    let config = from_str::<Value>(UNITY_CODEGEN_CONFIG).unwrap();
-    empty.load_config(&config);
+    let mut empty = UnityCodegen {
+        namespace: "".to_string(),
+        folder_binary: "".to_string(),
+        manager_name: "".to_string(),
+        suffix_table: "".to_string(),
+        suffix_element: "".to_string(),
+        support_binary: false,
+        support_clone: false,
+        legacy_using: false,
+        legacy_null_null: false,
+    };
+    let root = from_str::<Value>(UNITY_CODEGEN_CONFIG).unwrap();
+    let unity = root.as_table().unwrap().get("unity").unwrap();
+    empty.load_config(unity);
     empty
 });
 
@@ -29,18 +40,5 @@ impl UnityCodegen {
         let _: Option<()> = try { self.support_clone = root.get("support_clone")?.as_bool()? };
         let _: Option<()> = try { self.legacy_using = root.get("legacy_using")?.as_bool()? };
         let _: Option<()> = try { self.legacy_null_null = root.get("legacy_null_null")?.as_bool()? };
-    }
-    pub(crate) fn empty() -> UnityCodegen {
-        UnityCodegen {
-            namespace: "".to_string(),
-            folder_binary: "".to_string(),
-            manager_name: "".to_string(),
-            suffix_table: "".to_string(),
-            suffix_element: "".to_string(),
-            support_binary: false,
-            support_clone: false,
-            legacy_using: false,
-            legacy_null_null: false,
-        }
     }
 }

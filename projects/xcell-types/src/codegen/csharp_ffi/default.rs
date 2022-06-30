@@ -1,7 +1,7 @@
 use xcell_errors::for_3rd::{Datelike, Timelike, Zero};
 
 use crate::{
-    ArrayDescription, ArrayKind, ColorDescription, DecimalDescription, IntegerDescription, StringDescription, TimeDescription,
+    ArrayDescription, ColorDescription, DecimalDescription, IntegerDescription, StringDescription, TimeDescription,
 };
 
 use super::*;

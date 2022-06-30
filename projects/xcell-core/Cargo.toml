@@ -29,7 +29,7 @@ csscolorparser = { version = "0.6.2", features = ["serde"] }
 [dependencies.xcell-errors]
 #version = ""
 path = "../xcell-errors"
-features = ["tera", "toml"]
+features = ["tera", "toml", "globset"]
 
 [dependencies.xcell-types]
 #version = ""

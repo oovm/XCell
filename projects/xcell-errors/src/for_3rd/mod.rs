@@ -24,3 +24,9 @@ mod for_toml;
 mod for_chrono;
 #[cfg(feature = "csscolorparser")]
 mod for_csscolorparser;
+
+#[cfg(feature = "globset")]
+pub use for_globset::*;
+
+#[cfg(feature = "globset")]
+mod for_globset;

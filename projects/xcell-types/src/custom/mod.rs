@@ -15,12 +15,11 @@ impl From<CustomDescription> for XCellTyped {
 }
 
 impl CustomDescription {
-    pub fn new<S>(typing: S) -> XCellTyped
+    pub fn new<S>(typing: S) -> Self
     where
         S: Into<String>,
     {
-        let custom = Self { typing: typing.into(), default: "".to_string() };
-        XCellTyped::Custom(Box::new(custom))
+        Self { typing: typing.into(), default: "".to_string() }
     }
     pub fn parse_cell(&self, cell: &DataType) -> XResult<String> {
         match cell {

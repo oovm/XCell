@@ -5,13 +5,15 @@ use std::{
     path::{Path, PathBuf},
 };
 
+mod workspace;
+
 use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 
 use xcell_errors::{Validation, XError, XResult};
-use xcell_types::{EnumerateDescription, XCellTyped, XCellValue, XTableKind};
+use xcell_types::{XCellTyped, XCellValue, XTableKind};
 
 use crate::{CalamineTable, Success, XCellHeader, XCellHeaders};
 
@@ -57,16 +59,8 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<XCellHeaders> {
         Some(s) => s,
         None => return Err(XError::table_error("找不到描述, 第一行格式非法")),
     };
-    let mut kind = XTableKind::default();
+    let kind = read_table_kind(table).unwrap_or_default();
     for (i, data) in row.iter().enumerate() {
-        if i == 0 {
-            match table.get_value((1, i as u32)) {
-                Some(s) => {
-                    kind = XTableKind::new(&s.to_string());
-                }
-                None => return Err(XError::table_error("找不到表类型, 第三行格式非法")),
-            }
-        }
         if data.is_empty() {
             // 不要用 filter, column 不对
             continue;
@@ -79,6 +73,14 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<XCellHeaders> {
         };
     }
     Ok(XCellHeaders::new(headers).with_kind(kind).check_enumerate())
+}
+
+/// 获取表格的类型, 表格类型由于第三行的第一列决定
+pub fn read_table_kind(table: &CalamineTable) -> Option<XTableKind> {
+    // println!("{:?}", table.get_value((2, 0)));
+    let cell = table.get_value((2, 0))?;
+    let out = XTableKind::new(cell.get_string()?);
+    Some(out)
 }
 
 pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> Validation<Array2D<XCellValue>> {

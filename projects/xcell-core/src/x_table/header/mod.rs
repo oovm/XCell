@@ -1,6 +1,7 @@
-use super::*;
 use xcell_errors::XResult;
-use xcell_types::{XCellTyped, XCellValue, XTableKind};
+use xcell_types::{EnumerateDescription, XCellValue, XTableKind};
+
+use super::*;
 
 impl XCellHeaders {
     pub fn new<T, I>(i: I) -> Self
@@ -15,18 +16,15 @@ impl XCellHeaders {
         self
     }
     pub fn check_enumerate(mut self) -> Self {
-        self.try_enumerate();
-        self
-    }
-    fn try_enumerate(&mut self) -> Option<()> {
-        match self.inner.get(0)?.typing.is_enumerate() {
-            true => self.kind = XTableKind::Enumerate,
-            false => return None,
+        if XTableKind::Enumerate == self.kind {
+            let _: Option<()> = try {
+                // 收集枚举类型
+                let lhs = self.inner.get(0)?.typing.as_custom()?;
+                let rhs = self.inner.get(1)?.typing.as_integer()?.kind;
+                self.inner.get_mut(0)?.typing = EnumerateDescription::custom(lhs, rhs).into();
+            };
         }
-        let kind = self.inner.get(1)?.typing.as_integer()?.kind;
-        let a = self.inner.get_mut(0)?.typing.mut_enumerate()?;
-        a.integer = kind;
-        Some(())
+        self
     }
 }
 

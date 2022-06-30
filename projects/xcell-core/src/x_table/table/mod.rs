@@ -1,3 +1,4 @@
+use xcell_errors::XError;
 
 use super::*;
 
@@ -18,11 +19,12 @@ impl XCellTable {
     /// ```
     /// use xcell_core::XCellTable;
     /// ```
-    pub fn load_file(path: PathBuf, global: &ProjectConfig) -> Validation<Self> {
+    pub fn load_file(path: &Path, global: &ProjectConfig) -> Validation<Self> {
         let mut errors = vec![];
         let mut xcell = Self::default();
+
         let fatal: XResult<()> = try {
-            xcell.path = path.canonicalize()?;
+            xcell.set_path(path)?;
             xcell.load_config(global)?;
         };
         if let Err(fatal) = fatal {
@@ -109,12 +111,19 @@ impl XCellTable {
 }
 
 impl XCellTable {
-    pub fn class_name(&self) -> String {
-        let path = self.path.with_extension("");
-        match path.file_name() {
-            Some(s) => s.to_string_lossy().to_string(),
-            None => String::new(),
+    pub fn set_path(&mut self, path: &Path) -> XResult<()> {
+        self.path = path.canonicalize()?;
+        match self.try_set_name() {
+            Some(_) => Ok(()),
+            None => Err(XError::table_error(format!("配置表文件名不合法: {}", path.display()))),
         }
     }
-
+    fn try_set_name(&mut self) -> Option<()> {
+        let file = self.path.file_prefix()?.to_str()?;
+        match file.is_empty() {
+            true => return None,
+            false => self.name = file.to_string(),
+        }
+        Some(())
+    }
 }

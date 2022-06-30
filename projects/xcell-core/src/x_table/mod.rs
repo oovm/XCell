@@ -29,6 +29,8 @@ pub mod table;
 pub struct XCellTable {
     /// 表格的绝对路径
     pub path: PathBuf,
+    /// 表格的名称, 同时也是生成的类名
+    pub name: String,
     /// 表格的额外配置
     pub config: TableConfig,
     /// 所有需要导出的类型

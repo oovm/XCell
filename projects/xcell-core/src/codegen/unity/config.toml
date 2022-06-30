@@ -1,8 +1,10 @@
 [unity]
 namespace = "DataTable.Generated"
 folder_binary = "Tables/Binary"
+manager_name = "DataTableManager"
 suffix_table = "Table"
 suffix_element = "Element"
 support_binary = true
 support_clone = true
 legacy_using = false
+legacy_null_null = false

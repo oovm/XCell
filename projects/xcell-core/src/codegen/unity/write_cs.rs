@@ -1,8 +1,10 @@
 use super::*;
 
 impl UnityCodegen {
-    pub fn write_class(&self, table: &XCellTable, path: &Path) -> XResult<()> {
-        tera_render(include_str!("PartClass.cs"), &self.make_context(table), path)?;
+    pub fn write_class(&self, table: &XCellTable) -> XResult<()> {
+        let file = format!("{}{}", table.name, self.suffix_table);
+        let path = table.path.with_file_name(file).with_extension("cs");
+        tera_render(include_str!("PartClass.cs"), &self.make_context(table), &path)?;
         Ok(())
     }
     pub fn write_interface(&self, table: &XCellTable, path: &Path) -> XResult<()> {
@@ -16,9 +18,9 @@ impl UnityCodegen {
         let mut ctx = Context::new();
         ctx.insert("VERSION", env!("CARGO_PKG_VERSION"));
         ctx.insert("config", &self);
-        ctx.insert("CLASS_NAME", &table.class_name());
-        ctx.insert("TABLE_NAME", &format!("{}{}", table.class_name(), self.suffix_table));
-        ctx.insert("ELEMENT_NAME", &format!("{}{}", table.class_name(), self.suffix_element));
+        ctx.insert("CLASS_NAME", &table.name);
+        ctx.insert("TABLE_NAME", &format!("{}{}", table.name, self.suffix_table));
+        ctx.insert("ELEMENT_NAME", &format!("{}{}", table.name, self.suffix_element));
         ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.suffix_element));
         ctx.insert("ID_TYPE", &table.headers.key_type());
         let is_enum = table.is_enumerate();

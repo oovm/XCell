@@ -2,6 +2,7 @@
 #![feature(try_blocks)]
 #![feature(type_alias_impl_trait)]
 #![feature(once_cell)]
+#![feature(path_file_prefix)]
 
 pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
 

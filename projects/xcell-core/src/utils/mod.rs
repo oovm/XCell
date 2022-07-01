@@ -5,17 +5,22 @@ use std::{
     path::{Path, PathBuf},
 };
 
-mod workspace;
-
 use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 
-use xcell_errors::{Validation, XError, XResult};
+use xcell_errors::{
+    for_3rd::{Glob, GlobSet, GlobSetBuilder},
+    Validation, XError, XResult,
+};
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
 
 use crate::{CalamineTable, Success, XCellHeader, XCellHeaders};
+
+pub use self::workspace::*;
+
+mod workspace;
 
 /// 读取 Excel 文件里的第一张表
 ///

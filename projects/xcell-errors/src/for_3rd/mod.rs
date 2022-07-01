@@ -30,3 +30,9 @@ pub use for_globset::*;
 
 #[cfg(feature = "globset")]
 mod for_globset;
+
+#[cfg(feature = "walkdir")]
+pub use walkdir::*;
+
+#[cfg(feature = "walkdir")]
+mod for_walkdir;

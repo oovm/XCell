@@ -1,18 +1,11 @@
-use xcell_errors::{
-    for_3rd::{Glob, GlobSetBuilder},
-    XResult,
-};
+use super::*;
 
-#[test]
-fn test_blob() -> XResult<()> {
+
+pub fn build_glob(patterns: &str) -> XResult<GlobSet> {
     let mut builder = GlobSetBuilder::new();
-    // A GlobBuilder can be used to configure each glob's match semantics
-    // independently.
-    builder.add(Glob::new("*.rs")?);
-    builder.add(Glob::new("src/lib.rs")?);
-    builder.add(Glob::new("src/**/foo.rs")?);
+    for line in patterns.lines() {
+        builder.add(Glob::new(line)?);
+    }
     let set = builder.build()?;
-
-    assert_eq!(set.matches("src/bar/baz/foo.rs"), vec![0, 2]);
-    Ok(())
+    Ok(set)
 }

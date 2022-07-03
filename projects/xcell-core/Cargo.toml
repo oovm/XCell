@@ -19,8 +19,8 @@ tera = "1.17.1"
 twox-hash = "1.6.3"
 serde = { version = "1.0.147", features = ["derive"] }
 num = { version = "0.4.0", features = ["serde"] }
-bigdecimal = { version = "0.3.0", features = ["serde"] }
-decimal = { version = "2.1.0", features = ["serde"] }
+itertools = "0.10.5"
+
 array2d = { version = "0.2.1", features = ["serde"] }
 #ndarray = { version = "0.15.6", features = ["serde"] }
 chrono = { version = "0.4.22", features = ["serde"] }
@@ -42,6 +42,7 @@ git = "https://github.com/oovm/disk-map"
 rev = "0c4cc29b"
 
 [dev-dependencies]
+env_logger = "0.9.3"
 #tokio = { version = "1.21.2", features = ["full"] }
 
 

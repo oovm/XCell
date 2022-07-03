@@ -7,11 +7,13 @@ use std::{
 
 use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
+use log::info;
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 
+use itertools::Itertools;
 use xcell_errors::{
-    for_3rd::{Glob, GlobSet, GlobSetBuilder},
+    for_3rd::{DirEntry, Glob, GlobSet, GlobSetBuilder, WalkDir},
     Validation, XError, XResult,
 };
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
@@ -147,29 +149,4 @@ pub fn xx_file(path: &Path) -> XResult<u64> {
         hasher.write(&buffer[..count]);
     }
     Ok(hasher.finish())
-}
-
-/// 取得相对路径
-///
-/// # Arguments
-///
-/// * `this`:
-/// * `root`:
-///
-/// # Examples
-///
-/// ```
-/// use xcell_core;
-/// ```
-pub fn make_relative<A, B>(this: A, root: B) -> XResult<PathBuf>
-where
-    A: AsRef<Path>,
-    B: AsRef<Path>,
-{
-    let path = this.as_ref().canonicalize()?;
-    let base = root.as_ref().canonicalize()?;
-    match diff_paths(&path, &base) {
-        Some(o) => Ok(o),
-        None => Err(XError::table_error(format!("无法取得相对路径 {path:?} {base:?}"))),
-    }
 }

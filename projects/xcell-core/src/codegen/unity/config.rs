@@ -2,6 +2,7 @@ use super::*;
 
 static UNITY_CODEGEN_DEFAULT: LazyLock<UnityCodegen> = LazyLock::new(|| {
     let mut empty = UnityCodegen {
+        enable: false,
         namespace: "".to_string(),
         folder_binary: "".to_string(),
         manager_name: "".to_string(),
@@ -31,6 +32,7 @@ impl UnityCodegen {
         v
     }
     fn load_config(&mut self, root: &Value) {
+        let _: Option<()> = try { self.enable = root.get("enable")?.as_bool()? };
         let _: Option<()> = try { self.namespace = split_namespace(root.get("namespace")?.as_str()?).join(".") };
         let _: Option<()> = try { self.folder_binary = split_file_name(root.get("folder_binary")?.as_str()?) };
         let _: Option<()> = try { self.manager_name = root.get("manager_name")?.as_str()?.to_string() };

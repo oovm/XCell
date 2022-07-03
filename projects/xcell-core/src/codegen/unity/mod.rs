@@ -8,6 +8,8 @@ pub const UNITY_CODEGEN_CONFIG: &str = include_str!("config.toml");
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UnityCodegen {
+    /// 是否要生成 unity 代码
+    pub enable: bool,
     /// 生成的代码的命名空间
     pub namespace: String,
     /// 生成的二进制文件的目录

@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use std::path::PathBuf;
 
 use sled_typed::{Database, DiskMap};
@@ -5,6 +6,10 @@ use sled_typed::{Database, DiskMap};
 #[test]
 fn ready() {
     println!("it works!")
+}
+
+pub fn logger() {
+    let _ = env_logger::builder().filter_level(LevelFilter::Off).is_test(true).try_init();
 }
 
 mod test_buffer;

@@ -1,16 +1,26 @@
+#![allow(unused)]
 use std::path::PathBuf;
 
-use xcell_core::{codegen::UnityCodegen, utils::build_glob, ProjectConfig, XCellTable, XResult};
+use xcell_core::{
+    codegen::UnityCodegen,
+    utils::{build_glob_set, walk_blob_set},
+    Failure, ProjectConfig, Success, XCellTable, XResult,
+};
+
+use super::logger;
 
 #[test]
 fn test2() -> XResult {
-    let root = PathBuf::from("/").canonicalize().unwrap();
-    let glob = build_glob("tests/test_buffer/*.xlsx").unwrap();
-
+    logger();
+    let root = PathBuf::from("./");
     let config = ProjectConfig::default();
-    let xc = XCellTable::load_file(&PathBuf::from(path), &config).unwrap();
     let unity = UnityCodegen::default();
-    // code.write_csharp(&xc, &PathBuf::from("tests/test_buffer/BufferTable.cs")).unwrap();
-    unity.write_class(&xc).unwrap();
+    let set = build_glob_set("tests/*.xlsx")?;
+    for excel in walk_blob_set(&root, &set).unwrap() {
+        match XCellTable::load_file(&excel, &config) {
+            Success { value, diagnostics } => unity.write_class(&value)?,
+            Failure { fatal, diagnostics } => {}
+        }
+    }
     Ok(())
 }

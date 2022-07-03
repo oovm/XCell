@@ -1,4 +1,5 @@
 [unity]
+enabled = true
 namespace = "DataTable.Generated"
 folder_binary = "Tables/Binary"
 manager_name = "DataTableManager"

@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
+
 use xcell_errors::XError;
 
 use super::*;
@@ -9,9 +10,21 @@ mod der;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ProjectConfig {
-    pub path: PathBuf,
+    pub root: PathBuf,
     #[serde(default, alias = "type", alias = "types")]
     pub typing: TypeMetaInfo,
+}
+
+impl ProjectConfig {
+    /// 工作目录
+    pub fn new<P>(workspace: P) -> XResult<Self>
+    where
+        P: AsRef<Path>,
+    {
+        let root = workspace.as_ref().canonicalize()?;
+
+        Ok(Self { root, ..Default::default() })
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

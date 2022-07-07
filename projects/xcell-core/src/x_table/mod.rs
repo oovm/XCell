@@ -17,7 +17,7 @@ use xcell_types::{XCellTyped, XCellValue, XTableKind};
 
 use crate::{
     utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
-    x_table::config::{ProjectConfig, TableConfig},
+    x_table::config::{WorkspaceManager, TableConfig},
     Failure, Success, Validation, XResult,
 };
 

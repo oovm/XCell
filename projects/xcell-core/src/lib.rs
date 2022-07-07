@@ -4,14 +4,11 @@
 #![feature(once_cell)]
 #![feature(path_file_prefix)]
 
-pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
-
 pub use self::x_table::{
-    config::{BooleanMetaInfo, ProjectConfig, TableConfig, TypeMetaInfo},
+    config::{BooleanMetaInfo, WorkspaceManager, TableConfig, TypeMetaInfo},
     XCellHeader, XCellHeaders, XCellTable,
 };
-
-pub type DateTime = chrono::DateTime<chrono::Utc>;
+pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
 
 pub mod codegen;
 pub mod utils;

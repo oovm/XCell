@@ -6,51 +6,35 @@ use xcell_errors::XError;
 
 use super::*;
 
-mod der;
+pub use self::project::ProjectConfig;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct ProjectConfig {
+mod der;
+mod project;
+mod table;
+mod unity;
+
+#[derive(Debug, Clone, Default)]
+pub struct WorkspaceManager {
     pub root: PathBuf,
-    #[serde(default, alias = "type", alias = "types")]
-    pub typing: TypeMetaInfo,
+    pub config: ProjectConfig,
 }
 
-impl ProjectConfig {
-    /// 工作目录
+impl WorkspaceManager {
+    /// 设置工作目录
     pub fn new<P>(workspace: P) -> XResult<Self>
     where
         P: AsRef<Path>,
     {
         let root = workspace.as_ref().canonicalize()?;
-
         Ok(Self { root, ..Default::default() })
     }
+    /// 首次加载目录
+    pub fn first_walk(&mut self) {}
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TableConfig {
-    #[serde(default, alias = "type", alias = "types")]
     pub typing: TypeMetaInfo,
-}
-
-impl From<&ProjectConfig> for TableConfig {
-    fn from(global: &ProjectConfig) -> Self {
-        todo!()
-    }
-}
-
-impl TableConfig {
-    pub fn load_file(path: &Path) -> XResult<Self> {
-        read_to_string(path)?.parse::<Self>()
-    }
-}
-
-impl FromStr for TableConfig {
-    type Err = XError;
-
-    fn from_str(s: &str) -> XResult<Self> {
-        Ok(toml::from_str(s)?)
-    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

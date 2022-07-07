@@ -19,7 +19,7 @@ impl XCellTable {
     /// ```
     /// use xcell_core::XCellTable;
     /// ```
-    pub fn load_file(path: &Path, global: &ProjectConfig) -> Validation<Self> {
+    pub fn load_file(path: &Path, global: &WorkspaceManager) -> Validation<Self> {
         let mut errors = vec![];
         let mut xcell = Self::default();
 
@@ -90,7 +90,7 @@ impl XCellTable {
     /// ```
     /// use xcell_core;
     /// ```
-    pub fn load_config(&mut self, global: &ProjectConfig) -> XResult<()> {
+    pub fn load_config(&mut self, global: &WorkspaceManager) -> XResult<()> {
         let table = find_first_table(&self.path)?;
         self.headers = read_table_headers(&table)?;
         let mut dir = self.path.clone();

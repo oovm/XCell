@@ -1,13 +1,19 @@
-use std::path::PathBuf;
-
+pub use self::{
+    project::ProjectConfig,
+    unity::{UnityCodegen, UNITY_CODEGEN_CONFIG},
+};
+use crate::utils::{split_file_name, split_namespace};
+use log::trace;
 use serde::{Deserialize, Serialize};
-
-use xcell_errors::XError;
-
-use super::*;
-
-pub use self::project::ProjectConfig;
-
+use std::{
+    collections::BTreeSet,
+    fs::read_to_string,
+    path::{Path, PathBuf},
+    str::FromStr,
+    sync::LazyLock,
+};
+use toml::{from_str, Value};
+use xcell_errors::{XError, XResult};
 mod der;
 mod project;
 mod table;

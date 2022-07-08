@@ -43,6 +43,7 @@ static UNITY_CODEGEN_DEFAULT: LazyLock<UnityCodegen> = LazyLock::new(|| {
     let root = from_str::<Value>(UNITY_CODEGEN_CONFIG).unwrap();
     let unity = root.as_table().unwrap().get("unity").unwrap();
     empty.load_config(unity);
+    trace!("\n{empty:#?}");
     empty
 });
 

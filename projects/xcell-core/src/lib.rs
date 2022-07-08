@@ -4,13 +4,15 @@
 #![feature(once_cell)]
 #![feature(path_file_prefix)]
 
-pub use self::x_table::{
-    config::{BooleanMetaInfo, WorkspaceManager, TableConfig, TypeMetaInfo},
-    XCellHeader, XCellHeaders, XCellTable,
-};
 pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
 
+pub use self::{
+    config::{BooleanMetaInfo, TableConfig, TypeMetaInfo, WorkspaceManager},
+    x_table::{XCellHeader, XCellHeaders, XCellTable},
+};
+
 pub mod codegen;
+pub mod config;
 pub mod utils;
 mod x_table;
 

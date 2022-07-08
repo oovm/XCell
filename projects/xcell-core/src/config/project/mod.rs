@@ -1,8 +1,3 @@
-use log::trace;
-use std::sync::LazyLock;
-
-use toml::{from_str, Value};
-
 use super::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -18,7 +13,7 @@ static DEFAULT_CONFIG: LazyLock<ProjectConfig> = LazyLock::new(|| {
     let mut empty = ProjectConfig { version: "".to_string(), glob: "".to_string() };
     let root = from_str::<Value>(PROJECT_CONFIG).unwrap();
     empty.load_config(&root);
-    trace!("{empty:#?}");
+    trace!("\n{empty:#?}");
     empty
 });
 

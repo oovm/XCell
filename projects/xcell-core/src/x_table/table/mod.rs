@@ -1,5 +1,3 @@
-use xcell_errors::XError;
-
 use super::*;
 
 mod display;

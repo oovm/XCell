@@ -150,3 +150,23 @@ pub fn xx_file(path: &Path) -> XResult<u64> {
     }
     Ok(hasher.finish())
 }
+pub fn split_file_name(s: &str) -> String {
+    let mut all = vec![];
+    for name in s.split(|c| c == '/' || c == '\\') {
+        if !name.trim().is_empty() {
+            all.push(name)
+        }
+    }
+    all.join("/")
+}
+pub fn split_namespace(s: &str) -> Vec<&str> {
+    let mut all = vec![];
+    for s in s.split("::") {
+        for name in s.split('.') {
+            if !name.trim().is_empty() {
+                all.push(name)
+            }
+        }
+    }
+    all
+}

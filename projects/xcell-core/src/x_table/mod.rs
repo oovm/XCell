@@ -1,27 +1,22 @@
-use fs::read_to_string;
 use std::{
-    collections::BTreeSet,
     fmt::{Debug, Display, Formatter},
-    fs,
     hash::{Hash, Hasher},
     ops::Deref,
     path::{Path, PathBuf},
-    str::FromStr,
 };
 
+use crate::WorkspaceManager;
 use array2d::Array2D;
 use calamine::DataType;
-use serde::{Deserialize, Deserializer, Serialize};
-
+use serde::{Deserialize, Serialize};
+use xcell_errors::XError;
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
 
 use crate::{
     utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
-    x_table::config::{WorkspaceManager, TableConfig},
-    Failure, Success, Validation, XResult,
+    Failure, Success, TableConfig, Validation, XResult,
 };
 
-pub mod config;
 pub mod header;
 pub mod table;
 

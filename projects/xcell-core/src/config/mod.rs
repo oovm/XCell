@@ -10,10 +10,10 @@ use std::{
 use serde::{Deserialize, Serialize};
 use toml::{from_str, Value};
 
-use xcell_errors::{XError, XResult};
+use xcell_errors::{for_3rd::WalkDir, XError, XResult};
 
 use crate::{
-    utils::{split_file_name, split_namespace, walk_blob_set},
+    utils::{build_glob_set, make_relative, split_file_name, split_namespace, valid_file},
     XCellTable,
 };
 
@@ -53,17 +53,31 @@ impl WorkspaceManager {
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
         let unity = UnityCodegen::default();
-        for excel in walk_blob_set(&self.root, &self.config.glob).await? {
-            match XCellTable::load_file(&excel, &self.config) {
-                Ok(value) => match unity.write_class(&value) {
-                    Ok(_) => {}
-                    Err(e) => {
-                        log::error!("{}", e)
+        let glob = build_glob_set(&self.config.glob)?;
+        let root = &self.root;
+        let mut entries = WalkDir::new(&root);
+        loop {
+            match entries.next().await {
+                Some(Ok(o)) if valid_file(&o) => {
+                    let file = o.path();
+                    let normed = make_relative(&file, &root)?;
+                    if glob.is_match(&normed) {
+                        log::info!("首次加载: {}", normed.display());
+                        match XCellTable::load_file(&excel, &self.config) {
+                            Ok(value) => match unity.write_class(&value) {
+                                Ok(_) => {}
+                                Err(e) => {
+                                    log::error!("{}", e)
+                                }
+                            },
+                            Err(e) => {
+                                log::error!("{}", e)
+                            }
+                        }
                     }
-                },
-                Err(e) => {
-                    log::error!("{}", e)
                 }
+                None => break,
+                _ => continue,
             }
         }
         Ok(())

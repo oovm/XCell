@@ -95,7 +95,7 @@ impl XCellTable {
         dir.pop();
         let config = dir.join(format!("{}.toml", name));
         if config.exists() {
-            self.config = TableConfig::load_file(&config)?;
+            self.config = TableConfig::load_file(&config, Some(global))?;
         }
         Ok(())
     }

@@ -1,21 +1,19 @@
+use crate::errors::syntax_error;
+
 use super::*;
 
 impl VectorDescription {
-    pub fn parse<T>(&self, input: T) -> XResult<XCellValue>
-    where
-        T: AsRef<str>,
-    {
-        todo!()
-    }
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
-        todo!()
-        // match cell {
-        //     DataType::Int(i) => Ok(Self::gray(*i as f64)),
-        //     DataType::Float(f) => Ok(Self::gray(*f)),
-        //     DataType::String(s) => self.parse(s),
-        //     DataType::Empty => Ok(self.default.clone()),
-        //     DataType::Error(e) => syntax_error(format!("未知错误 {e}")),
-        //     _ => type_mismatch(self, cell),
-        // }
+        let mut out = vec![];
+        let s = match cell {
+            DataType::Error(e) => return syntax_error(format!("未知错误 {e}")),
+            _ => cell.to_string(),
+        };
+        for item in s.split(',').map(|s| s.trim()) {
+            let cell = DataType::String(item.to_string());
+            let s = self.typing.parse_cell(&cell)?;
+            out.push(s)
+        }
+        Ok(XCellValue::Vector(out))
     }
 }

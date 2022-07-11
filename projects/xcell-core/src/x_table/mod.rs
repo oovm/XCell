@@ -5,16 +5,16 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::WorkspaceManager;
 use array2d::Array2D;
 use calamine::DataType;
 use serde::{Deserialize, Serialize};
+
 use xcell_errors::XError;
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
 
 use crate::{
     utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
-    Failure, Success, TableConfig, Validation, XResult,
+    TableConfig, XResult,
 };
 
 pub mod header;

@@ -1,7 +1,7 @@
 use std::{
     error::Error,
     fmt::{Debug, Display, Formatter},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 
 mod for_std;
@@ -35,7 +35,7 @@ impl Display for XError {
         if let Some(s) = &self.path {
             write!(f, "\n{}", s.display())?;
             match self.position {
-                Some((x, y)) => writeln!(f, " {x} 行 {y} 列")?,
+                Some((x, y)) => writeln!(f, " ({x} 行 {y} 列)")?,
                 None => writeln!(f)?,
             }
         }
@@ -57,8 +57,8 @@ impl XError {
         Self { kind: Box::new(kind), path: None, position: None, source: None }
     }
 
-    pub fn with_path(mut self, path: PathBuf) -> Self {
-        self.path = Some(path);
+    pub fn with_path(mut self, path: &Path) -> Self {
+        self.path = Some(path.to_path_buf());
         self
     }
     pub fn with_xy(mut self, x: usize, y: usize) -> Self {

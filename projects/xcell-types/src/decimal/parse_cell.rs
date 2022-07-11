@@ -14,14 +14,15 @@ impl DecimalDescription {
             DataType::Int(i) => Ok(self.clamp(*i)),
             DataType::Float(f) => match BigDecimal::from_f64(*f) {
                 Some(o) => Ok(o),
-                None => syntax_error(format!("{} 无法解析为 decimal 类型", f)),
+                None => syntax_error(format!("DataType::Float {} 无法解析为 decimal 类型", f)),
             },
+            DataType::String(s) if s.trim().is_empty() => Ok(self.default.clone()),
             DataType::String(s) => match BigDecimal::from_str(s) {
                 Ok(o) => Ok(o),
-                Err(_) => syntax_error(format!("{} 无法解析为 decimal 类型", s)),
+                Err(_) => syntax_error(format!("DataType::String {} 无法解析为 decimal 类型", s)),
             },
             DataType::Empty => Ok(self.default.clone()),
-            _ => syntax_error(format!("{} 无法解析为 decimal 类型", cell.to_string())),
+            _ => syntax_error(format!("{} 无法解析为 decimal 类型", cell)),
         }
     }
     fn parse_f32(&self, cell: &DataType) -> XResult<XCellValue> {

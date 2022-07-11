@@ -23,9 +23,12 @@ impl ArrayDescription {
             DataType::String(s) => {
                 let mut out = vec![];
                 for item in s.split(',').map(|s| s.trim()) {
+                    if item.is_empty() {
+                        continue;
+                    }
                     match f64::from_str(item) {
                         Ok(o) => out.push(o),
-                        Err(_) => return syntax_error(format!("{} 无法解析为 decimal 类型", item)),
+                        Err(_) => return syntax_error(format!("{:?} 无法解析为 decimal 类型", item)),
                     }
                 }
                 Ok(out)

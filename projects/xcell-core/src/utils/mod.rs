@@ -5,20 +5,19 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use crate::{CalamineTable, XCellHeader, XCellHeaders};
 use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
+use futures_lite::stream::StreamExt;
+use itertools::Itertools;
 use log::info;
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
-
-use itertools::Itertools;
 use xcell_errors::{
     for_3rd::{DirEntry, Glob, GlobSet, GlobSetBuilder, WalkDir},
-    Validation, XError, XResult,
+    XError, XResult,
 };
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
-
-use crate::{CalamineTable, Success, XCellHeader, XCellHeaders};
 
 pub use self::workspace::*;
 
@@ -90,7 +89,7 @@ pub fn read_table_kind(table: &CalamineTable) -> Option<XTableKind> {
     Some(out)
 }
 
-pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> XResult<Array2D<XCellValue>> {
+pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders, path: &Path) -> XResult<Array2D<XCellValue>> {
     let rows = table.rows().skip(3).filter(|v| first_not_nil(v));
     let row_count = table.rows().skip(3).filter(|v| first_not_nil(v)).count();
     let col_count = typing.len();
@@ -102,7 +101,7 @@ pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> XResult<
                     matrix.set(x, y, o).ok();
                 }
                 Err(e) => {
-                    log::error!("{:?}", e.with_xy(x, y))
+                    log::error!("{}", e.with_path(path).with_xy(x, y))
                 }
             }
         }

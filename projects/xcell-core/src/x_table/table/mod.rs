@@ -18,16 +18,10 @@ impl XCellTable {
     /// ```
     /// use xcell_core::XCellTable;
     /// ```
-    pub fn load_file(path: &Path, global: &ProjectConfig) -> Validation<Self> {
-        let mut errors = vec![];
+    pub fn load_file(path: &Path, global: &ProjectConfig) -> XResult<Self> {
         let mut xcell = Self::default();
-        let fatal: XResult<()> = try {
-            xcell.set_path(path)?;
-            xcell.load_config(global)?;
-        };
-        if let Err(fatal) = fatal {
-            return Failure { fatal, diagnostics: errors };
-        }
+        xcell.set_path(path)?;
+        xcell.load_config(global)?;
         if xcell.check_sum_change() {
             match xcell.load_data() {
                 Ok(_) => {}
@@ -36,12 +30,12 @@ impl XCellTable {
                 }
             }
         }
-        Success { value: xcell, diagnostics: errors }
+        Ok(xcell)
     }
     /// 强制重新加载表格中的数据
     pub fn load_data(&mut self) -> XResult<()> {
         let table = find_first_table(&self.path)?;
-        let data = read_table_data(&table, &self.headers)?;
+        let data = read_table_data(&table, &self.headers, &self.path)?;
         self.data = data;
         Ok(())
     }

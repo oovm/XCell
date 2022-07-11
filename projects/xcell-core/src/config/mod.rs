@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeSet,
     fmt::Debug,
@@ -7,9 +6,11 @@ use std::{
     str::FromStr,
     sync::LazyLock,
 };
+
+use serde::{Deserialize, Serialize};
 use toml::{from_str, Value};
 
-use xcell_errors::{Failure, Success, XError, XResult};
+use xcell_errors::{XError, XResult};
 
 use crate::{
     utils::{split_file_name, split_namespace, walk_blob_set},
@@ -50,29 +51,22 @@ impl WorkspaceManager {
         Ok(Self { root, config })
     }
     /// 首次加载目录
-    pub async fn first_walk(&mut self) {
+    pub async fn first_walk(&mut self) -> XResult<()> {
         let unity = UnityCodegen::default();
-        for excel in walk_blob_set(&self.root, &self.config.glob).await.unwrap() {
+        for excel in walk_blob_set(&self.root, &self.config.glob).await? {
             match XCellTable::load_file(&excel, &self.config) {
-                Success { value, diagnostics } => {
-                    for e in diagnostics {
+                Ok(value) => match unity.write_class(&value) {
+                    Ok(_) => {}
+                    Err(e) => {
                         log::error!("{}", e)
                     }
-                    match unity.write_class(&value) {
-                        Ok(_) => {}
-                        Err(e) => {
-                            log::error!("{}", e)
-                        }
-                    }
-                }
-                Failure { fatal, diagnostics } => {
-                    for e in diagnostics {
-                        log::error!("{}", e)
-                    }
-                    log::error!("{}", fatal)
+                },
+                Err(e) => {
+                    log::error!("{}", e)
                 }
             }
         }
+        Ok(())
     }
 }
 

@@ -12,12 +12,8 @@ impl ArrayDescription {
             ArrayKind::Vector2 => self.parse_vec2(cell),
             ArrayKind::Vector3 => self.parse_vec3(cell),
             ArrayKind::Vector4 => self.parse_vec4(cell),
-            ArrayKind::Color4 => {
-                todo!()
-            }
-            ArrayKind::Quaternion4 => {
-                todo!()
-            }
+            ArrayKind::Color4 => self.parse_color4(cell),
+            ArrayKind::Quaternion4 => self.parse_quaternion4(cell),
         }
     }
     fn parse_value(&self, cell: &DataType) -> XResult<Vec<f64>> {

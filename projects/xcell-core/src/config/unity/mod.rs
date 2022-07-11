@@ -27,7 +27,7 @@ pub struct UnityCodegen {
 /// 默认的 Unity 生成配置
 pub const UNITY_CODEGEN_CONFIG: &str = include_str!("UnityCodegen.toml");
 
-static UNITY_CODEGEN_DEFAULT: LazyLock<UnityCodegen> = LazyLock::new(|| {
+static DEFAULT_CONFIG: LazyLock<UnityCodegen> = LazyLock::new(|| {
     let mut empty = UnityCodegen {
         enable: false,
         namespace: "".to_string(),
@@ -43,13 +43,13 @@ static UNITY_CODEGEN_DEFAULT: LazyLock<UnityCodegen> = LazyLock::new(|| {
     let root = from_str::<Value>(UNITY_CODEGEN_CONFIG).unwrap();
     let unity = root.as_table().unwrap().get("unity").unwrap();
     empty.load_config(unity);
-    trace!("\n{empty:#?}");
+    log::trace!("初始化 UNITY_CODEGEN_CONFIG\n{empty:#?}");
     empty
 });
 
 impl Default for UnityCodegen {
     fn default() -> Self {
-        UNITY_CODEGEN_DEFAULT.clone()
+        DEFAULT_CONFIG.clone()
     }
 }
 

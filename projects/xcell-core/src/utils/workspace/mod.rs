@@ -2,7 +2,8 @@ use futures_lite::stream::StreamExt;
 
 use super::*;
 
-pub async fn walk_blob_set(root: &Path, glob: &GlobSet) -> XResult<Vec<PathBuf>> {
+pub async fn walk_blob_set(root: &Path, patterns: &String) -> XResult<Vec<PathBuf>> {
+    let glob = build_glob_set(patterns)?;
     let root = root.canonicalize()?;
     info!("工作目录: {}", root.display());
     let mut out = vec![];
@@ -11,6 +12,7 @@ pub async fn walk_blob_set(root: &Path, glob: &GlobSet) -> XResult<Vec<PathBuf>>
         match entries.next().await {
             Some(Ok(o)) if valid_file(&o) => {
                 let file = o.path();
+                // println!("{}", file.display());
                 let normed = make_relative(&file, &root)?;
                 if glob.is_match(&normed) {
                     info!("首次加载: {}", normed.display());
@@ -39,7 +41,14 @@ pub fn valid_file(dir: &DirEntry) -> bool {
 pub fn build_glob_set(patterns: &str) -> XResult<GlobSet> {
     let mut builder = GlobSetBuilder::new();
     for line in patterns.lines() {
-        builder.add(Glob::new(line)?);
+        match Glob::new(line) {
+            Ok(o) => {
+                builder.add(o);
+            }
+            Err(e) => {
+                log::error!("无效的 glob 表达式: {}", e)
+            }
+        }
     }
     let set = builder.build()?;
     Ok(set)

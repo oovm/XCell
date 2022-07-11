@@ -1,7 +1,7 @@
 use std::{fs::File, io::Write, path::Path};
 
 use convert_case::{Case, Casing};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use tera::{Context, Tera};
 
 use xcell_errors::XResult;

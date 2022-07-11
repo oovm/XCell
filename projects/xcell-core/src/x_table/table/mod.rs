@@ -1,4 +1,5 @@
 use super::*;
+use crate::config::ProjectConfig;
 
 mod display;
 
@@ -17,10 +18,9 @@ impl XCellTable {
     /// ```
     /// use xcell_core::XCellTable;
     /// ```
-    pub fn load_file(path: &Path, global: &WorkspaceManager) -> Validation<Self> {
+    pub fn load_file(path: &Path, global: &ProjectConfig) -> Validation<Self> {
         let mut errors = vec![];
         let mut xcell = Self::default();
-
         let fatal: XResult<()> = try {
             xcell.set_path(path)?;
             xcell.load_config(global)?;
@@ -30,21 +30,20 @@ impl XCellTable {
         }
         if xcell.check_sum_change() {
             match xcell.load_data() {
-                Success { diagnostics, .. } => errors.extend(diagnostics),
-                Failure { diagnostics, fatal } => {
-                    errors.extend(diagnostics);
-                    return Failure { fatal, diagnostics: errors };
+                Ok(_) => {}
+                Err(e) => {
+                    log::error!("{e}")
                 }
             }
         }
         Success { value: xcell, diagnostics: errors }
     }
     /// 强制重新加载表格中的数据
-    pub fn load_data(&mut self) -> Validation<()> {
-        match find_first_table(&self.path) {
-            Ok(table) => read_table_data(&table, &self.headers).map(|v| self.data = v),
-            Err(e) => Failure { fatal: e, diagnostics: vec![] },
-        }
+    pub fn load_data(&mut self) -> XResult<()> {
+        let table = find_first_table(&self.path)?;
+        let data = read_table_data(&table, &self.headers)?;
+        self.data = data;
+        Ok(())
     }
     pub fn id(&self) -> u64 {
         xx_hash(self)
@@ -88,7 +87,7 @@ impl XCellTable {
     /// ```
     /// use xcell_core;
     /// ```
-    pub fn load_config(&mut self, global: &WorkspaceManager) -> XResult<()> {
+    pub fn load_config(&mut self, global: &ProjectConfig) -> XResult<()> {
         let table = find_first_table(&self.path)?;
         self.headers = read_table_headers(&table)?;
         let mut dir = self.path.clone();

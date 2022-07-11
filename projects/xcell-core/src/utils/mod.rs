@@ -90,8 +90,7 @@ pub fn read_table_kind(table: &CalamineTable) -> Option<XTableKind> {
     Some(out)
 }
 
-pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> Validation<Array2D<XCellValue>> {
-    let mut errors = vec![];
+pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> XResult<Array2D<XCellValue>> {
     let rows = table.rows().skip(3).filter(|v| first_not_nil(v));
     let row_count = table.rows().skip(3).filter(|v| first_not_nil(v)).count();
     let col_count = typing.len();
@@ -102,11 +101,13 @@ pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders) -> Validati
                 Ok(o) => {
                     matrix.set(x, y, o).ok();
                 }
-                Err(e) => errors.push(e.with_xy(x, y)),
+                Err(e) => {
+                    log::error!("{:?}", e.with_xy(x, y))
+                }
             }
         }
     }
-    Success { value: matrix, diagnostics: vec![] }
+    Ok(matrix)
 }
 
 /// 确保第一行的 id 不是空的

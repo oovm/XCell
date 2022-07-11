@@ -25,7 +25,21 @@ pub enum XErrorKind {
 
 impl Display for XError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(self, f)
+        match &*self.kind {
+            XErrorKind::IOError(v) => write!(f, "IO 异常: {v}")?,
+            XErrorKind::SyntaxError { message } => write!(f, "解析错误: {}", message)?,
+            XErrorKind::TableError(v) => write!(f, "表错误: {}", v)?,
+            XErrorKind::TypeMismatch { except, current } => write!(f, "类型错误: 预期 `{}`, 实际 `{}`", except, current)?,
+            XErrorKind::UnknownError => write!(f, "内部错误")?,
+        }
+        if let Some(s) = &self.path {
+            write!(f, "\n{}", s.display())?;
+            match self.position {
+                Some((x, y)) => writeln!(f, " {x} 行 {y} 列")?,
+                None => writeln!(f)?,
+            }
+        }
+        Ok(())
     }
 }
 

@@ -4,11 +4,10 @@ use std::{
     io::{BufReader, Read},
     path::{Path, PathBuf},
 };
-
+mod watcher;
 use crate::{CalamineTable, XCellHeader, XCellHeaders};
 use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
-use futures_lite::stream::StreamExt;
 use itertools::Itertools;
 use log::info;
 use pathdiff::diff_paths;

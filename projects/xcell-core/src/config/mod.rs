@@ -7,9 +7,9 @@ use std::{
     sync::LazyLock,
 };
 
+use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use toml::{from_str, Value};
-
 use xcell_errors::{for_3rd::WalkDir, XError, XResult};
 
 use crate::{
@@ -63,7 +63,7 @@ impl WorkspaceManager {
                     let normed = make_relative(&file, &root)?;
                     if glob.is_match(&normed) {
                         log::info!("首次加载: {}", normed.display());
-                        match XCellTable::load_file(&excel, &self.config) {
+                        match XCellTable::load_file(&file, &self.config) {
                             Ok(value) => match unity.write_class(&value) {
                                 Ok(_) => {}
                                 Err(e) => {

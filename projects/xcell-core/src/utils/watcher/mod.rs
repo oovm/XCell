@@ -3,20 +3,20 @@ use futures::{
     SinkExt, StreamExt,
 };
 use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-#[tokio::test]
+#[tokio::main]
 async fn main() {
-    if let Err(e) = async_watch("./").await {
+    let rott = PathBuf::from("./");
+    println!("{}", rott.display());
+
+    if let Err(e) = async_watch(&rott).await {
         println!("error: {:?}", e)
     }
 }
 
 fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Result<Event>>)> {
     let (mut tx, rx) = channel(1);
-
-    // Automatically select the best implementation for your platform.
-    // You can also access each implementation directly e.g. INotifyWatcher.
     let watcher = RecommendedWatcher::new(
         move |res| {
             futures::executor::block_on(async {
@@ -25,17 +25,12 @@ fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Resul
         },
         Config::default(),
     )?;
-
     Ok((watcher, rx))
 }
 
-async fn async_watch<P: AsRef<Path>>(path: P) -> notify::Result<()> {
+async fn async_watch(path: &Path) -> notify::Result<()> {
     let (mut watcher, mut rx) = async_watcher()?;
-
-    // Add a path to be watched. All files and directories at that path and
-    // below will be monitored for changes.
-    println!("{}", path.as_ref().display());
-    watcher.watch(path.as_ref(), RecursiveMode::Recursive)?;
+    watcher.watch(path, RecursiveMode::Recursive)?;
 
     while let Some(res) = rx.next().await {
         match res {

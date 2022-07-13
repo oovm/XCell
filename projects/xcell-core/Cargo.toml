@@ -9,6 +9,10 @@ readme = "Readme.md"
 license = "MPL-2.0"
 edition = "2021"
 
+[[bin]]
+name = "xcell-tes-watch"
+path = "src/utils/watcher/mod.rs"
+
 [dependencies]
 log = "0.4.17"
 calamine = "0.19.1"
@@ -23,6 +27,7 @@ itertools = "0.10.5"
 array2d = { version = "0.2.1", features = ["serde"] }
 notify = { version = "5.0.0", features = ["serde"] }
 futures = "0.3.17"
+tokio = { version = "1.21.2", features = ["full"] }
 
 [dependencies.xcell-errors]
 #version = ""
@@ -41,7 +46,7 @@ rev = "0c4cc29b"
 
 [dev-dependencies]
 env_logger = "0.9.3"
-tokio = { version = "1.21.2", features = ["full"] }
+
 
 
 

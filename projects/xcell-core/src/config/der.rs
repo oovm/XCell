@@ -1,8 +1,10 @@
-use std::fmt::Formatter;
 use super::*;
+use std::fmt::Formatter;
 
-use serde::de::{MapAccess, Visitor};
-use serde::Deserializer;
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserializer,
+};
 
 impl Default for BooleanMetaInfo {
     fn default() -> Self {

@@ -38,3 +38,5 @@ mod for_globset;
 
 #[cfg(feature = "walkdir")]
 mod for_walkdir;
+
+mod for_notify;

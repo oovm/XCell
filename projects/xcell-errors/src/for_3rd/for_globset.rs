@@ -1,6 +1,6 @@
 use crate::{XError, XErrorKind::SyntaxError};
 use globset::Error;
-pub use globset::{Glob, GlobSetBuilder, GlobSet};
+pub use globset::{Glob, GlobSet, GlobSetBuilder};
 
 impl From<Error> for XError {
     fn from(e: Error) -> Self {

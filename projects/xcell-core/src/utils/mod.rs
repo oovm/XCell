@@ -4,7 +4,9 @@ use std::{
     io::{BufReader, Read},
     path::{Path, PathBuf},
 };
+
 mod watcher;
+
 use crate::{CalamineTable, XCellHeader, XCellHeaders};
 use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
@@ -19,6 +21,12 @@ use xcell_errors::{
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
 
 pub use self::workspace::*;
+use futures::{
+    channel::mpsc::{channel, Receiver, SendError},
+    SinkExt, StreamExt,
+};
+use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
+
 
 mod workspace;
 
@@ -149,6 +157,7 @@ pub fn xx_file(path: &Path) -> XResult<u64> {
     }
     Ok(hasher.finish())
 }
+
 pub fn split_file_name(s: &str) -> String {
     let mut all = vec![];
     for name in s.split(|c| c == '/' || c == '\\') {
@@ -158,6 +167,7 @@ pub fn split_file_name(s: &str) -> String {
     }
     all.join("/")
 }
+
 pub fn split_namespace(s: &str) -> Vec<&str> {
     let mut all = vec![];
     for s in s.split("::") {

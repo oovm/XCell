@@ -9,9 +9,6 @@ readme = "Readme.md"
 license = "MPL-2.0"
 edition = "2021"
 
-[[bin]]
-name = "xcell-tes-watch"
-path = "src/utils/watcher/mod.rs"
 
 [dependencies]
 log = "0.4.17"

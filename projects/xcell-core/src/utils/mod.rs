@@ -14,12 +14,8 @@ use calamine::{open_workbook_auto, DataType, Reader};
 use itertools::Itertools;
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
-use xcell_errors::{
-    for_3rd::{DirEntry, Glob, GlobSet, GlobSetBuilder},
-    XError, XResult,
-};
+use xcell_errors::{XError, XResult};
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
-
 mod workspace;
 
 /// 读取 Excel 文件里的第一张表

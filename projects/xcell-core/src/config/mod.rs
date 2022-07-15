@@ -3,7 +3,6 @@ use std::{
     fmt::Debug,
     fs::read_to_string,
     path::{Path, PathBuf},
-    str::FromStr,
     sync::LazyLock,
 };
 
@@ -15,16 +14,16 @@ use xcell_errors::{
     XError, XResult,
 };
 
-use crate::{
-    utils::{build_glob_set, make_relative, split_file_name, split_namespace, valid_file},
-    XCellTable,
-};
-
 pub use self::{
     project::ProjectConfig,
+    table::TableConfig,
     unity::{UnityCodegen, UNITY_CODEGEN_CONFIG},
 };
-
+use crate::{
+    utils::{make_relative, split_file_name, split_namespace, valid_file},
+    XCellTable,
+};
+use xcell_errors::for_3rd::build_glob_set;
 mod der;
 mod project;
 mod table;
@@ -56,7 +55,7 @@ impl WorkspaceManager {
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
         let unity = UnityCodegen::default();
-        let glob = build_glob_set(&self.config.glob)?;
+        let glob = build_glob_set(&self.config.glob).result(|e| log::error!("{e}"))?;
         let mut entries = WalkDir::new(&self.root);
         loop {
             match entries.next().await {
@@ -97,11 +96,6 @@ impl WorkspaceManager {
         }
         Ok(())
     }
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct TableConfig {
-    pub typing: TypeMetaInfo,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

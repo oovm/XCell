@@ -7,7 +7,7 @@
 pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
 
 pub use self::{
-    config::{BooleanMetaInfo, TableConfig, TypeMetaInfo, WorkspaceManager},
+    config::{BooleanMetaInfo, TypeMetaInfo, WorkspaceManager},
     x_table::{XCellHeader, XCellHeaders, XCellTable},
 };
 

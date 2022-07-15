@@ -1,5 +1,11 @@
 use super::*;
 
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct TableConfig {
+    pub typing: TypeMetaInfo,
+    pub unity: UnityCodegen,
+}
+
 impl TableConfig {
     pub fn load_file(path: &Path, global: Option<&ProjectConfig>) -> XResult<Self> {
         let mut basic = match global {
@@ -27,15 +33,7 @@ impl TableConfig {
 }
 
 impl From<&ProjectConfig> for TableConfig {
-    fn from(_: &ProjectConfig) -> Self {
-        TableConfig { typing: Default::default() }
-    }
-}
-
-impl FromStr for TableConfig {
-    type Err = XError;
-
-    fn from_str(s: &str) -> XResult<Self> {
-        Ok(toml::from_str(s)?)
+    fn from(project: &ProjectConfig) -> Self {
+        TableConfig { typing: Default::default(), unity: project.unity }
     }
 }

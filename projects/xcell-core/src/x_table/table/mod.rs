@@ -1,5 +1,6 @@
-use super::*;
 use crate::config::ProjectConfig;
+
+use super::*;
 
 mod display;
 
@@ -19,7 +20,16 @@ impl XCellTable {
     /// use xcell_core::XCellTable;
     /// ```
     pub fn load_file(path: &Path, global: &ProjectConfig) -> XResult<Self> {
-        let mut xcell = Self::default();
+        let mut xcell = Self {
+            //
+            path: Default::default(),
+            name: "".to_string(),
+            headers: Default::default(),
+            data: Array2D::filled_with(XCellValue::Boolean(false), 1, 1),
+            config: TableConfig::load_file(&path, Some(global))?,
+            sum_excel: 0,
+            sum_config: 0,
+        };
         xcell.set_path(path)?;
         xcell.load_config(global)?;
         if xcell.check_sum_change() {

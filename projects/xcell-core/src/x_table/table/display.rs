@@ -1,20 +1,5 @@
 use super::*;
 
-impl Default for XCellTable {
-    fn default() -> Self {
-        Self {
-            //
-            path: Default::default(),
-            name: "".to_string(),
-            headers: Default::default(),
-            data: Array2D::filled_with(XCellValue::Boolean(false), 1, 1),
-            config: Default::default(),
-            sum_excel: 0,
-            sum_config: 0,
-        }
-    }
-}
-
 impl Display for XCellTable {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Debug::fmt(self, f)

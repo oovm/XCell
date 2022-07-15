@@ -13,8 +13,9 @@ use xcell_errors::XError;
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
 
 use crate::{
+    config::TableConfig,
     utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
-    TableConfig, XResult,
+    XResult,
 };
 
 pub mod header;

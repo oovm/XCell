@@ -4,13 +4,14 @@ use super::*;
 pub struct ProjectConfig {
     pub version: String,
     pub glob: String,
+    pub unity: UnityCodegen,
 }
 
 /// 默认的全局项目设置
 pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
 
 static DEFAULT_CONFIG: LazyLock<ProjectConfig> = LazyLock::new(|| {
-    let mut empty = ProjectConfig { version: "".to_string(), glob: Default::default() };
+    let mut empty = ProjectConfig { version: "".to_string(), glob: Default::default(), unity: Default::default() };
     let root = from_str::<Value>(PROJECT_CONFIG).unwrap();
     empty.load_value(&root);
     log::trace!("初始化 PROJECT_CONFIG\n{empty:#?}");

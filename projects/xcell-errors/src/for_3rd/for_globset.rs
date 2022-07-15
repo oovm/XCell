@@ -1,6 +1,6 @@
 use diagnostic::{Failure, Success};
-use globset::Error;
-pub use globset::{Glob, GlobSet, GlobSetBuilder};
+pub use globset::GlobSet;
+use globset::{Error, Glob, GlobSetBuilder};
 
 use crate::{Validation, XError, XErrorKind::SyntaxError};
 

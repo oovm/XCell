@@ -17,8 +17,9 @@ pub struct XError {
 #[derive(Debug)]
 pub enum XErrorKind {
     IOError(String),
-    SyntaxError { message: String },
     TableError(String),
+    SyntaxError { message: String },
+    RuntimeError { message: String },
     TypeMismatch { except: String, current: String },
     UnknownError,
 }
@@ -28,6 +29,7 @@ impl Display for XError {
         match &*self.kind {
             XErrorKind::IOError(v) => write!(f, "IO 异常: {v}")?,
             XErrorKind::SyntaxError { message } => write!(f, "解析错误: {}", message)?,
+            XErrorKind::RuntimeError { message } => write!(f, "运行错误: {}", message)?,
             XErrorKind::TableError(v) => write!(f, "表错误: {}", v)?,
             XErrorKind::TypeMismatch { except, current } => write!(f, "类型错误: 预期 `{}`, 实际 `{}`", except, current)?,
             XErrorKind::UnknownError => write!(f, "内部错误")?,

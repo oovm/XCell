@@ -7,10 +7,13 @@ use std::{
     sync::LazyLock,
 };
 
-use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use toml::{from_str, Value};
-use xcell_errors::{for_3rd::WalkDir, XError, XResult};
+
+use xcell_errors::{
+    for_3rd::{file_watcher, StreamExt, WalkDir},
+    XError, XResult,
+};
 
 use crate::{
     utils::{build_glob_set, make_relative, split_file_name, split_namespace, valid_file},
@@ -54,13 +57,12 @@ impl WorkspaceManager {
     pub async fn first_walk(&mut self) -> XResult<()> {
         let unity = UnityCodegen::default();
         let glob = build_glob_set(&self.config.glob)?;
-        let root = &self.root;
-        let mut entries = WalkDir::new(&root);
+        let mut entries = WalkDir::new(&self.root);
         loop {
             match entries.next().await {
                 Some(Ok(o)) if valid_file(&o) => {
                     let file = o.path();
-                    let normed = make_relative(&file, &root)?;
+                    let normed = make_relative(&file, &self.root)?;
                     if glob.is_match(&normed) {
                         log::info!("首次加载: {}", normed.display());
                         match XCellTable::load_file(&file, &self.config) {
@@ -75,6 +77,19 @@ impl WorkspaceManager {
                             }
                         }
                     }
+                }
+                None => break,
+                _ => continue,
+            }
+        }
+        Ok(())
+    }
+    pub async fn watcher(&mut self) -> XResult<()> {
+        let mut watcher = file_watcher(&self.root)?;
+        loop {
+            match watcher.next().await {
+                Some(Ok(o)) => {
+                    log::trace!("文件变更: {:?}", o);
                 }
                 None => break,
                 _ => continue,

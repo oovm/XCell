@@ -7,26 +7,18 @@ use std::{
 
 mod watcher;
 
+pub use self::workspace::*;
 use crate::{CalamineTable, XCellHeader, XCellHeaders};
 use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
 use itertools::Itertools;
-use log::info;
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 use xcell_errors::{
-    for_3rd::{DirEntry, Glob, GlobSet, GlobSetBuilder, WalkDir},
+    for_3rd::{DirEntry, Glob, GlobSet, GlobSetBuilder},
     XError, XResult,
 };
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
-
-pub use self::workspace::*;
-use futures::{
-    channel::mpsc::{channel, Receiver, SendError},
-    SinkExt, StreamExt,
-};
-use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
-
 
 mod workspace;
 

@@ -7,18 +7,22 @@ pub struct TableConfig {
 }
 
 impl TableConfig {
-    pub fn load_file(path: &Path, global: Option<&ProjectConfig>) -> XResult<Self> {
+    /// 配置路径, 必须是 toml 格式
+    pub fn load_file(path: Option<&Path>, global: Option<&ProjectConfig>) -> XResult<Self> {
         let mut basic = match global {
             Some(s) => TableConfig::from(s),
             None => Default::default(),
         };
-        match read_to_string(path) {
-            Ok(o) => {
-                log::info!("加载设置: {}", path.display());
-                let toml = o.parse::<Value>()?;
-                basic.read_toml(&toml);
-            }
-            Err(_) => {}
+        match path {
+            Some(path) => match read_to_string(path) {
+                Ok(o) => {
+                    log::info!("载入配置: {}", path.file_name().and_then(OsStr::to_str).unwrap_or(""));
+                    let toml = o.parse::<Value>()?;
+                    basic.read_toml(&toml);
+                }
+                Err(..) => {}
+            },
+            None => {}
         }
 
         Ok(basic)
@@ -34,6 +38,6 @@ impl TableConfig {
 
 impl From<&ProjectConfig> for TableConfig {
     fn from(project: &ProjectConfig) -> Self {
-        TableConfig { typing: Default::default(), unity: project.unity }
+        TableConfig { typing: Default::default(), unity: project.unity.clone() }
     }
 }

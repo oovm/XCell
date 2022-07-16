@@ -24,7 +24,7 @@ pub fn valid_file(dir: &DirEntry) -> bool {
 /// ```
 /// use xcell_core;
 /// ```
-pub fn make_relative<A, B>(this: A, root: B) -> XResult<PathBuf>
+pub fn get_relative<A, B>(this: A, root: B) -> XResult<PathBuf>
 where
     A: AsRef<Path>,
     B: AsRef<Path>,

@@ -1,12 +1,12 @@
+use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeSet,
+    ffi::OsStr,
     fmt::Debug,
     fs::read_to_string,
     path::{Path, PathBuf},
     sync::LazyLock,
 };
-
-use serde::{Deserialize, Serialize};
 use toml::{from_str, Value};
 
 use xcell_errors::{
@@ -20,7 +20,7 @@ pub use self::{
     unity::{UnityCodegen, UNITY_CODEGEN_CONFIG},
 };
 use crate::{
-    utils::{make_relative, split_file_name, split_namespace, valid_file},
+    utils::{get_relative, split_file_name, split_namespace, valid_file},
     XCellTable,
 };
 use xcell_errors::for_3rd::build_glob_set;
@@ -31,7 +31,6 @@ mod unity;
 
 #[derive(Debug, Clone)]
 pub struct WorkspaceManager {
-    pub root: PathBuf,
     pub config: ProjectConfig,
 }
 
@@ -46,22 +45,18 @@ impl WorkspaceManager {
         if !root.is_dir() {
             return Err(XError::table_error(format!("{} 不是目录名", input.display())));
         }
-        else {
-            log::info!("工作目录: {}", root.display());
-        }
-        let config = ProjectConfig::new(&root);
-        Ok(Self { root, config })
+        Ok(Self { config: ProjectConfig::new(root) })
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
         let unity = UnityCodegen::default();
         let glob = build_glob_set(&self.config.glob).result(|e| log::error!("{e}"))?;
-        let mut entries = WalkDir::new(&self.root);
+        let mut entries = WalkDir::new(&self.config.root);
         loop {
             match entries.next().await {
                 Some(Ok(o)) if valid_file(&o) => {
                     let file = o.path();
-                    let normed = make_relative(&file, &self.root)?;
+                    let normed = self.get_relative(&file)?;
                     if glob.is_match(&normed) {
                         log::info!("首次加载: {}", normed.display());
                         match XCellTable::load_file(&file, &self.config) {
@@ -84,7 +79,7 @@ impl WorkspaceManager {
         Ok(())
     }
     pub async fn watcher(&mut self) -> XResult<()> {
-        let mut watcher = file_watcher(&self.root)?;
+        let mut watcher = file_watcher(&self.config.root)?;
         loop {
             match watcher.next().await {
                 Some(Ok(o)) => {

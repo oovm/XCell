@@ -12,6 +12,7 @@ edition = "2021"
 
 [dependencies]
 iced = "0.5.2"
+log = "0.4.17"
 
 [dev-dependencies]
 

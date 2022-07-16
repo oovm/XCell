@@ -47,3 +47,9 @@ pub enum XCellValue {
     Custom(String),
     Vector(Vec<XCellValue>),
 }
+
+impl Default for XCellValue {
+    fn default() -> Self {
+        Self::Boolean(false)
+    }
+}

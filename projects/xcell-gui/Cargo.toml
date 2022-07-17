@@ -1,6 +1,5 @@
 [package]
 name = "xcell-gui"
-publish = false
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "..."
@@ -12,7 +11,8 @@ edition = "2021"
 
 [dependencies]
 iced = "0.5.2"
-log = "0.4.17"
+log = { version = "0.4.17", features = ["std"] }
+regex = "1.7.0"
 
 [dev-dependencies]
 

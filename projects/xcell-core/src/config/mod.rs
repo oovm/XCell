@@ -1,4 +1,3 @@
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::{
     collections::BTreeSet,
     ffi::OsStr,
@@ -6,13 +5,14 @@ use std::{
     fs::read_to_string,
     path::{Path, PathBuf},
     str::FromStr,
-    sync::LazyLock,
 };
+
+use serde::{de::MapAccess, Deserialize, Deserializer, Serialize, Serializer};
 use toml::{from_str, Value};
 
 use regex::Regex;
 use xcell_errors::{
-    for_3rd::{build_glob_set, file_watcher, StreamExt, WalkDir},
+    for_3rd::{build_glob_set, file_watcher, GlobSet, StreamExt, WalkDir},
     XError, XResult,
 };
 
@@ -28,9 +28,15 @@ mod project;
 mod table;
 mod unity;
 
-#[derive(Debug, Clone)]
 pub struct WorkspaceManager {
     pub config: ProjectConfig,
+    pub glob_pattern: GlobSet,
+}
+
+impl Debug for WorkspaceManager {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WorkspaceManager").field("config", &self.config).finish()
+    }
 }
 
 impl WorkspaceManager {
@@ -44,7 +50,9 @@ impl WorkspaceManager {
         if !root.is_dir() {
             return Err(XError::table_error(format!("{} 不是目录名", input.display())));
         }
-        Ok(Self { config: ProjectConfig::new(root) })
+        let config = ProjectConfig::new(root);
+        let glob_pattern = build_glob_set(&config.include).unwrap();
+        Ok(Self { config, glob_pattern })
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
@@ -107,8 +115,3 @@ pub struct BooleanMetaInfo {
 
 /// 默认的全局项目设置
 pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
-
-#[test]
-fn test() {
-    println!("{:#?}", serde_json::from_str::<ProjectConfig>(include_str!("ProjectConfig.json")).unwrap())
-}

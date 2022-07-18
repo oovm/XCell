@@ -1,3 +1,4 @@
+pub use futures::StreamExt;
 #[cfg(feature = "walkdir")]
 pub use walkdir::*;
 
@@ -17,6 +18,9 @@ pub use for_globset::*;
 pub use for_notify::*;
 #[cfg(feature = "num")]
 pub use for_num::*;
+pub use for_serde::*;
+#[cfg(feature = "serde_json")]
+pub use for_serde_json::*;
 
 #[cfg(feature = "async-walkdir")]
 mod for_async_walkdir;
@@ -41,4 +45,6 @@ mod for_toml;
 #[cfg(feature = "walkdir")]
 mod for_walkdir;
 
-pub use futures::StreamExt;
+mod for_serde;
+#[cfg(feature = "serde_json")]
+mod for_serde_json;

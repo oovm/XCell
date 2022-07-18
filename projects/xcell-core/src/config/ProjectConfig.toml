@@ -19,9 +19,8 @@ include = """
 
 
 [unity]
-enabled = true
+enable = true
 namespace = "DataTable.Generated"
-output = "Assets/Scripts/DataTable/Generated"
 manager = "DataTableManager"
 suffix_table = "Table"
 suffix_element = "Element"
@@ -30,8 +29,8 @@ legacy_using = false
 legacy_null_null = false
 
 [unity.binary]
-enabled = true
-output = "Assets/Tables/Binary"
+enable = true
+output = "Assets/Scripts/DataTable/Generated"
 
 [unity.xlua]
 enable = false

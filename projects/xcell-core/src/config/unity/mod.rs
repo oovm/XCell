@@ -25,7 +25,7 @@ pub struct UnityCodegen {
     pub legacy_null_null: bool,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct UnityConfigBinary {
     /// 是否启用二进制生成
     pub enable: bool,

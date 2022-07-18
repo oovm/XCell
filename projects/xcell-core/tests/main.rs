@@ -1,7 +1,11 @@
-use log::LevelFilter;
 use std::path::PathBuf;
 
+use log::LevelFilter;
 use sled_typed::{Database, DiskMap};
+
+use xcell_core::config::{ProjectConfig, PROJECT_CONFIG};
+
+mod test_buffer;
 
 #[test]
 fn ready() {
@@ -12,7 +16,10 @@ pub fn logger() {
     let _ = env_logger::builder().filter_level(LevelFilter::Trace).is_test(true).try_init();
 }
 
-mod test_buffer;
+#[test]
+fn project_config_default() {
+    println!("{:#?}", toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap())
+}
 
 #[test]
 fn test_files() {

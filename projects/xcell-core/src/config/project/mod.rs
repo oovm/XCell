@@ -1,10 +1,10 @@
-use super::*;
 use xcell_errors::for_3rd::GlobSet;
 
-#[derive(Debug, Clone)]
+use super::*;
+
+#[derive(Debug)]
 pub struct ProjectConfig {
     pub root: PathBuf,
-    pub(crate) include_glob: GlobSet,
     pub version: String,
     pub include: String,
     pub exclude: String,

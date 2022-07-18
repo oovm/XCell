@@ -9,7 +9,6 @@ impl Default for ProjectConfig {
             root: Default::default(),
             version: "1.0.0".to_string(),
             include: xlsx.to_string(),
-            include_glob: build_glob_set(xlsx).unwrap(),
             exclude: "".to_string(),
             unity: Default::default(),
         }
@@ -21,7 +20,7 @@ impl<'de> Deserialize<'de> for ProjectConfig {
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_any(ProjectConfig::default())
+        deserializer.deserialize_any(Self::default())
     }
 }
 
@@ -38,40 +37,13 @@ impl<'de> Visitor<'de> for ProjectConfig {
     {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
-                "version" => map_next_value(&mut map, |v| self.version = v),
-                "exclude" => map.next_value().map(|v| self.exclude = v).unwrap_or_default(),
-                "include" => map.next_value().map(|v| self.include = v).unwrap_or_default(),
-
-                _ => match map.next_value::<&str>() {
-                    #[cfg(debug_assertions)]
-                    Ok(o) => {
-                        eprintln!("Unknown: ProjectConfig.{} = {:?}", key, o);
-                    }
-                    #[cfg(debug_assertions)]
-                    Err(_) => {
-                        eprintln!("Unknown: ProjectConfig.{}", key);
-                    }
-                    #[cfg(not(debug_assertions))]
-                    _ => {}
-                },
+                "version" => read_map_next_value(&mut map, |v| self.version = v),
+                "exclude" => read_map_next_value(&mut map, |v| self.exclude = v),
+                "include" => read_map_next_value(&mut map, |v| self.include = v),
+                "unity" => read_map_next_value(&mut map, |v| self.unity = v),
+                _ => read_map_next_extra(&mut map, "ProjectConfig", key),
             }
         }
         Ok(self)
-    }
-}
-
-pub fn map_next_value<'de, M, F, T>(dict: &mut M, mut handler: F)
-where
-    M: MapAccess<'de>,
-    F: FnMut(T) -> (),
-    T: Deserialize<'de>,
-{
-    match dict.next_value::<T>() {
-        Ok(o) => handler(o),
-        #[cfg(debug_assertions)]
-        Err(e) => {
-            eprintln!("e")
-        }
-        _ => {}
     }
 }

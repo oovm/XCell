@@ -21,6 +21,16 @@ impl Default for IcedLogger {
     }
 }
 impl IcedLogger {
+    pub fn with_target_level(mut self, level: LevelFilter) -> Self {
+        self.level = level;
+        self
+    }
+    pub fn with_target_filter(mut self, target: &str) -> Self {
+        if let Ok(o) = Regex::new(target) {
+            self.target_filter = o;
+        }
+        self
+    }
     fn show_record(&self, record: &Record) -> bool {
         if self.target_filter.is_match(record.metadata().target()) {
             return false;

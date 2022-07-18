@@ -30,7 +30,7 @@ impl TableConfig {
     fn read_toml(&mut self, root: &Value) -> Option<()> {
         let fields_table = root.get("field")?.as_table()?;
         for (field, desc) in fields_table {
-            println!("{field}: {desc}")
+            log::error!("{field}: {desc}")
         }
         None
     }

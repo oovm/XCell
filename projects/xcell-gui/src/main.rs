@@ -1,17 +1,15 @@
 #![feature(once_cell)]
 
-use crate::logger::IcedLogger;
 use iced::{
     widget::{button, column, text},
     Alignment, Element, Sandbox, Settings,
 };
-
+use xcell_gui::IcedLogger;
 mod errors;
 mod logger;
 
 pub fn main() -> iced::Result {
     IcedLogger::default().activate().unwrap();
-    log::info!("Hello, world!");
     Counter::run(Settings::default())
 }
 
@@ -40,9 +38,11 @@ impl Sandbox for Counter {
         match message {
             Message::IncrementPressed => {
                 self.value += 1;
+                log::info!("{}", self.value);
             }
             Message::DecrementPressed => {
                 self.value -= 1;
+                log::info!("{}", self.value);
             }
         }
     }

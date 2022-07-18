@@ -1,0 +1,45 @@
+{
+    "exclude": "*.xlsx\n",
+    "include": "*.xlsx\n",
+    "version": "0.0.0",
+    "type": {
+        "bool": {
+            "false": [
+                "false",
+                "x"
+            ],
+            "true": [
+                "true",
+                "√"
+            ]
+        },
+        "string": {}
+    },
+    "unity": {
+        "enabled": true,
+        "legacy_null_null": false,
+        "legacy_using": false,
+        "manager": "DataTableManager",
+        "namespace": "DataTable.Generated",
+        "output": "Assets/Scripts/DataTable/Generated",
+        "suffix_element": "Element",
+        "suffix_table": "Table",
+        "support_clone": true,
+        "binary": {
+            "enabled": true,
+            "output": "Assets/Tables/Binary"
+        },
+        "json": {
+            "enable": false
+        },
+        "protobuf": {
+            "enable": false
+        },
+        "xlua": {
+            "enable": false
+        },
+        "xml": {
+            "enable": true
+        }
+    }
+}

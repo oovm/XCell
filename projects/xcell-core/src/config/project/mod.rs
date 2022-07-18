@@ -1,34 +1,18 @@
 use super::*;
+use xcell_errors::for_3rd::GlobSet;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct ProjectConfig {
     pub root: PathBuf,
+    pub(crate) include_glob: GlobSet,
     pub version: String,
-    pub glob: String,
+    pub include: String,
+    pub exclude: String,
     pub unity: UnityCodegen,
 }
 
-/// 默认的全局项目设置
-pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
-
-static DEFAULT_CONFIG: LazyLock<ProjectConfig> = LazyLock::new(|| {
-    let mut empty = ProjectConfig {
-        root: Default::default(),
-        version: "".to_string(),
-        glob: Default::default(),
-        unity: Default::default(),
-    };
-    let root = from_str::<Value>(PROJECT_CONFIG).unwrap();
-    empty.load_value(&root);
-    log::trace!("初始化 PROJECT_CONFIG\n{empty:#?}");
-    empty
-});
-
-impl Default for ProjectConfig {
-    fn default() -> Self {
-        DEFAULT_CONFIG.clone()
-    }
-}
+mod der;
+mod ser;
 
 impl ProjectConfig {
     pub fn new(workspace: PathBuf) -> Self {
@@ -48,11 +32,12 @@ impl ProjectConfig {
     fn read_config(&mut self, config: &Path) -> XResult<()> {
         let str = read_to_string(config)?;
         let root = from_str::<Value>(&str)?;
-        Ok(self.load_value(&root))
+        self.load_value(&root);
+        Ok(())
     }
     fn load_value(&mut self, root: &Value) {
         let _: Option<()> = try { self.version = root.get("version")?.as_str()?.to_string() };
-        let _: Option<()> = try { self.glob = root.get("glob")?.as_str()?.trim().to_string() };
+        let _: Option<()> = try { self.include = root.get("glob")?.as_str()?.trim().to_string() };
     }
 }
 

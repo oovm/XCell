@@ -1,8 +1,7 @@
-use std::fmt::Formatter;
 
 use serde::{
     de::{Error, MapAccess, Visitor},
-    Deserializer,
+
 };
 
 use super::*;
@@ -29,11 +28,11 @@ impl Default for UnityConfigBinary {
     }
 }
 
-impl Default for UnityConfigBinary {
-    fn default() -> Self {
-        Self { enable: false, output: "Tables/Binary".to_string() }
-    }
-}
+// impl Default for UnityConfigBinary {
+//     fn default() -> Self {
+//         Self { enable: false, output: "Tables/Binary".to_string() }
+//     }
+// }
 
 impl<'de> Deserialize<'de> for UnityCodegen {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

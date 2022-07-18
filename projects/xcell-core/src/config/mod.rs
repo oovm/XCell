@@ -1,29 +1,28 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::{
     collections::BTreeSet,
     ffi::OsStr,
-    fmt::Debug,
+    fmt::{Debug, Formatter},
     fs::read_to_string,
     path::{Path, PathBuf},
+    str::FromStr,
     sync::LazyLock,
 };
 use toml::{from_str, Value};
 
+use regex::Regex;
 use xcell_errors::{
-    for_3rd::{file_watcher, StreamExt, WalkDir},
+    for_3rd::{build_glob_set, file_watcher, StreamExt, WalkDir},
     XError, XResult,
 };
 
-pub use self::{
-    project::ProjectConfig,
-    table::TableConfig,
-    unity::{UnityCodegen, UNITY_CODEGEN_CONFIG},
-};
 use crate::{
-    utils::{get_relative, split_file_name, split_namespace, valid_file},
+    utils::{get_relative, valid_file},
     XCellTable,
 };
-use xcell_errors::for_3rd::build_glob_set;
+
+pub use self::{project::ProjectConfig, table::TableConfig, unity::UnityCodegen};
+
 mod der;
 mod project;
 mod table;
@@ -50,7 +49,7 @@ impl WorkspaceManager {
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
         let unity = UnityCodegen::default();
-        let glob = build_glob_set(&self.config.glob).result(|e| log::error!("{e}"))?;
+        let glob = build_glob_set(&self.config.include).result(|e| log::error!("{e}"))?;
         let mut entries = WalkDir::new(&self.config.root);
         loop {
             match entries.next().await {
@@ -104,4 +103,12 @@ pub struct BooleanMetaInfo {
     pub r#true: BTreeSet<String>,
     pub r#false: BTreeSet<String>,
     pub default: bool,
+}
+
+/// 默认的全局项目设置
+pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
+
+#[test]
+fn test() {
+    println!("{:#?}", serde_json::from_str::<ProjectConfig>(include_str!("ProjectConfig.json")).unwrap())
 }

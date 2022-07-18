@@ -1,4 +1,15 @@
-target = ["unity"]
+version = "0.0.0"
+
+
+exclude = """
+*.xlsx
+"""
+
+include = """
+*.xlsx
+"""
+
+
 
 [type.bool]
 "true" = ["true", "√"]

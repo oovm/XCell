@@ -32,8 +32,6 @@ pub struct UnityConfigBinary {
     /// 生成的二进制文件的目录
     pub output: String,
 }
-/// 默认的 Unity 生成配置
-pub const UNITY_CODEGEN_CONFIG: &str = include_str!("UnityCodegen.toml");
 
 fn test() {}
 

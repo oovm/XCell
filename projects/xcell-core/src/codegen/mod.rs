@@ -7,7 +7,7 @@ use tera::{Context, Tera};
 use xcell_errors::XResult;
 use xcell_types::XCellTyped;
 
-pub use crate::config::UnityCodegen;
+pub use crate::config::TypeMetaInfo;
 use crate::{XCellHeader, XCellHeaders, XCellTable};
 
 #[allow(unused)]

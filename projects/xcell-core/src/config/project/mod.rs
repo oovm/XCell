@@ -1,5 +1,3 @@
-use xcell_errors::for_3rd::GlobSet;
-
 use super::*;
 
 #[derive(Debug)]
@@ -8,7 +6,7 @@ pub struct ProjectConfig {
     pub version: String,
     pub include: String,
     pub exclude: String,
-    pub unity: UnityCodegen,
+    pub unity: TypeMetaInfo,
 }
 
 mod der;

@@ -14,8 +14,8 @@ impl Default for BooleanMetaInfo {
 
 impl<'de> Deserialize<'de> for BooleanMetaInfo {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         deserializer.deserialize_any(BooleanMetaInfo::default())
     }
@@ -29,8 +29,8 @@ impl<'de> Visitor<'de> for BooleanMetaInfo {
     }
 
     fn visit_map<A>(mut self, mut map: A) -> Result<Self::Value, A::Error>
-    where
-        A: MapAccess<'de>,
+        where
+            A: MapAccess<'de>,
     {
         #[derive(Deserialize)]
         #[serde(untagged)]

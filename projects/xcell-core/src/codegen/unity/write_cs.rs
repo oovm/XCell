@@ -1,6 +1,6 @@
 use super::*;
 
-impl UnityCodegen {
+impl TypeMetaInfo {
     pub fn write_class(&self, table: &XCellTable) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = table.path.with_file_name(file).with_extension("cs");
@@ -13,7 +13,7 @@ impl UnityCodegen {
     }
 }
 
-impl UnityCodegen {
+impl TypeMetaInfo {
     fn make_context(&self, table: &XCellTable) -> Context {
         let mut ctx = Context::new();
         ctx.insert("VERSION", env!("CARGO_PKG_VERSION"));

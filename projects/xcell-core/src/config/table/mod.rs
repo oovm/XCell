@@ -3,7 +3,7 @@ use super::*;
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TableConfig {
     pub typing: TypeMetaInfo,
-    pub unity: UnityCodegen,
+    pub unity: TypeMetaInfo,
 }
 
 impl TableConfig {

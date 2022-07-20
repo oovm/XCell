@@ -4,15 +4,13 @@ use std::{
     fmt::{Debug, Formatter},
     fs::read_to_string,
     path::{Path, PathBuf},
-    str::FromStr,
 };
 
-use serde::{de::MapAccess, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use toml::{from_str, Value};
 
-use regex::Regex;
 use xcell_errors::{
-    for_3rd::{build_glob_set, file_watcher, GlobSet, StreamExt, WalkDir},
+    for_3rd::{build_glob_set, file_watcher, read_map_next_extra, read_map_next_value, GlobSet, StreamExt, WalkDir},
     XError, XResult,
 };
 
@@ -21,12 +19,13 @@ use crate::{
     XCellTable,
 };
 
-pub use self::{project::ProjectConfig, table::TableConfig, unity::UnityCodegen};
+pub use self::{project::ProjectConfig, table::TableConfig, unity::TypeMetaInfo};
 
 mod der;
 mod project;
 mod table;
 mod unity;
+mod typing;
 
 pub struct WorkspaceManager {
     pub config: ProjectConfig,
@@ -35,7 +34,10 @@ pub struct WorkspaceManager {
 
 impl Debug for WorkspaceManager {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("WorkspaceManager").field("config", &self.config).finish()
+        f.debug_struct("WorkspaceManager")
+            .field("workspace", &self.config.root.display())
+            .field("config", &self.config)
+            .finish()
     }
 }
 
@@ -56,7 +58,7 @@ impl WorkspaceManager {
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
-        let unity = UnityCodegen::default();
+        let unity = TypeMetaInfo::default();
         let glob = build_glob_set(&self.config.include).result(|e| log::error!("{e}"))?;
         let mut entries = WalkDir::new(&self.config.root);
         loop {
@@ -98,19 +100,6 @@ impl WorkspaceManager {
         }
         Ok(())
     }
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct TypeMetaInfo {
-    #[serde(default, alias = "bool")]
-    pub boolean: BooleanMetaInfo,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct BooleanMetaInfo {
-    pub r#true: BTreeSet<String>,
-    pub r#false: BTreeSet<String>,
-    pub default: bool,
 }
 
 /// 默认的全局项目设置

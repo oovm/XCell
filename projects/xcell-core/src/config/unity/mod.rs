@@ -32,11 +32,3 @@ pub struct UnityConfigBinary {
     /// 生成的二进制文件的目录
     pub output: String,
 }
-
-fn test() {}
-
-impl UnityCodegen {
-    pub fn new(config: &str) -> Self {
-        todo!()
-    }
-}

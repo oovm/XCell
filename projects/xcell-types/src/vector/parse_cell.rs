@@ -1,4 +1,4 @@
-use crate::errors::syntax_error;
+use crate::utils::syntax_error;
 
 use super::*;
 

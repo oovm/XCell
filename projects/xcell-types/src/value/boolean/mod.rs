@@ -1,9 +1,13 @@
 use super::*;
+use crate::default_deserialize;
+use std::collections::BTreeSet;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+mod der;
+
+#[derive(Debug, Clone, Serialize)]
 pub struct BooleanDescription {
-    pub accept: Vec<String>,
-    pub reject: Vec<String>,
+    pub accept: BTreeSet<String>,
+    pub reject: BTreeSet<String>,
     pub default: bool,
 }
 

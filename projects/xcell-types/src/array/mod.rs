@@ -3,7 +3,7 @@ use std::{ops::Deref, str::FromStr};
 use serde::{Deserialize, Serialize};
 use xcell_errors::{for_3rd::DataType, XResult};
 
-use crate::{errors::syntax_error, XCellTyped, XCellValue};
+use crate::{utils::syntax_error, XCellTyped, XCellValue};
 
 mod kind;
 mod parse_cell;

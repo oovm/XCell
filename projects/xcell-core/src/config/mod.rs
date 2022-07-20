@@ -19,9 +19,8 @@ use crate::{
     XCellTable,
 };
 
-pub use self::{project::ProjectConfig, table::TableConfig, unity::TypeMetaInfo};
+pub use self::{project::ProjectConfig, table::TableConfig, typing::{TypeMetaInfo, BooleanDescription}};
 
-mod der;
 mod project;
 mod table;
 mod unity;

@@ -5,7 +5,7 @@ use xcell_errors::{
     XResult,
 };
 
-use crate::{errors::syntax_error, XCellValue};
+use crate::{utils::syntax_error, XCellValue};
 use std::ops::Deref;
 mod kind;
 mod parse_cell;

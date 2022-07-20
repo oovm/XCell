@@ -1,36 +1,37 @@
-use super::*;
-use std::fmt::Formatter;
+use std::{any::type_name, fmt::Formatter};
 
 use serde::{
     de::{MapAccess, Visitor},
     Deserializer,
 };
 
-impl Default for BooleanMetaInfo {
+use super::*;
+
+impl Default for BooleanDescription {
     fn default() -> Self {
-        Self { r#true: Default::default(), r#false: Default::default(), default: false }
+        Self { accept: Default::default(), reject: Default::default(), default: false }
     }
 }
 
-impl<'de> Deserialize<'de> for BooleanMetaInfo {
+impl<'de> Deserialize<'de> for BooleanDescription {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
-        deserializer.deserialize_any(BooleanMetaInfo::default())
+        deserializer.deserialize_any(Self::default())
     }
 }
 
-impl<'de> Visitor<'de> for BooleanMetaInfo {
+impl<'de> Visitor<'de> for BooleanDescription {
     type Value = Self;
 
     fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        formatter.write_str("BooleanMetaInfo")
+        formatter.write_str(type_name::<Self>())
     }
 
     fn visit_map<A>(mut self, mut map: A) -> Result<Self::Value, A::Error>
-        where
-            A: MapAccess<'de>,
+    where
+        A: MapAccess<'de>,
     {
         #[derive(Deserialize)]
         #[serde(untagged)]
@@ -43,16 +44,16 @@ impl<'de> Visitor<'de> for BooleanMetaInfo {
             match key {
                 "true" => match value {
                     Helper::One(o) => {
-                        self.r#true.insert(o);
+                        self.accept.insert(o);
                     }
-                    Helper::Many(o) => self.r#true.extend(o),
+                    Helper::Many(o) => self.accept.extend(o),
                     _ => {}
                 },
                 "false" => match value {
                     Helper::One(o) => {
-                        self.r#false.insert(o);
+                        self.reject.insert(o);
                     }
-                    Helper::Many(o) => self.r#false.extend(o),
+                    Helper::Many(o) => self.reject.extend(o),
                     _ => {}
                 },
                 "default" => match value {

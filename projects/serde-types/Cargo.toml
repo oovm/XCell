@@ -1,5 +1,5 @@
 [package]
-name = "xcell-types"
+name = "serde-types"
 version = "0.0.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "Types definition for xcell"
@@ -11,13 +11,6 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1.0.147", features = ["derive"] }
-
-stream-io = "0.0.0"
-
-[dependencies.xcell-errors]
-#version = "0.1.0"
-path = "../xcell-errors"
-features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine"]
 
 
 [dev-dependencies]

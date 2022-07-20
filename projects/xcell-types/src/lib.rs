@@ -11,7 +11,7 @@ pub use self::{
     vector::VectorDescription,
 };
 
-pub(crate) mod errors;
+pub(crate) mod utils;
 
 mod array;
 mod codegen;

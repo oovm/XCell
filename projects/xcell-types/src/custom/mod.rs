@@ -1,4 +1,4 @@
-use crate::{errors::syntax_error, XCellTyped};
+use crate::{utils::syntax_error, XCellTyped};
 use serde::{Deserialize, Serialize};
 use xcell_errors::{for_3rd::DataType, XResult};
 

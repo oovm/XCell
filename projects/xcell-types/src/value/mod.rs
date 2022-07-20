@@ -11,7 +11,7 @@ use xcell_errors::{
 };
 
 use crate::{
-    errors::{syntax_error, type_mismatch},
+    utils::{syntax_error, type_mismatch},
     XCellTyped,
 };
 

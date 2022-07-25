@@ -1,35 +1,44 @@
 use std::{
-    collections::BTreeSet,
+    any::type_name,
     ffi::OsStr,
     fmt::{Debug, Formatter},
     fs::read_to_string,
     path::{Path, PathBuf},
 };
 
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
+};
 use toml::{from_str, Value};
 
 use xcell_errors::{
-    for_3rd::{build_glob_set, file_watcher, read_map_next_extra, read_map_next_value, GlobSet, StreamExt, WalkDir},
+    for_3rd::{
+        build_glob_set, file_watcher, read_map_next_extra, read_map_next_key_lowercase, read_map_next_value, GlobSet,
+        StreamExt, WalkDir,
+    },
     XError, XResult,
 };
+use xcell_types::{default_deserialize, BooleanDescription};
 
 use crate::{
     utils::{get_relative, valid_file},
     XCellTable,
 };
 
-pub use self::{project::ProjectConfig, table::TableConfig, typing::{TypeMetaInfo, BooleanDescription}};
+pub use self::{project::ProjectConfig, table::TableConfig, typing::TypeMetaInfo, unity::UnityCodegen};
 
 mod project;
 mod table;
-mod unity;
 mod typing;
+mod unity;
 
 pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
 }
+
+default_deserialize![ProjectConfig, TypeMetaInfo];
 
 impl Debug for WorkspaceManager {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -57,7 +66,7 @@ impl WorkspaceManager {
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
-        let unity = TypeMetaInfo::default();
+        let unity = UnityCodegen::default();
         let glob = build_glob_set(&self.config.include).result(|e| log::error!("{e}"))?;
         let mut entries = WalkDir::new(&self.config.root);
         loop {

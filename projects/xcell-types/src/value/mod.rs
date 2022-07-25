@@ -15,12 +15,10 @@ use crate::{
     XCellTyped,
 };
 
-pub mod boolean;
 pub mod color;
 pub mod convert;
 mod display;
 pub mod enumerate;
-pub mod string;
 pub mod time;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

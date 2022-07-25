@@ -1,13 +1,12 @@
 use std::{fs::File, io::Write, path::Path};
 
+use crate::config::UnityCodegen;
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use tera::{Context, Tera};
-
 use xcell_errors::XResult;
 use xcell_types::XCellTyped;
 
-pub use crate::config::TypeMetaInfo;
 use crate::{XCellHeader, XCellHeaders, XCellTable};
 
 #[allow(unused)]

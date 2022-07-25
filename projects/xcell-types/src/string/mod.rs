@@ -1,4 +1,6 @@
-use super::*;
+use crate::{utils::syntax_error, XCellTyped, XCellValue};
+use serde::{Deserialize, Serialize};
+use xcell_errors::{for_3rd::DataType, XResult};
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct StringDescription {

@@ -6,7 +6,8 @@ pub struct ProjectConfig {
     pub version: String,
     pub include: String,
     pub exclude: String,
-    pub unity: TypeMetaInfo,
+    pub typing: TypeMetaInfo,
+    pub unity: UnityCodegen,
 }
 
 mod der;

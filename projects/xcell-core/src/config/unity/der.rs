@@ -45,7 +45,7 @@ impl<'de> Visitor<'de> for UnityCodegen {
     type Value = Self;
 
     fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        write!(formatter, "需要是 bool 或者 {} 对象", type_name::<Self>())
+        formatter.write_str(type_name::<Self>())
     }
 
     fn visit_bool<E>(mut self, v: bool) -> Result<Self::Value, E>
@@ -97,7 +97,7 @@ impl<'de> Visitor<'de> for UnityConfigBinary {
     type Value = Self;
 
     fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        write!(formatter, "需要是 bool 或者 {} 对象", type_name::<Self>())
+        formatter.write_str(type_name::<Self>())
     }
 
     fn visit_bool<E>(mut self, v: bool) -> Result<Self::Value, E>

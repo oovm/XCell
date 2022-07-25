@@ -1,9 +1,10 @@
 use super::*;
+use crate::config::unity::UnityCodegen;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TableConfig {
-    pub typing: TypeMetaInfo,
-    pub unity: TypeMetaInfo,
+    pub typing: UnityCodegen,
+    pub unity: UnityCodegen,
 }
 
 impl TableConfig {

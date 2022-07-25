@@ -1,4 +1,4 @@
-use xcell_types::BooleanDescription;
+use xcell_types::StringDescription;
 use super::*;
 
 mod der;
@@ -6,6 +6,6 @@ mod ser;
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct TypeMetaInfo {
-    #[serde(default, alias = "bool")]
     pub boolean: BooleanDescription,
+    pub string: StringDescription,
 }

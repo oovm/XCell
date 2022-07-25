@@ -1,13 +1,20 @@
+use std::{
+    any::type_name,
+    fmt::{Debug, Display, Formatter},
+};
+
 use serde::{
+    __private::de::{Content, ContentRefDeserializer},
     de::Error,
     Deserialize, Deserializer,
-    __private::de::{Content, ContentRefDeserializer},
 };
+
+use itertools::Itertools;
 
 mod der;
 mod ser;
 
-#[derive(Debug)]
+#[derive(Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum OneOrManyOrNull<T>
 where
     T: Default,
@@ -16,33 +23,42 @@ where
     Many(Vec<T>),
 }
 
-#[derive(Debug)]
-pub enum OneOrMany<T> {
-    One(T),
-    Many(Vec<T>),
+#[derive(Default, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub struct OneOrMany<T> {
+    inner: Vec<T>,
 }
 
-impl<'de, T> Deserialize<'de> for OneOrMany<T>
-where
-    T: Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+impl<T: Debug> Debug for OneOrMany<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_list().entries(self.inner.iter()).finish()
+    }
+}
+
+impl<T: Display> Display for OneOrMany<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}]", self.inner.iter().map(|s| s.to_string()).join(", "))
+    }
+}
+
+impl<O> OneOrMany<O> {
+    pub fn empty() -> Self {
+        Self { inner: vec![] }
+    }
+    pub fn one<T>(item: T) -> Self
     where
-        D: Deserializer<'de>,
+        O: From<T>,
     {
-        let content = <Content as Deserialize>::deserialize(deserializer)?;
-        if let Ok(__ok) =
-            Result::map(<T as Deserialize>::deserialize(ContentRefDeserializer::<D::Error>::new(&content)), OneOrMany::One)
-        {
-            return Ok(__ok);
-        }
-        if let Ok(__ok) = Result::map(
-            <Vec<T> as Deserialize>::deserialize(ContentRefDeserializer::<D::Error>::new(&content)),
-            OneOrMany::Many,
-        ) {
-            return Ok(__ok);
-        }
-        Err(D::Error::custom("data did not match any variant of untagged enum OneOrMany"))
+        Self { inner: vec![O::from(item)] }
+    }
+    pub fn new<I, T>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = T>,
+        O: From<T>,
+    {
+        Self { inner: Vec::from_iter(iter.into_iter().map(O::from)) }
+    }
+    pub fn unwrap(self) -> Vec<O> {
+        self.inner
     }
 }
 
@@ -50,17 +66,6 @@ impl<T> OneOrManyOrNull<T>
 where
     T: Default,
 {
-    pub fn unwrap(self) -> Vec<T> {
-        match self {
-            Self::One(o) => {
-                vec![o]
-            }
-            Self::Many(o) => o,
-        }
-    }
-}
-
-impl<T> OneOrMany<T> {
     pub fn unwrap(self) -> Vec<T> {
         match self {
             Self::One(o) => {

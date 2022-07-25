@@ -1,6 +1,10 @@
-use super::*;
-use crate::default_deserialize;
 use std::collections::BTreeSet;
+
+use crate::utils::{syntax_error, type_mismatch};
+use serde::Serialize;
+use xcell_errors::{for_3rd::DataType, XResult};
+
+use super::*;
 
 mod der;
 
@@ -19,7 +23,7 @@ impl From<BooleanDescription> for XCellTyped {
 
 impl BooleanDescription {
     pub fn new(default: bool) -> BooleanDescription {
-        Self { accept: vec!["true".to_string()], reject: vec!["false".to_string()], default }
+        Self { default, ..Self::default() }
     }
 
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {

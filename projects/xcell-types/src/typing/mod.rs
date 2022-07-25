@@ -1,10 +1,10 @@
+use crate::BooleanDescription;
+use serde::{Deserialize, Serialize};
 use std::{
     convert::Infallible,
     fmt::{Debug, Display, Formatter},
     str::FromStr,
 };
-
-use serde::{Deserialize, Serialize};
 use xcell_errors::{for_3rd::DataType, XResult};
 
 use crate::XCellValue;
@@ -13,12 +13,10 @@ pub use crate::{
     custom::CustomDescription,
     decimal::{DecimalDescription, DecimalKind},
     integer::{IntegerDescription, IntegerKind},
-    value::{
-        boolean::BooleanDescription, color::ColorDescription, enumerate::EnumerateDescription, string::StringDescription,
-        time::TimeDescription,
-    },
+    value::{color::ColorDescription, enumerate::EnumerateDescription, time::TimeDescription},
     vector::VectorDescription,
 };
+pub use crate::string::StringDescription;
 
 mod parser;
 

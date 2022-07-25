@@ -14,10 +14,15 @@ serde = { version = "1.0.147", features = ["derive"] }
 
 stream-io = "0.0.0"
 
+[dependencies.serde-types]
+#version = "0.1.0"
+path = "../serde-types"
+features = []
+
 [dependencies.xcell-errors]
 #version = "0.1.0"
 path = "../xcell-errors"
-features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine"]
+features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine", "serde_json"]
 
 
 [dev-dependencies]

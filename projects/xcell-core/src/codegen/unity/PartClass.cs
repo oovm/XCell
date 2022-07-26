@@ -72,7 +72,7 @@ namespace {{ config.namespace }}
     {
         public {{TABLE_NAME}}()
         {
-            BinaryRead("Assets/{{ config.binary.output }}/{{ TABLE_NAME }}.binary");
+            BinaryRead("{{ config.binary.output }}/{{ TABLE_NAME }}.binary");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据

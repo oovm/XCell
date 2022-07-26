@@ -1,6 +1,8 @@
-use super::*;
-use crate::config::table::TableLineMode;
 use toml::from_str;
+
+use crate::config::table::TableLineMode;
+
+use super::*;
 
 #[derive(Clone, Debug)]
 pub struct ProjectConfig {
@@ -26,26 +28,26 @@ impl ProjectConfig {
     pub fn new(workspace: &Path) -> Self {
         log::info!("工作目录: {}", workspace.display());
         let cfg = workspace.join("XCell.toml");
-        let mut out = match Self::load_toml(&cfg) {
-            Ok(v) => {
-                log::info!("加载项目配置成功, 当前配置\n{v:#?}");
-                v
+        let success;
+        let mut config = match Self::load_toml(&cfg) {
+            Ok(o) => {
+                success = "成功";
+                o
             }
             Err(e) => {
+                success = "失败";
                 log::error!("{}", e.with_path(&cfg));
-                let v = Default::default();
-                log::info!("加载项目配置失败, 当前配置\n{v:#?}");
-                v
+                Default::default()
             }
         };
-        out.root = workspace.to_path_buf();
-        out
+        config.root = workspace.to_path_buf();
+        log::info!("加载项目配置{success}, 当前配置\n{config:#?}");
+        config
     }
-    fn load_toml(config: &Path) -> XResult<Self> {
-        if config.exists() {
-            let text = read_to_string(config)?;
-            let out = from_str(&text)?;
-            Ok(out)
+    fn load_toml(file: &Path) -> XResult<Self> {
+        if file.exists() {
+            let text = read_to_string(file)?;
+            Ok(from_str(&text)?)
         }
         else {
             Err(XError::table_error("XCell.toml 不存在"))

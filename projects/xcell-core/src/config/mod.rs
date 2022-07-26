@@ -1,5 +1,6 @@
 use std::{
     any::type_name,
+    collections::BTreeMap,
     fmt::{Debug, Formatter},
     fs::read_to_string,
     path::{Path, PathBuf},
@@ -37,9 +38,13 @@ mod table;
 mod typing;
 mod unity;
 
+/// 默认的全局项目设置
+pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
+
 pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
+    pub file_mapping: BTreeMap<PathBuf, XCellTable>,
 }
 
 default_deserialize![ProjectConfig, UnityCodegen, UnityBinaryConfig, TableConfig, TypeMetaInfo, TableLineMode];
@@ -66,7 +71,7 @@ impl WorkspaceManager {
         }
         let config = ProjectConfig::new(&root);
         let glob_pattern = build_glob_set(&config.include).unwrap();
-        Ok(Self { config, glob_pattern })
+        Ok(Self { config, glob_pattern, file_mapping: Default::default() })
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
@@ -79,17 +84,7 @@ impl WorkspaceManager {
                     let normed = self.get_relative(&file)?;
                     if glob.is_match(&normed) {
                         log::info!("首次加载: {}", normed.display());
-                        match XCellTable::load_file(&file, &self.config) {
-                            Ok(value) => match value.config.unity.write_class(&value) {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    log::error!("{}", e)
-                                }
-                            },
-                            Err(e) => {
-                                log::error!("{}", e)
-                            }
-                        }
+                        self.update_file(&file)
                     }
                 }
                 None => break,
@@ -113,5 +108,17 @@ impl WorkspaceManager {
     }
 }
 
-/// 默认的全局项目设置
-pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
+impl WorkspaceManager {
+    /// path 需要是绝对路径
+    pub fn update_file(&mut self, file: &Path) {
+        if let Err(e) = self.try_update_file(file) {
+            log::error!("{e}")
+        }
+    }
+    pub fn try_update_file(&mut self, file: &Path) -> XResult<()> {
+        let table = XCellTable::load_file(file, &self.config)?;
+        table.config.unity.write_class(&table)?;
+        self.file_mapping.insert(file.to_path_buf(), table);
+        Ok(())
+    }
+}

@@ -1,12 +1,35 @@
 use super::*;
 
-impl Default for LineMode {
+impl Default for TableLineMode {
     fn default() -> Self {
         Self { typing: 1, field: 2, helper: 3, data: 4 }
     }
 }
 
-impl<'de> Visitor<'de> for LineMode {
+impl<'de> Visitor<'de> for TableConfig {
+    type Value = Self;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        formatter.write_str(type_name::<Self>())
+    }
+
+    fn visit_map<A>(mut self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: MapAccess<'de>,
+    {
+        while let Some(key) = read_map_next_key_lowercase(&mut map)? {
+            match key.as_str() {
+                "typing" | "type" => read_map_next_value(&mut map, |v| self.typing = v),
+                "line" => read_map_next_value(&mut map, |v| self.line = v),
+                "unity" | "comment" => read_map_next_value(&mut map, |v| self.unity = v),
+                _ => read_map_next_extra(&mut map, type_name::<Self>(), &key),
+            }
+        }
+        Ok(self)
+    }
+}
+
+impl<'de> Visitor<'de> for TableLineMode {
     type Value = Self;
 
     fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {

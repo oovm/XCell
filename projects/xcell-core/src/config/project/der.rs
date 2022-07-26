@@ -8,9 +8,7 @@ impl Default for ProjectConfig {
             version: "1.0.0".to_string(),
             include: xlsx.to_string(),
             exclude: "".to_string(),
-            line_field: 0,
-            line_type: 0,
-            line_comment: 0,
+            line: Default::default(),
             typing: Default::default(),
             unity: Default::default(),
         }

@@ -33,15 +33,6 @@ impl Default for UnityBinaryConfig {
 //     }
 // }
 
-impl<'de> Deserialize<'de> for UnityCodegen {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        deserializer.deserialize_any(Self::default())
-    }
-}
-
 impl<'de> Visitor<'de> for UnityCodegen {
     type Value = Self;
 
@@ -82,15 +73,6 @@ impl<'de> Visitor<'de> for UnityCodegen {
             }
         }
         Ok(self)
-    }
-}
-
-impl<'de> Deserialize<'de> for UnityBinaryConfig {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        deserializer.deserialize_any(Self::default())
     }
 }
 

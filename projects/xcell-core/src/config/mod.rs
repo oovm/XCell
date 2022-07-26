@@ -1,6 +1,5 @@
 use std::{
     any::type_name,
-    ffi::OsStr,
     fmt::{Debug, Formatter},
     fs::read_to_string,
     path::{Path, PathBuf},
@@ -10,7 +9,7 @@ use serde::{
     de::{MapAccess, Visitor},
     Deserialize, Deserializer, Serialize, Serializer,
 };
-use toml::{from_str, Value};
+use toml::Value;
 
 use xcell_errors::{
     for_3rd::{
@@ -26,7 +25,12 @@ use crate::{
     XCellTable,
 };
 
-pub use self::{project::ProjectConfig, table::TableConfig, typing::TypeMetaInfo, unity::UnityCodegen};
+pub use self::{
+    project::ProjectConfig,
+    table::{TableConfig, TableLineMode},
+    typing::TypeMetaInfo,
+    unity::{UnityBinaryConfig, UnityCodegen},
+};
 
 mod project;
 mod table;
@@ -38,7 +42,7 @@ pub struct WorkspaceManager {
     pub glob_pattern: GlobSet,
 }
 
-default_deserialize![ProjectConfig, TypeMetaInfo];
+default_deserialize![ProjectConfig, UnityCodegen, UnityBinaryConfig, TableConfig, TypeMetaInfo, TableLineMode];
 
 impl Debug for WorkspaceManager {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -60,13 +64,12 @@ impl WorkspaceManager {
         if !root.is_dir() {
             return Err(XError::table_error(format!("{} 不是目录名", input.display())));
         }
-        let config = ProjectConfig::new(root);
+        let config = ProjectConfig::new(&root);
         let glob_pattern = build_glob_set(&config.include).unwrap();
         Ok(Self { config, glob_pattern })
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
-        let unity = UnityCodegen::default();
         let glob = build_glob_set(&self.config.include).result(|e| log::error!("{e}"))?;
         let mut entries = WalkDir::new(&self.config.root);
         loop {
@@ -77,7 +80,7 @@ impl WorkspaceManager {
                     if glob.is_match(&normed) {
                         log::info!("首次加载: {}", normed.display());
                         match XCellTable::load_file(&file, &self.config) {
-                            Ok(value) => match unity.write_class(&value) {
+                            Ok(value) => match value.config.unity.write_class(&value) {
                                 Ok(_) => {}
                                 Err(e) => {
                                     log::error!("{}", e)

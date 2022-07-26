@@ -1,6 +1,5 @@
 // 代码生成, 修改无效!
-// 当前版本: v{{ VERSION }}
-// 查看更新: https://github.com/oovm/XCell
+
 using System.IO;
 
 namespace {{ NAMESPACE }}

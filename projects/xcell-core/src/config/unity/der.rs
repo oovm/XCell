@@ -8,7 +8,8 @@ impl Default for UnityCodegen {
     fn default() -> Self {
         Self {
             enable: false,
-            project: "./".to_string(),
+            project: "../".to_string(),
+            output: "Assets/Scripts/DataTable/Generated".to_string(),
             namespace: "DataTable.Generated".to_string(),
             manager_name: "DataTableManager".to_string(),
             suffix_table: "Table".to_string(),
@@ -55,6 +56,8 @@ impl<'de> Visitor<'de> for UnityCodegen {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
                 "enable" => read_map_next_value(&mut map, |v| self.enable = v),
+                "project" => read_map_next_value(&mut map, |v| self.project = v),
+                "output" => read_map_next_value(&mut map, |v| self.output = v),
                 "manager_name" | "manager" => read_map_next_value(&mut map, |v| self.manager_name = v),
                 "namespace" => read_map_next_value(&mut map, |v| self.namespace = v),
                 "binary" => read_map_next_value(&mut map, |v| self.binary = v),

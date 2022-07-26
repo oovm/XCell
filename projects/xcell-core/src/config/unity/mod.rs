@@ -11,6 +11,8 @@ pub struct UnityCodegen {
     ///
     /// 有 Assets 文件夹的那个
     pub project: String,
+    /// 输出目录
+    pub output: String,
     /// 生成的代码的命名空间
     pub namespace: String,
     /// 生成的管理器的名称
@@ -39,15 +41,26 @@ pub struct UnityBinaryConfig {
 
 impl UnityCodegen {
     /// Unity 项目文件夹
-    pub fn unity_path(&self, root: &Path) -> PathBuf {
-        root.to_path_buf()
+    pub fn unity_path(&self, root: &Path) -> XResult<PathBuf> {
+        let project = PathBuf::from(&self.project);
+        let project = match project.is_absolute() {
+            true => project,
+            false => root.join(project),
+        };
+        Ok(project.canonicalize()?)
     }
     /// 生成二进制配置的文件夹
-    pub fn unity_binary_path(&self, root: &Path) -> PathBuf {
-        self.unity_path(root)
+    pub fn unity_binary_path(&self, root: &Path) -> XResult<PathBuf> {
+        let project = self.unity_path(root)?;
+        Ok(project.join(&self.output))
     }
     /// 生成 C# 代码的文件夹
-    pub fn unity_csharp_path(&self, root: &Path) -> PathBuf {
-        self.unity_path(root)
+    pub fn unity_csharp_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
+        let dir = self.unity_binary_path(root)?;
+        let path = dir.join(file_name).with_extension("cs");
+        Ok(path)
+    }
+    pub fn unity_relative(&self, file_name: &str) -> String {
+        format!("{}/{}.cs", self.output, file_name)
     }
 }

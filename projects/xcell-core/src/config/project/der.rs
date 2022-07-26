@@ -29,10 +29,10 @@ impl<'de> Visitor<'de> for ProjectConfig {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
                 "version" => read_map_next_value(&mut map, |v| self.version = v),
-                "exclude" => read_map_next_value(&mut map, |v: &str| self.exclude = v.trim().to_string()),
-                "include" => read_map_next_value(&mut map, |v: &str| self.include = v.trim().to_string()),
+                "line_mode" | "line" => read_map_next_value(&mut map, |v| self.line = v),
+                "exclude" => read_map_next_value(&mut map, |v: String| self.exclude = v.trim().to_string()),
+                "include" => read_map_next_value(&mut map, |v: String| self.include = v.trim().to_string()),
                 "typing" | "type" => read_map_next_value(&mut map, |v| self.typing = v),
-
                 "unity" => read_map_next_value(&mut map, |v| self.unity = v),
                 _ => read_map_next_extra(&mut map, "ProjectConfig", key),
             }

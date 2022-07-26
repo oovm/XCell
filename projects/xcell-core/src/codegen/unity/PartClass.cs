@@ -67,12 +67,12 @@ namespace {{ config.namespace }}
 {%- endif %}
 {%- endfor %}
     }
-{% if config.support_binary %}
+{% if config.binary.enable %}
     public partial class {{TABLE_NAME}} : IBinarySupport
     {
         public {{TABLE_NAME}}()
         {
-            BinaryRead("Assets/{{ config.folder_binary }}/{{ TABLE_NAME }}.binary");
+            BinaryRead("Assets/{{ config.binary.output }}/{{ TABLE_NAME }}.binary");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据

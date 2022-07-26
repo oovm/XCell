@@ -30,15 +30,14 @@ impl Display for XError {
             XErrorKind::IOError(v) => write!(f, "IO 异常: {v}")?,
             XErrorKind::SyntaxError { message } => write!(f, "解析错误: {}", message)?,
             XErrorKind::RuntimeError { message } => write!(f, "运行错误: {}", message)?,
-            XErrorKind::TableError(v) => write!(f, "表错误: {}", v)?,
+            XErrorKind::TableError(v) => write!(f, "表格错误: {}", v)?,
             XErrorKind::TypeMismatch { except, current } => write!(f, "类型错误: 预期 `{}`, 实际 `{}`", except, current)?,
             XErrorKind::UnknownError => write!(f, "内部错误")?,
         }
         if let Some(s) = &self.path {
             write!(f, "\n{}", s.display())?;
-            match self.position {
-                Some((x, y)) => writeln!(f, " ({x} 行 {y} 列)")?,
-                None => writeln!(f)?,
+            if let Some((x, y)) = self.position {
+                writeln!(f, " ({x} 行 {y} 列)")?
             }
         }
         Ok(())
@@ -66,6 +65,13 @@ impl XError {
     pub fn with_xy(mut self, x: usize, y: usize) -> Self {
         self.position = Some((x, y));
         self
+    }
+    pub fn runtime_error<S>(msg: S) -> Self
+    where
+        S: Into<String>,
+    {
+        let kind = XErrorKind::RuntimeError { message: msg.into() };
+        Self { kind: Box::new(kind), path: None, position: None, source: None }
     }
     pub fn table_error<S>(msg: S) -> Self
     where

@@ -3,7 +3,8 @@ use super::*;
 impl UnityCodegen {
     pub fn write_class(&self, table: &XCellTable) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
-        let path = table.path.with_file_name(file).with_extension("cs");
+        let path = self.unity_csharp_path(&table.config.root, &file)?;
+        log::info!("写入 {}", self.unity_relative(&file));
         tera_render(include_str!("PartClass.cs"), &self.make_context(table), &path)?;
         Ok(())
     }

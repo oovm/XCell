@@ -3,6 +3,7 @@
 #![feature(type_alias_impl_trait)]
 #![feature(once_cell)]
 #![feature(path_file_prefix)]
+#![feature(file_create_new)]
 
 pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
 

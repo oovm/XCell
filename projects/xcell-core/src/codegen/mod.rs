@@ -1,13 +1,17 @@
-use std::{fs::File, io::Write, path::Path};
+use std::{
+    fs::{create_dir_all, File},
+    io::Write,
+    path::Path,
+};
 
-use crate::config::UnityCodegen;
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use tera::{Context, Tera};
+
 use xcell_errors::XResult;
 use xcell_types::XCellTyped;
 
-use crate::{XCellHeader, XCellHeaders, XCellTable};
+use crate::{config::UnityCodegen, XCellHeader, XCellHeaders, XCellTable};
 
 #[allow(unused)]
 mod binary;
@@ -25,11 +29,15 @@ pub struct BinaryCodegen {}
 // }
 
 fn tera_render(template: &str, slots: &Context, output: &Path) -> XResult<String> {
+    if let Some(s) = output.parent() {
+        create_dir_all(s)?
+    }
+    // log::trace!("tera_render {}", output.display());
     let mut file = File::create(output)?;
     let mut tera = Tera::default();
     tera.autoescape_on(vec![]);
     tera.add_raw_template("T", template)?;
-    let result = tera.render("T", slots)?;
+    let result = tera.render("T", slots).unwrap();
     file.write_all(result.as_bytes())?;
     Ok(result)
 }

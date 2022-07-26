@@ -1,12 +1,20 @@
 use super::*;
+use crate::config::table::LineMode;
 
 #[derive(Debug)]
 pub struct ProjectConfig {
     pub root: PathBuf,
+    /// 当前版本号
     pub version: String,
+    /// 包含的 excel 路径, 优先级最高
     pub include: String,
+    /// 排除的 excel 模式, 优先级低于 include
     pub exclude: String,
+    /// 行列排序模式
+    pub line: LineMode,
+    /// 类型解析模式
     pub typing: TypeMetaInfo,
+    /// Unity 生成模式
     pub unity: UnityCodegen,
 }
 
@@ -19,12 +27,18 @@ impl ProjectConfig {
         let mut v = ProjectConfig { root: workspace, ..Default::default() };
         let cfg = v.root.join("XCell.toml");
         if cfg.exists() {
-            if let Err(e) = v.read_config(&cfg) {
-                log::error!("加载项目配置失败: {e}");
+            match v.read_config(&cfg) {
+                Ok(_) => {
+                    log::info!("加载项目配置成功, 当前配置\n{v:#?}");
+                }
+                Err(e) => {
+                    log::error!("{e}");
+                    log::info!("加载项目配置失败, 当前配置\n{v:#?}");
+                }
             }
         }
         else {
-            log::info!("XCell.toml 不存在, 使用内置项目设置");
+            log::info!("XCell.toml 不存在, 使用内置项目配置\n{v:#?}");
         }
         v
     }

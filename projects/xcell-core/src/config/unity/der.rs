@@ -8,6 +8,7 @@ impl Default for UnityCodegen {
     fn default() -> Self {
         Self {
             enable: false,
+            project: "./".to_string(),
             namespace: "DataTable.Generated".to_string(),
             manager_name: "DataTableManager".to_string(),
             suffix_table: "Table".to_string(),
@@ -20,7 +21,7 @@ impl Default for UnityCodegen {
     }
 }
 
-impl Default for UnityConfigBinary {
+impl Default for UnityBinaryConfig {
     fn default() -> Self {
         Self { enable: true, output: "Tables/Binary".to_string() }
     }
@@ -84,7 +85,7 @@ impl<'de> Visitor<'de> for UnityCodegen {
     }
 }
 
-impl<'de> Deserialize<'de> for UnityConfigBinary {
+impl<'de> Deserialize<'de> for UnityBinaryConfig {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -93,7 +94,7 @@ impl<'de> Deserialize<'de> for UnityConfigBinary {
     }
 }
 
-impl<'de> Visitor<'de> for UnityConfigBinary {
+impl<'de> Visitor<'de> for UnityBinaryConfig {
     type Value = Self;
 
     fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {

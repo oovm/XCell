@@ -7,6 +7,7 @@ pub use self::{
     boolean::BooleanDescription,
     decimal::{DecimalDescription, DecimalKind},
     integer::{IntegerDescription, IntegerKind},
+    string::StringDescription,
     typing::*,
     value::{color::ColorDescription, time::TimeDescription, XCellValue},
     vector::VectorDescription,
@@ -20,7 +21,7 @@ mod codegen;
 pub mod custom;
 mod decimal;
 mod integer;
+pub mod string;
 mod typing;
 mod value;
 mod vector;
-pub mod string;

@@ -1,14 +1,6 @@
-use std::{any::type_name, collections::BTreeSet, fmt::Formatter};
+use super::*;
 
-use serde::{
-    de::{MapAccess, Visitor},
-    Deserialize, Deserializer,
-};
-
-use serde_types::OneOrMany;
-use xcell_errors::for_3rd::{read_map_next_extra, read_map_next_value};
-
-use crate::{default_deserialize, BooleanDescription};
+use crate::default_deserialize;
 
 default_deserialize![BooleanDescription];
 impl Default for BooleanDescription {
@@ -38,7 +30,7 @@ impl<'de> Visitor<'de> for BooleanDescription {
                     read_map_next_value(&mut map, |e: OneOrMany<String>| self.accept = BTreeSet::from_iter(e.unwrap()))
                 }
                 "reject" | "false" => {
-                    read_map_next_value(&mut map, |e: OneOrMany<String>| self.accept = BTreeSet::from_iter(e.unwrap()))
+                    read_map_next_value(&mut map, |e: OneOrMany<String>| self.reject = BTreeSet::from_iter(e.unwrap()))
                 }
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
             }

@@ -3,6 +3,11 @@ version = "0.0.0"
 exclude = ""
 include = "*.xlsx"
 
+line.field = 1
+line.type = 2
+line.comment = 3
+line.data = 4
+
 [type.bool]
 "true" = ["true", "√"]
 "false" = ["false", "x"]
@@ -12,6 +17,8 @@ include = "*.xlsx"
 
 [unity]
 enable = true
+project = "../"
+output = "Assets/Scripts/DataTable/Generated"
 namespace = "DataTable.Generated"
 manager = "DataTableManager"
 suffix_table = "Table"
@@ -22,7 +29,7 @@ legacy_null_null = false
 
 [unity.binary]
 enable = true
-output = "Assets/Scripts/DataTable/Generated"
+output = "Assets/Tables/DataTable/Generated"
 
 [unity.xlua]
 enable = false

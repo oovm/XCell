@@ -1,8 +1,17 @@
-use std::collections::BTreeSet;
+use std::{any::type_name, collections::BTreeSet, fmt::Formatter};
+
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserialize, Deserializer, Serialize,
+};
+
+use serde_types::OneOrMany;
+use xcell_errors::{
+    for_3rd::{read_map_next_extra, read_map_next_value, DataType},
+    XResult,
+};
 
 use crate::utils::{syntax_error, type_mismatch};
-use serde::Serialize;
-use xcell_errors::{for_3rd::DataType, XResult};
 
 use super::*;
 
@@ -32,10 +41,10 @@ impl BooleanDescription {
     fn parse_value(&self, cell: &DataType) -> XResult<bool> {
         match cell {
             DataType::String(s) => {
-                if self.accept.contains(s) {
+                if self.accept.contains(s.to_ascii_lowercase().trim()) {
                     Ok(true)
                 }
-                else if self.reject.contains(s) {
+                else if self.reject.contains(s.to_ascii_lowercase().trim()) {
                     Ok(false)
                 }
                 else {

@@ -1,8 +1,19 @@
-use crate::{utils::syntax_error, XCellTyped, XCellValue};
-use serde::{Deserialize, Serialize};
-use xcell_errors::{for_3rd::DataType, XResult};
+use std::{any::type_name, fmt::Formatter};
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserialize, Deserializer, Serialize,
+};
+use xcell_errors::{
+    for_3rd::{read_map_next_extra, read_map_next_value, DataType},
+    XResult,
+};
+
+use crate::{utils::syntax_error, XCellTyped, XCellValue};
+
+mod der;
+
+#[derive(Debug, Default, Clone, Serialize)]
 pub struct StringDescription {
     pub default: String,
 }

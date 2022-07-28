@@ -9,13 +9,12 @@ use array2d::Array2D;
 use calamine::DataType;
 use serde::{Deserialize, Serialize};
 
-use xcell_errors::XError;
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
 
 use crate::{
     config::TableConfig,
     utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
-    XResult,
+    XError, XResult,
 };
 
 pub mod header;

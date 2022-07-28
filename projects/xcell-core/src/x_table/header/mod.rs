@@ -1,6 +1,3 @@
-use xcell_errors::XResult;
-use xcell_types::{EnumerateDescription, XCellValue, XTableKind};
-
 use super::*;
 
 impl XCellHeaders {
@@ -19,9 +16,8 @@ impl XCellHeaders {
         if XTableKind::Enumerate == self.kind {
             let _: Option<()> = try {
                 // 收集枚举类型
-                let lhs = self.inner.get(0)?.typing.as_custom()?;
                 let rhs = self.inner.get(1)?.typing.as_integer()?.kind;
-                self.inner.get_mut(0)?.typing = EnumerateDescription::custom(lhs, rhs).into();
+                self.inner.get_mut(0)?.typing.mut_enumerate().map(|v| v.integer = rhs)?;
             };
         }
         self

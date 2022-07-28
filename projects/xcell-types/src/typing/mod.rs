@@ -10,13 +10,12 @@ use xcell_errors::{for_3rd::DataType, XResult};
 use crate::XCellValue;
 pub use crate::{
     array::{ArrayDescription, ArrayKind},
-    custom::CustomDescription,
     decimal::{DecimalDescription, DecimalKind},
     integer::{IntegerDescription, IntegerKind},
+    string::StringDescription,
     value::{color::ColorDescription, enumerate::EnumerateDescription, time::TimeDescription},
     vector::VectorDescription,
 };
-pub use crate::string::StringDescription;
 
 mod parser;
 
@@ -31,7 +30,6 @@ pub enum XCellTyped {
     Enumerate(Box<EnumerateDescription>),
     Array(Box<ArrayDescription>),
     Vector(Box<VectorDescription>),
-    Custom(Box<CustomDescription>),
 }
 
 mod display;
@@ -52,17 +50,10 @@ impl XCellTyped {
             XCellTyped::Time(typing) => typing.parse_cell(cell),
             XCellTyped::Color(typing) => typing.parse_cell(cell),
             XCellTyped::Enumerate(typing) => typing.parse_cell(cell).map(XCellValue::String),
-            XCellTyped::Custom(typing) => typing.parse_cell(cell).map(XCellValue::String),
             XCellTyped::Array(typing) => typing.parse_cell(cell),
             XCellTyped::Vector(_) => {
                 todo!()
             }
-        }
-    }
-    pub fn as_custom(&self) -> Option<&CustomDescription> {
-        match self {
-            XCellTyped::Custom(v) => Some(v),
-            _ => None,
         }
     }
 }

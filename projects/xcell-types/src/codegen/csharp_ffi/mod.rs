@@ -1,4 +1,4 @@
-use crate::{BooleanDescription, IntegerKind, XCellTyped, XCellValue};
+use crate::{BooleanDescription, EnumerateDescription, IntegerKind, XCellTyped, XCellValue};
 
 mod default;
 
@@ -20,7 +20,6 @@ impl XCellTyped {
             XCellTyped::Vector(_) => {
                 todo!()
             }
-            XCellTyped::Custom(v) => v.typing.to_owned(),
         }
     }
 }
@@ -38,7 +37,7 @@ impl IntegerKind {
             IntegerKind::Unsigned64 => "ulong",
         }
     }
-    pub fn as_csharp_reader(&self) -> &'static str {
+    pub fn as_csharp_reader_function(&self) -> &'static str {
         match self {
             IntegerKind::Integer8 => "ReadByte",
             IntegerKind::Integer16 => "ReadInt16",
@@ -49,5 +48,11 @@ impl IntegerKind {
             IntegerKind::Unsigned32 => "ReadUInt32",
             IntegerKind::Unsigned64 => "ReadUInt64",
         }
+    }
+}
+
+impl EnumerateDescription {
+    pub fn as_csharp_reader(&self) -> String {
+        format!("({}) r.ReadInt32()", self.integer.as_csharp_reader_function())
     }
 }

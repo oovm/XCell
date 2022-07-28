@@ -26,14 +26,12 @@ impl XCellTyped {
             // "c4" | "color32" | "color4" => Self::Custom(ArrayDescription::new(s)),
             // "date" | "time" | "datetime" => Self::Time(Default::default()),
             // array
-            // "v2" | "vec2" => Self::Custom(ArrayDescription::new(s)),
+            "v2" | "vec2" => ArrayDescription::new(ArrayKind::Vector2).into(),
             "v3" | "vec3" => ArrayDescription::new(ArrayKind::Vector3).into(),
-            // "v4" | "vec4" => Self::Custom(ArrayDescription::new(s)),
-            // "q4" | "quaternion" => Self::Custom(ArrayDescription::new(s)),
-
+            "v4" | "vec4" => ArrayDescription::new(ArrayKind::Vector4).into(),
+            "q4" | "quaternion" => ArrayDescription::new(ArrayKind::Quaternion4).into(),
             // enum
-            "enum" => Self::Enumerate(Default::default()),
-            _ => CustomDescription::new(typing).into(),
+            _ => EnumerateDescription::new(input).into(),
         };
         Ok(out)
     }

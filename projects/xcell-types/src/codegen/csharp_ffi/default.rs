@@ -14,7 +14,6 @@ impl XCellTyped {
             XCellTyped::Time(v) => v.as_csharp_default(),
             XCellTyped::Color(v) => v.as_csharp_default(),
             XCellTyped::Enumerate(v) => v.default.to_string(),
-            XCellTyped::Custom(v) => v.default.to_string(),
             XCellTyped::Array(v) => v.as_csharp_default(),
             XCellTyped::Vector(_) => {
                 todo!()
@@ -116,13 +115,12 @@ impl XCellTyped {
     pub fn make_cs_binary_reader(&self) -> String {
         match self {
             XCellTyped::Boolean(_) => "r.ReadBoolean()".to_string(),
-            XCellTyped::Integer(v) => format!("r.{}()", v.as_csharp_reader()),
+            XCellTyped::Integer(v) => format!("r.{}()", v.as_csharp_reader_function()),
             XCellTyped::Decimal(v) => format!("r.{}()", v.as_csharp_reader()),
             XCellTyped::String(_) => "r.ReadString()".to_string(),
             XCellTyped::Time(_) => "new DateTime(r.ReadInt64(), DateTimeKind.Utc)".to_string(),
             XCellTyped::Color(_) => "new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
-            XCellTyped::Enumerate(v) => v.default.to_string(),
-            XCellTyped::Custom(v) => v.default.to_string(),
+            XCellTyped::Enumerate(v) => v.as_csharp_reader(),
             XCellTyped::Array(_) => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
             XCellTyped::Vector(_) => {
                 todo!()

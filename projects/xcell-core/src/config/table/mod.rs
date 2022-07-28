@@ -6,7 +6,6 @@ mod der;
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct TableConfig {
-    pub root: PathBuf,
     pub line: TableLineMode,
     pub typing: TypeMetaInfo,
     pub unity: UnityCodegen,
@@ -44,11 +43,6 @@ impl TableConfig {
 
 impl From<&ProjectConfig> for TableConfig {
     fn from(project: &ProjectConfig) -> Self {
-        TableConfig {
-            root: project.root.clone(),
-            line: project.line,
-            typing: project.typing.clone(),
-            unity: project.unity.clone(),
-        }
+        TableConfig { line: project.line, typing: project.typing.clone(), unity: project.unity.clone() }
     }
 }

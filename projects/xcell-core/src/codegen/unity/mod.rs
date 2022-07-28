@@ -1,15 +1,20 @@
+use itertools::Itertools;
+
+use crate::config::TableMerged;
+
 use super::*;
 
 impl UnityCodegen {
-    pub fn write_class(&self, table: &XCellTable) -> XResult<()> {
+    pub fn write_class(&self, table: &XCellTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
-        let path = self.unity_csharp_path(&table.config.root, &file)?;
+        let path = self.unity_csharp_path(&root, &file)?;
         log::info!("写入 {}", self.unity_relative(&file));
         tera_render(include_str!("PartClass.cs"), &self.make_context(table), &path)?;
         Ok(())
     }
-    pub fn write_manager(&self, table: &XCellTable, path: &Path) -> XResult<()> {
-        tera_render(include_str!("PartManager.cs"), &self.make_manager(table), path)?;
+    pub fn write_manager(&self, table: &TableMerged, root: &Path) -> XResult<()> {
+        let path = self.unity_manager_path(root)?;
+        tera_render(include_str!("PartManager.cs"), &self.make_manager(table), &path)?;
         Ok(())
     }
 }
@@ -29,18 +34,28 @@ impl UnityCodegen {
         ctx.insert("CLASS_FIELDS", &table.headers.make_class_field(is_enum));
         ctx
     }
-    fn make_manager(&self, table: &XCellTable) -> Context {
+    fn make_manager(&self, table: &TableMerged) -> Context {
         let mut ctx = Context::new();
         ctx.insert("VERSION", env!("CARGO_PKG_VERSION"));
         ctx.insert("config", &self);
-        ctx.insert("CLASS_NAME", &table.name);
-        ctx.insert("TABLE_NAME", &format!("{}{}", table.name, self.suffix_table));
-        ctx.insert("ELEMENT_NAME", &format!("{}{}", table.name, self.suffix_element));
-        ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.suffix_element));
-        ctx.insert("ID_TYPE", &table.headers.key_type());
-        let is_enum = table.is_enumerate();
-        ctx.insert("enumerate", &is_enum);
-        ctx.insert("CLASS_FIELDS", &table.headers.make_class_field(is_enum));
+        #[derive(Serialize)]
+        struct CsTable {
+            name: String,
+            private: String,
+        }
+        ctx.insert(
+            "tables",
+            &table
+                .table_names()
+                .into_iter()
+                .map(|name| {
+                    let name = format!("{}{}", name, self.suffix_table);
+                    let private = format!("_{}", name.to_case(Case::Snake));
+                    CsTable { name, private }
+                })
+                .collect_vec(),
+        );
+
         ctx
     }
 }

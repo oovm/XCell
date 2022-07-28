@@ -49,6 +49,7 @@ impl UnityCodegen {
         };
         Ok(project.canonicalize()?)
     }
+
     /// 生成二进制配置的文件夹
     pub fn unity_binary_path(&self, root: &Path) -> XResult<PathBuf> {
         let project = self.unity_path(root)?;
@@ -59,6 +60,9 @@ impl UnityCodegen {
         let dir = self.unity_binary_path(root)?;
         let path = dir.join(file_name).with_extension("cs");
         Ok(path)
+    }
+    pub fn unity_manager_path(&self, root: &Path) -> XResult<PathBuf> {
+        self.unity_csharp_path(root, &self.manager_name)
     }
     pub fn unity_relative(&self, file_name: &str) -> String {
         format!("{}/{}.cs", self.output, file_name)

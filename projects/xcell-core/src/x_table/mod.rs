@@ -21,7 +21,7 @@ use crate::{
 pub mod header;
 pub mod table;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XCellTable {
     /// 表格的绝对路径
     pub path: PathBuf,

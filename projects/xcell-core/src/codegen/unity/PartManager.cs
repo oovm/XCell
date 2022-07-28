@@ -2,7 +2,7 @@
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
 
 using System;
-using DataTable.Generated;
+using System.IO;
 
 namespace {{ config.namespace }}
 {
@@ -28,7 +28,7 @@ namespace {{ config.namespace }}
         private static readonly Lazy<{{ config.manager_name }}> singleton = new(() => new {{ config.manager_name }}());
         public static {{ config.manager_name }} Instance => singleton.Value;
 
-{% for field in config.tables %}
+{% for table in tables %}
         private {{ table.name }} {{ table.private }};
         /// <inheritdoc cref="{{config.namespace}}.{{ table.name }}"/>
         public {{ table.name }} {{ table.name }}
@@ -44,7 +44,7 @@ namespace {{ config.namespace }}
 
         public void LoadAll()
         {
-{%- for field in CLASS_FIELDS %}
+{%- for table in tables %}
 			{{ table.private }} = new {{ table.name }}();
 {%- endfor %}
         }

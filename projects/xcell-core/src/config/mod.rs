@@ -91,6 +91,8 @@ impl WorkspaceManager {
                 _ => continue,
             }
         }
+        self.config.unity.write_manager(&self.collect_merged(), &self.config.root)?;
+
         Ok(())
     }
     pub async fn watcher(&mut self) -> XResult<()> {
@@ -117,8 +119,24 @@ impl WorkspaceManager {
     }
     pub fn try_update_file(&mut self, file: &Path) -> XResult<()> {
         let table = XCellTable::load_file(file, &self.config)?;
-        table.config.unity.write_class(&table)?;
+        table.config.unity.write_class(&table, &self.config.root)?;
         self.file_mapping.insert(file.to_path_buf(), table);
         Ok(())
+    }
+}
+
+impl WorkspaceManager {
+    pub fn collect_merged(&self) -> TableMerged {
+        TableMerged { inner: self.file_mapping.values().cloned().collect() }
+    }
+}
+
+pub struct TableMerged {
+    inner: Vec<XCellTable>,
+}
+
+impl TableMerged {
+    pub fn table_names(&self) -> Vec<String> {
+        self.inner.iter().map(|v| v.name.to_string()).collect()
     }
 }

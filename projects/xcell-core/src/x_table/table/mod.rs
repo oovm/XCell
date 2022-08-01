@@ -31,7 +31,7 @@ impl XCellTable {
         };
         // excel.metadata()?.modified()?;
         xcell.try_set_name()?;
-        xcell.try_load_header()?;
+        xcell.try_load_header(global)?;
         xcell.try_load_config(global)?;
 
         if xcell.check_sum_change() {
@@ -54,10 +54,10 @@ impl XCellTable {
         };
         Err(XError::table_error(format!("配置表文件名不合法: {}", self.path.display())))
     }
-    fn try_load_header(&mut self) -> XResult<()> {
+    fn try_load_header(&mut self, global: &ProjectConfig) -> XResult<()> {
         let err: XResult<()> = try {
             let table = find_first_table(&self.path)?;
-            self.headers = read_table_headers(&table)?;
+            self.headers = read_table_headers(&table, &global.typing.extra)?;
         };
         err.map_err(|e| e.with_path(&self.path))
     }
@@ -106,7 +106,7 @@ impl XCellTable {
 
 impl XCellTable {
     pub fn on_config_change(&mut self, global: &ProjectConfig) -> XResult<()> {
-        self.try_load_header()?;
+        self.try_load_header(global)?;
         self.try_load_config(global)?;
         self.on_excel_change()?;
         Ok(())

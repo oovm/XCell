@@ -1,13 +1,22 @@
-use crate::BooleanDescription;
-use serde::{Deserialize, Serialize};
 use std::{
+    any::type_name,
+    collections::BTreeSet,
     convert::Infallible,
     fmt::{Debug, Display, Formatter},
     str::FromStr,
 };
-use xcell_errors::{for_3rd::DataType, XResult};
 
-use crate::XCellValue;
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserialize, Deserializer, Serialize,
+};
+
+use serde_types::OneOrMany;
+use xcell_errors::{
+    for_3rd::{read_map_next_extra, read_map_next_value, DataType},
+    XResult,
+};
+
 pub use crate::{
     array::{ArrayDescription, ArrayKind},
     decimal::{DecimalDescription, DecimalKind},
@@ -16,7 +25,10 @@ pub use crate::{
     value::{color::ColorDescription, enumerate::EnumerateDescription, time::TimeDescription},
     vector::VectorDescription,
 };
+use crate::{BooleanDescription, XCellValue};
 
+mod der;
+mod display;
 mod parser;
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -32,12 +44,15 @@ pub enum XCellTyped {
     Vector(Box<VectorDescription>),
 }
 
-mod display;
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum XTableKind {
     SortedMap,
     Enumerate,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct ExtraTypes {
+    pub string: BTreeSet<String>,
 }
 
 impl XCellTyped {

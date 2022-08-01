@@ -53,6 +53,6 @@ impl IntegerKind {
 
 impl EnumerateDescription {
     pub fn as_csharp_reader(&self) -> String {
-        format!("({}) r.ReadInt32()", self.integer.as_csharp_reader_function())
+        format!("({}) r.{}()", self.typing, self.integer.as_csharp_reader_function())
     }
 }

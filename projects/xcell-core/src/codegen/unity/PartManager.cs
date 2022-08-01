@@ -1,5 +1,8 @@
 // 代码生成, 修改无效!
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
+// ReSharper disable RedundantAbstractModifier
+// ReSharper disable PartialTypeWithSinglePart
+// ReSharper disable CheckNamespace
 
 using System;
 using System.IO;

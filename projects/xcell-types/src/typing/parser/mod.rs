@@ -1,11 +1,11 @@
 use super::*;
 
 impl XCellTyped {
-    pub fn parse(input: &str) -> XResult<Self> {
+    pub fn parse(input: &str, extra: &ExtraTypes) -> XResult<Self> {
         let typing = input.to_ascii_lowercase();
-        let out: XCellTyped = match typing.trim() {
+        let trimmed = typing.trim();
+        let out: XCellTyped = match trimmed {
             "str" | "string" => StringDescription::default().into(),
-            "language" | "languagestring" | "languageid" => StringDescription::default().into(),
             "bool" | "boolean" => BooleanDescription::new(false).into(),
             // int
             "byte" | "i8" => IntegerDescription::range(i8::MIN, i8::MAX, IntegerKind::Integer8).into(),
@@ -31,6 +31,7 @@ impl XCellTyped {
             "v4" | "vec4" => ArrayDescription::new(ArrayKind::Vector4).into(),
             "q4" | "quaternion" => ArrayDescription::new(ArrayKind::Quaternion4).into(),
             // enum
+            _ if extra.string.contains(trimmed) => StringDescription::default().into(),
             _ => EnumerateDescription::new(input).into(),
         };
         Ok(out)

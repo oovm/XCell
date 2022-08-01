@@ -1,5 +1,5 @@
-use xcell_types::StringDescription;
 use super::*;
+use xcell_types::{ExtraTypes, StringDescription};
 
 mod der;
 mod ser;
@@ -8,4 +8,5 @@ mod ser;
 pub struct TypeMetaInfo {
     pub boolean: BooleanDescription,
     pub string: StringDescription,
+    pub extra: ExtraTypes,
 }

@@ -15,7 +15,7 @@ use itertools::Itertools;
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 use xcell_errors::{XError, XResult};
-use xcell_types::{XCellTyped, XCellValue, XTableKind};
+use xcell_types::{ExtraTypes, XCellTyped, XCellValue, XTableKind};
 mod workspace;
 
 /// 读取 Excel 文件里的第一张表
@@ -54,7 +54,7 @@ pub fn find_first_table(path: &PathBuf) -> XResult<CalamineTable> {
 /// ```
 /// use xcell_core;
 /// ```
-pub fn read_table_headers(table: &CalamineTable) -> XResult<XCellHeaders> {
+pub fn read_table_headers(table: &CalamineTable, extra: &ExtraTypes) -> XResult<XCellHeaders> {
     let mut headers = vec![];
     let row = match table.rows().next() {
         Some(s) => s,
@@ -69,7 +69,7 @@ pub fn read_table_headers(table: &CalamineTable) -> XResult<XCellHeaders> {
         let _: Option<()> = try {
             let field_type = table.get_value((1, i as u32))?;
             let field_name = table.get_value((2, i as u32))?.to_string();
-            let typing = XCellTyped::parse(&field_type.to_string()).ok()?;
+            let typing = XCellTyped::parse(&field_type.to_string(), extra).ok()?;
             headers.push(XCellHeader { summary: data.to_string(), column: i, typing, field_name, details: "".to_string() })
         };
     }

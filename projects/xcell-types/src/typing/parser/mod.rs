@@ -5,7 +5,6 @@ impl XCellTyped {
         let normed = Self::norm_typing(input);
 
         match normed.as_str() {
-            "str" | "string" => StringDescription::default().into(),
             "bool" | "boolean" => BooleanDescription::new(false).into(),
             // int
             "byte" | "i8" => IntegerDescription::range(i8::MIN, i8::MAX, IntegerKind::Integer8).into(),
@@ -31,7 +30,7 @@ impl XCellTyped {
             "v4" | "vec4" => ArrayDescription::new(ArrayKind::Vector4).into(),
             "q4" | "quaternion" => ArrayDescription::new(ArrayKind::Quaternion4).into(),
             // slow path
-            _ => XCellTyped::parse_complex(&input, extra),
+            _ => XCellTyped::parse_complex(input, extra),
         }
     }
     fn parse_complex(input: &str, extra: &ExtraTypes) -> Self {

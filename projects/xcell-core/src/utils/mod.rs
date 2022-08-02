@@ -69,7 +69,7 @@ pub fn read_table_headers(table: &CalamineTable, extra: &ExtraTypes) -> XResult<
         let _: Option<()> = try {
             let field_type = table.get_value((1, i as u32))?;
             let field_name = table.get_value((2, i as u32))?.to_string();
-            let typing = XCellTyped::parse(&field_type.to_string(), extra).ok()?;
+            let typing = XCellTyped::parse(&field_type.to_string(), extra);
             headers.push(XCellHeader { summary: data.to_string(), column: i, typing, field_name, details: "".to_string() })
         };
     }

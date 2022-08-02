@@ -1,13 +1,9 @@
-use itertools::Itertools;
-
-use crate::config::TableMerged;
-
 use super::*;
 
 impl UnityCodegen {
     pub fn write_class(&self, table: &XCellTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
-        let path = self.unity_csharp_path(&root, &file)?;
+        let path = self.unity_csharp_path(root, &file)?;
         log::info!("写入 {}", self.unity_relative(&file));
         tera_render(include_str!("PartClass.cs"), &self.make_context(table), &path)?;
         Ok(())
@@ -61,12 +57,12 @@ impl UnityCodegen {
 }
 
 #[derive(Serialize)]
-struct CsField {
+struct CSharpField {
     summary: Vec<String>,
     remarks: Vec<String>,
     writer: Vec<String>,
     typing: String,
-    reader: String,
+    reader: CSharpReader,
     name: String,
     getter: String,
     default: String,
@@ -74,7 +70,7 @@ struct CsField {
 }
 
 impl XCellHeaders {
-    fn make_class_field(&self, is_enum: bool) -> Vec<CsField> {
+    fn make_class_field(&self, is_enum: bool) -> Vec<CSharpField> {
         let mut items = self.inner.iter();
         if is_enum {
             items.next();
@@ -93,15 +89,15 @@ impl XCellHeaders {
 }
 
 impl XCellHeader {
-    fn make_class_field(&self, _is_enum: bool) -> CsField {
+    fn make_class_field(&self, _is_enum: bool) -> CSharpField {
         let default = self.typing.as_csharp_default();
-        CsField {
+        CSharpField {
             summary: self.summary.lines().map(|v| v.to_string()).collect(),
             remarks: self.details.lines().map(|v| v.to_string()).collect(),
             has_default: !default.is_empty(),
             typing: self.typing.as_csharp_type(),
             writer: self.typing.make_cs_binary_writer(&self.field_name),
-            reader: self.typing.make_cs_binary_reader(),
+            reader: self.typing.make_cs_binary_reader(&self.field_name),
             name: self.field_name.clone(),
             getter: format!("Get{}", self.field_name.to_case(Case::Pascal)),
             default,

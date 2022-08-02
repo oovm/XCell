@@ -17,7 +17,21 @@ impl<'de> Visitor<'de> for ExtraTypes {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
                 "string" => read_map_next_value(&mut map, |e: OneOrMany<String>| {
-                    self.string = BTreeSet::from_iter(e.unwrap().into_iter().map(|s| s.to_ascii_lowercase()))
+                    let mut set = BTreeSet::default();
+                    set.insert("str".to_string());
+                    set.insert("string".to_string());
+                    for s in e.unwrap() {
+                        set.insert(s);
+                    }
+                    self.string = set
+                }),
+                "vector" => read_map_next_value(&mut map, |e: OneOrMany<String>| {
+                    let mut set = BTreeSet::default();
+                    set.insert("[]".to_string());
+                    for s in e.unwrap() {
+                        set.insert(s);
+                    }
+                    self.vector = set
                 }),
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
             }

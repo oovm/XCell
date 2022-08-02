@@ -1,12 +1,15 @@
+use itertools::Itertools;
 use std::{
     fs::{create_dir_all, File},
     io::Write,
     path::Path,
 };
 
+use crate::config::TableMerged;
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use tera::{Context, Tera};
+use xcell_types::codegen::CSharpReader;
 
 use xcell_errors::XResult;
 use xcell_types::XCellTyped;

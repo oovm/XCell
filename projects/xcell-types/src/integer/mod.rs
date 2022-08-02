@@ -1,4 +1,4 @@
-use std::{ops::Deref, str::FromStr};
+use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 use xcell_errors::{
@@ -6,7 +6,7 @@ use xcell_errors::{
     XResult,
 };
 
-use crate::{utils::syntax_error, typing::XCellTyped, value::XCellValue};
+use crate::{typing::XCellTyped, utils::syntax_error, value::XCellValue};
 
 mod kind;
 mod parse_cell;

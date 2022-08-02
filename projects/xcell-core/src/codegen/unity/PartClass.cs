@@ -122,15 +122,15 @@ namespace {{ config.namespace }}
         public void BinaryRead(BinaryReader r)
         {
 {%- for field in CLASS_FIELDS %}
-{% if field.is_vector %}
-            var {{ field.name }}Count = r.ReadUInt32();
-            {{ field.name }} = new((int) {{ field.name }}Count);
+{%- if field.reader.is_vector %}
+            var {{ field.reader.field }}Count = r.ReadUInt32();
+            {{ field.reader.field }} = new((int) {{ field.reader.field }}Count);
             for (var i = 0; i < skillIdsCount; i++)
             {
-                {{ field.name }}.Add({{ field.reader }};
+                {{ field.reader.field }}.Add({{ field.reader.function }};
             }
-{% else %}
-            {{ field.name }} = {{ field.reader }};
+{%- else %}
+            {{ field.reader.field }} = {{ field.reader.function }};
 {%- endif %}
 {%- endfor %}
         }

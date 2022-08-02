@@ -17,11 +17,11 @@ pub(crate) mod utils;
 
 mod array;
 mod boolean;
-mod codegen;
-pub mod custom;
+pub mod codegen;
+mod custom;
 mod decimal;
 mod integer;
-pub mod string;
+mod string;
 mod typing;
 mod value;
 mod vector;

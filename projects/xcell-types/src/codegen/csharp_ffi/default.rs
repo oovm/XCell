@@ -1,7 +1,3 @@
-use xcell_errors::for_3rd::{Datelike, Timelike, Zero};
-
-use crate::{ArrayDescription, ArrayKind, ColorDescription, DecimalDescription, DecimalKind, IntegerDescription, StringDescription, TimeDescription};
-
 use super::*;
 
 impl XCellTyped {
@@ -112,60 +108,33 @@ impl XCellTyped {
         }
         out
     }
-    pub fn make_cs_binary_reader(&self, field: &str) -> Vec<String> {
+    pub fn make_cs_binary_reader(&self, field: &str) -> CSharpReader {
         match self {
-            XCellTyped::Boolean(v) => vec![v.as_csharp_reader(field)],
-            XCellTyped::Integer(v) => vec![v.as_csharp_reader(field)],
-            XCellTyped::Decimal(v) => vec![v.as_csharp_reader(field)],
-            XCellTyped::String(v) => "r.ReadString()".to_string(),
-            XCellTyped::Time(_) => "new DateTime(r.ReadInt64(), DateTimeKind.Utc)".to_string(),
-            XCellTyped::Color(_) => "new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
-            XCellTyped::Enumerate(v) => v.as_csharp_reader(),
-            XCellTyped::Array(_) => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())".to_string(),
-            XCellTyped::Vector(v) => {
-                r#"
-var skillIdsCount = r.ReadUInt32();
-skillIds = new List<string>((int) skillIdsCount);
-for (var i = 0; i < skillIdsCount; i++)
-{
-    skillIds.Add(r.ReadString());
-}
-                
-                "#
-
-                v.typing.make_cs_binary_reader()
-
-            }
+            XCellTyped::Vector(v) => return CSharpReader { is_vector: true, ..v.typing.make_cs_binary_reader(field) },
+            _ => CSharpReader { is_vector: false, function: self.as_csharp_reader(), field: field.to_string() },
         }
     }
-    pub fn as_csharp_reader_function(&self, field: &str) -> String {
+    pub fn as_csharp_reader(&self) -> String {
         let str = match self {
-            XCellTyped::Boolean(_) => {"r.ReadBoolean()"}
-            XCellTyped::Integer(v) => {
-                v.kind.as_csharp_reader()
-            }
-            XCellTyped::Decimal(v) => { match v.kind {
+            XCellTyped::Boolean(_) => "r.ReadBoolean()",
+            XCellTyped::Integer(v) => v.kind.as_csharp_reader(),
+            XCellTyped::Decimal(v) => match v.kind {
                 DecimalKind::Float32 => "r.ReadSingle()",
                 DecimalKind::Float64 => "r.ReadDouble()",
                 DecimalKind::Decimal128 => "r.ReadDecimal()",
-            } }
-            XCellTyped::String(_) => {"r.ReadString()"}
-            XCellTyped::Time(_) => {"new DateTime(r.ReadInt64(), DateTimeKind.Utc)"}
-            XCellTyped::Color(_) => {"new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())"}
-            XCellTyped::Enumerate(v) => {
-                return format!("({}) {}", field, v.integer.as_csharp_reader())
-            }
-            XCellTyped::Array(v) => {
-                match v.kind {
-                    ArrayKind::Vector2 => {"new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())"}
-                    ArrayKind::Vector3 => {"new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())"}
-                    ArrayKind::Vector4 => {"new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())"}
-                    ArrayKind::Color4 => unreachable!(),
-                    ArrayKind::Quaternion4 => {"new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())"}
-                }
-
-            }
-            XCellTyped::Vector(_) => unreachable!()
+            },
+            XCellTyped::String(_) => "r.ReadString()",
+            XCellTyped::Time(_) => "new DateTime(r.ReadInt64(), DateTimeKind.Utc)",
+            XCellTyped::Color(_) => "new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
+            XCellTyped::Enumerate(v) => return format!("({}) {}", v.typing, v.integer.as_csharp_reader()),
+            XCellTyped::Array(v) => match v.kind {
+                ArrayKind::Vector2 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
+                ArrayKind::Vector3 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
+                ArrayKind::Vector4 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
+                ArrayKind::Color4 => unreachable!(),
+                ArrayKind::Quaternion4 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
+            },
+            XCellTyped::Vector(_) => unreachable!(),
         };
         str.to_string()
     }
@@ -207,11 +176,7 @@ impl IntegerKind {
     }
 }
 
-impl IntegerDescription {
-    pub fn as_csharp_reader(&self, field: &str) -> String {
-        format!("{field} = r.{reader}()", reader = self.kind.as_csharp_reader_function())
-    }
-}
+impl IntegerDescription {}
 
 impl DecimalKind {
     pub fn as_csharp_type(&self) -> &'static str {
@@ -223,15 +188,6 @@ impl DecimalKind {
     }
 }
 
-impl DecimalDescription {
-    pub fn as_csharp_reader(&self, field: &str) -> String {
-        format!("{field} = r.{reader}()", reader = self.kind.as_csharp_reader())
-    }
-}
+impl DecimalDescription {}
 
-impl StringDescription {
-    pub fn as_csharp_reader(&self) -> String {
-        format!("({}) r.{}()", self.typing, self.integer.as_csharp_reader_function())
-    }
-}
-
+impl StringDescription {}

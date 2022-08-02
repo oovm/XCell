@@ -57,15 +57,15 @@ pub struct ExtraTypes {
 }
 
 impl ExtraTypes {
-    pub fn is_string(&self, typing: &str) -> Option<&str> {
-        for v in &self.vector {
+    pub fn is_string<'a>(&self, typing: &'a str) -> Option<&'a str> {
+        for v in &self.string {
             if typing.eq_ignore_ascii_case(v) {
                 return Some(typing);
             }
         }
         None
     }
-    pub fn is_vector(&self, typing: &str) -> Option<&str> {
+    pub fn is_vector<'a>(&self, typing: &'a str) -> Option<&'a str> {
         for v in &self.vector {
             if typing.ends_with(v) {
                 return Some(typing.trim_end_matches(v));

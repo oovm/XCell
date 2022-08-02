@@ -1,6 +1,6 @@
 // 代码生成, 修改无效!
 // ReSharper disable RedundantDefaultMemberInitializer, RedundantUsingDirective
-// ReSharper disable ArrangeObjectCreationWhenTypeEvident
+// ReSharper disable ArrangeObjectCreationWhenTypeEvident, ArrangeObjectCreationWhenTypeNotEvident
 // ReSharper disable CheckNamespace
 
 using System;
@@ -122,7 +122,16 @@ namespace {{ config.namespace }}
         public void BinaryRead(BinaryReader r)
         {
 {%- for field in CLASS_FIELDS %}
+{% if field.is_vector %}
+            var {{ field.name }}Count = r.ReadUInt32();
+            {{ field.name }} = new((int) {{ field.name }}Count);
+            for (var i = 0; i < skillIdsCount; i++)
+            {
+                {{ field.name }}.Add({{ field.reader }};
+            }
+{% else %}
             {{ field.name }} = {{ field.reader }};
+{%- endif %}
 {%- endfor %}
         }
 

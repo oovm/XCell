@@ -6,14 +6,6 @@ impl Default for IntegerKind {
     }
 }
 
-impl Deref for IntegerDescription {
-    type Target = IntegerKind;
-
-    fn deref(&self) -> &Self::Target {
-        &self.kind
-    }
-}
-
 impl IntegerKind {
     pub fn unsigned(&self) -> bool {
         !self.signed()
@@ -43,3 +35,4 @@ impl IntegerKind {
         }
     }
 }
+

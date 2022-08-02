@@ -53,6 +53,26 @@ pub enum XTableKind {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct ExtraTypes {
     pub string: BTreeSet<String>,
+    pub vector: BTreeSet<String>,
+}
+
+impl ExtraTypes {
+    pub fn is_string(&self, typing: &str) -> Option<&str> {
+        for v in &self.vector {
+            if typing.eq_ignore_ascii_case(v) {
+                return Some(typing);
+            }
+        }
+        None
+    }
+    pub fn is_vector(&self, typing: &str) -> Option<&str> {
+        for v in &self.vector {
+            if typing.ends_with(v) {
+                return Some(typing.trim_end_matches(v));
+            }
+        }
+        None
+    }
 }
 
 impl XCellTyped {

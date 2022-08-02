@@ -1,10 +1,10 @@
 use super::*;
 
 impl XCellTyped {
-    pub fn parse(input: &str, extra: &ExtraTypes) -> XResult<Self> {
-        let typing = input.to_ascii_lowercase();
-        let trimmed = typing.trim();
-        let out: XCellTyped = match trimmed {
+    pub fn parse(input: &str, extra: &ExtraTypes) -> Self {
+        let normed = Self::norm_typing(input);
+
+        match normed.as_str() {
             "str" | "string" => StringDescription::default().into(),
             "bool" | "boolean" => BooleanDescription::new(false).into(),
             // int
@@ -30,11 +30,32 @@ impl XCellTyped {
             "v3" | "vec3" => ArrayDescription::new(ArrayKind::Vector3).into(),
             "v4" | "vec4" => ArrayDescription::new(ArrayKind::Vector4).into(),
             "q4" | "quaternion" => ArrayDescription::new(ArrayKind::Quaternion4).into(),
-            // enum
-            _ if extra.string.contains(trimmed) => StringDescription::default().into(),
-            _ => EnumerateDescription::new(input).into(),
-        };
-        Ok(out)
+            // slow path
+            _ => XCellTyped::parse_complex(&input, extra),
+        }
+    }
+    fn parse_complex(input: &str, extra: &ExtraTypes) -> Self {
+        if extra.is_string(input).is_some() {
+            return StringDescription::default().into();
+        }
+        if let Some(s) = extra.is_vector(input) {
+            return XCellTyped::parse(s, extra);
+        }
+        EnumerateDescription::new(input).into()
+    }
+    fn norm_typing(input: &str) -> String {
+        let mut out = String::with_capacity(input.len());
+        for c in input.chars() {
+            if c.is_ascii_uppercase() {
+                out.push(c.to_ascii_lowercase())
+            }
+            else if c.is_ascii_whitespace() {
+            }
+            else {
+                out.push(c)
+            }
+        }
+        out
     }
 }
 

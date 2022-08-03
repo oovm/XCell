@@ -39,9 +39,9 @@ namespace {{ config.namespace }}
         public readonly Dictionary<{{ ID_TYPE }}, {{ELEMENT_NAME}}> dict = new();
 
         [CanBeNull]
-        public {{ELEMENT_NAME}} {{ ELEMENT_GETTER }}({{ ID_TYPE }} id)
+        public {{ELEMENT_NAME}} {{ ELEMENT_GETTER }}({{ ID_TYPE }} {{ KEY }})
         {
-            return dict.TryGetValue(id, out var item) ? item : null;
+            return dict.TryGetValue({{ KEY }}, out var item) ? item : null;
         }
     }
 
@@ -101,7 +101,7 @@ namespace {{ config.namespace }}
             {
                 var item = new {{ELEMENT_NAME}}();
                 item.BinaryRead(r);
-                dict[item.id] = item;
+                dict[item.{{ KEY }}] = item;
             }
         }
 
@@ -125,9 +125,9 @@ namespace {{ config.namespace }}
 {%- if field.reader.is_vector %}
             var {{ field.reader.field }}Count = r.ReadUInt32();
             {{ field.reader.field }} = new((int) {{ field.reader.field }}Count);
-            for (var i = 0; i < skillIdsCount; i++)
+            for (var i = 0; i < {{ field.reader.field }}Count; i++)
             {
-                {{ field.reader.field }}.Add({{ field.reader.function }};
+                {{ field.reader.field }}.Add({{ field.reader.function }});
             }
 {%- else %}
             {{ field.reader.field }} = {{ field.reader.function }};
@@ -139,9 +139,19 @@ namespace {{ config.namespace }}
         public void BinaryWrite(BinaryWriter w)
         {
 {%- for field in CLASS_FIELDS %}
-{%- for line in field.writer %}
-            {{ line }}
-{%- endfor %}
+	{%- if field.writer.is_vector %}
+            w.Write((uint) {{ field.writer.field }}.Count);
+            foreach (var {{ field.writer.field }}Item in {{ field.writer.field }})
+            {
+		{%- for property in field.writer.properties %}
+                w.Write({{ field.writer.field }}Item{{property}});
+		{%- endfor %}
+            }
+	{%- else %}
+		{%- for property in field.writer.properties %}
+            w.Write({{ field.writer.cast }}{{ field.writer.field }}{{property}});
+		{%- endfor %}
+	{%- endif %}
 {%- endfor %}
         }
     }

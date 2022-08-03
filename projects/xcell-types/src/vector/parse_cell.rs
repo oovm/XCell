@@ -2,6 +2,12 @@ use crate::utils::syntax_error;
 
 use super::*;
 
+impl From<VectorDescription> for XCellTyped {
+    fn from(value: VectorDescription) -> Self {
+        XCellTyped::Vector(Box::new(value))
+    }
+}
+
 impl VectorDescription {
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         let mut out = vec![];

@@ -1,3 +1,5 @@
+use xcell_types::XTableKind;
+
 use super::*;
 
 impl UnityCodegen {
@@ -24,6 +26,7 @@ impl UnityCodegen {
         ctx.insert("TABLE_NAME", &format!("{}{}", table.name, self.suffix_table));
         ctx.insert("ELEMENT_NAME", &format!("{}{}", table.name, self.suffix_element));
         ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.suffix_element));
+        ctx.insert("KEY", &table.headers.key_field());
         ctx.insert("ID_TYPE", &table.headers.key_type());
         let is_enum = table.is_enumerate();
         ctx.insert("enumerate", &is_enum);
@@ -60,9 +63,10 @@ impl UnityCodegen {
 struct CSharpField {
     summary: Vec<String>,
     remarks: Vec<String>,
-    writer: Vec<String>,
+
     typing: String,
     reader: CSharpReader,
+    writer: CSharpWriter,
     name: String,
     getter: String,
     default: String,
@@ -84,6 +88,18 @@ impl XCellHeaders {
                 _ => s.typing.as_csharp_type(),
             },
             None => "int".to_string(),
+        }
+    }
+    pub fn key_field(&self) -> String {
+        match self.kind {
+            XTableKind::SortedMap => match self.inner.first() {
+                Some(s) => s.field_name.to_string(),
+                None => "id".to_string(),
+            },
+            XTableKind::Enumerate => match self.inner.get(1) {
+                Some(s) => s.field_name.to_string(),
+                None => "id".to_string(),
+            },
         }
     }
 }

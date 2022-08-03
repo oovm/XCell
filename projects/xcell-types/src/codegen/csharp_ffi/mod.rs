@@ -1,11 +1,11 @@
 use serde::Serialize;
 
-use xcell_errors::for_3rd::{Datelike, Timelike, Zero};
-
 use crate::{
     ArrayDescription, ArrayKind, BooleanDescription, ColorDescription, DecimalDescription, DecimalKind, IntegerDescription,
     IntegerKind, StringDescription, TimeDescription, XCellTyped, XCellValue,
 };
+use itertools::Itertools;
+use xcell_errors::for_3rd::{Datelike, Timelike, Zero};
 
 mod default;
 
@@ -14,6 +14,14 @@ pub struct CSharpReader {
     pub is_vector: bool,
     pub field: String,
     pub function: String,
+}
+
+#[derive(Serialize)]
+pub struct CSharpWriter {
+    pub is_vector: bool,
+    pub field: String,
+    pub cast: String,
+    pub properties: Vec<String>,
 }
 
 impl XCellValue {
@@ -31,9 +39,7 @@ impl XCellTyped {
             XCellTyped::Color(_) => "Color32".to_string(),
             XCellTyped::Enumerate(v) => v.typing.to_owned(),
             XCellTyped::Array(v) => v.as_csharp_type().to_string(),
-            XCellTyped::Vector(_) => {
-                todo!()
-            }
+            XCellTyped::Vector(v) => format!("List<{}>", v.typing.as_csharp_type()),
         }
     }
 }

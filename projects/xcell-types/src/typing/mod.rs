@@ -57,7 +57,7 @@ pub struct ExtraTypes {
 }
 
 impl ExtraTypes {
-    pub fn is_string<'a>(&self, typing: &'a str) -> Option<&'a str> {
+    pub fn extract_string<'a>(&self, typing: &'a str) -> Option<&'a str> {
         for v in &self.string {
             if typing.eq_ignore_ascii_case(v) {
                 return Some(typing);
@@ -65,7 +65,7 @@ impl ExtraTypes {
         }
         None
     }
-    pub fn is_vector<'a>(&self, typing: &'a str) -> Option<&'a str> {
+    pub fn extract_vector<'a>(&self, typing: &'a str) -> Option<&'a str> {
         for v in &self.vector {
             if typing.ends_with(v) {
                 return Some(typing.trim_end_matches(v));
@@ -86,9 +86,7 @@ impl XCellTyped {
             XCellTyped::Color(typing) => typing.parse_cell(cell),
             XCellTyped::Enumerate(typing) => typing.parse_cell(cell).map(XCellValue::String),
             XCellTyped::Array(typing) => typing.parse_cell(cell),
-            XCellTyped::Vector(_) => {
-                todo!()
-            }
+            XCellTyped::Vector(typing) => typing.parse_cell(cell),
         }
     }
 }

@@ -34,11 +34,14 @@ impl XCellTyped {
         }
     }
     fn parse_complex(input: &str, extra: &ExtraTypes) -> Self {
-        if extra.is_string(input).is_some() {
+        if extra.extract_string(input).is_some() {
             return StringDescription::default().into();
         }
-        if let Some(s) = extra.is_vector(input) {
-            return XCellTyped::parse(s, extra);
+        if let Some(s) = extra.extract_vector(input) {
+            return VectorDescription {
+                typing: XCellTyped::parse(s, extra),
+                default: vec![]
+            }.into()
         }
         EnumerateDescription::new(input).into()
     }

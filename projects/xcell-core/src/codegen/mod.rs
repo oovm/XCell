@@ -9,7 +9,7 @@ use crate::config::TableMerged;
 use convert_case::{Case, Casing};
 use serde::Serialize;
 use tera::{Context, Tera};
-use xcell_types::codegen::CSharpReader;
+use xcell_types::codegen::{CSharpReader, CSharpWriter};
 
 use xcell_errors::XResult;
 use xcell_types::XCellTyped;
@@ -39,7 +39,7 @@ fn tera_render(template: &str, slots: &Context, output: &Path) -> XResult<String
     let mut file = File::create(output)?;
     let mut tera = Tera::default();
     tera.autoescape_on(vec![]);
-    tera.add_raw_template("T", template)?;
+    tera.add_raw_template("T", template).unwrap();
     let result = tera.render("T", slots).unwrap();
     file.write_all(result.as_bytes())?;
     Ok(result)

@@ -11,7 +11,59 @@ impl XCellTyped {
             XCellTyped::Color(v) => v.as_csharp_default(),
             XCellTyped::Enumerate(v) => v.default.to_string(),
             XCellTyped::Array(v) => v.as_csharp_default(),
-            XCellTyped::Vector(_) => {
+            XCellTyped::Vector(v) => {
+                if v.default.is_empty() {
+                    return "new()".to_string();
+                }
+                format!("new () {{{}}}", v.default.iter().map(|v| v.as_csharp_value()).join(", "))
+            }
+        }
+    }
+}
+
+impl XCellValue {
+    pub fn as_csharp_value(&self) -> String {
+        match self {
+            XCellValue::Boolean(v) => v.to_string(),
+            XCellValue::Integer8(v) => v.to_string(),
+            XCellValue::Integer16(v) => v.to_string(),
+            XCellValue::Integer32(v) => v.to_string(),
+            XCellValue::Integer64(v) => v.to_string(),
+            XCellValue::Unsigned8(v) => v.to_string(),
+            XCellValue::Unsigned16(v) => v.to_string(),
+            XCellValue::Unsigned32(v) => v.to_string(),
+            XCellValue::Unsigned64(v) => v.to_string(),
+            XCellValue::Float32(_) => {
+                todo!()
+            }
+            XCellValue::Float64(_) => {
+                todo!()
+            }
+            XCellValue::Vector2(_) => {
+                todo!()
+            }
+            XCellValue::Vector3(_) => {
+                todo!()
+            }
+            XCellValue::Vector4(_) => {
+                todo!()
+            }
+            XCellValue::Color4(_) => {
+                todo!()
+            }
+            XCellValue::Quaternion4(_) => {
+                todo!()
+            }
+            XCellValue::String(_) => {
+                todo!()
+            }
+            XCellValue::Color(_) => {
+                todo!()
+            }
+            XCellValue::Custom(_) => {
+                todo!()
+            }
+            XCellValue::Vector(_) => {
                 todo!()
             }
         }
@@ -89,28 +141,27 @@ impl ArrayDescription {
 }
 
 impl XCellTyped {
-    pub fn make_cs_binary_writer(&self, field: &str) -> Vec<String> {
-        let mut out = vec![];
-        match self {
-            XCellTyped::Time(_) => {
-                out.push(format!("w.Write({field}.Ticks);"));
+    pub fn make_cs_binary_writer(&self, field: &str) -> CSharpWriter {
+        let properties = match self {
+            XCellTyped::Time(_) => vec![".Ticks".to_string()],
+            XCellTyped::Color(_) => vec![".r".to_string(), ".g".to_string(), ".b".to_string(), ".a".to_string()],
+            // XCellTyped::Enumerate(v) => out.push(v.default.to_string()),
+            XCellTyped::Enumerate(v) => {
+                return CSharpWriter {
+                    is_vector: false,
+                    field: field.to_string(),
+                    cast: format!("({}) ", v.integer.as_csharp_type()),
+                    properties: vec!["".to_string()],
+                };
             }
-            XCellTyped::Color(_) => {
-                out.push(format!("w.Write({field}.r);"));
-                out.push(format!("w.Write({field}.g);"));
-                out.push(format!("w.Write({field}.b);"));
-                out.push(format!("w.Write({field}.a);"));
-            }
-            XCellTyped::Enumerate(v) => out.push(v.default.to_string()),
-            _ => {
-                out.push(format!("w.Write({field});"));
-            }
-        }
-        out
+            XCellTyped::Vector(v) => return CSharpWriter { is_vector: true, ..v.typing.make_cs_binary_writer(field) },
+            _ => vec!["".to_string()],
+        };
+        CSharpWriter { is_vector: false, field: field.to_string(), cast: "".to_string(), properties }
     }
     pub fn make_cs_binary_reader(&self, field: &str) -> CSharpReader {
         match self {
-            XCellTyped::Vector(v) => return CSharpReader { is_vector: true, ..v.typing.make_cs_binary_reader(field) },
+            XCellTyped::Vector(v) => CSharpReader { is_vector: true, ..v.typing.make_cs_binary_reader(field) },
             _ => CSharpReader { is_vector: false, function: self.as_csharp_reader(), field: field.to_string() },
         }
     }

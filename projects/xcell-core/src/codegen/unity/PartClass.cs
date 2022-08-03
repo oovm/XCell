@@ -1,6 +1,7 @@
 // 代码生成, 修改无效!
 // ReSharper disable RedundantDefaultMemberInitializer, RedundantUsingDirective
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident, ArrangeObjectCreationWhenTypeNotEvident
+// ReSharper disable EnumUnderlyingTypeIsInt
 // ReSharper disable CheckNamespace
 
 using System;

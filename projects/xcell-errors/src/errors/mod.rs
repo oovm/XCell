@@ -37,7 +37,7 @@ impl Display for XError {
         if let Some(s) = &self.path {
             write!(f, "\n{}", s.display())?;
             if let Some((x, y)) = self.position {
-                writeln!(f, " ({x} 行 {y} 列)")?
+                write!(f, " ({} 行 {} 列)", y + 1, x + 1)?
             }
         }
         Ok(())

@@ -146,11 +146,11 @@ impl XCellTyped {
             XCellTyped::Time(_) => vec![".Ticks".to_string()],
             XCellTyped::Color(_) => vec![".r".to_string(), ".g".to_string(), ".b".to_string(), ".a".to_string()],
             // XCellTyped::Enumerate(v) => out.push(v.default.to_string()),
-            XCellTyped::Enumerate(v) => {
+            XCellTyped::Enumerate(_) => {
                 return CSharpWriter {
                     is_vector: false,
                     field: field.to_string(),
-                    cast: format!("({}) ", v.integer.as_csharp_type()),
+                    cast: "(int) ".to_string(),
                     properties: vec!["".to_string()],
                 };
             }

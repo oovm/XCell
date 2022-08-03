@@ -1,4 +1,5 @@
 use std::{
+    collections::BTreeMap,
     fmt::{Debug, Display, Formatter},
     hash::{Hash, Hasher},
     ops::Deref,
@@ -9,14 +10,16 @@ use array2d::Array2D;
 use calamine::DataType;
 use serde::{Deserialize, Serialize};
 
+use xcell_errors::for_3rd::BigInt;
 use xcell_types::{XCellTyped, XCellValue, XTableKind};
 
 use crate::{
     config::TableConfig,
     utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
-    XError, XResult,
+    XData, XError, XResult,
 };
 
+pub mod data;
 pub mod header;
 pub mod table;
 
@@ -28,10 +31,8 @@ pub struct XCellTable {
     pub name: String,
     /// 表格的额外配置
     pub config: TableConfig,
-    /// 所有需要导出的类型
-    pub headers: XCellHeaders,
     /// 表格中的有效数据
-    pub data: Array2D<XCellValue>,
+    pub data: XData,
     /// Excel 的校验和
     pub sum_excel: u64,
     /// 全局配置和本地配置的校验和
@@ -40,7 +41,10 @@ pub struct XCellTable {
 
 impl XCellTable {
     pub fn is_enumerate(&self) -> bool {
-        matches!(self.headers.kind, XTableKind::Enumerate)
+        match self.data {
+            XData::Enumerate(_) => true,
+            _ => false,
+        }
     }
 }
 

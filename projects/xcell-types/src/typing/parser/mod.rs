@@ -38,10 +38,7 @@ impl XCellTyped {
             return StringDescription::default().into();
         }
         if let Some(s) = extra.extract_vector(input) {
-            return VectorDescription {
-                typing: XCellTyped::parse(s, extra),
-                default: vec![]
-            }.into()
+            return VectorDescription { typing: XCellTyped::parse(s, extra), default: vec![] }.into();
         }
         EnumerateDescription::new(input).into()
     }
@@ -58,32 +55,5 @@ impl XCellTyped {
             }
         }
         out
-    }
-}
-
-impl Default for XTableKind {
-    fn default() -> Self {
-        Self::SortedMap
-    }
-}
-
-impl FromStr for XTableKind {
-    type Err = Infallible;
-
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let kind = match input.to_ascii_lowercase().trim() {
-            "enum" => XTableKind::Enumerate,
-            _ => XTableKind::SortedMap,
-        };
-        Ok(kind)
-    }
-}
-
-impl XTableKind {
-    pub fn new<S>(input: S) -> Self
-    where
-        S: AsRef<str>,
-    {
-        unsafe { XTableKind::from_str(input.as_ref()).unwrap_unchecked() }
     }
 }

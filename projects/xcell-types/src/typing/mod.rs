@@ -44,12 +44,6 @@ pub enum XCellTyped {
     Vector(Box<VectorDescription>),
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum XTableKind {
-    SortedMap,
-    Enumerate,
-}
-
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct ExtraTypes {
     pub string: BTreeSet<String>,

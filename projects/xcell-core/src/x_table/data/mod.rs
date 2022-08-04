@@ -1,8 +1,8 @@
 use super::*;
 
 mod enumerate;
-mod string;
 mod number;
+mod string;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XData {
@@ -49,4 +49,30 @@ pub struct XDataNumberItem {
 pub struct XDataStringItem {
     pub key: String,
     pub data: Vec<XCellValue>,
+}
+
+impl XData {
+    pub fn key_field(&self) -> String {
+        let id = "id".to_string();
+        match self {
+            XData::Number(v) => v.headers.get(0).map(|v| v.field_name).unwrap_or(id),
+            XData::String(v) => v.headers.get(0).map(|v| v.field_name).unwrap_or(id),
+            XData::Enumerate(v) => v.headers.get(0).map(|v| v.field_name).unwrap_or(id),
+        }
+    }
+    pub fn key_type(&self) -> String {
+        let id = "id".to_string();
+        match self {
+            XData::Number(v) => v.headers.get(0).map(|v| v.field_name).unwrap_or(id),
+            XData::String(v) => v.headers.get(0).map(|v| v.field_name).unwrap_or(id),
+            XData::Enumerate(v) => v.headers.get(0).map(|v| v.field_name).unwrap_or(id),
+        }
+    }
+    fn key_item(&self) -> Option<&XCellHeader> {
+        match self {
+            XData::Number(v) => v.headers.get(0),
+            XData::String(v) => v.headers.get(0),
+            XData::Enumerate(v) => v.headers.get(0),
+        }
+    }
 }

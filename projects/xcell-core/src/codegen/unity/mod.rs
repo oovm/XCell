@@ -1,5 +1,3 @@
-use xcell_types::XTableKind;
-
 use super::*;
 
 impl UnityCodegen {
@@ -26,11 +24,11 @@ impl UnityCodegen {
         ctx.insert("TABLE_NAME", &format!("{}{}", table.name, self.suffix_table));
         ctx.insert("ELEMENT_NAME", &format!("{}{}", table.name, self.suffix_element));
         ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.suffix_element));
-        ctx.insert("KEY", &table.headers.key_field());
-        ctx.insert("ID_TYPE", &table.headers.key_type());
+        ctx.insert("KEY", &table.data.key_field());
+        ctx.insert("ID_TYPE", &table.data.key_type());
         let is_enum = table.is_enumerate();
         ctx.insert("enumerate", &is_enum);
-        ctx.insert("CLASS_FIELDS", &table.headers.make_class_field(is_enum));
+        ctx.insert("CLASS_FIELDS", &table.data.make_class_field(is_enum));
         ctx
     }
     fn make_manager(&self, table: &TableMerged) -> Context {

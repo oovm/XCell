@@ -79,27 +79,6 @@ impl XCellHeaders {
         }
         items.map(|v| v.make_class_field(is_enum)).collect()
     }
-    fn key_type(&self) -> String {
-        match self.inner.first() {
-            Some(s) => match &s.typing {
-                XCellTyped::Enumerate(e) => e.integer.as_csharp_type().to_string(),
-                _ => s.typing.as_csharp_type(),
-            },
-            None => "int".to_string(),
-        }
-    }
-    pub fn key_field(&self) -> String {
-        match self.kind {
-            XTableKind::SortedMap => match self.inner.first() {
-                Some(s) => s.field_name.to_string(),
-                None => "id".to_string(),
-            },
-            XTableKind::Enumerate => match self.inner.get(1) {
-                Some(s) => s.field_name.to_string(),
-                None => "id".to_string(),
-            },
-        }
-    }
 }
 
 impl XCellHeader {

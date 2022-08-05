@@ -11,7 +11,7 @@ use calamine::DataType;
 use serde::{Deserialize, Serialize};
 
 use xcell_errors::for_3rd::BigInt;
-use xcell_types::{XCellTyped, XCellValue, XTableKind};
+use xcell_types::{XCellTyped, XCellValue};
 
 use crate::{
     config::TableConfig,
@@ -46,12 +46,6 @@ impl XCellTable {
             _ => false,
         }
     }
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XCellHeaders {
-    pub kind: XTableKind,
-    pub inner: Vec<XCellHeader>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

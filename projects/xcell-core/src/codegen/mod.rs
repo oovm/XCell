@@ -14,7 +14,7 @@ use xcell_types::codegen::{CSharpReader, CSharpWriter};
 use xcell_errors::XResult;
 use xcell_types::XCellTyped;
 
-use crate::{config::UnityCodegen, XCellHeader, XCellHeaders, XCellTable};
+use crate::{config::UnityCodegen, XCellHeader, XCellTable};
 
 #[allow(unused)]
 mod binary;

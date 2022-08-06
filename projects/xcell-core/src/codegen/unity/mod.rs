@@ -28,7 +28,7 @@ impl UnityCodegen {
         ctx.insert("ID_TYPE", &table.data.key_type());
         let is_enum = table.is_enumerate();
         ctx.insert("enumerate", &is_enum);
-        ctx.insert("CLASS_FIELDS", &table.data.make_class_field(is_enum));
+        // ctx.insert("CLASS_FIELDS", &table.data.make_class_field(is_enum));
         ctx
     }
     fn make_manager(&self, table: &TableMerged) -> Context {

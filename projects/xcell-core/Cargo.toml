@@ -22,7 +22,6 @@ regex = "1.7.0"
 twox-hash = "1.6.3"
 serde = { version = "1.0.147", features = ["derive"] }
 itertools = "0.10.5"
-array2d = { version = "0.2.1", features = ["serde"] }
 notify = { version = "5.0.0", features = ["serde"] }
 #futures = "0.3.17"
 tokio = { version = "1.21.2", features = ["full"] }

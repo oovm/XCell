@@ -9,21 +9,20 @@ mod string;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XData {
-    Number(Box<XDataNumber>),
-    String(Box<XDataString>),
+    Dictionary(Box<XDataDictionary>),
     Enumerate(Box<XDataEnumerate>),
 }
 
 impl Default for XData {
     fn default() -> Self {
-        Self::String(Default::default())
+        Self::Dictionary(Default::default())
     }
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XDataNumber {
+pub struct XDataDictionary {
     pub headers: Vec<XCellHeader>,
-    pub data: BTreeMap<BigInt, XDataItem>,
+    pub data: Vec<XDataItem>,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -52,30 +51,26 @@ pub struct XDataItem {
 
 impl XData {
     pub fn key_field(&self) -> String {
-        self.key_item().map(|v| v.field_name).unwrap_or("id".into())
+        self.key_item().map(|v| v.field_name.as_str()).unwrap_or("id").to_string()
     }
     pub fn key_type(&self) -> XCellTyped {
-        self.key_item().map(|v| v.typing).unwrap_or(StringDescription::default().into())
+        self.key_item().map(|v| v.typing.clone()).unwrap_or_else(|| StringDescription::default().into())
     }
     fn key_item(&self) -> Option<&XCellHeader> {
         match self {
-            XData::Number(v) => v.headers.get(0),
-            XData::String(v) => v.headers.get(0),
+            XData::Dictionary(v) => v.headers.get(0),
             XData::Enumerate(v) => v.headers.get(0),
         }
     }
     pub fn rows(&self) -> Vec<&XDataItem> {
         match self {
-            XData::Number(v) => v.data.values().collect(),
-            XData::String(v) => v.data.values().collect(),
+            XData::Dictionary(v) => v.data.values().collect(),
             XData::Enumerate(v) => v.data.values().collect(),
         }
     }
-
     pub fn rows_count(&self) -> usize {
         match self {
-            XData::Number(v) => v.data.len(),
-            XData::String(v) => v.data.len(),
+            XData::Dictionary(v) => v.data.len(),
             XData::Enumerate(v) => v.data.len(),
         }
     }

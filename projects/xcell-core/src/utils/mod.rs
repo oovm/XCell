@@ -9,7 +9,6 @@ mod watcher;
 
 pub use self::workspace::*;
 use crate::{CalamineTable, XCellHeader};
-use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
 use itertools::Itertools;
 use pathdiff::diff_paths;
@@ -38,26 +37,6 @@ pub fn find_first_table(path: &PathBuf) -> XResult<CalamineTable> {
         Some(s) => s?,
     };
     Ok(ranges)
-}
-
-pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders, path: &Path) -> XResult<Array2D<XCellValue>> {
-    let rows = table.rows().skip(3).filter(|v| first_not_nil(v));
-    let row_count = table.rows().skip(3).filter(|v| first_not_nil(v)).count();
-    let col_count = typing.len();
-    let mut matrix = Array2D::filled_with(XCellValue::Boolean(false), row_count, col_count);
-    for (x, row_raw) in rows.enumerate() {
-        for (y, typed) in typing.iter().enumerate() {
-            match typed.parse_cell(row_raw) {
-                Ok(o) => {
-                    matrix.set(x, y, o).ok();
-                }
-                Err(e) => {
-                    log::error!("{}", e.with_path(path).with_xy(x, y))
-                }
-            }
-        }
-    }
-    Ok(matrix)
 }
 
 /// 确保第一行的 id 不是空的

@@ -1,6 +1,6 @@
 use crate::{
     config::{ProjectConfig, TableLineMode},
-    CalamineTable, XDataEnumerate, XDataNumber,
+    CalamineTable, XDataDictionary, XDataEnumerate,
 };
 
 use super::*;
@@ -23,7 +23,7 @@ impl XCellHeader {
         let line = project.line.typing.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
         match XCellTyped::parse(cell.get_string()?, &project.typing.extra) {
-            XCellTyped::Integer(_) => Some(XData::Number(Box::new(XDataNumber::default()))),
+            XCellTyped::Integer(_) => Some(XData::Dictionary(Box::new(XDataDictionary::default()))),
             // XCellTyped::String(_) => Some(XData::String(Box::new(XDataString::default()))),
             // 默认初始化就是 String, 就不用分配了
             XCellTyped::String(_) => None,
@@ -45,7 +45,7 @@ impl XData {
     pub fn read_table_headers(&mut self, table: &CalamineTable, project: &ProjectConfig) {
         self.read_table_kind(table, project);
         let res = match self {
-            XData::Number(_) => {
+            XData::Dictionary(_) => {
                 todo!()
             }
             XData::String(_) => {

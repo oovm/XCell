@@ -9,7 +9,7 @@ impl BinaryCodegen {
         let rows = table.data.rows_count();
         (rows as u32).write_to(&mut file, ByteOrder::LittleEndian)?;
         for row in table.data.rows() {
-            for item in row {
+            for item in &row.data {
                 item.write_to(&mut file, ByteOrder::LittleEndian)?
             }
         }

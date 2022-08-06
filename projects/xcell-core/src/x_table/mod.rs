@@ -2,11 +2,9 @@ use std::{
     collections::BTreeMap,
     fmt::{Debug, Display, Formatter},
     hash::{Hash, Hasher},
-    ops::Deref,
     path::{Path, PathBuf},
 };
 
-use array2d::Array2D;
 use calamine::DataType;
 use serde::{Deserialize, Serialize};
 
@@ -15,7 +13,7 @@ use xcell_types::{XCellTyped, XCellValue};
 
 use crate::{
     config::TableConfig,
-    utils::{find_first_table, read_table_data, read_table_headers, xx_file, xx_hash},
+    utils::{find_first_table, xx_file, xx_hash},
     XData, XError, XResult,
 };
 

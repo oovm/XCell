@@ -8,7 +8,7 @@ use std::{
 mod watcher;
 
 pub use self::workspace::*;
-use crate::{CalamineTable, XCellHeader, XCellHeaders};
+use crate::{CalamineTable, XCellHeader};
 use array2d::Array2D;
 use calamine::{open_workbook_auto, DataType, Reader};
 use itertools::Itertools;
@@ -38,50 +38,6 @@ pub fn find_first_table(path: &PathBuf) -> XResult<CalamineTable> {
         Some(s) => s?,
     };
     Ok(ranges)
-}
-
-/// 获取表格的前三行
-///
-/// # Arguments
-///
-/// * `table`:
-///
-/// returns: Result<Vec<XCellHeader, Global>, XError>
-///
-/// # Examples
-///
-///
-/// ```
-/// use xcell_core;
-/// ```
-pub fn read_table_headers(table: &CalamineTable, extra: &ExtraTypes) -> XResult<XCellHeaders> {
-    let mut headers = vec![];
-    let row = match table.rows().next() {
-        Some(s) => s,
-        None => return Err(XError::table_error("找不到描述, 第一行格式非法")),
-    };
-    let kind = read_table_kind(table).unwrap_or_default();
-    for (i, data) in row.iter().enumerate() {
-        if data.is_empty() {
-            // 不要用 filter, column 不对
-            continue;
-        }
-        let _: Option<()> = try {
-            let field_type = table.get_value((1, i as u32))?;
-            let field_name = table.get_value((2, i as u32))?.to_string();
-            let typing = XCellTyped::parse(&field_type.to_string(), extra);
-            headers.push(XCellHeader { summary: data.to_string(), column: i, typing, field_name, details: "".to_string() })
-        };
-    }
-    Ok(XCellHeaders::new(headers).with_kind(kind).check_enumerate())
-}
-
-/// 获取表格的类型, 表格类型由于第三行的第一列决定
-pub fn read_table_kind(table: &CalamineTable) -> Option<XTableKind> {
-    // println!("{:?}", table.get_value((2, 0)));
-    let cell = table.get_value((2, 0))?;
-    let out = XTableKind::new(cell.get_string()?);
-    Some(out)
 }
 
 pub fn read_table_data(table: &CalamineTable, typing: &XCellHeaders, path: &Path) -> XResult<Array2D<XCellValue>> {

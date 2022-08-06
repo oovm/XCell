@@ -8,7 +8,7 @@ impl BinaryCodegen {
         let mut file = File::create(path)?;
         let rows = table.data.rows_count();
         (rows as u32).write_to(&mut file, ByteOrder::LittleEndian)?;
-        for row in table.data.rows_iter() {
+        for row in table.data.rows() {
             for item in row {
                 item.write_to(&mut file, ByteOrder::LittleEndian)?
             }

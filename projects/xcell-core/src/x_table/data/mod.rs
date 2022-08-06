@@ -1,4 +1,5 @@
-use xcell_types::StringDescription;
+use std::collections::btree_map::Values;
+use xcell_types::{IntegerKind, StringDescription};
 
 use super::*;
 
@@ -13,21 +14,29 @@ pub enum XData {
     Enumerate(Box<XDataEnumerate>),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+impl Default for XData {
+    fn default() -> Self {
+        Self::String(Default::default())
+    }
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XDataNumber {
     pub headers: Vec<XCellHeader>,
     pub data: BTreeMap<BigInt, XDataItem>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XDataString {
     pub headers: Vec<XCellHeader>,
     pub data: BTreeMap<String, XDataItem>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XDataEnumerate {
+    /// 0 表示未设置
     pub id_column: usize,
+    pub id_type: IntegerKind,
     pub comment_column: usize,
     pub headers: Vec<XCellHeader>,
     pub data: BTreeMap<String, XDataItem>,
@@ -55,7 +64,13 @@ impl XData {
             XData::Enumerate(v) => v.headers.get(0),
         }
     }
-    pub fn rows(&self) {}
+    pub fn rows(&self) -> Vec<&XDataItem> {
+        match self {
+            XData::Number(v) => v.data.values().collect(),
+            XData::String(v) => v.data.values().collect(),
+            XData::Enumerate(v) => v.data.values().collect(),
+        }
+    }
 
     pub fn rows_count(&self) -> usize {
         match self {

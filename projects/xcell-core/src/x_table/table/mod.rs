@@ -20,11 +20,13 @@ impl XCellTable {
     /// use xcell_core::XCellTable;
     /// ```
     pub fn load_file(excel: &Path, global: &ProjectConfig) -> XResult<Self> {
+        let path = excel.canonicalize()?;
+        
+        
         let mut xcell = Self {
             path: excel.canonicalize()?,
             name: "".to_string(),
-            headers: Default::default(),
-            data: Array2D::filled_with(XCellValue::Boolean(false), 1, 1),
+            data: Default::default(),
             config: Default::default(),
             sum_excel: 0,
             sum_config: 0,
@@ -57,7 +59,7 @@ impl XCellTable {
     fn try_load_header(&mut self, global: &ProjectConfig) -> XResult<()> {
         let err: XResult<()> = try {
             let table = find_first_table(&self.path)?;
-            self.headers = read_table_headers(&table, &global.typing.extra)?;
+            self.data = read_table_headers(&table, &global.typing.extra)?;
         };
         err.map_err(|e| e.with_path(&self.path))
     }

@@ -71,16 +71,6 @@ struct CSharpField {
     has_default: bool,
 }
 
-impl XCellHeaders {
-    fn make_class_field(&self, is_enum: bool) -> Vec<CSharpField> {
-        let mut items = self.inner.iter();
-        if is_enum {
-            items.next();
-        }
-        items.map(|v| v.make_class_field(is_enum)).collect()
-    }
-}
-
 impl XCellHeader {
     fn make_class_field(&self, _is_enum: bool) -> CSharpField {
         let default = self.typing.as_csharp_default();

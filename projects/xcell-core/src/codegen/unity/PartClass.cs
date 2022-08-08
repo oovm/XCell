@@ -18,8 +18,9 @@ namespace {{ config.namespace }}
     [DataContract, Serializable]
     public enum {{CLASS_NAME}} : {{ ID_TYPE }}
     {
-        SSR = 1,
-        SR = 2,
+{%- for field in enumerate_fields %}
+        {{ field.name }} = {{ field.number }},
+{%- endfor %}
     }
 
     public static class {{CLASS_NAME}}Extension

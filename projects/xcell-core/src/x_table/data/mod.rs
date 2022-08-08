@@ -1,10 +1,9 @@
-use std::collections::btree_map::Values;
 use xcell_types::{IntegerKind, StringDescription};
 
 use super::*;
 
 mod enumerate;
-mod number;
+mod dictionary;
 mod string;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -64,7 +63,7 @@ impl XData {
     }
     pub fn rows(&self) -> Vec<&XDataItem> {
         match self {
-            XData::Dictionary(v) => v.data.values().collect(),
+            XData::Dictionary(v) => v.data.iter().collect(),
             XData::Enumerate(v) => v.data.values().collect(),
         }
     }

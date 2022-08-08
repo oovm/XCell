@@ -1,18 +1,16 @@
+use crate::{config::TableMerged, XData};
+use convert_case::{Case, Casing};
 use itertools::Itertools;
+use serde::Serialize;
 use std::{
     fs::{create_dir_all, File},
     io::Write,
     path::Path,
 };
-
-use crate::config::TableMerged;
-use convert_case::{Case, Casing};
-use serde::Serialize;
 use tera::{Context, Tera};
 use xcell_types::codegen::{CSharpReader, CSharpWriter};
 
 use xcell_errors::XResult;
-use xcell_types::XCellTyped;
 
 use crate::{config::UnityCodegen, XCellHeader, XCellTable};
 

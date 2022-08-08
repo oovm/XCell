@@ -25,10 +25,11 @@ impl UnityCodegen {
         ctx.insert("ELEMENT_NAME", &format!("{}{}", table.name, self.suffix_element));
         ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.suffix_element));
         ctx.insert("KEY", &table.data.key_field());
-        ctx.insert("ID_TYPE", &table.data.key_type());
+        ctx.insert("ID_TYPE", &table.data.key_type().as_csharp_type());
         let is_enum = table.is_enumerate();
         ctx.insert("enumerate", &is_enum);
-        // ctx.insert("CLASS_FIELDS", &table.data.make_class_field(is_enum));
+        ctx.insert("CLASS_FIELDS", &table.data.make_class_field());
+        ctx.insert("enumerate_fields", &table.data.make_enum_field());
         ctx
     }
     fn make_manager(&self, table: &TableMerged) -> Context {
@@ -61,7 +62,6 @@ impl UnityCodegen {
 struct CSharpField {
     summary: Vec<String>,
     remarks: Vec<String>,
-
     typing: String,
     reader: CSharpReader,
     writer: CSharpWriter,
@@ -71,8 +71,31 @@ struct CSharpField {
     has_default: bool,
 }
 
+#[derive(Serialize)]
+struct CSharpEnum {
+    name: String,
+    number: String,
+}
+
+impl XData {
+    fn make_class_field(&self) -> Vec<CSharpField> {
+        match self {
+            XData::Dictionary(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
+            XData::Enumerate(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
+        }
+    }
+    fn make_enum_field(&self) -> Vec<CSharpEnum> {
+        match self {
+            XData::Dictionary(_) => vec![],
+            XData::Enumerate(v) => {
+                v.data.values().map(|v| CSharpEnum { name: v.name.to_string(), number: v.id.to_string() }).collect()
+            }
+        }
+    }
+}
+
 impl XCellHeader {
-    fn make_class_field(&self, _is_enum: bool) -> CSharpField {
+    fn make_class_field(&self) -> CSharpField {
         let default = self.typing.as_csharp_default();
         CSharpField {
             summary: self.summary.lines().map(|v| v.to_string()).collect(),

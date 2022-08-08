@@ -20,8 +20,6 @@ impl XCellTable {
     /// use xcell_core::XCellTable;
     /// ```
     pub fn load_file(excel: &Path, global: &ProjectConfig) -> XResult<Self> {
-        let path = excel.canonicalize()?;
-
         let mut xcell = Self {
             path: excel.canonicalize()?,
             name: "".to_string(),

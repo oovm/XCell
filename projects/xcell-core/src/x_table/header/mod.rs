@@ -9,21 +9,19 @@ impl XCellHeader {
     pub fn parse_cell(&self, row: &[DataType]) -> XResult<XCellValue> {
         match row.get(self.column) {
             Some(cell) => self.typing.parse_cell(cell),
-            None => {
-                todo!()
-            }
+            None => Err(XError::table_error("无法读取数据")),
         }
     }
     fn try_read_table_kind(table: &CalamineTable, project: &ProjectConfig) -> Option<XData> {
         let line = project.line.field.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
         if cell.get_string()? == "enum" {
-            return Some(XData::Enumerate(Box::new(XDataEnumerate::default())));
+            return Some(XData::Enumerate(Box::default()));
         }
         let line = project.line.typing.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
         match XCellTyped::parse(cell.get_string()?, &project.typing.extra) {
-            XCellTyped::Integer(_) => Some(XData::Dictionary(Box::new(XDataDictionary::default()))),
+            XCellTyped::Integer(_) => Some(XData::Dictionary(Box::default())),
             // XCellTyped::String(_) => Some(XData::String(Box::new(XDataString::default()))),
             // 默认初始化就是 String, 就不用分配了
             XCellTyped::String(_) => None,
@@ -45,18 +43,40 @@ impl XData {
     pub fn read_table_headers(&mut self, table: &CalamineTable, project: &ProjectConfig) {
         self.read_table_kind(table, project);
         let res = match self {
-            XData::Dictionary(_) => {
-                todo!()
-            }
-            XData::String(_) => {
-                todo!()
-            }
+            XData::Dictionary(v) => v.read_table_headers(table, project),
             XData::Enumerate(v) => v.read_table_headers(table, project),
         };
         match res {
             Ok(_) => {}
             Err(_) => {}
         }
+    }
+}
+
+impl XDataDictionary {
+    pub fn read_table_headers(&mut self, table: &CalamineTable, project: &ProjectConfig) -> XResult<()> {
+        let line = project.line.typing;
+        let row = match table.rows().take(line).last() {
+            Some(s) => s,
+            None => return Err(XError::table_error(format!("找不到描述, 第 {} 行格式非法", line))),
+        };
+        for (i, data) in row.iter().enumerate() {
+            if data.is_empty() {
+                continue;
+            }
+            self.read_valid_header(table, i, project);
+        }
+        Ok(())
+    }
+    fn read_valid_header(&mut self, table: &CalamineTable, i: usize, project: &ProjectConfig) -> Option<()> {
+        let line = project.line.field.saturating_sub(1) as u32;
+        let field_name = table.get_value((line, i as u32))?.get_string()?;
+        let line = project.line.typing.saturating_sub(1) as u32;
+        let field_type = table.get_value((line, i as u32))?.get_string()?;
+        let typing = XCellTyped::parse(&field_type.to_string(), &project.typing.extra);
+        let (summary, details) = read_comment_details(table, i, project.line).unwrap_or_default();
+        self.headers.push(XCellHeader { summary, column: i, typing, field_name: field_name.to_string(), details });
+        None
     }
 }
 
@@ -93,11 +113,10 @@ impl XDataEnumerate {
         }
         let line = project.line.typing.saturating_sub(1) as u32;
         let field_type = table.get_value((line, i as u32))?.get_string()?;
-        let typing = XCellTyped::parse(&field_type.to_string(), &project.typing.extra);
+        let typing = XCellTyped::parse(field_type, &project.typing.extra);
         match &typing {
             XCellTyped::Integer(v) if set_id => {
                 self.id_type = v.kind;
-                return None;
             }
             _ => {}
         }

@@ -8,13 +8,13 @@ use std::{
 mod watcher;
 
 pub use self::workspace::*;
-use crate::{CalamineTable, XCellHeader};
+use crate::CalamineTable;
 use calamine::{open_workbook_auto, DataType, Reader};
 use itertools::Itertools;
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
 use xcell_errors::{XError, XResult};
-use xcell_types::{ExtraTypes, XCellTyped, XCellValue};
+
 mod workspace;
 
 /// 读取 Excel 文件里的第一张表

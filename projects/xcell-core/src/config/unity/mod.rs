@@ -51,13 +51,14 @@ impl UnityCodegen {
     }
 
     /// 生成二进制配置的文件夹
-    pub fn unity_binary_path(&self, root: &Path) -> XResult<PathBuf> {
-        let project = self.unity_path(root)?;
-        Ok(project.join(&self.output))
+    pub fn unity_binary_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
+        let dir = self.unity_path(root)?.join(&self.binary.output);
+        let path = dir.join(file_name).with_extension("binary");
+        Ok(path)
     }
     /// 生成 C# 代码的文件夹
     pub fn unity_csharp_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
-        let dir = self.unity_binary_path(root)?;
+        let dir = self.unity_path(root)?.join(&self.output);
         let path = dir.join(file_name).with_extension("cs");
         Ok(path)
     }

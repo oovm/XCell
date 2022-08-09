@@ -7,9 +7,10 @@ use crate::{StreamWriter, XCellValue};
 impl StreamWriter for XCellValue {
     fn write_to<W: Write>(&self, buffer: &mut W, order: ByteOrder) -> std::io::Result<()> {
         match self {
-            XCellValue::Boolean(_) => {
-                todo!()
-            }
+            XCellValue::Boolean(v) => match v {
+                true => 0u8.write_to(buffer, order),
+                false => 1u8.write_to(buffer, order),
+            },
             XCellValue::Integer8(v) => v.write_to(buffer, order),
             XCellValue::Integer16(v) => v.write_to(buffer, order),
             XCellValue::Integer32(v) => v.write_to(buffer, order),
@@ -47,8 +48,12 @@ impl StreamWriter for XCellValue {
                 v[2].write_to(buffer, order)?;
                 v[3].write_to(buffer, order)
             }
-            XCellValue::String(_) => {
-                todo!()
+            XCellValue::String(v) => {
+                (v.len() as u32).write_to(buffer, order)?;
+                for item in v.bytes() {
+                    item.write_to(buffer, order)?
+                }
+                Ok(())
             }
             XCellValue::Color(v) => {
                 v.r.write_to(buffer, order)?;
@@ -59,8 +64,12 @@ impl StreamWriter for XCellValue {
             XCellValue::Custom(_) => {
                 todo!()
             }
-            XCellValue::Vector(_) => {
-                todo!()
+            XCellValue::Vector(v) => {
+                (v.len() as u32).write_to(buffer, order)?;
+                for item in v.iter() {
+                    item.write_to(buffer, order)?
+                }
+                Ok(())
             }
         }
     }

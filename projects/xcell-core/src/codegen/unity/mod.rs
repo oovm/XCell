@@ -1,6 +1,20 @@
 use super::*;
 
 impl UnityCodegen {
+    pub fn ensure_path(&self, root: &Path) -> XResult<()> {
+        if let Some(s) = self.unity_csharp_path(root, "test")?.parent() {
+            create_dir_all(s)?
+        }
+        if let Some(s) = self.unity_binary_path(root, "test")?.parent() {
+            create_dir_all(s)?
+        }
+        Ok(())
+    }
+    pub fn write_manager(&self, table: &TableMerged, root: &Path) -> XResult<()> {
+        let path = self.unity_manager_path(root)?;
+        tera_render(include_str!("PartManager.cs"), &self.make_manager(table), &path)?;
+        Ok(())
+    }
     pub fn write_class(&self, table: &XCellTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_csharp_path(root, &file)?;
@@ -8,9 +22,12 @@ impl UnityCodegen {
         tera_render(include_str!("PartClass.cs"), &self.make_context(table), &path)?;
         Ok(())
     }
-    pub fn write_manager(&self, table: &TableMerged, root: &Path) -> XResult<()> {
-        let path = self.unity_manager_path(root)?;
-        tera_render(include_str!("PartManager.cs"), &self.make_manager(table), &path)?;
+    pub fn write_binary(&self, table: &XCellTable, root: &Path) -> XResult<()> {
+        let file = format!("{}{}", table.name, self.suffix_table);
+        let path = self.unity_binary_path(root, &file)?;
+        log::info!("写入 {}", self.unity_relative(&file));
+        let cg = BinaryCodegen {};
+        cg.write_binary(table, &path)?;
         Ok(())
     }
 }
@@ -36,11 +53,7 @@ impl UnityCodegen {
         let mut ctx = Context::new();
         ctx.insert("VERSION", env!("CARGO_PKG_VERSION"));
         ctx.insert("config", &self);
-        #[derive(Serialize)]
-        struct CsTable {
-            name: String,
-            private: String,
-        }
+
         ctx.insert(
             "tables",
             &table
@@ -49,7 +62,7 @@ impl UnityCodegen {
                 .map(|name| {
                     let name = format!("{}{}", name, self.suffix_table);
                     let private = format!("_{}", name.to_case(Case::Snake));
-                    CsTable { name, private }
+                    CSharpTable { name, private }
                 })
                 .collect_vec(),
         );
@@ -75,6 +88,11 @@ struct CSharpField {
 struct CSharpEnum {
     name: String,
     number: String,
+}
+#[derive(Serialize)]
+struct CSharpTable {
+    name: String,
+    private: String,
 }
 
 impl XData {

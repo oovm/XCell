@@ -30,9 +30,6 @@ pub struct BinaryCodegen {}
 // }
 
 fn tera_render(template: &str, slots: &Context, output: &Path) -> XResult<String> {
-    if let Some(s) = output.parent() {
-        create_dir_all(s)?
-    }
     // log::trace!("tera_render {}", output.display());
     let mut file = File::create(output)?;
     let mut tera = Tera::default();

@@ -119,7 +119,9 @@ impl WorkspaceManager {
     }
     pub fn try_update_file(&mut self, file: &Path) -> XResult<()> {
         let table = XCellTable::load_file(file, &self.config)?;
+        table.config.unity.ensure_path(&self.config.root)?;
         table.config.unity.write_class(&table, &self.config.root)?;
+        table.config.unity.write_binary(&table, &self.config.root)?;
         self.file_mapping.insert(file.to_path_buf(), table);
         Ok(())
     }

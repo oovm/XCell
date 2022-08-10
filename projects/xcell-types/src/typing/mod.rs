@@ -1,9 +1,7 @@
 use std::{
     any::type_name,
     collections::BTreeSet,
-
     fmt::{Debug, Display, Formatter},
-
 };
 
 use serde::{
@@ -78,7 +76,7 @@ impl XCellTyped {
             XCellTyped::String(typing) => typing.parse_cell(cell),
             XCellTyped::Time(typing) => typing.parse_cell(cell),
             XCellTyped::Color(typing) => typing.parse_cell(cell),
-            XCellTyped::Enumerate(typing) => typing.parse_cell(cell).map(XCellValue::String),
+            XCellTyped::Enumerate(typing) => typing.parse_cell(cell),
             XCellTyped::Array(typing) => typing.parse_cell(cell),
             XCellTyped::Vector(typing) => typing.parse_cell(cell),
         }

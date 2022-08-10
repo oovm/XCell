@@ -42,8 +42,8 @@ pub enum XCellValue {
     String(String),
     Color(Color),
     // Time(DateTime),
-    Custom(String),
     Vector(Vec<XCellValue>),
+    Enumerate(String),
 }
 
 impl Default for XCellValue {

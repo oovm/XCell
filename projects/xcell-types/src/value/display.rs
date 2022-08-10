@@ -60,8 +60,8 @@ impl Display for XCellValue {
             XCellValue::Vector(_) => {
                 todo!()
             }
-            XCellValue::Custom(_) => {
-                todo!()
+            XCellValue::Enumerate(v) => {
+                write!(f, "{v}")
             }
         }
     }

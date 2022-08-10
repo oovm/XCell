@@ -60,7 +60,7 @@ impl XCellValue {
             XCellValue::Color(_) => {
                 todo!()
             }
-            XCellValue::Custom(_) => {
+            XCellValue::Enumerate(_) => {
                 todo!()
             }
             XCellValue::Vector(_) => {

@@ -1,7 +1,8 @@
-use crate::{StreamWriter, XCellValue};
-use integer_encoding::*;
 use std::io::Write;
+
 use stream_io::ByteOrder;
+
+use crate::{StreamWriter, XCellValue};
 
 impl StreamWriter for XCellValue {
     fn write_to<W: Write>(&self, buffer: &mut W, order: ByteOrder) -> std::io::Result<()> {
@@ -45,10 +46,15 @@ impl StreamWriter for XCellValue {
                     item.write_to(buffer, order)?;
                 }
             }
+            // https://en.wikipedia.org/wiki/Variable-length_quantity
+            // https://learn.microsoft.com/en-us/openspecs/sharepoint_protocols/ms-spptc/1eeaf7cc-f60b-4144-aa12-4eb9f6e748d1
             XCellValue::String(v) => {
-                for byte in (v.len() as i32).encode_var_vec() {
-                    byte.write_to(buffer, order)?
+                let mut value = v.len() as u32;
+                while value >= 0x80 {
+                    ((value | 0x80) as u8).write_to(buffer, order)?;
+                    value >>= 7;
                 }
+                (value as u8).write_to(buffer, order)?;
                 for item in v.bytes() {
                     item.write_to(buffer, order)?
                 }
@@ -59,14 +65,14 @@ impl StreamWriter for XCellValue {
                 v.b.write_to(buffer, order)?;
                 v.a.write_to(buffer, order)?;
             }
-            XCellValue::Custom(_) => {
-                todo!()
-            }
             XCellValue::Vector(v) => {
                 (v.len() as u32).write_to(buffer, order)?;
                 for item in v.iter() {
                     item.write_to(buffer, order)?
                 }
+            }
+            XCellValue::Enumerate(v) => {
+                panic!("无法写入二进制 `{}`", v)
             }
         }
         Ok(())

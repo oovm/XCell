@@ -21,8 +21,10 @@ impl EnumerateDescription {
     {
         Self { integer: Default::default(), typing: typing.into(), default: "".to_string() }
     }
-
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<String> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+        self.parse_value(cell).map(XCellValue::Enumerate)
+    }
+    fn parse_value(&self, cell: &DataType) -> XResult<String> {
         match cell {
             DataType::Int(v) => Ok(v.to_string()),
             DataType::Float(v) => Ok(v.to_string()),
@@ -33,7 +35,6 @@ impl EnumerateDescription {
             DataType::Error(e) => syntax_error(format!("未知错误 {e}")),
         }
     }
-
 }
 
 impl XCellTyped {

@@ -65,7 +65,10 @@ impl UnityCodegen {
     pub fn unity_manager_path(&self, root: &Path) -> XResult<PathBuf> {
         self.unity_csharp_path(root, &self.manager_name)
     }
-    pub fn unity_relative(&self, file_name: &str) -> String {
+    pub fn unity_cs_relative(&self, file_name: &str) -> String {
         format!("{}/{}.cs", self.output, file_name)
+    }
+    pub fn unity_bin_relative(&self, file_name: &str) -> String {
+        format!("{}/{}.binary", self.binary.output, file_name)
     }
 }

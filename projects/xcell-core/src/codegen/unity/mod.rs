@@ -18,14 +18,14 @@ impl UnityCodegen {
     pub fn write_class(&self, table: &XCellTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_csharp_path(root, &file)?;
-        log::info!("写入 {}", self.unity_relative(&file));
+        log::info!("写入 {}", self.unity_cs_relative(&file));
         tera_render(include_str!("PartClass.cs"), &self.make_context(table), &path)?;
         Ok(())
     }
     pub fn write_binary(&self, table: &XCellTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_binary_path(root, &file)?;
-        log::info!("写入 {}", self.unity_relative(&file));
+        log::info!("写入 {}", self.unity_bin_relative(&file));
         let cg = BinaryCodegen {};
         cg.write_binary(table, &path)?;
         Ok(())

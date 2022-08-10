@@ -19,7 +19,7 @@ use xcell_errors::{
     },
     XError, XResult,
 };
-use xcell_types::{default_deserialize, BooleanDescription};
+use xcell_types::{default_deserialize, BooleanDescription, EnumerateDescription};
 
 use crate::{
     utils::{get_relative, valid_file},
@@ -45,6 +45,7 @@ pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
     pub file_mapping: BTreeMap<PathBuf, XCellTable>,
+    pub enum_mapping: BTreeMap<String, EnumerateDescription>,
 }
 
 default_deserialize![ProjectConfig, UnityCodegen, UnityBinaryConfig, TableConfig, TypeMetaInfo, TableLineMode];
@@ -71,7 +72,7 @@ impl WorkspaceManager {
         }
         let config = ProjectConfig::new(&root);
         let glob_pattern = build_glob_set(&config.include).unwrap();
-        Ok(Self { config, glob_pattern, file_mapping: Default::default() })
+        Ok(Self { config, glob_pattern, file_mapping: Default::default(), enum_mapping: Default::default() })
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
@@ -91,8 +92,7 @@ impl WorkspaceManager {
                 _ => continue,
             }
         }
-        self.config.unity.write_manager(&self.collect_merged(), &self.config.root)?;
-
+        self.write_unity()?;
         Ok(())
     }
     pub async fn watcher(&mut self) -> XResult<()> {
@@ -119,10 +119,17 @@ impl WorkspaceManager {
     }
     pub fn try_update_file(&mut self, file: &Path) -> XResult<()> {
         let table = XCellTable::load_file(file, &self.config)?;
-        table.config.unity.ensure_path(&self.config.root)?;
-        table.config.unity.write_class(&table, &self.config.root)?;
-        table.config.unity.write_binary(&table, &self.config.root)?;
         self.file_mapping.insert(file.to_path_buf(), table);
+        Ok(())
+    }
+    pub fn write_unity(&self) -> XResult<()> {
+        for table in self.file_mapping.values() {
+            table.config.unity.ensure_path(&self.config.root)?;
+            table.config.unity.write_class(table, &self.config.root)?;
+            table.config.unity.write_binary(table, &self.config.root)?;
+        }
+
+        self.config.unity.write_manager(&self.collect_merged(), &self.config.root)?;
         Ok(())
     }
 }

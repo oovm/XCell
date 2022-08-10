@@ -1,11 +1,17 @@
-use super::*;
-use crate::IntegerKind;
+use crate::{utils::syntax_error, IntegerKind, XCellTyped, XCellValue};
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+use xcell_errors::{
+    for_3rd::{BigInt, DataType},
+    XResult,
+};
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct EnumerateDescription {
     pub integer: IntegerKind,
     pub typing: String,
     pub default: String,
+    pub mapping: BTreeMap<String, BigInt>,
 }
 
 impl From<EnumerateDescription> for XCellTyped {
@@ -19,7 +25,7 @@ impl EnumerateDescription {
     where
         S: Into<String>,
     {
-        Self { integer: Default::default(), typing: typing.into(), default: "".to_string() }
+        Self { integer: Default::default(), typing: typing.into(), default: "".to_string(), mapping: Default::default() }
     }
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         self.parse_value(cell).map(XCellValue::Enumerate)

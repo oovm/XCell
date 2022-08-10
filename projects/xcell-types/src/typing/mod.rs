@@ -18,9 +18,10 @@ use xcell_errors::{
 pub use crate::{
     array::{ArrayDescription, ArrayKind},
     decimal::{DecimalDescription, DecimalKind},
+    enumerate::EnumerateDescription,
     integer::{IntegerDescription, IntegerKind},
     string::StringDescription,
-    value::{color::ColorDescription, enumerate::EnumerateDescription, time::TimeDescription},
+    value::{color::ColorDescription, time::TimeDescription},
     vector::VectorDescription,
 };
 use crate::{BooleanDescription, XCellValue};

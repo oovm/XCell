@@ -1,9 +1,10 @@
+use crate::XCellHeader;
 use xcell_types::{IntegerKind, StringDescription};
 
 use super::*;
 
-mod enumerate;
 mod dictionary;
+mod enumerate;
 mod string;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

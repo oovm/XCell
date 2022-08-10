@@ -5,6 +5,22 @@ use crate::{
 
 use super::*;
 
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct XCellHeader {
+    /// 位置
+    pub column: usize,
+    /// 短描述
+    pub summary: String,
+    /// 长描述, 鼠标悬浮时显示
+    pub details: String,
+    /// 类型信息
+    pub typing: XCellTyped,
+    /// 字段名
+    pub field_name: String,
+}
+
+
 impl XCellHeader {
     pub fn parse_cell(&self, row: &[DataType]) -> XResult<XCellValue> {
         match row.get(self.column) {

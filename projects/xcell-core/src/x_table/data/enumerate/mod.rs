@@ -1,7 +1,11 @@
-use itertools::Itertools;
 use std::str::FromStr;
 
-use crate::{utils::first_not_nil, CalamineTable};
+use itertools::Itertools;
+
+use xcell_errors::Validation;
+use xcell_types::EnumerateDescription;
+
+use crate::{utils::first_not_nil, CalamineTable, Success};
 
 use super::*;
 
@@ -64,8 +68,36 @@ impl XDataEnumerate {
         }
         None
     }
-
     pub fn insert(&mut self, item: XDataItem) {
         self.data.insert(item.name.clone(), item);
+    }
+}
+
+impl XCellTable {
+    pub fn link_enumerate(&self, all: &BTreeMap<String, EnumerateDescription>) -> Validation<XCellTable> {
+        let mut diagnostics = vec![];
+        let mut value = self.clone();
+        match &mut value.data {
+            XData::Dictionary(_) => {}
+            XData::Enumerate(v) => v.link_enumerate_head(all).option(|e| diagnostics.push(e)).unwrap_or_default(),
+        };
+        Success { value, diagnostics }
+    }
+}
+
+impl XDataEnumerate {
+    pub fn link_enumerate_head(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Validation<()> {
+        let mut diagnostics = vec![];
+        for header in &mut self.headers {
+            let ed = match header.typing.mut_enumerate() {
+                Some(s) => s,
+                None => continue,
+            };
+            match all.get(&ed.typing) {
+                Some(v) => *ed = v.clone(),
+                None => diagnostics.push(XError::runtime_error(format!("未知的枚举类: {}", &ed.typing)).with_x(header.column)),
+            }
+        }
+        Success { value: (), diagnostics }
     }
 }

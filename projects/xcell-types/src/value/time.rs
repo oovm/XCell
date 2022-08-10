@@ -33,10 +33,10 @@ impl TimeDescription {
                 Err(_) => syntax_error(format!("{} 无法解析为 time 类型", s)),
             },
             DataType::Empty => match &self.default {
-                Some(s) => Ok(s.clone()),
+                Some(s) => Ok(*s),
                 None => Ok(DateTime::default()),
             },
-            _ => syntax_error(format!("{} 无法解析为 time 类型", cell.to_string())),
+            _ => syntax_error(format!("{} 无法解析为 time 类型", cell)),
         }
     }
 }

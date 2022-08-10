@@ -9,7 +9,7 @@ pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult
 
 pub use self::{
     config::WorkspaceManager,
-    x_table::{data::*, XCellHeader, XCellTable},
+    x_table::{data::*, header::XCellHeader, XCellTable},
 };
 pub use xcell_types::*;
 

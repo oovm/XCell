@@ -20,6 +20,7 @@ mod boolean;
 pub mod codegen;
 mod custom;
 mod decimal;
+pub mod enumerate;
 mod integer;
 mod string;
 mod typing;

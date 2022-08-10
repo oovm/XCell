@@ -31,6 +31,8 @@ pub struct XCellTable {
     pub config: TableConfig,
     /// 表格中的有效数据
     pub data: XData,
+    /// 枚举定义是否已链接
+    pub enumeration_linked: bool,
     /// Excel 的校验和
     pub sum_excel: u64,
     /// 全局配置和本地配置的校验和
@@ -44,18 +46,4 @@ impl XCellTable {
             _ => false,
         }
     }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct XCellHeader {
-    /// 位置
-    pub column: usize,
-    /// 短描述
-    pub summary: String,
-    /// 长描述, 鼠标悬浮时显示
-    pub details: String,
-    /// 类型信息
-    pub typing: XCellTyped,
-    /// 字段名
-    pub field_name: String,
 }

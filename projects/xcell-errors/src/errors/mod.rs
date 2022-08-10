@@ -66,6 +66,20 @@ impl XError {
         self.position = Some((x, y));
         self
     }
+    pub fn with_x(mut self, x: usize) -> Self {
+        self.position = match self.position {
+            None => Some((x, 0)),
+            Some((_, y)) => Some((x, y)),
+        };
+        self
+    }
+    pub fn with_y(mut self, y: usize) -> Self {
+        self.position = match self.position {
+            None => Some((0, y)),
+            Some((x, _)) => Some((x, y)),
+        };
+        self
+    }
     pub fn runtime_error<S>(msg: S) -> Self
     where
         S: Into<String>,

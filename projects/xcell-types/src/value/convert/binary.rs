@@ -47,14 +47,8 @@ impl StreamWriter for XCellValue {
                 }
             }
             // https://en.wikipedia.org/wiki/Variable-length_quantity
-            // https://learn.microsoft.com/en-us/openspecs/sharepoint_protocols/ms-spptc/1eeaf7cc-f60b-4144-aa12-4eb9f6e748d1
             XCellValue::String(v) => {
-                let mut value = v.len() as u32;
-                while value >= 0x80 {
-                    ((value | 0x80) as u8).write_to(buffer, order)?;
-                    value >>= 7;
-                }
-                (value as u8).write_to(buffer, order)?;
+                write_7_bit(v.len(), buffer, order)?;
                 for item in v.bytes() {
                     item.write_to(buffer, order)?
                 }
@@ -77,4 +71,13 @@ impl StreamWriter for XCellValue {
         }
         Ok(())
     }
+}
+
+pub fn write_7_bit<W: Write>(length: usize, buffer: &mut W, order: ByteOrder) -> std::io::Result<()> {
+    let mut value = length as u32;
+    while value >= 0x80 {
+        ((value | 0x80) as u8).write_to(buffer, order)?;
+        value >>= 7;
+    }
+    (value as u8).write_to(buffer, order)
 }

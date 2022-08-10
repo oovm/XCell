@@ -10,15 +10,11 @@ use xcell_errors::{
     XResult,
 };
 
-use crate::{
-    utils::{syntax_error, type_mismatch},
-    XCellTyped,
-};
+use crate::utils::{syntax_error, type_mismatch};
 
 pub mod color;
 pub mod convert;
 mod display;
-pub mod enumerate;
 pub mod time;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

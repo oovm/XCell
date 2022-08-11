@@ -51,6 +51,13 @@ namespace {{ config.namespace }}
 			{{ table.private }} = new {{ table.name }}();
 {%- endfor %}
         }
+
+        public void Clear()
+        {
+{%- for table in tables %}
+			{{ table.private }} = null;
+{%- endfor %}
+        }
     }
 
     public interface IBinarySupport

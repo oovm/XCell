@@ -6,12 +6,12 @@
 #![feature(file_create_new)]
 
 pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
+pub use xcell_types::*;
 
 pub use self::{
     config::WorkspaceManager,
-    x_table::{data::*, header::XCellHeader, XCellTable},
+    x_table::{data::*, header::XCellHeader, table::XCellTable},
 };
-pub use xcell_types::*;
 
 pub mod codegen;
 pub mod config;

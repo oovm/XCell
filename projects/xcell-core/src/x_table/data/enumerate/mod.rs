@@ -5,7 +5,7 @@ use itertools::Itertools;
 use xcell_errors::Validation;
 use xcell_types::EnumerateDescription;
 
-use crate::{utils::first_not_nil, CalamineTable, Success};
+use crate::{utils::first_not_nil, CalamineTable, Success, XCellTable};
 
 use super::*;
 
@@ -74,14 +74,15 @@ impl XDataEnumerate {
 }
 
 impl XCellTable {
-    pub fn link_enumerate(&self, all: &BTreeMap<String, EnumerateDescription>) -> Validation<XCellTable> {
+    pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Vec<XError> {
         let mut diagnostics = vec![];
-        let mut value = self.clone();
-        match &mut value.data {
-            XData::Dictionary(_) => {}
-            XData::Enumerate(v) => v.link_enumerate_head(all).option(|e| diagnostics.push(e)).unwrap_or_default(),
+        match &mut self.data {
+            XData::Dictionary(v) => {}
+            XData::Enumerate(v) => {
+                v.link_enumerate_head(all).take_diagnostics(&mut diagnostics);
+            }
         };
-        Success { value, diagnostics }
+        return diagnostics;
     }
 }
 
@@ -99,5 +100,32 @@ impl XDataEnumerate {
             }
         }
         Success { value: (), diagnostics }
+    }
+    pub fn link_enumerate_data(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Validation<()> {
+        let mut diagnostics = vec![];
+        for header in &mut self.headers {
+            let ed = match header.typing.mut_enumerate() {
+                Some(s) => s,
+                None => continue,
+            };
+            match all.get(&ed.typing) {
+                Some(v) => *ed = v.clone(),
+                None => diagnostics.push(XError::runtime_error(format!("未知的枚举类: {}", &ed.typing)).with_x(header.column)),
+            }
+        }
+        Success { value: (), diagnostics }
+    }
+}
+
+impl XCellHeader {
+    pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Vec<XError> {
+        let mut diagnostics = vec![];
+        match &mut self.data {
+            XData::Dictionary(v) => {}
+            XData::Enumerate(v) => {
+                v.link_enumerate_head(all).take_diagnostics(&mut diagnostics);
+            }
+        };
+        return diagnostics;
     }
 }

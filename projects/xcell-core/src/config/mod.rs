@@ -128,7 +128,6 @@ impl WorkspaceManager {
             table.config.unity.write_class(table, &self.config.root)?;
             table.config.unity.write_binary(table, &self.config.root)?;
         }
-
         self.config.unity.write_manager(&self.collect_merged(), &self.config.root)?;
         Ok(())
     }

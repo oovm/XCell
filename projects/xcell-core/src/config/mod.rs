@@ -92,6 +92,7 @@ impl WorkspaceManager {
                 _ => continue,
             }
         }
+        self.link_enumerate();
         self.write_unity()?;
         Ok(())
     }

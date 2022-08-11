@@ -7,10 +7,13 @@ use serde::{Deserialize, Serialize};
 
 use xcell_errors::{
     for_3rd::{Color, DataType, DateTime, NaiveDateTime, TimeZone, Utc},
-    XResult,
+    XError, XResult,
 };
 
-use crate::utils::{syntax_error, type_mismatch};
+use crate::{
+    utils::{syntax_error, type_mismatch},
+    XCellTyped,
+};
 
 pub mod color;
 pub mod convert;
@@ -45,5 +48,26 @@ pub enum XCellValue {
 impl Default for XCellValue {
     fn default() -> Self {
         Self::Boolean(false)
+    }
+}
+
+impl XCellValue {
+    pub fn link_enumerate(&mut self, typing: &XCellTyped) -> XResult<()> {
+        let (value, map) = match (&self, typing) {
+            (XCellValue::Enumerate(v), XCellTyped::Enumerate(t)) => (v, t),
+            _ => return Ok(()),
+        };
+        let default = map.mapping.get(&map.default).cloned().unwrap_or_default();
+        let value = map.mapping.get(value).cloned();
+        match value {
+            Some(s) => {
+                *self = map.integer.cast_integer(s);
+                Ok(())
+            }
+            None => {
+                *self = map.integer.cast_integer(default);
+                Err(XError::table_error("未知的枚举值"))
+            }
+        }
     }
 }

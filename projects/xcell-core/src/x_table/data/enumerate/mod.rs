@@ -5,7 +5,7 @@ use itertools::Itertools;
 use xcell_errors::Validation;
 use xcell_types::EnumerateDescription;
 
-use crate::{utils::first_not_nil, CalamineTable, Success, XCellTable};
+use crate::{utils::first_not_nil, CalamineTable, Success, WorkspaceManager, XCellTable};
 
 use super::*;
 
@@ -73,59 +73,86 @@ impl XDataEnumerate {
     }
 }
 
-impl XCellTable {
-    pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Vec<XError> {
-        let mut diagnostics = vec![];
-        match &mut self.data {
-            XData::Dictionary(v) => {}
-            XData::Enumerate(v) => {
-                v.link_enumerate_head(all).take_diagnostics(&mut diagnostics);
+impl WorkspaceManager {
+    pub fn link_enumerate(&mut self) {
+        for (_, table) in &mut self.file_mapping {
+            if table.enumeration_linked {
+                return;
             }
-        };
-        return diagnostics;
+            for e in table.link_enumerate(&self.enum_mapping) {
+                log::error!("{e}")
+            }
+        }
     }
 }
 
-impl XDataEnumerate {
-    pub fn link_enumerate_head(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Validation<()> {
-        let mut diagnostics = vec![];
-        for header in &mut self.headers {
-            let ed = match header.typing.mut_enumerate() {
-                Some(s) => s,
-                None => continue,
-            };
-            match all.get(&ed.typing) {
-                Some(v) => *ed = v.clone(),
-                None => diagnostics.push(XError::runtime_error(format!("未知的枚举类: {}", &ed.typing)).with_x(header.column)),
-            }
-        }
-        Success { value: (), diagnostics }
-    }
-    pub fn link_enumerate_data(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Validation<()> {
-        let mut diagnostics = vec![];
-        for header in &mut self.headers {
-            let ed = match header.typing.mut_enumerate() {
-                Some(s) => s,
-                None => continue,
-            };
-            match all.get(&ed.typing) {
-                Some(v) => *ed = v.clone(),
-                None => diagnostics.push(XError::runtime_error(format!("未知的枚举类: {}", &ed.typing)).with_x(header.column)),
-            }
-        }
-        Success { value: (), diagnostics }
+impl XCellTable {
+    pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Vec<XError> {
+        let mut errors = vec![];
+        match &mut self.data {
+            XData::Dictionary(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
+            XData::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
+        };
+        self.enumeration_linked = true;
+        errors
     }
 }
 
 impl XCellHeader {
-    pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Vec<XError> {
-        let mut diagnostics = vec![];
-        match &mut self.data {
-            XData::Dictionary(v) => {}
-            XData::Enumerate(v) => {
-                v.link_enumerate_head(all).take_diagnostics(&mut diagnostics);
-            }
+    pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> XResult<()> {
+        let ed = match self.typing.mut_enumerate() {
+            Some(s) => s,
+            None => return Ok(()),
         };
-        return diagnostics;
+        match all.get(&ed.typing) {
+            Some(v) => {
+                *ed = v.clone();
+                Ok(())
+            }
+            None => Err(XError::runtime_error(format!("未知的枚举类: {}", &ed.typing)).with_x(self.column)),
+        }
+    }
+}
+
+impl XData {
+    pub fn link_enumerate(&self) -> Validation<XData> {
+        let mut value = self.clone();
+        let mut diagnostics = vec![];
+        match &mut value {
+            XData::Dictionary(v) => {
+                for item in v.data.iter_mut() {
+                    link_enumerate_data_line(item, &v.headers, &mut diagnostics)
+                }
+            }
+            XData::Enumerate(v) => {
+                for (_, item) in v.data.iter_mut() {
+                    link_enumerate_data_line(item, &v.headers, &mut diagnostics)
+                }
+            }
+        }
+        Success { value, diagnostics: vec![] }
+    }
+}
+
+fn link_enumerate_head(headers: &mut Vec<XCellHeader>, errors: &mut Vec<XError>, all: &BTreeMap<String, EnumerateDescription>) {
+    for header in headers {
+        if let Err(e) = header.link_enumerate(all) {
+            errors.push(e)
+        }
+    }
+}
+
+fn link_enumerate_data_line(item: &mut XDataItem, headers: &[XCellHeader], errors: &mut Vec<XError>) {
+    for (i, datum) in item.data.iter_mut().enumerate() {
+        if let Err(e) = link_enumerate_data_cell(headers, i, datum) {
+            errors.push(e)
+        }
+    }
+}
+
+fn link_enumerate_data_cell(headers: &[XCellHeader], index: usize, data: &mut XCellValue) -> XResult<()> {
+    match headers.get(index) {
+        Some(s) => data.link_enumerate(&s.typing),
+        None => Err(XError::table_error("not found")),
     }
 }

@@ -1,24 +1,26 @@
-use crate::{config::TableMerged, XData};
-use convert_case::{Case, Casing};
-use itertools::Itertools;
-use serde::Serialize;
 use std::{
     fs::{create_dir_all, File},
     io::Write,
     path::Path,
 };
+
+use convert_case::{Case, Casing};
+use itertools::Itertools;
+use serde::Serialize;
 use tera::{Context, Tera};
-use xcell_types::codegen::{CSharpReader, CSharpWriter};
 
 use xcell_errors::XResult;
+use xcell_types::codegen::{CSharpReader, CSharpWriter};
 
-use crate::{config::UnityCodegen, XCellHeader, XCellTable};
+use crate::{
+    config::{TableMerged, UnityCodegen},
+    XCellHeader, XCellTable, XData,
+};
 
-#[allow(unused)]
-mod binary;
-#[allow(unused)]
-mod readable;
-mod unity;
+pub mod binary;
+pub mod readable;
+pub mod unity;
+pub mod xml;
 
 pub struct CsvCodegen {}
 
@@ -29,13 +31,13 @@ pub struct BinaryCodegen {}
 //     Template::new(template).with_regex(&db_line)
 // }
 
-fn tera_render(template: &str, slots: &Context, output: &Path) -> XResult<String> {
+fn tera_render(template: &str, slots: &Context, output: &Path, name: &str) -> XResult<String> {
     // log::trace!("tera_render {}", output.display());
     let mut file = File::create(output)?;
     let mut tera = Tera::default();
-    tera.autoescape_on(vec![]);
-    tera.add_raw_template("T", template).unwrap();
-    let result = tera.render("T", slots).unwrap();
+    // tera.autoescape_on(vec![]);
+    tera.add_raw_template(name, template).unwrap();
+    let result = tera.render(name, slots).unwrap();
     file.write_all(result.as_bytes())?;
     Ok(result)
 }

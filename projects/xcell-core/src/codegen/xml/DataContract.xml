@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<{{ table_name }} xmlns="http://schemas.datacontract.org/2004/07/{{ namespace }}">
+	<elements>
+{%- for item in items %}
+		<{{ element_name }}>
+{%- for field in item.fields %}
+			<{{ field.name }}>{{ field.data }}</{{ field.name }}>
+{%- endfor %}
+		</{{ element_name }}>
+{%- endfor %}
+	</elements>
+</{{ table_name }}>

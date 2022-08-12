@@ -23,7 +23,7 @@ use xcell_types::{default_deserialize, BooleanDescription, EnumerateDescription}
 
 use crate::{
     utils::{get_relative, valid_file},
-    XCellTable,
+    XCellTable, XData,
 };
 
 pub use self::{
@@ -120,6 +120,19 @@ impl WorkspaceManager {
     }
     pub fn try_update_file(&mut self, file: &Path) -> XResult<()> {
         let table = XCellTable::load_file(file, &self.config)?;
+        if let XData::Enumerate(e) = &table.data {
+            let mut mapping = BTreeMap::default();
+            for (key, item) in &e.data {
+                mapping.insert(key.clone(), item.id.clone());
+            }
+            let ed = EnumerateDescription {
+                integer: Default::default(),
+                typing: table.name.clone(),
+                default: "".to_string(),
+                mapping,
+            };
+            self.insert_enum_mapping(ed)
+        }
         self.file_mapping.insert(file.to_path_buf(), table);
         Ok(())
     }
@@ -131,6 +144,9 @@ impl WorkspaceManager {
         }
         self.config.unity.write_manager(&self.collect_merged(), &self.config.root)?;
         Ok(())
+    }
+    pub fn insert_enum_mapping(&mut self, define: EnumerateDescription) {
+        self.enum_mapping.insert(define.typing.clone(), define);
     }
 }
 

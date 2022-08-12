@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace {{ config.namespace }}
@@ -40,7 +39,6 @@ namespace {{ config.namespace }}
         [DataMember]
         public readonly Dictionary<{{ ID_TYPE }}, {{ELEMENT_NAME}}> dict = new();
 
-        [CanBeNull]
         public {{ELEMENT_NAME}} {{ ELEMENT_GETTER }}({{ ID_TYPE }} {{ KEY }})
         {
             return dict.TryGetValue({{ KEY }}, out var item) ? item : null;

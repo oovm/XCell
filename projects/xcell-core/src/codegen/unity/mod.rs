@@ -12,14 +12,14 @@ impl UnityCodegen {
     }
     pub fn write_manager(&self, table: &TableMerged, root: &Path) -> XResult<()> {
         let path = self.unity_manager_path(root)?;
-        tera_render(include_str!("PartManager.cs"), &self.make_manager(table), &path)?;
+        tera_render(include_str!("PartManager.cs"), &self.make_manager(table), &path, "PartManager.cs")?;
         Ok(())
     }
     pub fn write_class(&self, table: &XCellTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_csharp_path(root, &file)?;
         log::info!("写入 {}", self.unity_cs_relative(&file));
-        tera_render(include_str!("PartClass.cs"), &self.make_context(table), &path)?;
+        tera_render(include_str!("PartClass.cs"), &self.make_context(table), &path, "PartClass.cs")?;
         Ok(())
     }
     pub fn write_binary(&self, table: &XCellTable, root: &Path) -> XResult<()> {
@@ -53,7 +53,6 @@ impl UnityCodegen {
         let mut ctx = Context::new();
         ctx.insert("VERSION", env!("CARGO_PKG_VERSION"));
         ctx.insert("config", &self);
-
         ctx.insert(
             "tables",
             &table
@@ -66,7 +65,6 @@ impl UnityCodegen {
                 })
                 .collect_vec(),
         );
-
         ctx
     }
 }

@@ -21,7 +21,6 @@ namespace DataTable.Generated
         [DataMember]
         public readonly Dictionary<int, BuffElement> dict = new();
 
-        [CanBeNull]
         public BuffElement GetElement(int id)
         {
             return dict.TryGetValue(id, out var item) ? item : null;

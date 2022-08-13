@@ -4,7 +4,13 @@ use crate::XDataItem;
 
 use super::*;
 
-pub struct DataContractWriter {}
+#[derive(Serialize)]
+pub struct DataContractWriter {
+    namespace: String,
+    class_name: String,
+    table_name: String,
+    items: Vec<XmlItem>,
+}
 
 #[derive(Serialize)]
 pub struct XmlItem {
@@ -18,9 +24,16 @@ pub struct XmlField {
 }
 
 impl DataContractWriter {
-    pub fn write_xml(&self, table: &XCellTable, output: &Path) -> XResult<()> {
-        let mut ctx = Context::new();
-        ctx.insert("items", &table.as_xml());
+    pub fn new(namespace: &str, table: &XCellTable, table_suffix: &str) -> Self {
+        Self {
+            class_name: table.name.clone(),
+            table_name: format!("{}{}", table.name, table_suffix),
+            namespace: namespace.to_string(),
+            items: table.as_xml(),
+        }
+    }
+    pub fn write_xml(&self, output: &Path) -> XResult<()> {
+        let ctx = Context::from_serialize(self)?;
         tera_render(include_str!("DataContract.xml"), &ctx, &output, "DataContract.xml")?;
         Ok(())
     }
@@ -38,12 +51,9 @@ impl XDataItem {
         for datum in &self.data {
             let data = match datum {
                 XCellValue::Boolean(v) => v.to_string(),
-                _=> datum.to_string()
+                _ => datum.to_string(),
             };
-            out.push(XmlField {
-                name: self.name.to_string(),
-                data,
-            })
+            out.push(XmlField { name: self.name.to_string(), data })
         }
         out
     }

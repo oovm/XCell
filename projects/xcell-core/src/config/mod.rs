@@ -48,7 +48,7 @@ pub struct WorkspaceManager {
     pub enum_mapping: BTreeMap<String, EnumerateDescription>,
 }
 
-default_deserialize![ProjectConfig, UnityCodegen, UnityBinaryConfig, TableConfig, TypeMetaInfo, TableLineMode];
+default_deserialize![ProjectConfig, TableConfig, TypeMetaInfo, TableLineMode];
 
 impl Debug for WorkspaceManager {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -141,6 +141,7 @@ impl WorkspaceManager {
             table.config.unity.ensure_path(&self.config.root)?;
             table.config.unity.write_class(table, &self.config.root)?;
             table.config.unity.write_binary(table, &self.config.root)?;
+            table.config.unity.write_data_contract(table, &self.config.root)?;
         }
         self.config.unity.write_manager(&self.collect_merged(), &self.config.root)?;
         Ok(())

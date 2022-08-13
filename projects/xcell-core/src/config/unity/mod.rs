@@ -21,18 +21,28 @@ pub struct UnityCodegen {
     pub suffix_table: String,
     /// 用于生成的元素名后缀
     pub suffix_element: String,
-    /// 是否支持二进制序列化
-    pub binary: UnityBinaryConfig,
     /// 支持 `IClonable` 接口
     pub support_clone: bool,
     /// 转译 `using` 语法
     pub legacy_using: bool,
     /// 转译 `??` 语法
     pub legacy_null_null: bool,
+    /// 是否支持二进制序列化
+    pub binary: UnityBinaryConfig,
+    /// 是否支持二进制序列化
+    pub xml: UnityXmlConfig,
 }
 
 #[derive(Clone, Debug, Serialize)]
 pub struct UnityBinaryConfig {
+    /// 是否启用二进制生成
+    pub enable: bool,
+    /// 生成的二进制文件的目录
+    pub output: String,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct UnityXmlConfig {
     /// 是否启用二进制生成
     pub enable: bool,
     /// 生成的二进制文件的目录
@@ -56,6 +66,12 @@ impl UnityCodegen {
         let path = dir.join(file_name).with_extension("binary");
         Ok(path)
     }
+    /// 生成二进制配置的文件夹
+    pub fn unity_xml_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
+        let dir = self.unity_path(root)?.join(&self.binary.output);
+        let path = dir.join(file_name).with_extension("xml");
+        Ok(path)
+    }
     /// 生成 C# 代码的文件夹
     pub fn unity_csharp_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
         let dir = self.unity_path(root)?.join(&self.output);
@@ -70,5 +86,8 @@ impl UnityCodegen {
     }
     pub fn unity_bin_relative(&self, file_name: &str) -> String {
         format!("{}/{}.binary", self.binary.output, file_name)
+    }
+    pub fn unity_xml_relative(&self, file_name: &str) -> String {
+        format!("{}/{}.xml", self.xml.output, file_name)
     }
 }

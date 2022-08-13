@@ -1,3 +1,5 @@
+use crate::{CSharpBinaryWriter, DataContractWriter};
+
 use super::*;
 
 impl UnityCodegen {
@@ -6,6 +8,9 @@ impl UnityCodegen {
             create_dir_all(s)?
         }
         if let Some(s) = self.unity_binary_path(root, "test")?.parent() {
+            create_dir_all(s)?
+        }
+        if let Some(s) = self.unity_xml_path(root, "test")?.parent() {
             create_dir_all(s)?
         }
         Ok(())
@@ -26,9 +31,15 @@ impl UnityCodegen {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_binary_path(root, &file)?;
         log::info!("写入 {}", self.unity_bin_relative(&file));
-        let cg = BinaryCodegen {};
-        cg.write_binary(table, &path)?;
-        Ok(())
+        let cg = CSharpBinaryWriter {};
+        cg.write_binary(table, &path)
+    }
+    pub fn write_data_contract(&self, table: &XCellTable, root: &Path) -> XResult<()> {
+        let file = format!("{}{}", table.name, self.suffix_table);
+        let path = self.unity_xml_path(root, &file)?;
+        log::info!("写入 {}", self.unity_xml_relative(&file));
+        let cg = DataContractWriter::new(&self.namespace, table, &self.suffix_table);
+        cg.write_xml(&path)
     }
 }
 

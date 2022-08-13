@@ -7,37 +7,37 @@ impl Display for XCellValue {
                 write!(f, "{v}")
             }
             XCellValue::Integer8(v) => {
-                write!(f, "{v}i8")
+                write!(f, "{v}")
             }
             XCellValue::Integer16(v) => {
-                write!(f, "{v}i16")
+                write!(f, "{v}")
             }
             XCellValue::Integer32(v) => {
-                write!(f, "{v}i32")
+                write!(f, "{v}")
             }
             XCellValue::Integer64(v) => {
-                write!(f, "{v}i64")
+                write!(f, "{v}")
             }
             XCellValue::Unsigned8(v) => {
-                write!(f, "{v}u8")
+                write!(f, "{v}")
             }
             XCellValue::Unsigned16(v) => {
-                write!(f, "{v}u16")
+                write!(f, "{v}")
             }
             XCellValue::Unsigned32(v) => {
-                write!(f, "{v}u32")
+                write!(f, "{v}")
             }
             XCellValue::Unsigned64(v) => {
-                write!(f, "{v}u64")
+                write!(f, "{v}")
             }
             XCellValue::Float32(v) => {
-                write!(f, "{v}f32")
+                write!(f, "{v}")
             }
             XCellValue::Float64(v) => {
-                write!(f, "{v}f64")
+                write!(f, "{v}")
             }
             XCellValue::String(v) => {
-                write!(f, "{v:?}")
+                write!(f, "{v}")
             }
             XCellValue::Color(v) => {
                 write!(f, "{v}")
@@ -57,8 +57,9 @@ impl Display for XCellValue {
             XCellValue::Quaternion4(_) => {
                 todo!()
             }
-            XCellValue::Vector(_) => {
-                todo!()
+            XCellValue::Vector(v) => {
+                println!("{v:?}");
+                Ok(())
             }
             XCellValue::Enumerate(v) => {
                 write!(f, "{v}")

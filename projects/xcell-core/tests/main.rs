@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use log::LevelFilter;
 use sled_typed::{Database, DiskMap};
 
-use xcell_core::config::{ProjectConfig, PROJECT_CONFIG};
+use xcell_core::{ProjectConfig, PROJECT_CONFIG};
 
 mod test_buffer;
 

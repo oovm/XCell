@@ -10,7 +10,10 @@ use serde::Serialize;
 use tera::{Context, Tera};
 
 use xcell_errors::XResult;
-use xcell_types::codegen::{CSharpReader, CSharpWriter};
+use xcell_types::{
+    codegen::{CSharpReader, CSharpWriter},
+    ByteOrder, StreamWriter,
+};
 
 use crate::{
     config::{TableMerged, UnityCodegen},
@@ -23,8 +26,6 @@ pub mod unity;
 pub mod xml;
 
 pub struct CsvCodegen {}
-
-pub struct BinaryCodegen {}
 
 // pub fn build_template(template: &str) -> Template {
 //     let db_line = Regex::new(r"(?mi)__\s+([^_]+)\s+__").unwrap();

@@ -50,8 +50,6 @@ impl UnityCodegen {
         ctx.insert("config", &self);
         ctx.insert("CLASS_NAME", &table.name);
         ctx.insert("TABLE_NAME", &format!("{}{}", table.name, self.suffix_table));
-        ctx.insert("ELEMENT_NAME", &format!("{}{}", table.name, self.suffix_element));
-        ctx.insert("ELEMENT_GETTER", &format!("Get{}", self.suffix_element));
         ctx.insert("KEY", &table.data.key_field());
         ctx.insert("ID_TYPE", &table.data.key_type().as_csharp_type());
         let is_enum = table.is_enumerate();

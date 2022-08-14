@@ -41,19 +41,19 @@ impl DataContractWriter {
 
 impl XCellTable {
     fn as_xml(&self) -> Vec<XmlItem> {
-        self.data.rows().iter().map(|v| XmlItem { fields: v.as_xml() }).collect()
+        self.data.rows().iter().map(|v| XmlItem { fields: v.as_xml(&self.name) }).collect()
     }
 }
 
 impl XDataItem {
-    fn as_xml(&self) -> Vec<XmlField> {
+    fn as_xml(&self, name: &str) -> Vec<XmlField> {
         let mut out = vec![];
         for datum in &self.data {
             let data = match datum {
                 XCellValue::Boolean(v) => v.to_string(),
                 _ => datum.to_string(),
             };
-            out.push(XmlField { name: self.name.to_string(), data })
+            out.push(XmlField { name: name.to_string(), data })
         }
         out
     }

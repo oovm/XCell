@@ -126,8 +126,9 @@ impl WorkspaceManager {
                 mapping.insert(key.clone(), item.id.clone());
             }
             let ed = EnumerateDescription {
-                integer: Default::default(),
+                integer: e.id_type,
                 typing: table.name.clone(),
+                // TODO
                 default: "".to_string(),
                 mapping,
             };

@@ -18,6 +18,7 @@ namespace {{ config.namespace }}
     public enum {{CLASS_NAME}} : {{ ID_TYPE }}
     {
 {%- for field in enumerate_fields %}
+	    [EnumMember]
         {{ field.name }} = {{ field.number }},
 {%- endfor %}
     }
@@ -25,10 +26,10 @@ namespace {{ config.namespace }}
     public static class {{CLASS_NAME}}Extension
     {
 {%- for field in CLASS_FIELDS %}
-        /// <inheritdoc cref="{{ELEMENT_NAME}}.{{ field.name }}"/>
+        /// <inheritdoc cref="{{ CLASS_NAME }}Element.{{ field.name }}"/>
         public static {{ field.typing }} {{ field.getter }}(this {{CLASS_NAME}} self)
         {
-            return {{ config.manager_name }}.Instance.{{ TABLE_NAME }}.{{ ELEMENT_GETTER }}(({{ ID_TYPE }}) self)!.{{ field.name }};
+            return {{ config.manager_name }}.Instance.{{ TABLE_NAME }}.GetElement(({{ ID_TYPE }}) self)!.{{ field.name }};
         }
 {%- endfor %}
     }
@@ -37,16 +38,16 @@ namespace {{ config.namespace }}
     public partial class {{ TABLE_NAME }}
     {
         [DataMember]
-        public readonly Dictionary<{{ ID_TYPE }}, {{ELEMENT_NAME}}> dict = new();
+        public readonly Dictionary<{{ ID_TYPE }}, {{ CLASS_NAME }}Element> dict = new();
 
-        public {{ELEMENT_NAME}} {{ ELEMENT_GETTER }}({{ ID_TYPE }} {{ KEY }})
+        public {{ CLASS_NAME }}Element GetElement({{ ID_TYPE }} {{ KEY }})
         {
             return dict.TryGetValue({{ KEY }}, out var item) ? item : null;
         }
     }
 
     [DataContract, Serializable]
-    public partial class {{ELEMENT_NAME}}
+    public partial class {{ CLASS_NAME }}Element
     {
 {%- for field in CLASS_FIELDS %}
         /// <summary>
@@ -99,7 +100,7 @@ namespace {{ config.namespace }}
             var count = r.ReadUInt32();
             for (var i = 0; i < count; i++)
             {
-                var item = new {{ELEMENT_NAME}}();
+                var item = new {{ CLASS_NAME }}Element();
                 item.BinaryRead(r);
                 dict[item.{{ KEY }}] = item;
             }
@@ -116,7 +117,7 @@ namespace {{ config.namespace }}
         }
     }
 
-    public partial class {{ELEMENT_NAME}} : IBinarySupport
+    public partial class {{ CLASS_NAME }}Element : IBinarySupport
     {
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
@@ -165,7 +166,7 @@ namespace {{ config.namespace }}
         }
     }
 
-    partial class {{ELEMENT_NAME}} : ICloneable
+    partial class {{ CLASS_NAME }}Element : ICloneable
     {
         public object Clone()
         {

@@ -15,7 +15,6 @@ impl Default for UnityCodegen {
             namespace: "DataTable.Generated".to_string(),
             manager_name: "DataTableManager".to_string(),
             suffix_table: "Table".to_string(),
-            suffix_element: "Element".to_string(),
             binary: Default::default(),
             support_clone: true,
             legacy_using: false,
@@ -58,7 +57,6 @@ impl<'de> Visitor<'de> for UnityCodegen {
                 "manager_name" | "manager" => read_map_next_value(&mut map, |v| self.manager_name = v),
                 "namespace" => read_map_next_value(&mut map, |v| self.namespace = v),
                 //
-                "element_suffix" | "suffix_element" | "element" => read_map_next_value(&mut map, |v| self.suffix_element = v),
                 "table_suffix" | "suffix_table" | "table" => read_map_next_value(&mut map, |v| self.suffix_table = v),
                 "support_clone" => read_map_next_value(&mut map, |v| self.support_clone = v),
                 // legacy

@@ -19,8 +19,6 @@ pub struct UnityCodegen {
     pub manager_name: String,
     /// 生成的表格名的后缀
     pub suffix_table: String,
-    /// 用于生成的元素名后缀
-    pub suffix_element: String,
     /// 支持 `IClonable` 接口
     pub support_clone: bool,
     /// 转译 `using` 语法

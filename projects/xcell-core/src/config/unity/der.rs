@@ -10,9 +10,11 @@ impl Default for UnityCodegen {
     fn default() -> Self {
         Self {
             enable: false,
+            version: "1.0.0".to_string(),
             project: "../".to_string(),
             output: "Assets/Scripts/DataTable/Generated".to_string(),
             namespace: "DataTable.Generated".to_string(),
+            instance_name: "instance".to_string(),
             manager_name: "DataTableManager".to_string(),
             suffix_table: "Table".to_string(),
             binary: Default::default(),
@@ -52,9 +54,11 @@ impl<'de> Visitor<'de> for UnityCodegen {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
                 "enable" => read_map_next_value(&mut map, |v| self.enable = v),
+                "version" => read_map_next_value(&mut map, |v| self.version = v),
                 "project" => read_map_next_value(&mut map, |v| self.project = v),
                 "output" => read_map_next_value(&mut map, |v| self.output = v),
                 "manager_name" | "manager" => read_map_next_value(&mut map, |v| self.manager_name = v),
+                "instance_name" | "instance" => read_map_next_value(&mut map, |v| self.instance_name = v),
                 "namespace" => read_map_next_value(&mut map, |v| self.namespace = v),
                 //
                 "table_suffix" | "suffix_table" | "table" => read_map_next_value(&mut map, |v| self.suffix_table = v),

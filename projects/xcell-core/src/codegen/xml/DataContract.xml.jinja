@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<{{ table_name }} xmlns="http://schemas.datacontract.org/2004/07/{{ namespace }}">
+	<elements>
+{%- for item in items %}
+		<{{ class_name }}Element>
+	{%- for field in item.fields %}
+			<{{ field.name }}>{{ field.data }}</{{ field.name }}>
+		{%- if field.is_vector %}
+			{%- for item in field.items %}
+                <a:{{ item.type }}>{{ item.name }}</a:{{ item.type }}>
+			{%- endfor %}
+            </{{ field.name }}>
+        {%- else %}
+            <{{ field.name }} xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+        {%- endif %}
+	{%- endfor %}
+		</{{ class_name }}Element>
+{%- endfor %}
+	</elements>
+</{{ table_name }}>

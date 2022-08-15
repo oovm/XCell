@@ -7,6 +7,8 @@ mod ser;
 pub struct UnityCodegen {
     /// 是否要生成 unity 代码
     pub enable: bool,
+    /// 输出版本号
+    pub version: String,
     /// unity 的工作目录, 建议使用相对路径
     ///
     /// 有 Assets 文件夹的那个
@@ -16,7 +18,7 @@ pub struct UnityCodegen {
     /// 生成的代码的命名空间
     pub namespace: String,
     /// 生成的代码的命名空间
-    pub instance: String,
+    pub instance_name: String,
     /// 生成的管理器的名称
     pub manager_name: String,
     /// 生成的表格名的后缀

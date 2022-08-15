@@ -20,7 +20,7 @@ namespace {{ config.namespace }}
         /// 配置表的版本号
         /// </summary>
         /// <remarks>手动配置</remarks>
-        public const string TableVersion = "{{ version }}";
+        public const string TableVersion = "{{ config.version }}";
 
         /// <summary>
         /// 配置表的最后修改时间
@@ -29,7 +29,7 @@ namespace {{ config.namespace }}
         public DateTime TableEditTime = {{ edit_time }};
 
         private static readonly Lazy<{{ config.manager_name }}> singleton = new(() => new {{ config.manager_name }}());
-        public static {{ config.manager_name }} {{ config.instance }} => singleton.Value;
+        public static {{ config.manager_name }} {{ config.instance_name }} => singleton.Value;
 {% for table in tables %}
         private {{ table.type }} {{ table.private }};
         /// <inheritdoc cref="{{config.namespace}}.{{ table.type }}"/>

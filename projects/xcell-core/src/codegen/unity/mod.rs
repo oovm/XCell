@@ -7,7 +7,6 @@ use super::*;
 #[derive(Serialize)]
 pub struct UnityManagerWriter {
     compiler_version: &'static str,
-    version: String,
     edit_time: String,
     config: UnityCodegen,
     tables: Vec<CSharpTable>,
@@ -16,7 +15,6 @@ pub struct UnityManagerWriter {
 impl UnityManagerWriter {
     pub fn new(table: &TableMerged, unity: &UnityCodegen) -> Self {
         Self {
-            version: "0.0.0".to_string(),
             compiler_version: env!("CARGO_PKG_VERSION"),
             edit_time: XCellValue::csharp_now(),
             config: unity.clone(),

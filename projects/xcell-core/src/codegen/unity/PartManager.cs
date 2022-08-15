@@ -20,26 +20,25 @@ namespace {{ config.namespace }}
         /// 配置表的版本号
         /// </summary>
         /// <remarks>手动配置</remarks>
-        public const string TableVersion = "0.0.1";
+        public const string TableVersion = "{{ version }}";
 
         /// <summary>
         /// 配置表的最后修改时间
         /// </summary>
         /// <remarks>自动生成</remarks>
-        public DateTime TableEditTime = new DateTime(2020, 1, 1, 0, 0, 0);
+        public DateTime TableEditTime = {{ edit_time }};
 
         private static readonly Lazy<{{ config.manager_name }}> singleton = new(() => new {{ config.manager_name }}());
-        public static {{ config.manager_name }} Instance => singleton.Value;
-
+        public static {{ config.manager_name }} {{ config.instance }} => singleton.Value;
 {% for table in tables %}
-        private {{ table.name }} {{ table.private }};
-        /// <inheritdoc cref="{{config.namespace}}.{{ table.name }}"/>
-        public {{ table.name }} {{ table.name }}
+        private {{ table.type }} {{ table.private }};
+        /// <inheritdoc cref="{{config.namespace}}.{{ table.type }}"/>
+        public {{ table.type }} {{ table.public }}
         {
 {%- if config.legacy_null_null %}
-            get { return {{ table.private }} != null ? {{ table.private }} : new {{ table.name }}(); }
+            get { return {{ table.private }} != null ? {{ table.private }} : new {{ table.type }}(); }
 {% else %}
-            get => {{ table.private }} ?? new {{ table.name }}();
+            get => {{ table.private }} ?? new {{ table.type }}();
 {%- endif %}
             set => {{ table.private }} = value;
         }
@@ -48,7 +47,7 @@ namespace {{ config.namespace }}
         public void LoadAll()
         {
 {%- for table in tables %}
-			{{ table.private }} = new {{ table.name }}();
+			{{ table.private }} = new {{ table.type }}();
 {%- endfor %}
         }
 

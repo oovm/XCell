@@ -5,7 +5,7 @@ use std::{
 };
 
 use convert_case::{Case, Casing};
-use itertools::Itertools;
+
 use serde::Serialize;
 use tera::{Context, Tera};
 

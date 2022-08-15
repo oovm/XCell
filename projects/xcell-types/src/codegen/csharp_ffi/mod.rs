@@ -1,11 +1,12 @@
+use itertools::Itertools;
 use serde::Serialize;
+
+use xcell_errors::for_3rd::{Datelike, Timelike, Utc, Zero};
 
 use crate::{
     ArrayDescription, ArrayKind, BooleanDescription, ColorDescription, DecimalDescription, DecimalKind, IntegerDescription,
     IntegerKind, StringDescription, TimeDescription, XCellTyped, XCellValue,
 };
-use itertools::Itertools;
-use xcell_errors::for_3rd::{Datelike, Timelike, Zero};
 
 mod default;
 
@@ -25,7 +26,18 @@ pub struct CSharpWriter {
 }
 
 impl XCellValue {
-    pub fn csharp() {}
+    pub fn csharp_now() -> String {
+        let now = Utc::now();
+        format!(
+            "new DateTime({year}, {month}, {day}, {hour}, {minute}, {second})",
+            year = now.year(),
+            month = now.month(),
+            day = now.day(),
+            hour = now.hour(),
+            minute = now.minute(),
+            second = now.second()
+        )
+    }
 }
 
 impl XCellTyped {

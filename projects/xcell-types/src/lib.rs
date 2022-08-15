@@ -12,6 +12,7 @@ pub use self::{
     value::{color::ColorDescription, time::TimeDescription, XCellValue},
     vector::VectorDescription,
 };
+pub use xcell_errors::for_3rd::DateTime;
 
 pub(crate) mod utils;
 

@@ -1,6 +1,38 @@
+use xcell_types::XCellValue;
+
 use crate::{CSharpBinaryWriter, DataContractWriter};
 
 use super::*;
+
+#[derive(Serialize)]
+pub struct UnityManagerWriter {
+    compiler_version: &'static str,
+    version: String,
+    edit_time: String,
+    config: UnityCodegen,
+    tables: Vec<CSharpTable>,
+}
+
+impl UnityManagerWriter {
+    pub fn new(table: &TableMerged, unity: &UnityCodegen) -> Self {
+        Self {
+            version: "0.0.0".to_string(),
+            compiler_version: env!("CARGO_PKG_VERSION"),
+            edit_time: XCellValue::csharp_now(),
+            config: unity.clone(),
+            tables: table
+                .table_names()
+                .into_iter()
+                .map(|name| {
+                    let typing = format!("{}{}", name, unity.suffix_table);
+                    let public = typing.to_case(Case::Camel);
+                    let private = format!("_{}", typing.to_case(Case::Snake));
+                    CSharpTable { r#type: typing, public, private }
+                })
+                .collect(),
+        }
+    }
+}
 
 impl UnityCodegen {
     pub fn ensure_path(&self, root: &Path) -> XResult<()> {
@@ -17,7 +49,8 @@ impl UnityCodegen {
     }
     pub fn write_manager(&self, table: &TableMerged, root: &Path) -> XResult<()> {
         let path = self.unity_manager_path(root)?;
-        tera_render(include_str!("PartManager.cs"), &self.make_manager(table), &path, "PartManager.cs")?;
+        let ctx = Context::from_serialize(UnityManagerWriter::new(table, self))?;
+        tera_render(include_str!("PartManager.cs"), &ctx, &path, "PartManager.cs")?;
         Ok(())
     }
     pub fn write_class(&self, table: &XCellTable, root: &Path) -> XResult<()> {
@@ -58,24 +91,6 @@ impl UnityCodegen {
         ctx.insert("enumerate_fields", &table.data.make_enum_field());
         ctx
     }
-    fn make_manager(&self, table: &TableMerged) -> Context {
-        let mut ctx = Context::new();
-        ctx.insert("VERSION", env!("CARGO_PKG_VERSION"));
-        ctx.insert("config", &self);
-        ctx.insert(
-            "tables",
-            &table
-                .table_names()
-                .into_iter()
-                .map(|name| {
-                    let name = format!("{}{}", name, self.suffix_table);
-                    let private = format!("_{}", name.to_case(Case::Snake));
-                    CSharpTable { name, private }
-                })
-                .collect_vec(),
-        );
-        ctx
-    }
 }
 
 #[derive(Serialize)]
@@ -98,7 +113,8 @@ struct CSharpEnum {
 }
 #[derive(Serialize)]
 struct CSharpTable {
-    name: String,
+    r#type: String,
+    public: String,
     private: String,
 }
 

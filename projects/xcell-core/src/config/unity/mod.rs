@@ -15,6 +15,8 @@ pub struct UnityCodegen {
     pub output: String,
     /// 生成的代码的命名空间
     pub namespace: String,
+    /// 生成的代码的命名空间
+    pub instance: String,
     /// 生成的管理器的名称
     pub manager_name: String,
     /// 生成的表格名的后缀

@@ -29,7 +29,7 @@ namespace {{ config.namespace }}
         /// <inheritdoc cref="{{ CLASS_NAME }}Element.{{ field.name }}"/>
         public static {{ field.typing }} {{ field.getter }}(this {{CLASS_NAME}} self)
         {
-            return {{ config.manager_name }}.Instance.{{ TABLE_NAME }}.GetElement(({{ ID_TYPE }}) self)!.{{ field.name }};
+            return {{ config.manager_name }}.{{ config.instance }}.{{ TABLE_NAME }}.GetElement(({{ ID_TYPE }}) self)!.{{ field.name }};
         }
 {%- endfor %}
     }
@@ -37,8 +37,10 @@ namespace {{ config.namespace }}
     [DataContract, Serializable]
     public partial class {{ TABLE_NAME }}
     {
-        [DataMember]
         public readonly Dictionary<{{ ID_TYPE }}, {{ CLASS_NAME }}Element> dict = new();
+
+        [DataMember]
+        public readonly List<{{ CLASS_NAME }}Element> elements = new();
 
         public {{ CLASS_NAME }}Element GetElement({{ ID_TYPE }} {{ KEY }})
         {
@@ -96,12 +98,14 @@ namespace {{ config.namespace }}
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
+            elements.Clear();
             dict.Clear();
             var count = r.ReadUInt32();
             for (var i = 0; i < count; i++)
             {
                 var item = new {{ CLASS_NAME }}Element();
                 item.BinaryRead(r);
+                elements.Add(item);
                 dict[item.{{ KEY }}] = item;
             }
         }

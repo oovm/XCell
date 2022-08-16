@@ -37,7 +37,7 @@ namespace {{ config.namespace }}
         {
 {%- if config.legacy_null_null %}
             get { return {{ table.private }} != null ? {{ table.private }} : new {{ table.type }}(); }
-{% else %}
+{%- else %}
             get => {{ table.private }} ?? new {{ table.type }}();
 {%- endif %}
             set => {{ table.private }} = value;

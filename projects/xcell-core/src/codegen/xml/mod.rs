@@ -14,6 +14,7 @@ pub struct DataContractWriter {
 
 #[derive(Serialize)]
 pub struct XmlItem {
+    is_vector: bool,
     fields: Vec<XmlField>,
 }
 
@@ -34,14 +35,14 @@ impl DataContractWriter {
     }
     pub fn write_xml(&self, output: &Path) -> XResult<()> {
         let ctx = Context::from_serialize(self)?;
-        tera_render(include_str!("DataContract.xml.jinja"), &ctx, &output, "DataContract.xml.jinja")?;
+        tera_render(include_str!("DataContract.xml.jinja"), &ctx, output, "DataContract.xml")?;
         Ok(())
     }
 }
 
 impl XCellTable {
     fn as_xml(&self) -> Vec<XmlItem> {
-        self.data.rows().iter().map(|v| XmlItem { fields: v.as_xml(&self.name) }).collect()
+        self.data.rows().iter().map(|v| XmlItem { is_vector: false, fields: v.as_xml(&self.name) }).collect()
     }
 }
 

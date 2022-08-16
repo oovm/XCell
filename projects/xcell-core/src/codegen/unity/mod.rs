@@ -1,6 +1,6 @@
 use xcell_types::XCellValue;
 
-use crate::{CSharpBinaryWriter, DataContractWriter};
+use crate::{BinaryWriter, DataContractWriter};
 
 use super::*;
 
@@ -62,7 +62,7 @@ impl UnityCodegen {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_binary_path(root, &file)?;
         log::info!("写入 {}", self.unity_bin_relative(&file));
-        let cg = CSharpBinaryWriter {};
+        let cg = BinaryWriter {};
         cg.write_binary(table, &path)
     }
     pub fn write_data_contract(&self, table: &XCellTable, root: &Path) -> XResult<()> {

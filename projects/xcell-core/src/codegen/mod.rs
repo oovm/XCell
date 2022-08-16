@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fs::{create_dir_all, File},
     io::Write,
     path::Path,
@@ -7,6 +8,7 @@ use std::{
 use convert_case::{Case, Casing};
 
 use serde::Serialize;
+use serde_json::Value;
 use tera::{Context, Tera};
 
 use xcell_errors::XResult;
@@ -38,6 +40,7 @@ fn tera_render(template: &str, slots: &Context, output: &Path, name: &str) -> XR
     let mut tera = Tera::default();
     // tera.autoescape_on(vec![]);
     tera.add_raw_template(name, template).unwrap();
+    tera.register_filter("camel_case", camel_case);
     let result = tera.render(name, slots).unwrap();
     file.write_all(result.as_bytes())?;
     Ok(result)
@@ -45,4 +48,11 @@ fn tera_render(template: &str, slots: &Context, output: &Path, name: &str) -> XR
 
 pub fn write_newline(f: &mut impl Write) -> std::io::Result<usize> {
     f.write(b"\n")
+}
+
+fn camel_case(input: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
+    match input {
+        Value::String(v) => Ok(Value::String(v.to_case(Case::Camel))),
+        _ => panic!(),
+    }
 }

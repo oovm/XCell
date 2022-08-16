@@ -29,7 +29,7 @@ namespace {{ config.namespace }}
         /// <inheritdoc cref="{{ CLASS_NAME }}Element.{{ field.name }}"/>
         public static {{ field.typing }} {{ field.getter }}(this {{CLASS_NAME}} self)
         {
-            return {{ config.manager_name }}.{{ config.instance_name }}.{{ TABLE_NAME }}.GetElement(({{ ID_TYPE }}) self)!.{{ field.name }};
+            return {{ config.manager_name }}.{{ config.instance_name }}.{{ TABLE_NAME | camel_case }}.GetElement(({{ ID_TYPE }}) self)!.{{ field.name }};
         }
 {%- endfor %}
     }
@@ -37,6 +37,7 @@ namespace {{ config.namespace }}
     [DataContract, Serializable]
     public partial class {{ TABLE_NAME }}
     {
+		[NonSerialized]
         public readonly Dictionary<{{ ID_TYPE }}, {{ CLASS_NAME }}Element> dict = new();
 
         [DataMember]

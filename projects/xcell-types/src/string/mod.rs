@@ -1,4 +1,4 @@
-use std::{any::type_name, fmt::Formatter};
+use std::{any::type_name, collections::BTreeSet, fmt::Formatter};
 
 use serde::{
     de::{MapAccess, Visitor},
@@ -15,6 +15,7 @@ mod der;
 
 #[derive(Debug, Default, Clone, Serialize)]
 pub struct StringDescription {
+    pub patterns: BTreeSet<String>,
     pub default: String,
 }
 

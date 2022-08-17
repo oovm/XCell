@@ -23,6 +23,6 @@ impl VectorDescription {
         Ok(XCellValue::Vector(out))
     }
     pub fn split(&self, s: &str) -> Vec<&str> {
-        s.split(|c| self.delimiter.contains(c)).map(|s| s.trim()).collect()
+        s.split(|c: char| self.delimiter.contains(&c)).map(|s| s.trim()).collect()
     }
 }

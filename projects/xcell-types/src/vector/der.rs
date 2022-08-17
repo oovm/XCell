@@ -1,5 +1,13 @@
 use super::*;
-use crate::default_deserialize;
+use crate::{default_deserialize, utils::push_delimiter};
+
+impl Default for VectorDescription {
+    fn default() -> Self {
+        let mut delimiter = BTreeSet::default();
+        push_delimiter(&mut delimiter, ";,");
+        Self { delimiter, suffix: Default::default(), typing: Default::default(), default: vec![] }
+    }
+}
 
 default_deserialize![VectorDescription];
 
@@ -15,14 +23,14 @@ impl<'de> Visitor<'de> for VectorDescription {
     {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
-                "delimiter" => read_map_next_value(&mut map, |e: String| {
-                    self.delimiter = BTreeSet::from_iter(e.chars().filter(|c| !c.is_ascii_whitespace()))
-                }),
+                "delimiter" => read_map_next_value(&mut map, |e: String| self.add_delimiter(&e)),
                 "suffix" => read_map_next_value(&mut map, |e: OneOrMany<String>| {
                     let mut suffix = BTreeSet::default();
                     suffix.insert("[]".to_string());
                     suffix.extend(e.unwrap().into_iter());
-                    self.suffix = suffix
+                    for e in e.unwrap() {
+                        self.add_suffix(&e)
+                    }
                 }),
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
             }

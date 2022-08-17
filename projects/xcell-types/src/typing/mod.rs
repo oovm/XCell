@@ -1,19 +1,8 @@
-use std::{
-    any::type_name,
-    collections::BTreeSet,
-    fmt::{Debug, Display, Formatter},
-};
+use std::fmt::{Debug, Display, Formatter};
 
-use serde::{
-    de::{MapAccess, Visitor},
-    Deserialize, Deserializer, Serialize,
-};
+use serde::{Deserialize, Serialize};
 
-use serde_types::OneOrMany;
-use xcell_errors::{
-    for_3rd::{read_map_next_extra, read_map_next_value, DataType},
-    XResult,
-};
+use xcell_errors::{for_3rd::DataType, XResult};
 
 pub use crate::{
     array::{ArrayDescription, ArrayKind},
@@ -43,28 +32,9 @@ pub enum XCellTyped {
     Vector(Box<VectorDescription>),
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize)]
-pub struct ExtraTypes {
-    pub string: BTreeSet<String>,
-    pub vector: BTreeSet<String>,
-}
-
-impl ExtraTypes {
-    pub fn extract_string<'a>(&self, typing: &'a str) -> Option<&'a str> {
-        for v in &self.string {
-            if typing.eq_ignore_ascii_case(v) {
-                return Some(typing);
-            }
-        }
-        None
-    }
-    pub fn extract_vector<'a>(&self, typing: &'a str) -> Option<&'a str> {
-        for v in &self.vector {
-            if typing.ends_with(v) {
-                return Some(typing.trim_end_matches(v));
-            }
-        }
-        None
+impl Default for XCellTyped {
+    fn default() -> Self {
+        Self::Boolean(Box::default())
     }
 }
 

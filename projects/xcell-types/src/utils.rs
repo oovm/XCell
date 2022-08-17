@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use xcell_errors::{for_3rd::DataType, XError, XErrorKind, XResult};
 
 #[macro_export]
@@ -30,4 +31,8 @@ where
 {
     let kind = XErrorKind::SyntaxError { message: msg.into() };
     Err(XError::new(kind))
+}
+
+pub fn push_delimiter(set: &mut BTreeSet<char>, new: &str) {
+    set.extend(new.chars().filter(|c| !c.is_ascii_whitespace()))
 }

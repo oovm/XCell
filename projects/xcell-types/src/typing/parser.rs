@@ -1,7 +1,7 @@
 use super::*;
 
 impl XCellTyped {
-    pub fn parse(input: &str) -> Self {
+    pub fn parse(input: &str, info: &TypeMetaInfo) -> Self {
         let normed = Self::norm_typing(input);
 
         match normed.as_str() {
@@ -30,10 +30,10 @@ impl XCellTyped {
             "v4" | "vec4" => ArrayDescription::new(ArrayKind::Vector4).into(),
             "q4" | "quaternion" => ArrayDescription::new(ArrayKind::Quaternion4).into(),
             // slow path
-            _ => XCellTyped::parse_complex(input),
+            _ => XCellTyped::parse_complex(input, info),
         }
     }
-    fn parse_complex(input: &str) -> Self {
+    fn parse_complex(input: &str, info: &TypeMetaInfo) -> Self {
         if extra.extract_string(input).is_some() {
             return StringDescription::default().into();
         }

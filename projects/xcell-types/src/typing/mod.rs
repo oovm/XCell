@@ -18,6 +18,20 @@ use crate::{BooleanDescription, XCellValue};
 mod der;
 mod display;
 mod parser;
+use serde::de::{MapAccess, Visitor};
+use std::{any::type_name, fmt::Write};
+use xcell_errors::for_3rd::{read_map_next_extra, read_map_next_key_lowercase, read_map_next_value};
+use xcell_types::{ExtraTypes, StringDescription, VectorDescription};
+
+mod der;
+mod ser;
+
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct TypeMetaInfo {
+    pub boolean: BooleanDescription,
+    pub string: StringDescription,
+    pub vector: VectorDescription,
+}
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum XCellTyped {

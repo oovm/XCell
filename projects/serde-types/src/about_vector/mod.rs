@@ -12,6 +12,7 @@ use serde::{
 use itertools::Itertools;
 
 mod der;
+mod iter;
 mod ser;
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Hash)]

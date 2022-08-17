@@ -24,14 +24,9 @@ impl<'de> Visitor<'de> for VectorDescription {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
                 "delimiter" => read_map_next_value(&mut map, |e: String| self.add_delimiter(&e)),
-                "suffix" => read_map_next_value(&mut map, |e: OneOrMany<String>| {
-                    let mut suffix = BTreeSet::default();
-                    suffix.insert("[]".to_string());
-                    suffix.extend(e.unwrap().into_iter());
-                    for e in e.unwrap() {
-                        self.add_suffix(&e)
-                    }
-                }),
+                "suffix" => {
+                    read_map_next_value(&mut map, |e: OneOrMany<String>| e.into_iter().for_each(|s| self.add_suffix(s)))
+                }
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
             }
         }

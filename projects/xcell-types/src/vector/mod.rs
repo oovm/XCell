@@ -20,7 +20,7 @@ mod parse_cell;
 pub struct VectorDescription {
     delimiter: BTreeSet<char>,
     suffix: BTreeSet<String>,
-    pub typing: XCellTyped,
+    typing: XCellTyped,
     pub default: Vec<XCellValue>,
 }
 
@@ -28,10 +28,35 @@ impl VectorDescription {
     pub fn add_delimiter(&mut self, set: &str) {
         push_delimiter(&mut self.delimiter, set)
     }
-    pub fn add_suffix<S>(&mut self, suffix: &str)
+    pub fn add_suffix<S>(&mut self, suffix: S)
     where
         S: Into<String>,
     {
         self.suffix.insert(suffix.into());
+    }
+    pub fn matches_rest<'i>(&self, s: &'i str) -> Option<&'i str> {
+        let normed = s.to_ascii_lowercase();
+        for suffix in &self.suffix {
+            if normed.ends_with(suffix) {
+                return Some(&s[0..s.len() - suffix.len()]);
+            }
+        }
+        None
+    }
+    pub fn get_type(&self) -> &XCellTyped {
+        &self.typing
+    }
+    pub fn set_type<T>(&mut self, typing: T)
+    where
+        T: Into<XCellTyped>,
+    {
+        self.typing = typing.into()
+    }
+    pub fn with_type<T>(mut self, typing: T) -> Self
+    where
+        T: Into<XCellTyped>,
+    {
+        self.typing = typing.into();
+        self
     }
 }

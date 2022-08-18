@@ -20,7 +20,7 @@ namespace {{ config.namespace }}
         /// 配置表的版本号
         /// </summary>
         /// <remarks>手动配置</remarks>
-        public const string TableVersion = "{{ config.version }}";
+        public const string TableVersion = "{{ config.table_version }}";
 
         /// <summary>
         /// 配置表的最后修改时间

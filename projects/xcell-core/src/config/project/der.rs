@@ -28,10 +28,7 @@ impl<'de> Visitor<'de> for ProjectConfig {
     {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
-                "version" => read_map_next_value(&mut map, |v: String| {
-                    self.version = v.clone();
-                    self.unity.version = v;
-                }),
+                "version" => read_map_next_value(&mut map, |v: String| self.version = v.clone()),
                 "line_mode" | "line" => read_map_next_value(&mut map, |v| self.line = v),
                 "exclude" => read_map_next_value(&mut map, |v: String| self.exclude = v.trim().to_string()),
                 "include" => read_map_next_value(&mut map, |v: String| self.include = v.trim().to_string()),

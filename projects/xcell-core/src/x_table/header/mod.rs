@@ -5,7 +5,6 @@ use crate::{
 
 use super::*;
 
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XCellHeader {
     /// 位置
@@ -19,7 +18,6 @@ pub struct XCellHeader {
     /// 字段名
     pub field_name: String,
 }
-
 
 impl XCellHeader {
     pub fn parse_cell(&self, row: &[DataType]) -> XResult<XCellValue> {
@@ -36,7 +34,7 @@ impl XCellHeader {
         }
         let line = project.line.typing.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
-        match XCellTyped::parse(cell.get_string()?, &project.typing.extra) {
+        match XCellTyped::parse(cell.get_string()?, &project.typing) {
             XCellTyped::Integer(_) => Some(XData::Dictionary(Box::default())),
             // XCellTyped::String(_) => Some(XData::String(Box::new(XDataString::default()))),
             // 默认初始化就是 String, 就不用分配了
@@ -89,7 +87,7 @@ impl XDataDictionary {
         let field_name = table.get_value((line, i as u32))?.get_string()?;
         let line = project.line.typing.saturating_sub(1) as u32;
         let field_type = table.get_value((line, i as u32))?.get_string()?;
-        let typing = XCellTyped::parse(&field_type.to_string(), &project.typing.extra);
+        let typing = XCellTyped::parse(&field_type.to_string(), &project.typing);
         let (summary, details) = read_comment_details(table, i, project.line).unwrap_or_default();
         self.headers.push(XCellHeader { summary, column: i, typing, field_name: field_name.to_string(), details });
         None
@@ -129,7 +127,7 @@ impl XDataEnumerate {
         }
         let line = project.line.typing.saturating_sub(1) as u32;
         let field_type = table.get_value((line, i as u32))?.get_string()?;
-        let typing = XCellTyped::parse(field_type, &project.typing.extra);
+        let typing = XCellTyped::parse(field_type, &project.typing);
         match &typing {
             XCellTyped::Integer(v) if set_id => {
                 self.id_type = v.kind;

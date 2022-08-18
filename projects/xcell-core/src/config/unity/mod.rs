@@ -7,8 +7,6 @@ mod ser;
 pub struct UnityCodegen {
     /// 是否要生成 unity 代码
     pub enable: bool,
-    /// 输出版本号
-    pub version: String,
     /// unity 的工作目录, 建议使用相对路径
     ///
     /// 有 Assets 文件夹的那个

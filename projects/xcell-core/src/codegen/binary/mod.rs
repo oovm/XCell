@@ -4,6 +4,12 @@ pub struct BinaryWriter {
     bit7_encode: bool,
 }
 
+impl Default for BinaryWriter {
+    fn default() -> Self {
+        Self { bit7_encode: false }
+    }
+}
+
 impl BinaryWriter {
     pub fn write_binary(&self, table: &XCellTable, output: &Path) -> XResult<()> {
         let mut file = File::create(output)?;

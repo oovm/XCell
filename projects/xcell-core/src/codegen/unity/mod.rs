@@ -7,15 +7,17 @@ use super::*;
 #[derive(Serialize)]
 pub struct UnityManagerWriter {
     compiler_version: &'static str,
+    table_version: String,
     edit_time: String,
     config: UnityCodegen,
     tables: Vec<CSharpTable>,
 }
 
 impl UnityManagerWriter {
-    pub fn new(table: &TableMerged, unity: &UnityCodegen) -> Self {
+    pub fn new(table: &TableMerged, unity: &UnityCodegen, version: &str) -> Self {
         Self {
             compiler_version: env!("CARGO_PKG_VERSION"),
+            table_version: version.to_string(),
             edit_time: XCellValue::csharp_now(),
             config: unity.clone(),
             tables: table
@@ -45,9 +47,9 @@ impl UnityCodegen {
         }
         Ok(())
     }
-    pub fn write_manager(&self, table: &TableMerged, root: &Path) -> XResult<()> {
+    pub fn write_manager(&self, table: &TableMerged, root: &Path, version: &str) -> XResult<()> {
         let path = self.unity_manager_path(root)?;
-        let ctx = Context::from_serialize(UnityManagerWriter::new(table, self))?;
+        let ctx = Context::from_serialize(UnityManagerWriter::new(table, self, version))?;
         tera_render(include_str!("PartManager.cs"), &ctx, &path, "PartManager.cs")?;
         Ok(())
     }
@@ -62,7 +64,7 @@ impl UnityCodegen {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_binary_path(root, &file)?;
         log::info!("写入 {}", self.unity_bin_relative(&file));
-        let cg = BinaryWriter {};
+        let cg = BinaryWriter::default();
         cg.write_binary(table, &path)
     }
     pub fn write_data_contract(&self, table: &XCellTable, root: &Path) -> XResult<()> {

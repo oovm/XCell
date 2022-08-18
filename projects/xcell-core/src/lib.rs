@@ -10,7 +10,7 @@ pub use xcell_types::*;
 
 pub use self::{
     codegen::{binary::BinaryWriter, xml::DataContractWriter, CsvCodegen},
-    config::{ProjectConfig, UnityBinaryConfig, UnityCodegen, WorkspaceManager, PROJECT_CONFIG},
+    config::{unity::UnityCodegen, ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG},
     x_table::{data::*, header::XCellHeader, table::XCellTable},
 };
 

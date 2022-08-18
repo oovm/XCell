@@ -4,6 +4,7 @@ use serde::{
     de::{MapAccess, Visitor},
     Deserialize, Deserializer, Serialize,
 };
+
 use xcell_errors::{
     for_3rd::{read_map_next_extra, read_map_next_value, DataType},
     XResult,
@@ -15,7 +16,7 @@ mod der;
 
 #[derive(Debug, Default, Clone, Serialize)]
 pub struct StringDescription {
-    pub patterns: BTreeSet<String>,
+    patterns: BTreeSet<String>,
     pub default: String,
 }
 
@@ -26,6 +27,9 @@ impl From<StringDescription> for XCellTyped {
 }
 
 impl StringDescription {
+    pub fn matches_type(&self, s: &str) -> bool {
+        self.patterns.contains(s)
+    }
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         self.parse_value(cell).map(XCellValue::String)
     }

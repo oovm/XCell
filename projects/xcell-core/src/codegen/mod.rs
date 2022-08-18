@@ -17,10 +17,7 @@ use xcell_types::{
     ByteOrder, StreamWriter,
 };
 
-use crate::{
-    config::{TableMerged, UnityCodegen},
-    XCellHeader, XCellTable, XData,
-};
+use crate::{config::TableMerged, UnityCodegen, XCellHeader, XCellTable, XData};
 
 pub mod binary;
 pub mod readable;

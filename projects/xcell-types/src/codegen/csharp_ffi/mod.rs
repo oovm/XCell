@@ -51,7 +51,7 @@ impl XCellTyped {
             XCellTyped::Color(_) => "Color32".to_string(),
             XCellTyped::Enumerate(v) => v.typing.to_owned(),
             XCellTyped::Array(v) => v.as_csharp_type().to_string(),
-            XCellTyped::Vector(v) => format!("List<{}>", v.typing.as_csharp_type()),
+            XCellTyped::Vector(v) => format!("List<{}>", v.get_type().as_csharp_type()),
         }
     }
 }

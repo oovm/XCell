@@ -154,14 +154,14 @@ impl XCellTyped {
                     properties: vec!["".to_string()],
                 };
             }
-            XCellTyped::Vector(v) => return CSharpWriter { is_vector: true, ..v.typing.make_cs_binary_writer(field) },
+            XCellTyped::Vector(v) => return CSharpWriter { is_vector: true, ..v.get_type().make_cs_binary_writer(field) },
             _ => vec!["".to_string()],
         };
         CSharpWriter { is_vector: false, field: field.to_string(), cast: "".to_string(), properties }
     }
     pub fn make_cs_binary_reader(&self, field: &str) -> CSharpReader {
         match self {
-            XCellTyped::Vector(v) => CSharpReader { is_vector: true, ..v.typing.make_cs_binary_reader(field) },
+            XCellTyped::Vector(v) => CSharpReader { is_vector: true, ..v.get_type().make_cs_binary_reader(field) },
             _ => CSharpReader { is_vector: false, function: self.as_csharp_reader(), field: field.to_string() },
         }
     }

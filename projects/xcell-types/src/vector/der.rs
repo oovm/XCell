@@ -5,7 +5,9 @@ impl Default for VectorDescription {
     fn default() -> Self {
         let mut delimiter = BTreeSet::default();
         push_delimiter(&mut delimiter, ";,");
-        Self { delimiter, suffix: Default::default(), typing: Default::default(), default: vec![] }
+        let mut suffix = BTreeSet::default();
+        suffix.insert("[]".to_string());
+        Self { delimiter, suffix, typing: Default::default(), default: vec![] }
     }
 }
 

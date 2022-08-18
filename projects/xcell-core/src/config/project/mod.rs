@@ -1,8 +1,8 @@
 use toml::from_str;
 
-use crate::config::table::TableLineMode;
-
 use super::*;
+use crate::config::table::TableLineMode;
+use xcell_types::TypeMetaInfo;
 
 #[derive(Clone, Debug)]
 pub struct ProjectConfig {

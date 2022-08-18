@@ -19,9 +19,10 @@ use xcell_errors::{
     },
     XError, XResult,
 };
-use xcell_types::{default_deserialize, BooleanDescription, EnumerateDescription};
+use xcell_types::{default_deserialize, EnumerateDescription, TypeMetaInfo};
 
 use crate::{
+    config::unity::UnityCodegen,
     utils::{get_relative, valid_file},
     XCellTable, XData,
 };
@@ -29,14 +30,13 @@ use crate::{
 pub use self::{
     project::ProjectConfig,
     table::{TableConfig, TableLineMode},
-    typing::TypeMetaInfo,
-    unity::{UnityBinaryConfig, UnityCodegen},
+    unity::UnityBinaryConfig,
 };
 
+mod merge_rules;
 mod project;
 mod table;
-mod typing;
-mod unity;
+pub mod unity;
 
 /// 默认的全局项目设置
 pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
@@ -48,7 +48,7 @@ pub struct WorkspaceManager {
     pub enum_mapping: BTreeMap<String, EnumerateDescription>,
 }
 
-default_deserialize![ProjectConfig, TableConfig, TypeMetaInfo, TableLineMode];
+default_deserialize![ProjectConfig, TableConfig, TableLineMode];
 
 impl Debug for WorkspaceManager {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -144,26 +144,10 @@ impl WorkspaceManager {
             table.config.unity.write_binary(table, &self.config.root)?;
             table.config.unity.write_data_contract(table, &self.config.root)?;
         }
-        self.config.unity.write_manager(&self.collect_merged(), &self.config.root)?;
+        self.config.unity.write_manager(&self.collect_merged(), &self.config.root, &self.config.version)?;
         Ok(())
     }
     pub fn insert_enum_mapping(&mut self, define: EnumerateDescription) {
         self.enum_mapping.insert(define.typing.clone(), define);
-    }
-}
-
-impl WorkspaceManager {
-    pub fn collect_merged(&self) -> TableMerged {
-        TableMerged { inner: self.file_mapping.values().cloned().collect() }
-    }
-}
-
-pub struct TableMerged {
-    inner: Vec<XCellTable>,
-}
-
-impl TableMerged {
-    pub fn table_names(&self) -> Vec<String> {
-        self.inner.iter().map(|v| v.name.to_string()).collect()
     }
 }

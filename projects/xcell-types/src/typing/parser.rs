@@ -3,7 +3,6 @@ use super::*;
 impl XCellTyped {
     pub fn parse(input: &str, info: &TypeMetaInfo) -> Self {
         let normed = Self::norm_typing(input);
-
         match normed.as_str() {
             "bool" | "boolean" => BooleanDescription::new(false).into(),
             // int
@@ -30,17 +29,18 @@ impl XCellTyped {
             "v4" | "vec4" => ArrayDescription::new(ArrayKind::Vector4).into(),
             "q4" | "quaternion" => ArrayDescription::new(ArrayKind::Quaternion4).into(),
             // slow path
-            _ => XCellTyped::parse_complex(input, info),
+            _ => XCellTyped::parse_complex(input, &normed, info),
         }
     }
-    fn parse_complex(input: &str, info: &TypeMetaInfo) -> Self {
-        if extra.extract_string(input).is_some() {
-            return StringDescription::default().into();
+    fn parse_complex(raw: &str, normed: &str, info: &TypeMetaInfo) -> Self {
+        if info.matches_string(normed) {
+            return info.string.clone().into();
         }
-        if let Some(s) = extra.extract_vector(input) {
-            return VectorDescription { typing: XCellTyped::parse(s, extra), default: vec![] }.into();
+        if let Some(s) = info.matches_vector(normed) {
+            let typing = XCellTyped::parse(s, info);
+            return info.vector.clone().with_type(typing).into();
         }
-        EnumerateDescription::new(input).into()
+        EnumerateDescription::new(raw).into()
     }
     fn norm_typing(input: &str) -> String {
         let mut out = String::with_capacity(input.len());
@@ -55,5 +55,14 @@ impl XCellTyped {
             }
         }
         out
+    }
+}
+
+impl TypeMetaInfo {
+    fn matches_string(&self, s: &str) -> bool {
+        self.string.matches_type(s)
+    }
+    fn matches_vector<'i>(&self, raw: &'i str) -> Option<&'i str> {
+        return self.vector.matches_rest(raw);
     }
 }

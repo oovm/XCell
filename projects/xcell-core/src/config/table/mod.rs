@@ -1,5 +1,3 @@
-use crate::config::unity::UnityCodegen;
-
 use super::*;
 
 mod der;

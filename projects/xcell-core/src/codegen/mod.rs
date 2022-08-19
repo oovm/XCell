@@ -17,7 +17,7 @@ use xcell_types::{
     ByteOrder, StreamWriter,
 };
 
-use crate::{config::TableMerged, UnityCodegen, XCellHeader, XCellTable, XData};
+use crate::{UnityCodegen, XCellHeader, XCellTable, XData};
 
 pub mod binary;
 pub mod readable;
@@ -25,11 +25,6 @@ pub mod unity;
 pub mod xml;
 
 pub struct CsvCodegen {}
-
-// pub fn build_template(template: &str) -> Template {
-//     let db_line = Regex::new(r"(?mi)__\s+([^_]+)\s+__").unwrap();
-//     Template::new(template).with_regex(&db_line)
-// }
 
 fn tera_render(template: &str, slots: &Context, output: &Path, name: &str) -> XResult<String> {
     // log::trace!("tera_render {}", output.display());

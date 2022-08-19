@@ -33,7 +33,7 @@ pub use self::{
     unity::UnityBinaryConfig,
 };
 
-mod merge_rules;
+pub mod merge_rules;
 mod project;
 mod table;
 pub mod unity;

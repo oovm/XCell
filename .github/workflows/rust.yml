@@ -2,9 +2,9 @@ name: Rust
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, dev ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, dev ]
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
             toolchain: nightly
             override: true
             components: rustfmt, clippy
-      - name: Build
-        run: cargo build --release
-      - name: Tests
-        run: cargo test --release
+#      - name: Build
+#        run: cargo build --release
+#      - name: Tests
+#        run: cargo test --release

@@ -1,6 +1,6 @@
 use xcell_types::XCellValue;
 
-use crate::{BinaryWriter, DataContractWriter};
+use crate::{BinaryWriter, DataContractWriter, MergedTable};
 
 use super::*;
 
@@ -14,7 +14,7 @@ pub struct UnityManagerWriter {
 }
 
 impl UnityManagerWriter {
-    pub fn new(table: &TableMerged, unity: &UnityCodegen, version: &str) -> Self {
+    pub fn new(table: &MergedTable, unity: &UnityCodegen, version: &str) -> Self {
         Self {
             compiler_version: env!("CARGO_PKG_VERSION"),
             table_version: version.to_string(),
@@ -47,7 +47,7 @@ impl UnityCodegen {
         }
         Ok(())
     }
-    pub fn write_manager(&self, table: &TableMerged, root: &Path, version: &str) -> XResult<()> {
+    pub fn write_manager(&self, table: &MergedTable, root: &Path, version: &str) -> XResult<()> {
         let path = self.unity_manager_path(root)?;
         let ctx = Context::from_serialize(UnityManagerWriter::new(table, self, version))?;
         tera_render(include_str!("PartManager.cs"), &ctx, &path, "PartManager.cs")?;

@@ -19,6 +19,7 @@ impl<'de> Visitor<'de> for TypeMetaInfo {
             match key.as_str() {
                 "boolean" | "bool" => read_map_next_value(&mut map, |v| self.boolean = v),
                 "string" | "str" => read_map_next_value(&mut map, |v| self.string = v),
+                "vector" | "vec" => read_map_next_value(&mut map, |v| self.vector = v),
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), &key),
             }
         }

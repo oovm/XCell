@@ -10,7 +10,11 @@ pub use xcell_types::*;
 
 pub use self::{
     codegen::{binary::BinaryWriter, xml::DataContractWriter, CsvCodegen},
-    config::{unity::UnityCodegen, ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG},
+    config::{
+        merge_rules::{MergeRules, MergeStep, MergedTable},
+        unity::UnityCodegen,
+        ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG,
+    },
     x_table::{data::*, header::XCellHeader, table::XCellTable},
 };
 

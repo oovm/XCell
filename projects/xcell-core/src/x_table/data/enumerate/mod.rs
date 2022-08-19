@@ -109,7 +109,7 @@ impl XCellHeader {
                 *ed = v.clone();
                 Ok(())
             }
-            None => Err(XError::runtime_error(format!("未知的枚举类: {}", &ed.typing)).with_x(self.column)),
+            None => Err(XError::runtime_error(format!("未知的枚举类 `{}`", &ed.typing)).with_x(self.column)),
         }
     }
 }

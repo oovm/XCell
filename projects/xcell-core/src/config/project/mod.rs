@@ -1,7 +1,7 @@
 use toml::from_str;
 
 use super::*;
-use crate::config::table::TableLineMode;
+use crate::{config::table::TableLineMode, MergeRules};
 use xcell_types::TypeMetaInfo;
 
 #[derive(Clone, Debug)]
@@ -17,6 +17,8 @@ pub struct ProjectConfig {
     pub line: TableLineMode,
     /// 类型解析模式
     pub typing: TypeMetaInfo,
+    /// 合表模式
+    pub merge: MergeRules,
     /// Unity 生成模式
     pub unity: UnityCodegen,
 }

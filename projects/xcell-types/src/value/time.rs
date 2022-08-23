@@ -24,7 +24,7 @@ impl TimeDescription {
     fn parse_value(&self, cell: &DataType) -> XResult<DateTime> {
         match cell {
             DataType::DateTime(time) => {
-                let ntv = NaiveDateTime::from_timestamp(*time as i64, 0);
+                let ntv = NaiveDateTime::from_timestamp_opt(*time as i64, 0).unwrap_or_default();
                 let utc = Utc.from_utc_datetime(&ntv);
                 Ok(utc)
             }

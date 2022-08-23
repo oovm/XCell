@@ -13,11 +13,11 @@ edition = "2021"
 serde = "1.0.147"
 
 diagnostic = "0.4.1"
-futures = "0.3.17"
+futures = "0.3.25"
 calamine = { version = "0.19.1", optional = true, features = ["dates"] }
 tera = { version = "1.17.1", optional = true }
 toml = { version = "0.5.9", optional = true }
-serde_json = { version = "1.0.87", optional = true }
+serde_json = { version = "1.0.88", optional = true }
 async-walkdir = { version = "0.2.0", optional = true }
 notify = { version = "5.0.0", optional = true, features = ["serde"] }
 walkdir = { version = "2.3.2", optional = true }
@@ -28,7 +28,7 @@ bigdecimal = { version = "0.3.0", optional = true, features = ["serde"] }
 #decimal = { version = "2.1.0", features = ["serde"] }
 array2d = { version = "0.2.1", optional = true, features = ["serde"] }
 #ndarray = { version = "0.15.6", features = ["serde"] }
-chrono = { version = "0.4.22", optional = true, features = ["serde"] }
+chrono = { version = "0.4.23", optional = true, features = ["serde"] }
 csscolorparser = { version = "0.6.2", optional = true, features = ["serde"] }
 
 [dev-dependencies]

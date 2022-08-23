@@ -4,7 +4,7 @@ impl XCellTyped {
     pub fn parse(input: &str, info: &TypeMetaInfo) -> Self {
         let normed = Self::norm_typing(input);
         match normed.as_str() {
-            "bool" | "boolean" => BooleanDescription::new(false).into(),
+            "bool" | "boolean" => info.boolean.clone().into(),
             // int
             "byte" | "i8" => IntegerDescription::range(i8::MIN, i8::MAX, IntegerKind::Integer8).into(),
             "short" | "i16" => IntegerDescription::range(i16::MIN, i16::MAX, IntegerKind::Integer16).into(),

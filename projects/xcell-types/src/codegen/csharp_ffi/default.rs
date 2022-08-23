@@ -111,9 +111,7 @@ impl TimeDescription {
                     second = s.second()
                 )
             }
-            None => {
-                format!("new DateTime()")
-            }
+            None => "new DateTime()".to_string(),
         }
     }
 }
@@ -136,7 +134,7 @@ impl ArrayDescription {
         // }
         //
         // let [r, g, b, a] = self.default.to_rgba8();
-        format!("new ()")
+        "new ()".to_string()
     }
 }
 

@@ -14,7 +14,7 @@ use crate::{utils::syntax_error, XCellTyped, XCellValue};
 
 mod der;
 
-#[derive(Debug, Default, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct StringDescription {
     patterns: BTreeSet<String>,
     pub default: String,
@@ -28,7 +28,18 @@ impl From<StringDescription> for XCellTyped {
 
 impl StringDescription {
     pub fn matches_type(&self, s: &str) -> bool {
-        self.patterns.contains(s)
+        for pattern in &self.patterns {
+            if s.eq_ignore_ascii_case(pattern) {
+                return true;
+            }
+        }
+        false
+    }
+    pub fn add_pattern(&mut self, s: impl Into<String>) {
+        self.patterns.insert(s.into());
+    }
+    pub fn mut_pattern(&mut self) -> &mut BTreeSet<String> {
+        &mut self.patterns
     }
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         self.parse_value(cell).map(XCellValue::String)

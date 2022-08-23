@@ -87,7 +87,7 @@ impl XDataDictionary {
         let field_name = table.get_value((line, i as u32))?.get_string()?;
         let line = project.line.typing.saturating_sub(1) as u32;
         let field_type = table.get_value((line, i as u32))?.get_string()?;
-        let typing = XCellTyped::parse(&field_type.to_string(), &project.typing);
+        let typing = XCellTyped::parse(field_type, &project.typing);
         let (summary, details) = read_comment_details(table, i, project.line).unwrap_or_default();
         self.headers.push(XCellHeader { summary, column: i, typing, field_name: field_name.to_string(), details });
         None

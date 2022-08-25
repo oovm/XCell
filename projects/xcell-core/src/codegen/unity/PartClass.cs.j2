@@ -54,21 +54,21 @@ namespace {{ config.namespace }}
     {
 {%- for field in CLASS_FIELDS %}
         /// <summary>
-{%- for line in field.summary %}
+    {%- for line in field.summary %}
         /// {{line}}
-{%- endfor %}
+    {%- endfor %}
         /// </summary>
         /// <remarks>
-{%- for line in field.remarks %}
+    {%- for line in field.remarks %}
         /// {{line}}
-{%- endfor %}
+    {%- endfor %}
         /// </remarks>
         [DataMember]
-{%- if field.has_default %}
+    {%- if field.has_default %}
         public {{field.typing}} {{field.name}} = {{field.default}};
-{% else %}
+    {% else %}
         public {{field.typing}} {{field.name}};
-{%- endif %}
+    {%- endif %}
 {%- endfor %}
     }
 {% if config.binary.enable %}
@@ -128,16 +128,16 @@ namespace {{ config.namespace }}
         public void BinaryRead(BinaryReader r)
         {
 {%- for field in CLASS_FIELDS %}
-{%- if field.reader.is_vector %}
+    {%- if field.reader.is_vector %}
             var {{ field.reader.field }}Count = r.ReadUInt32();
             {{ field.reader.field }} = new((int) {{ field.reader.field }}Count);
             for (var i = 0; i < {{ field.reader.field }}Count; i++)
             {
                 {{ field.reader.field }}.Add({{ field.reader.function }});
             }
-{%- else %}
+    {%- else %}
             {{ field.reader.field }} = {{ field.reader.function }};
-{%- endif %}
+    {%- endif %}
 {%- endfor %}
         }
 

@@ -38,11 +38,11 @@ fn tera_render(template: &str, slots: &Context, output: &Path, name: &str) -> XR
 }
 
 fn public_name(input: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
-    let name = input.as_str().ok_or("")?;
+    let name = input.as_str().ok_or("Not String")?;
     Ok(Value::String(name.to_case(Case::Camel)))
 }
 
 fn private_name(input: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
-    let name = input.as_str().ok_or("")?;
+    let name = input.as_str().ok_or("Not String")?;
     Ok(Value::String(format!("_{}", name.to_case(Case::Snake))))
 }

@@ -35,9 +35,8 @@ impl VectorDescription {
         self.suffix.insert(suffix.into());
     }
     pub fn matches_rest<'i>(&self, s: &'i str) -> Option<&'i str> {
-        let normed = s.to_ascii_lowercase();
         for suffix in &self.suffix {
-            if normed.ends_with(suffix) {
+            if s.to_ascii_lowercase().ends_with(&suffix.to_ascii_lowercase()) {
                 return Some(&s[0..s.len() - suffix.len()]);
             }
         }

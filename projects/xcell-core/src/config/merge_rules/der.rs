@@ -1,4 +1,4 @@
-use std::any::type_name;
+use std::{any::type_name, str::FromStr};
 
 use serde::de::{Error, MapAccess, Visitor};
 
@@ -25,8 +25,10 @@ impl<'de> Visitor<'de> for MergeRules {
     where
         A: MapAccess<'de>,
     {
-        while let Some((order, id)) = map.next_entry::<i64, MergeStep>()? {
-            self.steps.insert(order, id);
+        while let Some((order, id)) = map.next_entry::<&str, MergeStep>()? {
+            if let Ok(o) = i64::from_str(order) {
+                self.steps.insert(o, id);
+            }
         }
         Ok(self)
     }

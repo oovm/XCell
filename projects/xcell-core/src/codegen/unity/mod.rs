@@ -25,9 +25,7 @@ impl UnityManagerWriter {
                 .into_iter()
                 .map(|name| {
                     let typing = format!("{}{}", name, unity.suffix_table);
-                    let public = typing.to_case(Case::Camel);
-                    let private = format!("_{}", typing.to_case(Case::Snake));
-                    CSharpTable { r#type: typing, public, private }
+                    CSharpTable { r#type: typing }
                 })
                 .collect(),
         }
@@ -114,8 +112,6 @@ struct CSharpEnum {
 #[derive(Serialize)]
 struct CSharpTable {
     r#type: String,
-    public: String,
-    private: String,
 }
 
 impl XData {

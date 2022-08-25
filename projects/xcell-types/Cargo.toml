@@ -1,6 +1,6 @@
 [package]
 name = "xcell-types"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "Types definition for xcell"
 repository = "https://github.com/oovm/XCell"
@@ -17,8 +17,8 @@ stream-io = "0.0.0"
 vlq-rust = "0.4.0"
 
 [dependencies.serde-types]
-#version = "0.1.0"
-path = "../serde-types"
+version = "0.1.0"
+#path = "../serde-types"
 features = []
 
 [dependencies.xcell-errors]

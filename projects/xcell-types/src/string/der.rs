@@ -6,7 +6,10 @@ use super::*;
 
 impl Default for StringDescription {
     fn default() -> Self {
-        Self { patterns: Default::default(), default: "".to_string() }
+        let mut patterns = BTreeSet::default();
+        patterns.insert("string".to_string());
+        patterns.insert("str".to_string());
+        Self { patterns, default: "".to_string() }
     }
 }
 
@@ -24,9 +27,9 @@ impl<'de> Visitor<'de> for StringDescription {
     {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
-                "extra" => {
-                    read_map_next_value(&mut map, |e: OneOrMany<String>| e.into_iter().for_each(|s| self.add_pattern(s)))
-                }
+                "extra" => read_map_next_value(&mut map, |e: OneOrMany<String>| {
+                    e.into_iter().for_each(|s| self.add_pattern(s)) // skip fmk
+                }),
                 "default" => read_map_next_value(&mut map, |e| self.default = e),
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
             }

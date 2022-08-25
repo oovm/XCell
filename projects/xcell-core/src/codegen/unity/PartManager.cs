@@ -20,7 +20,7 @@ namespace {{ config.namespace }}
         /// 配置表的版本号
         /// </summary>
         /// <remarks>手动配置</remarks>
-        public const string TableVersion = "{{ config.table_version }}";
+        public const string TableVersion = "{{ table_version }}";
 
         /// <summary>
         /// 配置表的最后修改时间
@@ -31,30 +31,30 @@ namespace {{ config.namespace }}
         private static readonly Lazy<{{ config.manager_name }}> singleton = new(() => new {{ config.manager_name }}());
         public static {{ config.manager_name }} {{ config.instance_name }} => singleton.Value;
 {% for table in tables %}
-        private {{ table.type }} {{ table.private }};
+        private {{ table.type }} {{ table.type | private_name }};
         /// <inheritdoc cref="{{config.namespace}}.{{ table.type }}"/>
-        public {{ table.type }} {{ table.public }}
+        public {{ table.type }} {{ table.type | public_name }}
         {
 {%- if config.legacy_null_null %}
-            get { return {{ table.private }} != null ? {{ table.private }} : new {{ table.type }}(); }
+            get { return {{ table.type | private_name }} != null ? {{ table.type | private_name }} : new {{ table.type }}(); }
 {%- else %}
-            get => {{ table.private }} ?? new {{ table.type }}();
+            get => {{ table.type | private_name }} ?? new {{ table.type }}();
 {%- endif %}
-            set => {{ table.private }} = value;
+            set => {{ table.type | private_name }} = value;
         }
 {% endfor %}
 
         public void LoadAll()
         {
 {%- for table in tables %}
-			{{ table.private }} = new {{ table.type }}();
+			{{ table.type | private_name }} = new {{ table.type }}();
 {%- endfor %}
         }
 
         public void Clear()
         {
 {%- for table in tables %}
-			{{ table.private }} = null;
+			{{ table.type | private_name }} = null;
 {%- endfor %}
         }
     }

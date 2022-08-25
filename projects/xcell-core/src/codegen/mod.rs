@@ -27,24 +27,22 @@ pub mod xml;
 pub struct CsvCodegen {}
 
 fn tera_render(template: &str, slots: &Context, output: &Path, name: &str) -> XResult<String> {
-    // log::trace!("tera_render {}", output.display());
     let mut file = File::create(output)?;
     let mut tera = Tera::default();
-    // tera.autoescape_on(vec![]);
     tera.add_raw_template(name, template).unwrap();
-    tera.register_filter("camel_case", camel_case);
+    tera.register_filter("public_name", public_name);
+    tera.register_filter("private_name", private_name);
     let result = tera.render(name, slots).unwrap();
     file.write_all(result.as_bytes())?;
     Ok(result)
 }
 
-pub fn write_newline(f: &mut impl Write) -> std::io::Result<usize> {
-    f.write(b"\n")
+fn public_name(input: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
+    let name = input.as_str().ok_or("")?;
+    Ok(Value::String(name.to_case(Case::Camel)))
 }
 
-fn camel_case(input: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
-    match input {
-        Value::String(v) => Ok(Value::String(v.to_case(Case::Camel))),
-        _ => panic!(),
-    }
+fn private_name(input: &Value, _: &HashMap<String, Value>) -> tera::Result<Value> {
+    let name = input.as_str().ok_or("")?;
+    Ok(Value::String(format!("_{}", name.to_case(Case::Snake))))
 }

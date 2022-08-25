@@ -36,7 +36,7 @@ impl XCellTyped {
         if info.matches_string(normed) {
             return info.string.clone().into();
         }
-        if let Some(s) = info.matches_vector(normed) {
+        if let Some(s) = info.matches_vector(raw) {
             let typing = XCellTyped::parse(s, info);
             return info.vector.clone().with_type(typing).into();
         }

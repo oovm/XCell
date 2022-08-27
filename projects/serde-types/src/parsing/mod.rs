@@ -5,38 +5,44 @@ use std::{
 
 use serde::{
     __private::de::{Content, ContentDeserializer},
-    de::{
-        value::{MapDeserializer, SeqDeserializer},
-        DeserializeSeed, MapAccess, Visitor,
-    },
+    de::{DeserializeSeed, MapAccess, Visitor},
     Deserialize, Deserializer,
 };
 
 mod der;
 mod errors;
 
-pub struct ParsingValue<'de> {
+pub struct ParsableValue<'de> {
     inner: Content<'de>,
 }
 
-pub struct ParsingError {
+pub struct ParsableError {
     pub message: String,
     pub source: Option<Box<dyn std::error::Error>>,
 }
 
-impl Default for ParsingValue<'_> {
+impl Default for ParsableValue<'_> {
     fn default() -> Self {
         Self { inner: Content::Map(vec![]) }
     }
 }
 
-impl Debug for ParsingValue<'_> {
+impl Debug for ParsableValue<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Debug::fmt(&self.inner, f)
     }
 }
 
-impl<'de> ParsingValue<'de> {
+impl<'de> From<Content<'de>> for ParsableValue<'de> {
+    fn from(value: Content<'de>) -> Self {
+        Self { inner: value }
+    }
+}
+
+impl<'de> ParsableValue<'de> {
+    pub fn new(v: Content<'de>) -> Self {
+        Self { inner: v }
+    }
     pub fn text(s: &'de str) -> Self {
         Self { inner: Content::Str(s) }
     }
@@ -54,11 +60,8 @@ impl<'de> ParsingValue<'de> {
         None
     }
     pub fn insert(&mut self, key: &'de str, value: Content<'de>) {
-        match &mut self.inner {
-            Content::Map(map) => {
-                map.push((Content::Str(key), value));
-            }
-            _ => {}
+        if let Content::Map(map) = &mut self.inner {
+            map.push((Content::Str(key), value));
         }
     }
     pub fn insert_header(&mut self) {}

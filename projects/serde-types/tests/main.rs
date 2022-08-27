@@ -1,6 +1,8 @@
-use serde::Deserialize;
+use serde::{Deserialize, __private::de::Content};
 use serde_json::from_str;
-use serde_types::OneOrMany;
+
+use serde_types::{OneOrMany, ParsableValue};
+
 #[test]
 fn ready() {
     println!("it works!")
@@ -40,9 +42,9 @@ pub enum TestEnum {}
 
 #[test]
 fn test() {
-    let mut q = ParsingValue::text("12");
+    let q = ParsableValue::new(Content::Seq(vec![Content::Str("255"), Content::Str("255")]));
     // q.insert("id", Content::Str("str"));
     // q.insert("user", Content::U64(u64::from_str("1001")?));
     println!("{:#?}", q);
-    println!("{:#?}", u32::deserialize(q).unwrap());
+    println!("{:#?}", <(u8, u16)>::deserialize(q).unwrap());
 }

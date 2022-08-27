@@ -1,5 +1,8 @@
 mod about_vector;
+mod parsing;
 mod standard;
-mod query;
 
-pub use self::about_vector::{OneOrMany, OneOrManyOrNull};
+pub use self::{
+    about_vector::{OneOrMany, OneOrManyOrNull},
+    parsing::{ParsingError, ParsingValue},
+};

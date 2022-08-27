@@ -19,6 +19,11 @@ pub struct ParsingValue<'de> {
     inner: Content<'de>,
 }
 
+pub struct ParsingError {
+    pub message: String,
+    pub source: Option<Box<dyn std::error::Error>>,
+}
+
 impl Default for ParsingValue<'_> {
     fn default() -> Self {
         Self { inner: Content::Map(vec![]) }
@@ -57,21 +62,4 @@ impl<'de> ParsingValue<'de> {
         }
     }
     pub fn insert_header(&mut self) {}
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Test {
-    id: String,
-    user: usize,
-}
-#[derive(Debug, Deserialize)]
-pub enum TestEnum {}
-
-#[test]
-fn test() {
-    let mut q = ParsingValue::text("12");
-    // q.insert("id", Content::Str("str"));
-    // q.insert("user", Content::U64(u64::from_str("1001")?));
-    println!("{:#?}", q);
-    println!("{:#?}", u32::deserialize(q).unwrap());
 }

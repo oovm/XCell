@@ -1,3 +1,4 @@
+use serde::Deserialize;
 use serde_json::from_str;
 use serde_types::OneOrMany;
 #[test]
@@ -27,4 +28,21 @@ fn one_or_many() {
         Ok(out) => assert_eq!(out, OneOrMany::new([0])),
         Err(e) => panic!("{e}"),
     }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Test {
+    id: String,
+    user: usize,
+}
+#[derive(Debug, Deserialize)]
+pub enum TestEnum {}
+
+#[test]
+fn test() {
+    let mut q = ParsingValue::text("12");
+    // q.insert("id", Content::Str("str"));
+    // q.insert("user", Content::U64(u64::from_str("1001")?));
+    println!("{:#?}", q);
+    println!("{:#?}", u32::deserialize(q).unwrap());
 }

@@ -1,21 +1,15 @@
+use std::fmt::Display;
+
 use super::*;
-use std::{error::Error, fmt::Display};
-
-pub struct ParsingError {
-    pub message: String,
-    pub source: Option<Box<dyn Error>>,
-}
-
-mod errors;
 
 impl<'de> ParsingValue<'de> {
-    fn to_deserializer(self) -> ContentDeserializer<'de, String> {
+    fn to_deserializer(self) -> ContentDeserializer<'de, ParsingError> {
         ContentDeserializer::new(self.inner)
     }
 }
 
 impl<'de> Deserializer<'de> for ParsingValue<'de> {
-    type Error = String;
+    type Error = ParsingError;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where

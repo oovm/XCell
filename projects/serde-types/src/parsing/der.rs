@@ -1,37 +1,28 @@
-use std::fmt::Display;
-
-use serde::de::{value::SeqDeserializer, Expected, IntoDeserializer, Unexpected};
+use serde::de::{
+    value::{Error, MapDeserializer},
+    Error as _,
+};
 
 use super::*;
 
 impl<'de> ParsableValue<'de> {
-    fn to_deserializer(self) -> ContentDeserializer<'de, serde::de::value::Error> {
+    fn to_deserializer(self) -> ContentDeserializer<'de, Error> {
         ContentDeserializer::new(self.inner)
     }
 
-    fn invalid_type<V>(self, v: V) -> Result<V::Value, serde::de::value::Error>
+    fn invalid_type<V>(self, v: V) -> Result<V::Value, Error>
     where
         V: Visitor<'de>,
     {
         Err(serde::de::Error::invalid_type(self.unexpected(), &v))
     }
-    fn custom_error<V>(self, v: impl Into<String>) -> Result<V::Value, serde::de::value::Error>
+    fn custom_error<V>(self, v: impl Into<String>) -> Result<V::Value, Error>
     where
         V: Visitor<'de>,
     {
         Err(serde::de::Error::custom(v.into()))
     }
-    fn parse_bool(s: impl AsRef<str>) -> Result<bool, ParsableError> {
-        if s.as_ref().eq_ignore_ascii_case("true") {
-            Ok(true)
-        }
-        else if s.as_ref().eq_ignore_ascii_case("false") {
-            Ok(false)
-        }
-        else {
-            Err(ParsableError::from("provided string was not `true` or `false`"))
-        }
-    }
+
     fn unexpected(&'de self) -> Unexpected<'de> {
         match &self.inner {
             Content::Bool(b) => Unexpected::Bool(*b),
@@ -57,10 +48,69 @@ impl<'de> ParsableValue<'de> {
             Content::Map(_) => Unexpected::Map,
         }
     }
+    fn parse_bool<V>(s: impl AsRef<str>, v: V) -> Result<V::Value, Error>
+    where
+        V: Visitor<'de>,
+    {
+        if s.as_ref().eq_ignore_ascii_case("true") {
+            v.visit_bool(true)
+        }
+        else if s.as_ref().eq_ignore_ascii_case("false") {
+            v.visit_bool(false)
+        }
+        else {
+            Err(Error::invalid_value(Unexpected::Str(s.as_ref()), &v))
+        }
+    }
+    fn parse_u8<V>(s: impl AsRef<str>, v: V) -> Result<V::Value, Error>
+    where
+        V: Visitor<'de>,
+    {
+        match u8::from_str(s.as_ref()) {
+            Ok(o) => v.visit_u8(o),
+            Err(_) => Err(Error::invalid_value(Unexpected::Str(s.as_ref()), &v)),
+        }
+    }
+    fn parse_u16<V>(s: impl AsRef<str>, v: V) -> Result<V::Value, Error>
+    where
+        V: Visitor<'de>,
+    {
+        match u16::from_str(s.as_ref()) {
+            Ok(o) => v.visit_u16(o),
+            Err(_) => Err(Error::invalid_value(Unexpected::Str(s.as_ref()), &v)),
+        }
+    }
+    fn parse_u32<V>(s: impl AsRef<str>, v: V) -> Result<V::Value, Error>
+    where
+        V: Visitor<'de>,
+    {
+        match u32::from_str(s.as_ref()) {
+            Ok(o) => v.visit_u32(o),
+            Err(_) => Err(Error::invalid_value(Unexpected::Str(s.as_ref()), &v)),
+        }
+    }
+    fn parse_u64<V>(s: impl AsRef<str>, v: V) -> Result<V::Value, Error>
+    where
+        V: Visitor<'de>,
+    {
+        match u64::from_str(s.as_ref()) {
+            Ok(o) => v.visit_u64(o),
+            Err(_) => Err(Error::invalid_value(Unexpected::Str(s.as_ref()), &v)),
+        }
+    }
+    fn parse_u128<V>(s: impl AsRef<str>, v: V) -> Result<V::Value, Error>
+    where
+        V: Visitor<'de>,
+    {
+        match u128::from_str(s.as_ref()) {
+            Ok(o) => v.visit_u128(o),
+            Err(_) => Err(Error::invalid_value(Unexpected::Str(s.as_ref()), &v)),
+        }
+    }
 }
 
 impl<'de> Deserializer<'de> for ParsableValue<'de> {
-    type Error = serde::de::value::Error;
+    type Error = Error;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
@@ -75,8 +125,8 @@ impl<'de> Deserializer<'de> for ParsableValue<'de> {
     {
         match self.inner {
             Content::Bool(v) => visitor.visit_bool(v),
-            Content::Str(v) => visitor.visit_bool(ParsableValue::parse_bool(v)?),
-            Content::String(v) => visitor.visit_bool(ParsableValue::parse_bool(v)?),
+            Content::Str(v) => ParsableValue::parse_bool(v, visitor),
+            Content::String(v) => ParsableValue::parse_bool(v, visitor),
             _ => self.invalid_type(visitor),
         }
     }
@@ -113,14 +163,90 @@ impl<'de> Deserializer<'de> for ParsableValue<'de> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        match self.inner {
+            Content::Bool(_) => {
+                todo!()
+            }
+            Content::U8(v) => visitor.visit_u8(v),
+            Content::U16(v) if v < (u8::MAX as u16) => visitor.visit_u8(v as u8),
+            Content::U32(v) if v < (u8::MAX as u32) => visitor.visit_u8(v as u8),
+            Content::U64(v) if v < (u8::MAX as u64) => visitor.visit_u8(v as u8),
+            Content::I8(_) => {
+                todo!()
+            }
+            Content::I16(_) => {
+                todo!()
+            }
+            Content::I32(_) => {
+                todo!()
+            }
+            Content::I64(_) => {
+                todo!()
+            }
+            Content::F32(_) => {
+                todo!()
+            }
+            Content::F64(_) => {
+                todo!()
+            }
+            Content::String(s) => ParsableValue::parse_u8(s, visitor),
+            Content::Str(s) => ParsableValue::parse_u8(s, visitor),
+            Content::None => {
+                todo!()
+            }
+            Content::Some(_) => {
+                todo!()
+            }
+            Content::Unit => {
+                todo!()
+            }
+            _ => self.invalid_type(visitor),
+        }
     }
 
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        todo!()
+        match self.inner {
+            Content::Bool(_) => {
+                todo!()
+            }
+            Content::U8(v) => visitor.visit_u16(v as u16),
+            Content::U16(v) => visitor.visit_u16(v),
+            Content::U32(v) if v < (u16::MAX as u32) => visitor.visit_u16(v as u16),
+            Content::U64(v) if v < (u16::MAX as u64) => visitor.visit_u16(v as u16),
+            Content::I8(_) => {
+                todo!()
+            }
+            Content::I16(_) => {
+                todo!()
+            }
+            Content::I32(_) => {
+                todo!()
+            }
+            Content::I64(_) => {
+                todo!()
+            }
+            Content::F32(_) => {
+                todo!()
+            }
+            Content::F64(_) => {
+                todo!()
+            }
+            Content::String(s) => ParsableValue::parse_u16(s, visitor),
+            Content::Str(s) => ParsableValue::parse_u16(s, visitor),
+            Content::None => {
+                todo!()
+            }
+            Content::Some(_) => {
+                todo!()
+            }
+            Content::Unit => {
+                todo!()
+            }
+            _ => self.invalid_type(visitor),
+        }
     }
 
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
@@ -155,8 +281,8 @@ impl<'de> Deserializer<'de> for ParsableValue<'de> {
             Content::F64(_) => {
                 todo!()
             }
-            Content::String(s) => visitor.visit_u32(u32::from_str(&s)?),
-            Content::Str(s) => visitor.visit_u32(u32::from_str(s)?),
+            Content::String(s) => ParsableValue::parse_u32(s, visitor),
+            Content::Str(s) => ParsableValue::parse_u32(s, visitor),
             Content::None => {
                 todo!()
             }
@@ -200,8 +326,8 @@ impl<'de> Deserializer<'de> for ParsableValue<'de> {
             Content::F64(_) => {
                 todo!()
             }
-            Content::String(s) => visitor.visit_u64(u64::from_str(&s)?),
-            Content::Str(s) => visitor.visit_u64(u64::from_str(s)?),
+            Content::String(s) => ParsableValue::parse_u64(s, visitor),
+            Content::Str(s) => ParsableValue::parse_u64(s, visitor),
             Content::None => {
                 todo!()
             }
@@ -237,8 +363,8 @@ impl<'de> Deserializer<'de> for ParsableValue<'de> {
             Content::F64(_) => {
                 todo!()
             }
-            Content::String(s) => visitor.visit_u128(u128::from_str(&s)?),
-            Content::Str(s) => visitor.visit_u128(u128::from_str(s)?),
+            Content::String(s) => ParsableValue::parse_u128(s, visitor),
+            Content::Str(s) => ParsableValue::parse_u128(s, visitor),
             Content::None => {
                 todo!()
             }
@@ -372,9 +498,19 @@ impl<'de> Deserializer<'de> for ParsableValue<'de> {
     where
         V: Visitor<'de>,
     {
-        self.to_deserializer().deserialize_map(visitor)
+        match self.inner {
+            Content::Map(content) => {
+                let map = content.into_iter().map(|(k, v)| (ContentDeserializer::new(k), ParsableValue::from(v)));
+                let mut map_visitor = MapDeserializer::new(map);
+                let value = visitor.visit_map(&mut map_visitor)?;
+                map_visitor.end()?;
+                Ok(value)
+            }
+            _ => self.invalid_type(visitor),
+        }
     }
 
+    #[allow(unused_variables)]
     fn deserialize_struct<V>(
         self,
         name: &'static str,
@@ -384,7 +520,7 @@ impl<'de> Deserializer<'de> for ParsableValue<'de> {
     where
         V: Visitor<'de>,
     {
-        self.to_deserializer().deserialize_struct(name, fields, visitor)
+        self.deserialize_map(visitor)
     }
 
     fn deserialize_enum<V>(

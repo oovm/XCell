@@ -32,19 +32,25 @@ fn one_or_many() {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct Test {
     id: String,
-    user: usize,
+    user: u64,
+    book: u64,
 }
 #[derive(Debug, Deserialize)]
-pub enum TestEnum {}
+pub enum TestEnum {
+    AAA = 2,
+    BBB = 3,
+}
 
 #[test]
 fn test() {
-    let q = ParsableValue::new(Content::Seq(vec![Content::Str("255"), Content::Str("255")]));
-    // q.insert("id", Content::Str("str"));
-    // q.insert("user", Content::U64(u64::from_str("1001")?));
-    println!("{:#?}", q);
-    println!("{:#?}", <(u8, u16)>::deserialize(q).unwrap());
+    // let q = ParsableValue::new(Content::Seq(vec![Content::Str("255"), Content::Str("255")]));
+    let mut q = ParsableValue::new(Content::I8(2));
+    // q.insert("id", Content::Str("128"));
+    // q.insert("user", Content::String("256".to_string()));
+    // q.insert("book", Content::String("1024".to_string()));
+    // println!("{:#?}", q);
+    println!("{:#?}", TestEnum::deserialize(q).unwrap());
 }

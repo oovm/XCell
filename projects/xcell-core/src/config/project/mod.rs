@@ -1,8 +1,10 @@
 use toml::from_str;
 
-use super::*;
-use crate::{config::table::TableLineMode, MergeRules};
 use xcell_types::TypeMetaInfo;
+
+use crate::{config::table::TableLineMode, MergeRules};
+
+use super::*;
 
 #[derive(Clone, Debug)]
 pub struct ProjectConfig {
@@ -60,5 +62,11 @@ impl ProjectConfig {
 impl WorkspaceManager {
     pub fn get_relative(&self, file: &Path) -> XResult<PathBuf> {
         get_relative(file, &self.config.root)
+    }
+    pub fn disable_xml(&mut self) {
+        self.config.unity.xml.enable = false;
+    }
+    pub fn disable_json(&self) {
+        // self.config.unity.enable = false;
     }
 }

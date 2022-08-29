@@ -22,5 +22,12 @@ path = "../xcell-core"
 
 [dev-dependencies]
 
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1"
+
+[package.metadata.winres]
+OriginalFilename = "XCell.exe"
+LegalCopyright = "Copyright © 2020"
+
 [features]
 default = []

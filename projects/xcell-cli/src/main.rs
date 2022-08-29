@@ -11,19 +11,30 @@ mod workspace;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, about)]
 pub struct Args {
     /// 手动设置工作目录, 无表示当前目录
-    #[arg(short, long, default_value_t = String::new())]
+    // #[arg(default_value_t = String::new())]
     workspace: String,
+    /// 启用监听模式, 当有文件修改时只更新对应文件
+    #[arg(short, long, default_value_t = false)]
+    watch: bool,
+    /// 强制关闭 xml 生成
+    #[arg(long, default_value_t = false)]
+    disable_xml: bool,
+    /// 强制关闭 json 生成
+    #[arg(long, default_value_t = false)]
+    disable_json: bool,
     #[command(subcommand)]
     command: SubArgs,
 }
 
 #[derive(Subcommand, Debug)]
 pub enum SubArgs {
-    /// Clear database and cache
+    /// 清除数据库与缓存
     Clear,
+    /// 检查配置表, 不导出任何文件
+    Check,
 }
 
 #[tokio::main]
@@ -31,6 +42,14 @@ async fn main() -> XResult {
     logger();
     let args = Args::parse();
     let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
+    if args.disable_xml {
+        ws.disable_xml()
+    }
+    if args.disable_json {
+        ws.disable_json()
+    }
+    println!("{:#?}", args.command);
     ws.first_walk().await?;
+    if args.watch {}
     pause()
 }

@@ -9,7 +9,16 @@ readme = "Readme.md"
 license = "MPL-2.0"
 edition = "2021"
 
+
 [dependencies]
+log = "0.4.17"
+env_logger = "0.9.3"
+clap = { version = "4.0.26", features = ["derive"] }
+tokio = { version = "1.22.0", features = ["full"] }
+
+[dependencies.xcell-core]
+#version = "0.0.0"
+path = "../xcell-core"
 
 [dev-dependencies]
 

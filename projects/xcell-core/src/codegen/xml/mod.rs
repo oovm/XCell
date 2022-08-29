@@ -35,7 +35,7 @@ impl DataContractWriter {
     }
     pub fn write_xml(&self, output: &Path) -> XResult<()> {
         let ctx = Context::from_serialize(self)?;
-        tera_render(include_str!("DataContract.xml.jinja"), &ctx, output, "DataContract.xml")?;
+        tera_render(include_str!("DataContract.xml.saha"), &ctx, output, "DataContract.xml")?;
         Ok(())
     }
 }

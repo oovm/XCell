@@ -48,14 +48,14 @@ impl UnityCodegen {
     pub fn write_manager(&self, table: &MergedTable, root: &Path, version: &str) -> XResult<()> {
         let path = self.unity_manager_path(root)?;
         let ctx = Context::from_serialize(UnityManagerWriter::new(table, self, version))?;
-        tera_render(include_str!("PartManager.cs"), &ctx, &path, "PartManager.cs")?;
+        tera_render(include_str!("PartManager.cs.saha"), &ctx, &path, "PartManager.cs")?;
         Ok(())
     }
     pub fn write_class(&self, table: &XCellTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_csharp_path(root, &file)?;
         log::info!("写入 {}", self.unity_cs_relative(&file));
-        tera_render(include_str!("PartClass.cs"), &self.make_context(table), &path, "PartClass.cs")?;
+        tera_render(include_str!("PartClass.cs.saha"), &self.make_context(table), &path, "PartClass.cs")?;
         Ok(())
     }
     pub fn write_binary(&self, table: &XCellTable, root: &Path) -> XResult<()> {

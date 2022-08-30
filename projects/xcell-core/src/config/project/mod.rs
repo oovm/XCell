@@ -45,7 +45,7 @@ impl ProjectConfig {
             }
         };
         config.root = workspace.to_path_buf();
-        log::info!("加载项目配置{success}, 当前配置\n{config:#?}");
+        log::trace!("加载项目配置{success}, 当前配置\n{config:#?}");
         config
     }
     fn load_toml(file: &Path) -> XResult<Self> {

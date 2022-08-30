@@ -13,4 +13,5 @@ exclude = [
 
 [profile.release]
 lto = true
+strip = true
 panic = "abort"

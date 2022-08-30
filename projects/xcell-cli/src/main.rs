@@ -14,7 +14,7 @@ mod workspace;
 #[command(author, version, about)]
 pub struct Args {
     /// 手动设置工作目录, 无表示当前目录
-    // #[arg(default_value_t = String::new())]
+    #[arg(long, default_value_t = String::new())]
     workspace: String,
     /// 启用监听模式, 当有文件修改时只更新对应文件
     #[arg(short, long, default_value_t = false)]
@@ -26,15 +26,15 @@ pub struct Args {
     #[arg(long, default_value_t = false)]
     disable_json: bool,
     #[command(subcommand)]
-    command: SubArgs,
+    command: Option<SubArgs>,
 }
 
 #[derive(Subcommand, Debug)]
 pub enum SubArgs {
-    /// 清除数据库与缓存
-    Clear,
     /// 检查配置表, 不导出任何文件
     Check,
+    /// 清除数据库与缓存
+    Clear,
 }
 
 #[tokio::main]
@@ -48,8 +48,7 @@ async fn main() -> XResult {
     if args.disable_json {
         ws.disable_json()
     }
-    println!("{:#?}", args.command);
     ws.first_walk().await?;
-    if args.watch {}
-    pause()
+    pause();
+    Ok(())
 }

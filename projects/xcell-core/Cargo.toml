@@ -37,11 +37,6 @@ features = ["tera", "toml", "globset", "async-walkdir", "notify", "num"]
 path = "../xcell-types"
 features = ["csharp"]
 
-[dependencies.sled-typed]
-#version = ""
-git = "https://github.com/oovm/disk-map"
-rev = "0c4cc29b"
-
 [dev-dependencies]
 env_logger = "0.9.3"
 

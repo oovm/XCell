@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use xcell_types::XCellValue;
 
 use crate::XDataItem;
@@ -42,20 +43,26 @@ impl DataContractWriter {
 
 impl XCellTable {
     fn as_xml(&self) -> Vec<XmlItem> {
-        self.data.rows().iter().map(|v| XmlItem { is_vector: false, fields: v.as_xml(&self.name) }).collect()
+        let headers = self.data.headers();
+        self.data.rows().iter().map(|v| XmlItem { is_vector: false, fields: v.as_xml(&headers) }).collect()
     }
 }
 
 impl XDataItem {
-    fn as_xml(&self, name: &str) -> Vec<XmlField> {
+    fn as_xml(&self, headers: &[&XCellHeader]) -> Vec<XmlField> {
         let mut out = vec![];
-        for datum in &self.data {
+
+        for (i, datum) in self.data.iter().enumerate() {
+            let field = match headers.get(i) {
+                Some(s) => s.field_name.to_string(),
+                None => break,
+            };
             let data = match datum {
                 XCellValue::Boolean(v) => v.to_string(),
                 _ => datum.to_string(),
             };
-            out.push(XmlField { name: name.to_string(), data })
+            out.push(XmlField { name: field, data })
         }
-        out
+        out.into_iter().sorted_by_key(|v| v.name.to_owned()).collect()
     }
 }

@@ -4,14 +4,14 @@
 {%- for item in items %}
 		<{{ class_name }}Element>
 	{%- for field in item.fields %}
-			<{{ field.name }}>{{ field.data }}</{{ field.name }}>
 		{%- if field.is_vector %}
+            <{{ field.name }} xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
 			{%- for item in field.items %}
                 <a:{{ item.type }}>{{ item.name }}</a:{{ item.type }}>
 			{%- endfor %}
             </{{ field.name }}>
         {%- else %}
-            <{{ field.name }} xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+			<{{ field.name }}>{{ field.data }}</{{ field.name }}>
         {%- endif %}
 	{%- endfor %}
 		</{{ class_name }}Element>

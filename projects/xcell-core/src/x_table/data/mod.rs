@@ -26,12 +26,6 @@ pub struct XDataDictionary {
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XDataString {
-    pub headers: Vec<XCellHeader>,
-    pub data: BTreeMap<String, XDataItem>,
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XDataEnumerate {
     /// 0 表示未设置
     pub id_column: usize,
@@ -66,6 +60,12 @@ impl XData {
         match self {
             XData::Dictionary(v) => v.data.iter().collect(),
             XData::Enumerate(v) => v.data.values().collect(),
+        }
+    }
+    pub fn headers(&self) -> Vec<&XCellHeader> {
+        match self {
+            XData::Dictionary(v) => v.headers.iter().collect(),
+            XData::Enumerate(v) => v.headers.iter().collect(),
         }
     }
     pub fn rows_count(&self) -> usize {

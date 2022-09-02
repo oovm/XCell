@@ -29,7 +29,7 @@ pub struct CsvCodegen {}
 fn tera_render(template: &str, slots: &Context, output: &Path, name: &str) -> XResult<String> {
     let mut file = File::create(output)?;
     let mut tera = Tera::default();
-    tera.add_raw_template(name, template).unwrap();
+    tera.add_raw_template(name, &template.replace("\r\n", "\n")).unwrap();
     tera.register_filter("public_name", public_name);
     tera.register_filter("private_name", private_name);
     let result = tera.render(name, slots).unwrap();

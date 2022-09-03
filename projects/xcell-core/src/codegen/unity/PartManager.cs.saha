@@ -6,6 +6,10 @@
 
 using System;
 using System.IO;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Xml;
+using UnityEditor;
 
 namespace {{ config.namespace }}
 {
@@ -56,6 +60,28 @@ namespace {{ config.namespace }}
 {%- for table in tables %}
 			{{ table.type | private_name }} = null;
 {%- endfor %}
+        }
+
+        [MenuItem("Tools/XCell/ExportXML")]
+        public static void ExportXML()
+        {
+{%- for table in tables %}
+            SerializerXML("Assets/Data/Table/Binary/{{ table.type }}.xml", instance.{{ table.type | private_name }});
+{%- endfor %}
+        }
+
+        private static void SerializerXML<T>(string path, T table)
+        {
+            var serializer = new DataContractSerializer(typeof(T));
+            using var fs = File.Create(path);
+            using var writer = XmlWriter.Create(fs, new XmlWriterSettings
+            {
+                Encoding = new UTF8Encoding(false),
+                Indent = true,
+                IndentChars = "\t",
+                NewLineChars = "\n"
+            });
+            serializer.WriteObject(writer, table);
         }
     }
 

@@ -66,6 +66,9 @@ impl UnityCodegen {
         cg.write_binary(table, &path)
     }
     pub fn write_data_contract(&self, table: &XCellTable, root: &Path) -> XResult<()> {
+        if !self.xml.enable {
+            return Ok(());
+        }
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_xml_path(root, &file)?;
         log::info!("写入 {}", self.unity_xml_relative(&file));

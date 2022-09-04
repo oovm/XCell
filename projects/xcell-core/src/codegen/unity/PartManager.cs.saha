@@ -7,6 +7,7 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml;
 using UnityEditor;
@@ -47,18 +48,18 @@ namespace {{ config.namespace }}
             set => {{ table.type | private_name }} = value;
         }
 {% endfor %}
-
-        public void LoadAll()
+        [MenuItem("Tools/XCell/LoadAll")]
+        public static void Reload()
         {
 {%- for table in tables %}
-			{{ table.type | private_name }} = new {{ table.type }}();
+            {{ config.instance_name }}.{{ table.type | private_name }} = new {{ table.type }}();
 {%- endfor %}
         }
-
-        public void Clear()
+        [MenuItem("Tools/XCell/ClearAll")]
+        public static void Clear()
         {
 {%- for table in tables %}
-			{{ table.type | private_name }} = null;
+            {{ config.instance_name }}.{{ table.type | private_name }} = null;
 {%- endfor %}
         }
 
@@ -66,7 +67,15 @@ namespace {{ config.namespace }}
         public static void ExportXML()
         {
 {%- for table in tables %}
-            SerializerXML("Assets/Data/Table/Binary/{{ table.type }}.xml", instance.{{ table.type | private_name }});
+            SerializerXML("Assets/Data/Table/Binary/{{ table.type }}.xml", {{ config.instance_name }}.{{ table.type | private_name }});
+{%- endfor %}
+        }
+
+        [MenuItem("Tools/XCell/ExportJSON")]
+        public static void ExportJSON()
+        {
+{%- for table in tables %}
+            SerializerJSON("Assets/Data/Table/Readable/{{ table.type }}.json", {{ config.instance_name }}.{{ table.type | private_name }});
 {%- endfor %}
         }
 
@@ -81,6 +90,14 @@ namespace {{ config.namespace }}
                 IndentChars = "\t",
                 NewLineChars = "\n"
             });
+            serializer.WriteObject(writer, table);
+        }
+
+        private static void SerializerJSON<T>(string path, T table)
+        {
+            var serializer = new DataContractJsonSerializer(typeof(T));
+            using var fs = File.Create(path);
+            using var writer = JsonReaderWriterFactory.CreateJsonWriter(fs, Encoding.UTF8, true, true, "\t");
             serializer.WriteObject(writer, table);
         }
     }

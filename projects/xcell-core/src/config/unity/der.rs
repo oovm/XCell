@@ -20,7 +20,7 @@ impl Default for UnityCodegen {
             support_clone: true,
             legacy_using: false,
             legacy_null_null: false,
-            xml: UnityXmlConfig { enable: false, output: "".to_string() },
+            xml: Default::default(),
         }
     }
 }
@@ -31,6 +31,11 @@ impl Default for UnityBinaryConfig {
     }
 }
 
+impl Default for UnityXmlConfig {
+    fn default() -> Self {
+        Self { enable: false, output: "Assets/Tables/Readable".to_string() }
+    }
+}
 impl<'de> Visitor<'de> for UnityCodegen {
     type Value = Self;
 

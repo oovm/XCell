@@ -36,6 +36,7 @@ impl Default for UnityXmlConfig {
         Self { enable: false, output: "Assets/Tables/Readable".to_string() }
     }
 }
+
 impl<'de> Visitor<'de> for UnityCodegen {
     type Value = Self;
 
@@ -109,12 +110,6 @@ impl<'de> Visitor<'de> for UnityBinaryConfig {
             }
         }
         Ok(self)
-    }
-}
-
-impl Default for UnityXmlConfig {
-    fn default() -> Self {
-        Self { enable: false, output: "Assets/Tables/Readable".to_string() }
     }
 }
 

@@ -38,7 +38,7 @@ pub fn log_writter(w: &mut Formatter, record: &Record) -> std::io::Result<()> {
     let header = match record.level() {
         Level::Error => "Error".bright_red(),
         Level::Warn => "Warn ".bright_yellow(),
-        Level::Info => "Info ".bright_green(),
+        Level::Info => "Print".bright_green(),
         Level::Debug => "Debug".bright_purple(),
         Level::Trace => "Trace".bright_magenta(),
     };

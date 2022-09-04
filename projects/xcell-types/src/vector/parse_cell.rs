@@ -15,6 +15,9 @@ impl VectorDescription {
             DataType::Error(e) => return syntax_error(format!("未知错误 {e}")),
             _ => cell.to_string(),
         };
+        if s.trim().is_empty() {
+            return Ok(XCellValue::Vector(out));
+        }
         for item in self.split(&s) {
             let cell = DataType::String(item.to_string());
             let s = self.typing.parse_cell(&cell)?;

@@ -1,7 +1,9 @@
+use env_logger::builder;
 use log::LevelFilter;
-// use sled_typed::{Database, DiskMap};
 
 use xcell_core::{ProjectConfig, PROJECT_CONFIG};
+
+// use sled_typed::{Database, DiskMap};
 
 mod test_buffer;
 
@@ -11,7 +13,7 @@ fn ready() {
 }
 
 pub fn logger() {
-    let _ = env_logger::builder().filter_level(LevelFilter::Trace).is_test(true).try_init();
+    let _ = builder().filter(Some("globset"), LevelFilter::Off).filter_level(LevelFilter::Trace).try_init();
 }
 
 #[test]

@@ -42,6 +42,14 @@ async fn main() -> XResult {
     logger();
     let args = Args::parse();
     let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
+    match args.command {
+        Some(SubArgs::Check) => ws.dry_run(),
+        Some(SubArgs::Clear) => {
+            ws.clear()?;
+            return Ok(());
+        }
+        _ => {}
+    }
     if args.disable_xml {
         ws.disable_xml()
     }
@@ -49,6 +57,9 @@ async fn main() -> XResult {
         ws.disable_json()
     }
     ws.first_walk().await?;
+    if args.watch {
+        ws.watcher().await?
+    }
     pause();
     Ok(())
 }

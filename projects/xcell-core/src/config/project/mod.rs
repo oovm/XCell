@@ -69,4 +69,11 @@ impl WorkspaceManager {
     pub fn disable_json(&self) {
         // self.config.unity.enable = false;
     }
+    pub fn dry_run(&mut self) {
+        self.disable_xml();
+        self.disable_json();
+    }
+    pub fn clear(&self) -> XResult<()> {
+        Ok(())
+    }
 }

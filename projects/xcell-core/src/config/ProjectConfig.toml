@@ -9,8 +9,8 @@ line.comment = 3
 line.data = 4
 
 [type.bool]
-"true" = ["true", "√"]
-"false" = ["false", "x"]
+accept = ["true", "√"]
+reject = ["false", "x"]
 
 [type.string]
 
@@ -28,16 +28,18 @@ legacy_null_null = false
 
 [unity.binary]
 enable = true
-output = "Assets/Tables/DataTable/Generated"
+output = "Assets/Tables/Generated"
 
 [unity.xlua]
 enable = false
 
 [unity.xml]
-enable = true
+enable = false
+output = "Assets/Tables/Readable"
 
 [unity.json]
 enable = false
+output = "Assets/Tables/Readable"
 
 [unity.protobuf]
 enable = false

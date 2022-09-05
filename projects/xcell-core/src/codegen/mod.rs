@@ -6,7 +6,7 @@ use std::{
 };
 
 use convert_case::{Case, Casing};
-
+use itertools::Itertools;
 use serde::Serialize;
 use serde_json::Value;
 use tera::{Context, Tera};
@@ -14,10 +14,10 @@ use tera::{Context, Tera};
 use xcell_errors::XResult;
 use xcell_types::{
     codegen::{CSharpReader, CSharpWriter},
-    ByteOrder, StreamWriter,
+    ByteOrder, StreamWriter, XCellValue,
 };
 
-use crate::{UnityCodegen, XCellHeader, XCellTable, XData};
+use crate::{BinaryWriter, DataContractWriter, MergedTable, UnityCodegen, XCellHeader, XCellTable, XData, XDataItem};
 
 pub mod binary;
 pub mod readable;

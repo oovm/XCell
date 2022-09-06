@@ -1,28 +1,4 @@
-use std::str::FromStr;
-
-use itertools::Itertools;
-
-use xcell_errors::Validation;
-use xcell_types::EnumerateDescription;
-
-use crate::{utils::first_not_nil, CalamineTable, Success, WorkspaceManager, XCellTable};
-
 use super::*;
-
-impl XData {
-    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
-        let res = match self {
-            XData::Dictionary(v) => v.read_table_data(table, path),
-            XData::Enumerate(v) => v.read_table_data(table, path),
-        };
-        match res {
-            Ok(_) => {}
-            Err(e) => {
-                log::error!("{}", e.with_path(path))
-            }
-        }
-    }
-}
 
 impl XDataEnumerate {
     pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) -> XResult<()> {
@@ -92,6 +68,7 @@ impl XCellTable {
         match &mut self.data {
             XData::Dictionary(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
             XData::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
+            XData::Class(v) => {}
         };
         self.enumeration_linked = true;
         errors

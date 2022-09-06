@@ -1,16 +1,25 @@
-use crate::XCellHeader;
-use xcell_types::{IntegerKind, StringDescription};
+use std::str::FromStr;
+
+use itertools::Itertools;
+
+use xcell_errors::Validation;
+use xcell_types::{EnumerateDescription, IntegerKind, StringDescription};
+
+use crate::{utils::first_not_nil, CalamineTable, Success, WorkspaceManager, XCellHeader, XCellTable};
 
 use super::*;
 
+pub use self::class::XClassItem;
+
+mod class;
 mod dictionary;
 mod enumerate;
-mod string;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XData {
     Dictionary(Box<XDataDictionary>),
     Enumerate(Box<XDataEnumerate>),
+    Class(Box<XDataClass>),
 }
 
 impl Default for XData {
@@ -36,11 +45,32 @@ pub struct XDataEnumerate {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct XDataClass {
+    items: Vec<XClassItem>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XDataItem {
     pub id: BigInt,
     pub name: String,
     pub comment: String,
     pub data: Vec<XCellValue>,
+}
+
+impl XData {
+    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
+        let res = match self {
+            XData::Dictionary(v) => v.read_table_data(table, path),
+            XData::Enumerate(v) => v.read_table_data(table, path),
+            XData::Class(v) => v.read_table_data(table, path),
+        };
+        match res {
+            Ok(_) => {}
+            Err(e) => {
+                log::error!("{}", e.with_path(path))
+            }
+        }
+    }
 }
 
 impl XData {
@@ -54,24 +84,32 @@ impl XData {
         match self {
             XData::Dictionary(v) => v.headers.get(0),
             XData::Enumerate(v) => v.headers.get(0),
+            XData::Class(_) => None,
         }
     }
     pub fn rows(&self) -> Vec<&XDataItem> {
         match self {
             XData::Dictionary(v) => v.data.iter().collect(),
             XData::Enumerate(v) => v.data.values().collect(),
+            XData::Class(_) => {
+                vec![]
+            }
         }
     }
     pub fn headers(&self) -> Vec<&XCellHeader> {
         match self {
             XData::Dictionary(v) => v.headers.iter().collect(),
             XData::Enumerate(v) => v.headers.iter().collect(),
+            XData::Class(_) => {
+                vec![]
+            }
         }
     }
     pub fn rows_count(&self) -> usize {
         match self {
             XData::Dictionary(v) => v.data.len(),
             XData::Enumerate(v) => v.data.len(),
+            XData::Class(v) => v.items.len(),
         }
     }
 }

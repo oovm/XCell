@@ -46,7 +46,7 @@ impl XCellTyped {
             XCellTyped::Boolean(_) => "bool".to_string(),
             XCellTyped::Integer(v) => v.kind.as_csharp_type().to_string(),
             XCellTyped::Decimal(v) => v.kind.as_csharp_type().to_string(),
-            XCellTyped::String(_) => "string".to_string(),
+            XCellTyped::String(_) => "class".to_string(),
             XCellTyped::Time(_) => "DateTime".to_string(),
             XCellTyped::Color(_) => "Color32".to_string(),
             XCellTyped::Enumerate(v) => v.typing.to_owned(),

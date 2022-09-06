@@ -1,7 +1,5 @@
-Rust Template Project
-=====================
-
-Rust template project for monorepo
+XCell 配置表管理工具
+==================
 
 
 
@@ -13,29 +11,35 @@ Rust template project for monorepo
 
 
 ### 合表规则
+
+- 目录结构:
+
+```markdown
+LanguageTable/
+  - CN/
+    - Language_CN_UI
+    - Language_CN_Item
+  - EN/
+    - Language_CN_UI
+```
+
+- 合表规则
+
 ```toml
 [merge.10001]
 mode = "row"
-input = "LanguageCN*"
-target = "LanguageCN"
+input = "Language_CN*"
+target = "Language_CN"
 
 [merge.10002]
 mode = "row"
-input = "LanguageEN*"
-target = "LanguageEN"
+input = "Language_EN*"
+target = "Language_EN"
 
 [merge.20001]
 mode = "colomn"
-input = "LanguageTable*"
+input = "Language*"
 target = "Language"
-```
-
-举例
-
-```
-LanguageTable/
-LanguageTable/CN/LanguageUI
-LanguageTable/EN/LanguageItem
 ```
 
 ## Unity

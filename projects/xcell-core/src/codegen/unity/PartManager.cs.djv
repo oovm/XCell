@@ -28,7 +28,7 @@ namespace {{ config.namespace }}
         public const string TableVersion = "{{ table_version }}";
 
         /// <summary>
-        /// 配置表的最后修改时间
+        /// 配置表的最后修改时间 (UTC)
         /// </summary>
         /// <remarks>自动生成</remarks>
         public DateTime TableEditTime = {{ edit_time }};
@@ -85,10 +85,10 @@ namespace {{ config.namespace }}
             using var fs = File.Create(path);
             using var writer = XmlWriter.Create(fs, new XmlWriterSettings
             {
-                Encoding = new UTF8Encoding(false),
                 Indent = true,
                 IndentChars = "\t",
-                NewLineChars = "\n"
+                NewLineChars = "\n",
+                Encoding = new UTF8Encoding(false),
             });
             serializer.WriteObject(writer, table);
         }

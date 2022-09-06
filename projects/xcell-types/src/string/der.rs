@@ -7,7 +7,7 @@ use super::*;
 impl Default for StringDescription {
     fn default() -> Self {
         let mut patterns = BTreeSet::default();
-        patterns.insert("string".to_string());
+        patterns.insert("class".to_string());
         patterns.insert("str".to_string());
         Self { patterns, default: "".to_string() }
     }

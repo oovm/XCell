@@ -59,16 +59,10 @@ pub struct XDataItem {
 
 impl XData {
     pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
-        let res = match self {
+        match self {
             XData::Dictionary(v) => v.read_table_data(table, path),
             XData::Enumerate(v) => v.read_table_data(table, path),
             XData::Class(v) => v.read_table_data(table, path),
-        };
-        match res {
-            Ok(_) => {}
-            Err(e) => {
-                log::error!("{}", e.with_path(path))
-            }
         }
     }
 }

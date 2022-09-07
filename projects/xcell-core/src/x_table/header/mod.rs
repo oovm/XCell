@@ -59,6 +59,7 @@ impl XData {
         let res = match self {
             XData::Dictionary(v) => v.read_table_headers(table, project),
             XData::Enumerate(v) => v.read_table_headers(table, project),
+            XData::Class(v) => {}
         };
         match res {
             Ok(_) => {}

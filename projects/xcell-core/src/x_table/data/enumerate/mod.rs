@@ -1,7 +1,7 @@
 use super::*;
 
 impl XDataEnumerate {
-    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) -> XResult<()> {
+    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
         // 防止双重 borrow
         let typing = self.headers.iter().cloned().collect_vec();
         for (x, row_raw) in table.rows().enumerate().skip(3) {
@@ -24,7 +24,6 @@ impl XDataEnumerate {
             }
             self.insert(item)
         }
-        Ok(())
     }
     fn read_comment_details(&self, row: &[DataType], item: &mut XDataItem) -> Option<()> {
         match self.comment_column {
@@ -106,8 +105,9 @@ impl XData {
                     link_enumerate_data_line(item, &v.headers, &mut diagnostics)
                 }
             }
+            XData::Class(v) => v.link_enumerate(),
         }
-        Success { value, diagnostics: vec![] }
+        Success { value, diagnostics }
     }
 }
 

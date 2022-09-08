@@ -3,7 +3,7 @@ use std::str::FromStr;
 use itertools::Itertools;
 
 use xcell_errors::Validation;
-use xcell_types::{EnumerateDescription, IntegerKind, StringDescription};
+use xcell_types::{EnumerateDescription, IntegerKind, StringDescription, TypeMetaInfo};
 
 use crate::{utils::first_not_nil, CalamineTable, Success, WorkspaceManager, XCellHeader, XCellTable};
 
@@ -44,7 +44,7 @@ pub struct XDataEnumerate {
     pub data: BTreeMap<String, XDataItem>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XDataClass {
     items: Vec<XClassItem>,
 }
@@ -58,11 +58,11 @@ pub struct XDataItem {
 }
 
 impl XData {
-    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
+    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path, meta: &TypeMetaInfo) {
         match self {
             XData::Dictionary(v) => v.read_table_data(table, path),
             XData::Enumerate(v) => v.read_table_data(table, path),
-            XData::Class(v) => v.read_table_data(table, path),
+            XData::Class(v) => v.read_table_data(table, path, meta),
         }
     }
 }

@@ -66,7 +66,7 @@ impl XCellValue {
             }
             None => {
                 *self = map.integer.cast_integer(default);
-                Err(XError::table_error("未知的枚举值"))
+                Err(XError::table_error(format!("未知的枚举值: {}", typing)))
             }
         }
     }

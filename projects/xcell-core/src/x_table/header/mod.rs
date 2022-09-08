@@ -29,8 +29,10 @@ impl XCellHeader {
     fn try_read_table_kind(table: &CalamineTable, project: &ProjectConfig) -> Option<XData> {
         let line = project.line.field.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
-        if cell.get_string()? == "enum" {
-            return Some(XData::Enumerate(Box::default()));
+        match cell.get_string()? {
+            "enum" => return Some(XData::Enumerate(Box::default())),
+            "class" => return Some(XData::Class(Box::default())),
+            _ => {}
         }
         let line = project.line.typing.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
@@ -59,7 +61,9 @@ impl XData {
         let res = match self {
             XData::Dictionary(v) => v.read_table_headers(table, project),
             XData::Enumerate(v) => v.read_table_headers(table, project),
-            XData::Class(v) => {}
+            XData::Class(_) => {
+                return;
+            }
         };
         match res {
             Ok(_) => {}

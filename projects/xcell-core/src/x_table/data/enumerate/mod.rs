@@ -67,7 +67,7 @@ impl XCellTable {
         match &mut self.data {
             XData::Dictionary(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
             XData::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
-            XData::Class(v) => {}
+            XData::Class(_) => {}
         };
         self.enumeration_linked = true;
         errors
@@ -91,7 +91,7 @@ impl XCellHeader {
 }
 
 impl XData {
-    pub fn link_enumerate(&self) -> Validation<XData> {
+    pub fn link_enumerate(&self, path: &Path) -> Validation<XData> {
         let mut value = self.clone();
         let mut diagnostics = vec![];
         match &mut value {
@@ -122,7 +122,7 @@ fn link_enumerate_head(headers: &mut Vec<XCellHeader>, errors: &mut Vec<XError>,
 fn link_enumerate_data_line(item: &mut XDataItem, headers: &[XCellHeader], errors: &mut Vec<XError>) {
     for (i, datum) in item.data.iter_mut().enumerate() {
         if let Err(e) = link_enumerate_data_cell(headers, i, datum) {
-            errors.push(e)
+            errors.push(e.with_path(&item.name))
         }
     }
 }

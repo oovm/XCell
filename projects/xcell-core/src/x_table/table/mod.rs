@@ -97,7 +97,7 @@ impl XCellTable {
     /// 强制重新加载表格中的数据
     pub fn reload_data(&mut self) -> XResult<()> {
         let table = find_first_table(&self.path)?;
-        self.data.read_table_data(&table, &self.path);
+        self.data.read_table_data(&table, &self.path, &self.config.typing);
         Ok(())
     }
     pub fn id(&self) -> u64 {

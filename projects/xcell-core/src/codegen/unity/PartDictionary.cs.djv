@@ -13,8 +13,44 @@ using UnityEngine;
 
 namespace {{ config.namespace }}
 {
+{%- if enumerate %}
     [DataContract, Serializable]
-    public partial class {{ CLASS_NAME }}
+    public enum {{CLASS_NAME}} : {{ ID_TYPE }}
+    {
+{%- for field in enumerate_fields %}
+	    [EnumMember]
+        {{ field.name }} = {{ field.number }},
+{%- endfor %}
+    }
+
+    public static class {{CLASS_NAME}}Extension
+    {
+{%- for field in CLASS_FIELDS %}
+        /// <inheritdoc cref="{{ CLASS_NAME }}Element.{{ field.name }}"/>
+        public static {{ field.typing }} {{ field.getter }}(this {{CLASS_NAME}} self)
+        {
+            return {{ config.manager_name }}.{{ config.instance_name }}.{{ TABLE_NAME | public_name }}.GetElement(({{ ID_TYPE }}) self)!.{{ field.name }};
+        }
+{%- endfor %}
+    }
+{%- endif %}
+    [DataContract, Serializable]
+    public partial class {{ TABLE_NAME }}
+    {
+		[NonSerialized]
+        public readonly Dictionary<{{ ID_TYPE }}, {{ CLASS_NAME }}Element> dict = new();
+
+        [DataMember]
+        public readonly List<{{ CLASS_NAME }}Element> elements = new();
+
+        public {{ CLASS_NAME }}Element GetElement({{ ID_TYPE }} {{ KEY }})
+        {
+            return dict.TryGetValue({{ KEY }}, out var item) ? item : null;
+        }
+    }
+
+    [DataContract, Serializable]
+    public partial class {{ CLASS_NAME }}Element
     {
 {%- for field in CLASS_FIELDS %}
         /// <summary>
@@ -36,9 +72,9 @@ namespace {{ config.namespace }}
 {%- endfor %}
     }
 {% if config.binary.enable %}
-    public partial class {{ CLASS_NAME }} : IBinarySupport
+    public partial class {{TABLE_NAME}} : IBinarySupport
     {
-        public {{CLASS_NAME}}()
+        public {{TABLE_NAME}}()
         {
             BinaryRead("{{ config.binary.output }}/{{ TABLE_NAME }}.binary");
         }
@@ -59,6 +95,35 @@ namespace {{ config.namespace }}
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
             BinaryRead(reader);
         }
+
+		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
+        public void BinaryRead(BinaryReader r)
+        {
+            elements.Clear();
+            dict.Clear();
+            var count = r.ReadUInt32();
+            for (var i = 0; i < count; i++)
+            {
+                var item = new {{ CLASS_NAME }}Element();
+                item.BinaryRead(r);
+                elements.Add(item);
+                dict[item.{{ KEY }}] = item;
+            }
+        }
+
+		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
+        public void BinaryWrite(BinaryWriter w)
+        {
+            w.Write(Convert.ToUInt32(dict.Count));
+            foreach (var (_, item) in dict)
+            {
+                item.BinaryWrite(w);
+            }
+        }
+    }
+
+    public partial class {{ CLASS_NAME }}Element : IBinarySupport
+    {
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
@@ -98,7 +163,15 @@ namespace {{ config.namespace }}
     }
 {%- endif %}
 {% if config.support_clone %}
-    partial class {{ CLASS_NAME }} : ICloneable
+    public partial class {{TABLE_NAME}} : ICloneable
+    {
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
+    }
+
+    partial class {{ CLASS_NAME }}Element : ICloneable
     {
         public object Clone()
         {

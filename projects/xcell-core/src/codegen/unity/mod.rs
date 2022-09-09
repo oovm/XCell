@@ -1,3 +1,5 @@
+use crate::XClassItem;
+
 use super::*;
 
 #[derive(Serialize)]
@@ -17,12 +19,10 @@ impl UnityManagerWriter {
             edit_time: XCellValue::csharp_now(),
             config: unity.clone(),
             tables: table
-                .table_names()
+                .table_names(&unity.suffix_table)
                 .into_iter()
-                .map(|name| {
-                    let typing = format!("{}{}", name, unity.suffix_table);
-                    CSharpTable { r#type: typing }
-                })
+                .map(|name| CSharpTable { r#type: name })
+                .sorted_by_key(|v| v.r#type.to_string())
                 .collect(),
         }
     }
@@ -51,7 +51,17 @@ impl UnityCodegen {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_csharp_path(root, &file)?;
         log::info!("写入 {}", self.unity_cs_relative(&file));
-        tera_render(include_str!("PartClass.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
+        match table.data {
+            XData::Dictionary(_) => {
+                tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
+            }
+            XData::Enumerate(_) => {
+                tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
+            }
+            XData::Class(_) => {
+                tera_render(include_str!("PartClass.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
+            }
+        }
         Ok(())
     }
     pub fn write_binary(&self, table: &XCellTable, root: &Path) -> XResult<()> {
@@ -118,9 +128,7 @@ impl XData {
         match self {
             XData::Dictionary(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
             XData::Enumerate(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
-            XData::Class(_) => {
-                todo!("class")
-            }
+            XData::Class(v) => v.items.iter().map(|v| v.make_class_field()).collect(),
         }
     }
     fn make_enum_field(&self) -> Vec<CSharpEnum> {
@@ -130,8 +138,25 @@ impl XData {
                 v.data.values().map(|v| CSharpEnum { name: v.name.to_string(), number: v.id.to_string() }).collect()
             }
             XData::Class(_) => {
-                todo!("make_enum_field")
+                vec![]
             }
+        }
+    }
+}
+
+impl XClassItem {
+    fn make_class_field(&self) -> CSharpField {
+        let default = self.r#type.as_csharp_default();
+        CSharpField {
+            summary: self.summary.lines().map(|v| v.to_string()).collect(),
+            remarks: self.details.lines().map(|v| v.to_string()).collect(),
+            has_default: !default.is_empty(),
+            typing: self.r#type.as_csharp_type(),
+            writer: self.r#type.make_cs_binary_writer(&self.field),
+            reader: self.r#type.make_cs_binary_reader(&self.field),
+            name: self.field.clone(),
+            getter: format!("Get{}", self.field.to_case(Case::Pascal)),
+            default,
         }
     }
 }

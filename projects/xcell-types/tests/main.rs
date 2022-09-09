@@ -19,5 +19,5 @@ fn test_string() {
     let string = StringDescription::default();
     assert!(string.matches_type("str"));
     assert!(!string.matches_type("key"));
-    assert!(string.matches_type("class"));
+    assert!(string.matches_type("string"));
 }

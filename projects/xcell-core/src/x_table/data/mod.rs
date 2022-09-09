@@ -46,7 +46,7 @@ pub struct XDataEnumerate {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XDataClass {
-    items: Vec<XClassItem>,
+    pub items: Vec<XClassItem>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

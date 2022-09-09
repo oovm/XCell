@@ -97,12 +97,12 @@ impl XData {
         match &mut value {
             XData::Dictionary(v) => {
                 for item in v.data.iter_mut() {
-                    link_enumerate_data_line(item, &v.headers, &mut diagnostics)
+                    link_enumerate_data_line(item, &v.headers, &mut diagnostics, path)
                 }
             }
             XData::Enumerate(v) => {
                 for (_, item) in v.data.iter_mut() {
-                    link_enumerate_data_line(item, &v.headers, &mut diagnostics)
+                    link_enumerate_data_line(item, &v.headers, &mut diagnostics, path)
                 }
             }
             XData::Class(v) => v.link_enumerate(),
@@ -119,10 +119,10 @@ fn link_enumerate_head(headers: &mut Vec<XCellHeader>, errors: &mut Vec<XError>,
     }
 }
 
-fn link_enumerate_data_line(item: &mut XDataItem, headers: &[XCellHeader], errors: &mut Vec<XError>) {
+fn link_enumerate_data_line(item: &mut XDataItem, headers: &[XCellHeader], errors: &mut Vec<XError>, file: &Path) {
     for (i, datum) in item.data.iter_mut().enumerate() {
         if let Err(e) = link_enumerate_data_cell(headers, i, datum) {
-            errors.push(e.with_path(&item.name))
+            errors.push(e.with_path(file))
         }
     }
 }

@@ -7,8 +7,8 @@ pub struct XClassItem {
     pub field: String,
     pub r#type: XCellTyped,
     pub default: XCellValue,
-    pub comment: String,
-    pub detail: String,
+    pub summary: String,
+    pub details: String,
 }
 
 impl XDataClass {
@@ -31,8 +31,8 @@ impl Default for XClassItem {
             field: "".to_string(),
             r#type: Default::default(),
             default: Default::default(),
-            comment: "".to_string(),
-            detail: "".to_string(),
+            summary: "".to_string(),
+            details: "".to_string(),
         }
     }
 }
@@ -43,8 +43,8 @@ impl XClassItem {
             field: "".to_string(),
             r#type: Default::default(),
             default: Default::default(),
-            comment: "".to_string(),
-            detail: "".to_string(),
+            summary: "".to_string(),
+            details: "".to_string(),
         };
         item.parse_field(row, line)?;
         item.parse_type(row, line, meta)?;
@@ -90,7 +90,7 @@ impl XClassItem {
     }
     fn try_parse_comment(&mut self, row: &[DataType]) -> Option<()> {
         let cell = row.get(3)?;
-        self.comment = cell.get_string()?.to_string();
+        self.summary = cell.get_string()?.to_string();
         None
     }
 }

@@ -32,7 +32,18 @@ pub struct MergedTable {
 }
 
 impl MergedTable {
-    pub fn table_names(&self) -> Vec<String> {
-        self.inner.iter().map(|v| v.name.to_string()).collect()
+    pub fn table_names(&self, suffix_table: &str) -> Vec<String> {
+        self.inner
+            .iter()
+            .map(|v| match &v.data {
+                XData::Dictionary(_) => {
+                    format!("{}{}", v.name, suffix_table)
+                }
+                XData::Enumerate(_) => {
+                    format!("{}{}", v.name, suffix_table)
+                }
+                XData::Class(_) => v.name.to_string(),
+            })
+            .collect()
     }
 }

@@ -9,7 +9,7 @@ use calamine::DataType;
 use serde::{Deserialize, Serialize};
 
 use xcell_errors::for_3rd::BigInt;
-use xcell_types::{XCellTyped, XCellValue};
+use xcell_types::{XCellTyped, XCellValueKind};
 
 use crate::{
     config::TableConfig,

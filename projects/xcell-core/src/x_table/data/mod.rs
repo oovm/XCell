@@ -54,7 +54,7 @@ pub struct XDataItem {
     pub id: BigInt,
     pub name: String,
     pub comment: String,
-    pub data: Vec<XCellValue>,
+    pub data: Vec<XCellValueKind>,
 }
 
 impl XData {

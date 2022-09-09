@@ -8,7 +8,7 @@ pub struct UnityManagerWriter {
     table_version: String,
     edit_time: String,
     config: UnityCodegen,
-    tables: Vec<CSharpTable>,
+    tables: Vec<String>,
 }
 
 impl UnityManagerWriter {
@@ -16,14 +16,9 @@ impl UnityManagerWriter {
         Self {
             compiler_version: env!("CARGO_PKG_VERSION"),
             table_version: version.to_string(),
-            edit_time: XCellValue::csharp_now(),
+            edit_time: XCellValueKind::csharp_now(),
             config: unity.clone(),
-            tables: table
-                .table_names(&unity.suffix_table)
-                .into_iter()
-                .map(|name| CSharpTable { r#type: name })
-                .sorted_by_key(|v| v.r#type.to_string())
-                .collect(),
+            tables: table.table_names(&unity.suffix_table).into_iter().sorted().collect(),
         }
     }
 }
@@ -117,10 +112,6 @@ struct CSharpField {
 struct CSharpEnum {
     name: String,
     number: String,
-}
-#[derive(Serialize)]
-struct CSharpTable {
-    r#type: String,
 }
 
 impl XData {

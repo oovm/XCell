@@ -34,16 +34,16 @@ impl IntegerKind {
             IntegerKind::Unsigned64 => 8,
         }
     }
-    pub fn cast_integer(&self, input: BigInt) -> XCellValue {
+    pub fn cast_integer(&self, input: BigInt) -> XCellValueKind {
         match self {
-            IntegerKind::Integer8 => XCellValue::Integer8(input.to_i8().unwrap_or_default()),
-            IntegerKind::Integer16 => XCellValue::Integer16(input.to_i16().unwrap_or_default()),
-            IntegerKind::Integer32 => XCellValue::Integer32(input.to_i32().unwrap_or_default()),
-            IntegerKind::Integer64 => XCellValue::Integer64(input.to_i64().unwrap_or_default()),
-            IntegerKind::Unsigned8 => XCellValue::Unsigned8(input.to_u8().unwrap_or_default()),
-            IntegerKind::Unsigned16 => XCellValue::Unsigned16(input.to_u16().unwrap_or_default()),
-            IntegerKind::Unsigned32 => XCellValue::Unsigned32(input.to_u32().unwrap_or_default()),
-            IntegerKind::Unsigned64 => XCellValue::Unsigned64(input.to_u64().unwrap_or_default()),
+            IntegerKind::Integer8 => XCellValueKind::Integer8(input.to_i8().unwrap_or_default()),
+            IntegerKind::Integer16 => XCellValueKind::Integer16(input.to_i16().unwrap_or_default()),
+            IntegerKind::Integer32 => XCellValueKind::Integer32(input.to_i32().unwrap_or_default()),
+            IntegerKind::Integer64 => XCellValueKind::Integer64(input.to_i64().unwrap_or_default()),
+            IntegerKind::Unsigned8 => XCellValueKind::Unsigned8(input.to_u8().unwrap_or_default()),
+            IntegerKind::Unsigned16 => XCellValueKind::Unsigned16(input.to_u16().unwrap_or_default()),
+            IntegerKind::Unsigned32 => XCellValueKind::Unsigned32(input.to_u32().unwrap_or_default()),
+            IntegerKind::Unsigned64 => XCellValueKind::Unsigned64(input.to_u64().unwrap_or_default()),
         }
     }
 }

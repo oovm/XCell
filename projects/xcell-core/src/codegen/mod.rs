@@ -14,7 +14,7 @@ use tera::{Context, Tera};
 use xcell_errors::XResult;
 use xcell_types::{
     codegen::{CSharpReader, CSharpWriter},
-    ByteOrder, StreamWriter, XCellValue,
+    ByteOrder, StreamWriter, XCellValueKind,
 };
 
 use crate::{BinaryWriter, DataContractWriter, MergedTable, UnityCodegen, XCellHeader, XCellTable, XData, XDataItem};

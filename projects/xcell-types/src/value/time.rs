@@ -16,7 +16,7 @@ impl TimeDescription {
 }
 
 impl TimeDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValueKind> {
         let _ = self.parse_value(cell)?;
         todo!()
     }

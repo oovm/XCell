@@ -5,7 +5,7 @@ use xcell_errors::{
     XResult,
 };
 
-use crate::{utils::syntax_error, XCellValue};
+use crate::{utils::syntax_error, XCellValueKind};
 mod kind;
 mod parse_cell;
 

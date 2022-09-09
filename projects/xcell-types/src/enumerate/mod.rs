@@ -1,4 +1,4 @@
-use crate::{utils::syntax_error, IntegerKind, XCellTyped, XCellValue};
+use crate::{utils::syntax_error, IntegerKind, XCellTyped, XCellValueKind};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use xcell_errors::{
@@ -27,8 +27,8 @@ impl EnumerateDescription {
     {
         Self { integer: Default::default(), typing: typing.into(), default: "".to_string(), mapping: Default::default() }
     }
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
-        self.parse_value(cell).map(XCellValue::Enumerate)
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValueKind> {
+        self.parse_value(cell).map(XCellValueKind::Enumerate)
     }
     fn parse_value(&self, cell: &DataType) -> XResult<String> {
         match cell {

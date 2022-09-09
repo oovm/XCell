@@ -6,7 +6,7 @@ use super::*;
 pub struct XClassItem {
     pub field: String,
     pub r#type: XCellTyped,
-    pub default: XCellValue,
+    pub default: XCellValueKind,
     pub summary: String,
     pub details: String,
 }

@@ -21,7 +21,17 @@ mod display;
 pub mod time;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum XCellValue {
+pub struct XCellValue {
+    /// 实际储存的值
+    pub kind: XCellValueKind,
+    /// 从左往右数第几个, 0-index
+    pub x: usize,
+    /// 从上往下数第几个, 0-index
+    pub y: usize,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum XCellValueKind {
     Boolean(bool),
     Integer8(i8),
     Integer16(i16),
@@ -41,20 +51,20 @@ pub enum XCellValue {
     String(String),
     Color(Color),
     // Time(DateTime),
-    Vector(Vec<XCellValue>),
+    Vector(Vec<XCellValueKind>),
     Enumerate(String),
 }
 
-impl Default for XCellValue {
+impl Default for XCellValueKind {
     fn default() -> Self {
         Self::Boolean(false)
     }
 }
 
-impl XCellValue {
+impl XCellValueKind {
     pub fn link_enumerate(&mut self, typing: &XCellTyped) -> XResult<()> {
         let (value, map) = match (&self, typing) {
-            (XCellValue::Enumerate(v), XCellTyped::Enumerate(t)) => (v, t),
+            (XCellValueKind::Enumerate(v), XCellTyped::Enumerate(t)) => (v, t),
             _ => return Ok(()),
         };
         let default = map.mapping.get(&map.default).cloned().unwrap_or_default();
@@ -66,7 +76,7 @@ impl XCellValue {
             }
             None => {
                 *self = map.integer.cast_integer(default);
-                Err(XError::table_error(format!("未知的枚举值: {}", typing)))
+                Err(XError::table_error(format!("未知的枚举值 `{}`", typing)))
             }
         }
     }

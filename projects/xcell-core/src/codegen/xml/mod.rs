@@ -55,7 +55,7 @@ impl XDataItem {
                 None => break,
             };
             let data = match datum {
-                XCellValue::Boolean(v) => v.to_string(),
+                XCellValueKind::Boolean(v) => v.to_string(),
                 _ => datum.to_string(),
             };
             out.push(XmlField { name: field, data })

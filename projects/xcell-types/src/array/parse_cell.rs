@@ -7,7 +7,7 @@ impl From<ArrayDescription> for XCellTyped {
 }
 
 impl ArrayDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValueKind> {
         match self.kind {
             ArrayKind::Vector2 => self.parse_vec2(cell),
             ArrayKind::Vector3 => self.parse_vec3(cell),
@@ -37,25 +37,25 @@ impl ArrayDescription {
             _ => syntax_error(format!("{} 无法解析为 decimal 类型", cell)),
         }
     }
-    fn parse_vec2(&self, cell: &DataType) -> XResult<XCellValue> {
+    fn parse_vec2(&self, cell: &DataType) -> XResult<XCellValueKind> {
         let vec = self.parse_value(cell)?;
-        Ok(XCellValue::Vector2(fill_array(&vec)))
+        Ok(XCellValueKind::Vector2(fill_array(&vec)))
     }
-    fn parse_vec3(&self, cell: &DataType) -> XResult<XCellValue> {
+    fn parse_vec3(&self, cell: &DataType) -> XResult<XCellValueKind> {
         let vec = self.parse_value(cell)?;
-        Ok(XCellValue::Vector3(fill_array(&vec)))
+        Ok(XCellValueKind::Vector3(fill_array(&vec)))
     }
-    fn parse_vec4(&self, cell: &DataType) -> XResult<XCellValue> {
+    fn parse_vec4(&self, cell: &DataType) -> XResult<XCellValueKind> {
         let vec = self.parse_value(cell)?;
-        Ok(XCellValue::Vector4(fill_array(&vec)))
+        Ok(XCellValueKind::Vector4(fill_array(&vec)))
     }
-    fn parse_color4(&self, cell: &DataType) -> XResult<XCellValue> {
+    fn parse_color4(&self, cell: &DataType) -> XResult<XCellValueKind> {
         let vec = self.parse_value(cell)?;
-        Ok(XCellValue::Color4(fill_array(&vec)))
+        Ok(XCellValueKind::Color4(fill_array(&vec)))
     }
-    fn parse_quaternion4(&self, cell: &DataType) -> XResult<XCellValue> {
+    fn parse_quaternion4(&self, cell: &DataType) -> XResult<XCellValueKind> {
         let vec = self.parse_value(cell)?;
-        Ok(XCellValue::Quaternion4(fill_array(&vec)))
+        Ok(XCellValueKind::Quaternion4(fill_array(&vec)))
     }
 }
 

@@ -1,6 +1,6 @@
 {
     "private": true,
     "scripts": {
-        "p": "git push --prune --tags"
+        "p": "cargo publish --allow-dirty"
     }
 }

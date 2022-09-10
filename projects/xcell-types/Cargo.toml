@@ -1,6 +1,6 @@
 [package]
 name = "xcell-types"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "Types definition for xcell"
 repository = "https://github.com/oovm/XCell"
@@ -10,19 +10,19 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-serde = { version = "1.0.147", features = ["derive"] }
+serde = { version = "1.0.148", features = ["derive"] }
 itertools = "0.10.5"
 stream-io = "0.0.0"
 #integer-encoding = "3.0.4"
 vlq-rust = "0.4.0"
 
 [dependencies.serde-types]
-version = "0.1.0"
+version = "0.1.1"
 #path = "../serde-types"
 features = []
 
 [dependencies.xcell-errors]
-#version = "0.1.0"
+#version = "0.1.2"
 path = "../xcell-errors"
 features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine", "serde_json"]
 

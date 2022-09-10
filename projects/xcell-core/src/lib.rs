@@ -15,7 +15,7 @@ pub use self::{
         unity::UnityCodegen,
         ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG,
     },
-    x_table::{data::*, header::XCellHeader, table::XCellTable},
+    x_table::{data::*, header::XCellHeader, table::XTable},
 };
 
 mod codegen;

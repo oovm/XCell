@@ -5,7 +5,7 @@ use super::*;
 mod display;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct XCellTable {
+pub struct XTable {
     /// 表格的绝对路径
     pub path: PathBuf,
     /// 表格的名称, 同时也是生成的类名
@@ -13,7 +13,7 @@ pub struct XCellTable {
     /// 表格的额外配置
     pub config: TableConfig,
     /// 表格中的有效数据
-    pub data: XData,
+    pub data: XTableKind,
     /// 枚举定义是否已链接
     pub enumeration_linked: bool,
     /// 产物是否已生成
@@ -24,13 +24,13 @@ pub struct XCellTable {
     pub sum_config: u64,
 }
 
-impl XCellTable {
+impl XTable {
     pub fn is_enumerate(&self) -> bool {
-        matches!(self.data, XData::Enumerate(_))
+        matches!(self.data, XTableKind::Enumerate(_))
     }
 }
 
-impl XCellTable {
+impl XTable {
     /// 加载配置表
     ///
     /// # Arguments
@@ -43,7 +43,7 @@ impl XCellTable {
     /// # Examples
     ///
     /// ```
-    /// use xcell_core::XCellTable;
+    /// use xcell_core::XTable;
     /// ```
     pub fn load_file(excel: &Path, global: &ProjectConfig) -> XResult<Self> {
         let mut xcell = Self {
@@ -130,7 +130,7 @@ impl XCellTable {
     }
 }
 
-impl XCellTable {
+impl XTable {
     pub fn on_config_change(&mut self, global: &ProjectConfig) -> XResult<()> {
         self.try_load_header(global)?;
         self.try_load_config(global)?;

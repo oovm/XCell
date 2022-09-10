@@ -1,6 +1,6 @@
 use super::*;
 
-impl XDataEnumerate {
+impl XEnumerateTable {
     pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
         // 防止双重 borrow
         let typing = self.headers.iter().cloned().collect_vec();
@@ -61,13 +61,18 @@ impl WorkspaceManager {
     }
 }
 
-impl XCellTable {
+impl XTable {
     pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Vec<XError> {
         let mut errors = vec![];
         match &mut self.data {
-            XData::Dictionary(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
-            XData::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
-            XData::Class(_) => {}
+            XTableKind::Array(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
+            XTableKind::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
+            XTableKind::Class(_) => {
+                todo!()
+            }
+            XTableKind::Dictionary(_) => {
+                todo!()
+            }
         };
         self.enumeration_linked = true;
         errors
@@ -90,22 +95,25 @@ impl XCellHeader {
     }
 }
 
-impl XData {
-    pub fn link_enumerate(&self, path: &Path) -> Validation<XData> {
+impl XTableKind {
+    pub fn link_enumerate(&self, path: &Path) -> Validation<XTableKind> {
         let mut value = self.clone();
         let mut diagnostics = vec![];
         match &mut value {
-            XData::Dictionary(v) => {
+            XTableKind::Array(v) => {
                 for item in v.data.iter_mut() {
                     link_enumerate_data_line(item, &v.headers, &mut diagnostics, path)
                 }
             }
-            XData::Enumerate(v) => {
+            XTableKind::Enumerate(v) => {
                 for (_, item) in v.data.iter_mut() {
                     link_enumerate_data_line(item, &v.headers, &mut diagnostics, path)
                 }
             }
-            XData::Class(v) => v.link_enumerate(),
+            XTableKind::Class(v) => v.link_enumerate(),
+            XTableKind::Dictionary(_) => {
+                todo!()
+            }
         }
         Success { value, diagnostics }
     }

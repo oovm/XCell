@@ -14,7 +14,7 @@ use xcell_types::{XCellTyped, XCellValueKind};
 use crate::{
     config::TableConfig,
     utils::{find_first_table, xx_file, xx_hash},
-    XData, XError, XResult,
+    XError, XResult, XTableKind,
 };
 
 pub mod data;

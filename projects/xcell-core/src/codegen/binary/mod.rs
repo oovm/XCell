@@ -15,7 +15,7 @@ impl BinaryWriter {
         self.bit7_encode = enable;
     }
 
-    pub fn write_binary(&self, table: &XCellTable, output: &Path) -> XResult<()> {
+    pub fn write_binary(&self, table: &XTable, output: &Path) -> XResult<()> {
         let mut file = File::create(output)?;
         let data = table.data.link_enumerate(&table.path).result(|e| log::error!("{e}"))?;
         let rows = data.rows_count();

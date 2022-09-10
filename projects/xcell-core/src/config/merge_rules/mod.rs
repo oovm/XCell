@@ -28,7 +28,7 @@ impl WorkspaceManager {
 }
 
 pub struct MergedTable {
-    inner: Vec<XCellTable>,
+    inner: Vec<XTable>,
 }
 
 impl MergedTable {
@@ -36,13 +36,16 @@ impl MergedTable {
         self.inner
             .iter()
             .map(|v| match &v.data {
-                XData::Dictionary(_) => {
+                XTableKind::Array(_) => {
                     format!("{}{}", v.name, suffix_table)
                 }
-                XData::Enumerate(_) => {
+                XTableKind::Enumerate(_) => {
                     format!("{}{}", v.name, suffix_table)
                 }
-                XData::Class(_) => v.name.to_string(),
+                XTableKind::Class(_) => v.name.to_string(),
+                XTableKind::Dictionary(_) => {
+                    todo!()
+                }
             })
             .collect()
     }

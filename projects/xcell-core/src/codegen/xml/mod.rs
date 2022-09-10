@@ -1,5 +1,3 @@
-
-
 use super::*;
 
 #[derive(Serialize)]
@@ -23,7 +21,7 @@ pub struct XmlField {
 }
 
 impl DataContractWriter {
-    pub fn new(namespace: &str, table: &XCellTable, table_suffix: &str) -> Self {
+    pub fn new(namespace: &str, table: &XTable, table_suffix: &str) -> Self {
         Self {
             class_name: table.name.clone(),
             table_name: format!("{}{}", table.name, table_suffix),
@@ -38,7 +36,7 @@ impl DataContractWriter {
     }
 }
 
-impl XCellTable {
+impl XTable {
     fn as_xml(&self) -> Vec<XmlItem> {
         let headers = self.data.headers();
         self.data.rows().iter().map(|v| XmlItem { is_vector: false, fields: v.as_xml(&headers) }).collect()

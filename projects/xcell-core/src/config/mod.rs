@@ -24,7 +24,7 @@ use xcell_types::{default_deserialize, EnumerateDescription, TypeMetaInfo};
 use crate::{
     config::unity::UnityCodegen,
     utils::{get_relative, valid_file},
-    XCellTable, XData,
+    XTable, XTableKind,
 };
 
 pub use self::{
@@ -44,7 +44,7 @@ pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
 pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
-    pub file_mapping: BTreeMap<PathBuf, XCellTable>,
+    pub file_mapping: BTreeMap<PathBuf, XTable>,
     pub enum_mapping: BTreeMap<String, EnumerateDescription>,
 }
 
@@ -119,8 +119,8 @@ impl WorkspaceManager {
         }
     }
     pub fn try_update_file(&mut self, file: &Path) -> XResult<()> {
-        let table = XCellTable::load_file(file, &self.config)?;
-        if let XData::Enumerate(e) = &table.data {
+        let table = XTable::load_file(file, &self.config)?;
+        if let XTableKind::Enumerate(e) = &table.data {
             let mut mapping = BTreeMap::default();
             for (key, item) in &e.data {
                 mapping.insert(key.clone(), item.id.clone());

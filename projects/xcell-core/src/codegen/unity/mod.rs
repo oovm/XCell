@@ -42,31 +42,34 @@ impl UnityCodegen {
         tera_render(include_str!("PartManager.cs.djv"), &ctx, &path, "PartManager.cs")?;
         Ok(())
     }
-    pub fn write_class(&self, table: &XCellTable, root: &Path) -> XResult<()> {
+    pub fn write_class(&self, table: &XTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_csharp_path(root, &file)?;
         log::info!("写入 {}", self.unity_cs_relative(&file));
         match table.data {
-            XData::Dictionary(_) => {
+            XTableKind::Array(_) => {
                 tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
-            XData::Enumerate(_) => {
+            XTableKind::Enumerate(_) => {
                 tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
-            XData::Class(_) => {
+            XTableKind::Class(_) => {
                 tera_render(include_str!("PartClass.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
+            }
+            XTableKind::Dictionary(_) => {
+                todo!()
             }
         }
         Ok(())
     }
-    pub fn write_binary(&self, table: &XCellTable, root: &Path) -> XResult<()> {
+    pub fn write_binary(&self, table: &XTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_binary_path(root, &file)?;
         log::info!("写入 {}", self.unity_bin_relative(&file));
         let cg = BinaryWriter::default();
         cg.write_binary(table, &path)
     }
-    pub fn write_data_contract(&self, table: &XCellTable, root: &Path) -> XResult<()> {
+    pub fn write_data_contract(&self, table: &XTable, root: &Path) -> XResult<()> {
         if !self.xml.enable {
             return Ok(());
         }
@@ -79,7 +82,7 @@ impl UnityCodegen {
 }
 
 impl UnityCodegen {
-    fn make_context(&self, table: &XCellTable) -> Context {
+    fn make_context(&self, table: &XTable) -> Context {
         let mut ctx = Context::new();
         ctx.insert("VERSION", env!("CARGO_PKG_VERSION"));
         ctx.insert("config", &self);
@@ -114,22 +117,28 @@ struct CSharpEnum {
     number: String,
 }
 
-impl XData {
+impl XTableKind {
     fn make_class_field(&self) -> Vec<CSharpField> {
         match self {
-            XData::Dictionary(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
-            XData::Enumerate(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
-            XData::Class(v) => v.items.iter().map(|v| v.make_class_field()).collect(),
+            XTableKind::Array(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
+            XTableKind::Enumerate(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
+            XTableKind::Class(v) => v.items.iter().map(|v| v.make_class_field()).collect(),
+            XTableKind::Dictionary(_) => {
+                todo!()
+            }
         }
     }
     fn make_enum_field(&self) -> Vec<CSharpEnum> {
         match self {
-            XData::Dictionary(_) => vec![],
-            XData::Enumerate(v) => {
+            XTableKind::Array(_) => vec![],
+            XTableKind::Enumerate(v) => {
                 v.data.values().map(|v| CSharpEnum { name: v.name.to_string(), number: v.id.to_string() }).collect()
             }
-            XData::Class(_) => {
+            XTableKind::Class(_) => {
                 vec![]
+            }
+            XTableKind::Dictionary(_) => {
+                todo!()
             }
         }
     }

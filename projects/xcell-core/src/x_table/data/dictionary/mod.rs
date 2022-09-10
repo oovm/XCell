@@ -4,7 +4,7 @@ use crate::{utils::first_not_nil, CalamineTable};
 
 use super::*;
 
-impl XDataDictionary {
+impl XArrayTable {
     pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
         // 防止双重 borrow
         let typing = self.headers.iter().cloned().collect_vec();

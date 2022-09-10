@@ -5,7 +5,7 @@ use itertools::Itertools;
 use xcell_errors::Validation;
 use xcell_types::{EnumerateDescription, IntegerKind, StringDescription, TypeMetaInfo};
 
-use crate::{utils::first_not_nil, CalamineTable, Success, WorkspaceManager, XCellHeader, XCellTable};
+use crate::{utils::first_not_nil, CalamineTable, Success, WorkspaceManager, XCellHeader, XTable};
 
 use super::*;
 
@@ -16,26 +16,33 @@ mod dictionary;
 mod enumerate;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum XData {
-    Dictionary(Box<XDataDictionary>),
-    Enumerate(Box<XDataEnumerate>),
-    Class(Box<XDataClass>),
+pub enum XTableKind {
+    Array(Box<XArrayTable>),
+    Dictionary(Box<XDictionaryTable>),
+    Enumerate(Box<XEnumerateTable>),
+    Class(Box<XClassTable>),
 }
 
-impl Default for XData {
+impl Default for XTableKind {
     fn default() -> Self {
-        Self::Dictionary(Default::default())
+        Self::Array(Default::default())
     }
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XDataDictionary {
+pub struct XArrayTable {
     pub headers: Vec<XCellHeader>,
     pub data: Vec<XDataItem>,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XDataEnumerate {
+pub struct XDictionaryTable {
+    pub headers: Vec<XCellHeader>,
+    pub data: Vec<XDataItem>,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XEnumerateTable {
     /// 0 表示未设置
     pub id_column: usize,
     pub id_type: IntegerKind,
@@ -44,8 +51,9 @@ pub struct XDataEnumerate {
     pub data: BTreeMap<String, XDataItem>,
 }
 
+/// 生成一个类, 适用于全局配置
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XDataClass {
+pub struct XClassTable {
     pub items: Vec<XClassItem>,
 }
 
@@ -57,17 +65,20 @@ pub struct XDataItem {
     pub data: Vec<XCellValueKind>,
 }
 
-impl XData {
+impl XTableKind {
     pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path, meta: &TypeMetaInfo) {
         match self {
-            XData::Dictionary(v) => v.read_table_data(table, path),
-            XData::Enumerate(v) => v.read_table_data(table, path),
-            XData::Class(v) => v.read_table_data(table, path, meta),
+            XTableKind::Array(v) => v.read_table_data(table, path),
+            XTableKind::Enumerate(v) => v.read_table_data(table, path),
+            XTableKind::Class(v) => v.read_table_data(table, path, meta),
+            XTableKind::Dictionary(_) => {
+                todo!()
+            }
         }
     }
 }
 
-impl XData {
+impl XTableKind {
     pub fn key_field(&self) -> String {
         self.key_item().map(|v| v.field_name.as_str()).unwrap_or("id").to_string()
     }
@@ -76,34 +87,46 @@ impl XData {
     }
     fn key_item(&self) -> Option<&XCellHeader> {
         match self {
-            XData::Dictionary(v) => v.headers.get(0),
-            XData::Enumerate(v) => v.headers.get(0),
-            XData::Class(_) => None,
+            XTableKind::Array(v) => v.headers.get(0),
+            XTableKind::Enumerate(v) => v.headers.get(0),
+            XTableKind::Class(_) => None,
+            XTableKind::Dictionary(_) => {
+                todo!()
+            }
         }
     }
     pub fn rows(&self) -> Vec<&XDataItem> {
         match self {
-            XData::Dictionary(v) => v.data.iter().collect(),
-            XData::Enumerate(v) => v.data.values().collect(),
-            XData::Class(_) => {
+            XTableKind::Array(v) => v.data.iter().collect(),
+            XTableKind::Enumerate(v) => v.data.values().collect(),
+            XTableKind::Class(_) => {
                 vec![]
+            }
+            XTableKind::Dictionary(_) => {
+                todo!()
             }
         }
     }
     pub fn headers(&self) -> Vec<&XCellHeader> {
         match self {
-            XData::Dictionary(v) => v.headers.iter().collect(),
-            XData::Enumerate(v) => v.headers.iter().collect(),
-            XData::Class(_) => {
+            XTableKind::Array(v) => v.headers.iter().collect(),
+            XTableKind::Enumerate(v) => v.headers.iter().collect(),
+            XTableKind::Class(_) => {
                 vec![]
+            }
+            XTableKind::Dictionary(_) => {
+                todo!()
             }
         }
     }
     pub fn rows_count(&self) -> usize {
         match self {
-            XData::Dictionary(v) => v.data.len(),
-            XData::Enumerate(v) => v.data.len(),
-            XData::Class(v) => v.items.len(),
+            XTableKind::Array(v) => v.data.len(),
+            XTableKind::Enumerate(v) => v.data.len(),
+            XTableKind::Class(v) => v.items.len(),
+            XTableKind::Dictionary(_) => {
+                todo!()
+            }
         }
     }
 }

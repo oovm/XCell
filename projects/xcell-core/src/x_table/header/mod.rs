@@ -1,13 +1,13 @@
 use crate::{
     config::{ProjectConfig, TableLineMode},
-    CalamineTable, XDataDictionary, XDataEnumerate,
+    CalamineTable, XArrayTable, XEnumerateTable,
 };
 
 use super::*;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XCellHeader {
-    /// 位置
+    /// 位置信息
     pub column: usize,
     /// 短描述
     pub summary: String,
@@ -26,18 +26,18 @@ impl XCellHeader {
             None => Err(XError::table_error("无法读取数据")),
         }
     }
-    fn try_read_table_kind(table: &CalamineTable, project: &ProjectConfig) -> Option<XData> {
+    fn try_read_table_kind(table: &CalamineTable, project: &ProjectConfig) -> Option<XTableKind> {
         let line = project.line.field.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
         match cell.get_string()? {
-            "enum" => return Some(XData::Enumerate(Box::default())),
-            "class" => return Some(XData::Class(Box::default())),
+            "enum" => return Some(XTableKind::Enumerate(Box::default())),
+            "class" => return Some(XTableKind::Class(Box::default())),
             _ => {}
         }
         let line = project.line.typing.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
         match XCellTyped::parse(cell.get_string()?, &project.typing) {
-            XCellTyped::Integer(_) => Some(XData::Dictionary(Box::default())),
+            XCellTyped::Integer(_) => Some(XTableKind::Array(Box::default())),
             // XCellTyped::String(_) => Some(XData::String(Box::new(XDataString::default()))),
             // 默认初始化就是 String, 就不用分配了
             XCellTyped::String(_) => None,
@@ -49,7 +49,7 @@ impl XCellHeader {
     }
 }
 
-impl XData {
+impl XTableKind {
     /// 获取表格的类型, 表格类型由于第三行的第一列决定
     pub fn read_table_kind(&mut self, table: &CalamineTable, project: &ProjectConfig) {
         if let Some(s) = XCellHeader::try_read_table_kind(table, project) {
@@ -59,10 +59,13 @@ impl XData {
     pub fn read_table_headers(&mut self, table: &CalamineTable, project: &ProjectConfig) {
         self.read_table_kind(table, project);
         let res = match self {
-            XData::Dictionary(v) => v.read_table_headers(table, project),
-            XData::Enumerate(v) => v.read_table_headers(table, project),
-            XData::Class(_) => {
+            XTableKind::Array(v) => v.read_table_headers(table, project),
+            XTableKind::Enumerate(v) => v.read_table_headers(table, project),
+            XTableKind::Class(_) => {
                 return;
+            }
+            XTableKind::Dictionary(_) => {
+                todo!()
             }
         };
         match res {
@@ -72,7 +75,7 @@ impl XData {
     }
 }
 
-impl XDataDictionary {
+impl XArrayTable {
     pub fn read_table_headers(&mut self, table: &CalamineTable, project: &ProjectConfig) -> XResult<()> {
         let line = project.line.typing;
         let row = match table.rows().take(line).last() {
@@ -99,7 +102,7 @@ impl XDataDictionary {
     }
 }
 
-impl XDataEnumerate {
+impl XEnumerateTable {
     pub fn read_table_headers(&mut self, table: &CalamineTable, project: &ProjectConfig) -> XResult<()> {
         let line = project.line.typing;
         let row = match table.rows().take(line).last() {

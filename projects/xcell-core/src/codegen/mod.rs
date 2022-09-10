@@ -17,7 +17,7 @@ use xcell_types::{
     ByteOrder, StreamWriter, XCellValueKind,
 };
 
-use crate::{BinaryWriter, DataContractWriter, MergedTable, UnityCodegen, XCellHeader, XCellTable, XData, XDataItem};
+use crate::{BinaryWriter, DataContractWriter, MergedTable, UnityCodegen, XCellHeader, XDataItem, XTable, XTableKind};
 
 pub mod binary;
 pub mod readable;

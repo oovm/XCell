@@ -76,7 +76,8 @@ impl XCellValueKind {
             }
             None => {
                 *self = map.integer.cast_integer(default);
-                Err(XError::table_error(format!("未知的枚举值 `{}`", typing)))
+                let ty = typing.as_enumerate().unwrap();
+                Err(XError::table_error(format!("未知的枚举值 `{}` = {:?}\n映射: {:?}", ty.typing, value, ty.mapping)))
             }
         }
     }

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use xcell_errors::{
     for_3rd::{Color, DataType, DateTime, NaiveDateTime, TimeZone, Utc},
-    XError, XResult,
+    XResult,
 };
 
 use crate::{
@@ -72,13 +72,11 @@ impl XCellValueKind {
         match value {
             Some(s) => {
                 *self = map.integer.cast_integer(s);
-                Ok(())
             }
             None => {
                 *self = map.integer.cast_integer(default);
-                let ty = typing.as_enumerate().unwrap();
-                Err(XError::table_error(format!("未知的枚举值 `{}` = {:?}\n映射: {:?}", ty.typing, value, ty.mapping)))
             }
         }
+        Ok(())
     }
 }

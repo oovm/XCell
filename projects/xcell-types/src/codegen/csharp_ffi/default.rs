@@ -21,49 +21,49 @@ impl XCellTyped {
     }
 }
 
-impl XCellValueKind {
+impl XCellValue {
     pub fn as_csharp_value(&self) -> String {
         match self {
-            XCellValueKind::Boolean(v) => v.to_string(),
-            XCellValueKind::Integer8(v) => v.to_string(),
-            XCellValueKind::Integer16(v) => v.to_string(),
-            XCellValueKind::Integer32(v) => v.to_string(),
-            XCellValueKind::Integer64(v) => v.to_string(),
-            XCellValueKind::Unsigned8(v) => v.to_string(),
-            XCellValueKind::Unsigned16(v) => v.to_string(),
-            XCellValueKind::Unsigned32(v) => v.to_string(),
-            XCellValueKind::Unsigned64(v) => v.to_string(),
-            XCellValueKind::Float32(_) => {
+            XCellValue::Boolean(v) => v.to_string(),
+            XCellValue::Integer8(v) => v.to_string(),
+            XCellValue::Integer16(v) => v.to_string(),
+            XCellValue::Integer32(v) => v.to_string(),
+            XCellValue::Integer64(v) => v.to_string(),
+            XCellValue::Unsigned8(v) => v.to_string(),
+            XCellValue::Unsigned16(v) => v.to_string(),
+            XCellValue::Unsigned32(v) => v.to_string(),
+            XCellValue::Unsigned64(v) => v.to_string(),
+            XCellValue::Float32(_) => {
                 todo!()
             }
-            XCellValueKind::Float64(_) => {
+            XCellValue::Float64(_) => {
                 todo!()
             }
-            XCellValueKind::Vector2(_) => {
+            XCellValue::Vector2(_) => {
                 todo!()
             }
-            XCellValueKind::Vector3(_) => {
+            XCellValue::Vector3(_) => {
                 todo!()
             }
-            XCellValueKind::Vector4(_) => {
+            XCellValue::Vector4(_) => {
                 todo!()
             }
-            XCellValueKind::Color4(_) => {
+            XCellValue::Color4(_) => {
                 todo!()
             }
-            XCellValueKind::Quaternion4(_) => {
+            XCellValue::Quaternion4(_) => {
                 todo!()
             }
-            XCellValueKind::String(_) => {
+            XCellValue::String(_) => {
                 todo!()
             }
-            XCellValueKind::Color(_) => {
+            XCellValue::Color(_) => {
                 todo!()
             }
-            XCellValueKind::Enumerate(_) => {
+            XCellValue::Enumerate(_) => {
                 todo!()
             }
-            XCellValueKind::Vector(_) => {
+            XCellValue::Vector(_) => {
                 todo!()
             }
         }

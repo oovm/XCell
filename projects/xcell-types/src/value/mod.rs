@@ -21,9 +21,9 @@ mod display;
 pub mod time;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct XCellValue {
+pub struct XCellNode {
     /// 实际储存的值
-    pub kind: XCellValueKind,
+    pub kind: XCellValue,
     /// 从左往右数第几个, 0-index
     pub x: usize,
     /// 从上往下数第几个, 0-index
@@ -31,7 +31,7 @@ pub struct XCellValue {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum XCellValueKind {
+pub enum XCellValue {
     Boolean(bool),
     Integer8(i8),
     Integer16(i16),
@@ -51,20 +51,20 @@ pub enum XCellValueKind {
     String(String),
     Color(Color),
     // Time(DateTime),
-    Vector(Vec<XCellValueKind>),
+    Vector(Vec<XCellValue>),
     Enumerate(String),
 }
 
-impl Default for XCellValueKind {
+impl Default for XCellValue {
     fn default() -> Self {
         Self::Boolean(false)
     }
 }
 
-impl XCellValueKind {
+impl XCellValue {
     pub fn link_enumerate(&mut self, typing: &XCellTyped) -> XResult<()> {
         let (value, map) = match (&self, typing) {
-            (XCellValueKind::Enumerate(v), XCellTyped::Enumerate(t)) => (v, t),
+            (XCellValue::Enumerate(v), XCellTyped::Enumerate(t)) => (v, t),
             _ => return Ok(()),
         };
         let default = map.mapping.get(&map.default).cloned().unwrap_or_default();

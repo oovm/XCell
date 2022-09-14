@@ -13,7 +13,7 @@ pub use crate::{
     value::{color::ColorDescription, time::TimeDescription},
     vector::VectorDescription,
 };
-use crate::{BooleanDescription, XCellValueKind};
+use crate::{BooleanDescription, XCellValue};
 
 mod display;
 mod parser;
@@ -51,7 +51,7 @@ impl Default for XCellTyped {
 }
 
 impl XCellTyped {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValueKind> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         match self {
             XCellTyped::Boolean(typing) => typing.parse_cell(cell),
             XCellTyped::Integer(typing) => typing.parse_cell(cell),

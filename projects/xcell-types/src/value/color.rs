@@ -21,8 +21,8 @@ impl ColorDescription {
         Ok(Color::from_str(input.as_ref())?)
     }
 
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValueKind> {
-        self.parse_value(cell).map(XCellValueKind::Color)
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+        self.parse_value(cell).map(XCellValue::Color)
     }
     fn parse_value(&self, cell: &DataType) -> XResult<Color> {
         match cell {

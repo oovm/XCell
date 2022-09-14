@@ -35,8 +35,8 @@ impl BooleanDescription {
         Self { default, ..Self::default() }
     }
 
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValueKind> {
-        self.parse_value(cell).map(XCellValueKind::Boolean)
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+        self.parse_value(cell).map(XCellValue::Boolean)
     }
     fn parse_value(&self, cell: &DataType) -> XResult<bool> {
         match cell {

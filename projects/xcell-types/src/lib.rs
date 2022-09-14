@@ -9,7 +9,7 @@ pub use self::{
     integer::{IntegerDescription, IntegerKind},
     string::StringDescription,
     typing::*,
-    value::{color::ColorDescription, time::TimeDescription, XCellValueKind},
+    value::{color::ColorDescription, time::TimeDescription, XCellValue},
     vector::VectorDescription,
 };
 pub use xcell_errors::for_3rd::DateTime;

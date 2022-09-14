@@ -16,7 +16,7 @@ impl UnityManagerWriter {
         Self {
             compiler_version: env!("CARGO_PKG_VERSION"),
             table_version: version.to_string(),
-            edit_time: XCellValueKind::csharp_now(),
+            edit_time: XCellValue::csharp_now(),
             config: unity.clone(),
             tables: table.table_names(&unity.suffix_table).into_iter().sorted().collect(),
         }

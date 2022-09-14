@@ -5,7 +5,7 @@ use xcell_errors::for_3rd::{Datelike, Timelike, Utc, Zero};
 
 use crate::{
     ArrayDescription, ArrayKind, BooleanDescription, ColorDescription, DecimalDescription, DecimalKind, IntegerDescription,
-    IntegerKind, StringDescription, TimeDescription, XCellTyped, XCellValueKind,
+    IntegerKind, StringDescription, TimeDescription, XCellTyped, XCellValue,
 };
 
 mod default;
@@ -25,7 +25,7 @@ pub struct CSharpWriter {
     pub properties: Vec<String>,
 }
 
-impl XCellValueKind {
+impl XCellValue {
     pub fn csharp_now() -> String {
         let now = Utc::now();
         format!(

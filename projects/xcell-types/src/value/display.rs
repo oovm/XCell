@@ -1,67 +1,67 @@
 use super::*;
 
-impl Display for XCellValueKind {
+impl Display for XCellValue {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            XCellValueKind::Boolean(v) => {
+            XCellValue::Boolean(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Integer8(v) => {
+            XCellValue::Integer8(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Integer16(v) => {
+            XCellValue::Integer16(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Integer32(v) => {
+            XCellValue::Integer32(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Integer64(v) => {
+            XCellValue::Integer64(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Unsigned8(v) => {
+            XCellValue::Unsigned8(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Unsigned16(v) => {
+            XCellValue::Unsigned16(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Unsigned32(v) => {
+            XCellValue::Unsigned32(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Unsigned64(v) => {
+            XCellValue::Unsigned64(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Float32(v) => {
+            XCellValue::Float32(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Float64(v) => {
+            XCellValue::Float64(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::String(v) => {
+            XCellValue::String(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Color(v) => {
+            XCellValue::Color(v) => {
                 write!(f, "{v}")
             }
-            XCellValueKind::Vector2(_) => {
+            XCellValue::Vector2(_) => {
                 todo!()
             }
-            XCellValueKind::Vector3(_) => {
+            XCellValue::Vector3(_) => {
                 todo!()
             }
-            XCellValueKind::Vector4(_) => {
+            XCellValue::Vector4(_) => {
                 todo!()
             }
-            XCellValueKind::Color4(_) => {
+            XCellValue::Color4(_) => {
                 todo!()
             }
-            XCellValueKind::Quaternion4(_) => {
+            XCellValue::Quaternion4(_) => {
                 todo!()
             }
-            XCellValueKind::Vector(v) => {
+            XCellValue::Vector(v) => {
                 println!("{v:?}");
                 Ok(())
             }
-            XCellValueKind::Enumerate(v) => {
+            XCellValue::Enumerate(v) => {
                 write!(f, "{v}")
             }
         }

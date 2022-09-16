@@ -5,7 +5,8 @@ use itertools::Itertools;
 use xcell_errors::Validation;
 use xcell_types::{EnumerateDescription, IntegerKind, StringDescription, TypeMetaInfo};
 
-use crate::{utils::first_not_nil, CalamineTable, Success, WorkspaceManager, XCellHeader, XTable};
+use crate::{CalamineTable, Success, utils::first_not_nil, WorkspaceManager, XCellHeader, XTable};
+use crate::language::XLanguageTable;
 
 use super::*;
 
@@ -14,6 +15,7 @@ pub use self::class::XClassItem;
 mod class;
 mod dictionary;
 mod enumerate;
+pub mod language;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XTableKind {
@@ -21,6 +23,7 @@ pub enum XTableKind {
     Dictionary(Box<XDictionaryTable>),
     Enumerate(Box<XEnumerateTable>),
     Class(Box<XClassTable>),
+    Language(Box<XLanguageTable>),
 }
 
 impl Default for XTableKind {
@@ -40,6 +43,7 @@ pub struct XDictionaryTable {
     pub headers: Vec<XCellHeader>,
     pub data: Vec<XDataItem>,
 }
+
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XEnumerateTable {
@@ -75,6 +79,7 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
+            XTableKind::Language(_) => {}
         }
     }
 }
@@ -94,6 +99,7 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
+            XTableKind::Language(_) => { todo!() }
         }
     }
     pub fn rows(&self) -> Vec<&XDataItem> {
@@ -104,6 +110,7 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
+            XTableKind::Language(_) => { todo!() }
         }
     }
     pub fn headers(&self) -> Vec<&XCellHeader> {
@@ -116,6 +123,9 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
+            XTableKind::Language(_) => {
+                todo!()
+            }
         }
     }
     pub fn rows_count(&self) -> usize {
@@ -126,6 +136,7 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
+            XTableKind::Language(_) => { todo!() }
         }
     }
 }

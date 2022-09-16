@@ -33,6 +33,9 @@ impl BinaryWriter {
                     item.write_to(&mut file, ByteOrder::LittleEndian)?
                 }
             }
+            XTableKind::Language(_) => {
+                todo!()
+            }
         }
         Ok(())
     }

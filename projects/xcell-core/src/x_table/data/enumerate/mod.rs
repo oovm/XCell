@@ -69,6 +69,7 @@ impl XTable {
             XTableKind::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
             XTableKind::Class(_) => {}
             XTableKind::Dictionary(_) => {}
+            XTableKind::Language(_) => {}
         };
         self.enumeration_linked = true;
         errors
@@ -110,6 +111,7 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
+            XTableKind::Language(_) => {   todo!()}
         }
         Success { value, diagnostics }
     }

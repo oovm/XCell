@@ -2,7 +2,12 @@ use super::*;
 
 impl Default for TableLineMode {
     fn default() -> Self {
-        Self { typing: 1, field: 2, helper: 3, data: 4 }
+        Self {
+            helper: 1,
+            field: 2,
+            typing: 3,
+            data: 4,
+        }
     }
 }
 
@@ -14,8 +19,8 @@ impl<'de> Visitor<'de> for TableConfig {
     }
 
     fn visit_map<A>(mut self, mut map: A) -> Result<Self::Value, A::Error>
-    where
-        A: MapAccess<'de>,
+        where
+            A: MapAccess<'de>,
     {
         while let Some(key) = read_map_next_key_lowercase(&mut map)? {
             match key.as_str() {
@@ -37,8 +42,8 @@ impl<'de> Visitor<'de> for TableLineMode {
     }
 
     fn visit_map<A>(mut self, mut map: A) -> Result<Self::Value, A::Error>
-    where
-        A: MapAccess<'de>,
+        where
+            A: MapAccess<'de>,
     {
         while let Some(key) = read_map_next_key_lowercase(&mut map)? {
             match key.as_str() {

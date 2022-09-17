@@ -16,9 +16,3 @@ pub struct LanguageItem {
     group: String,
     key: String,
 }
-
-#[test]
-fn test() {
-    let out = locale_codes::script::lookup_by_alpha("zh-hans").unwrap();
-    println!("out: {:#?}", out)
-}

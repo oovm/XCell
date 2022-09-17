@@ -54,15 +54,6 @@ impl XTable {
         xcell.try_set_name()?;
         xcell.try_load_header(global)?;
         xcell.try_load_config(global)?;
-
-        if xcell.check_sum_change() {
-            match xcell.reload_data() {
-                Ok(_) => {}
-                Err(e) => {
-                    log::error!("{e}")
-                }
-            }
-        }
         Ok(xcell)
     }
     fn try_set_name(&mut self) -> XResult<()> {
@@ -92,47 +83,6 @@ impl XTable {
     pub fn reload_data(&mut self) -> XResult<()> {
         let table = find_first_table(&self.path)?;
         self.data.read_table_data(&table, &self.path, &self.config.typing);
-        Ok(())
-    }
-    pub fn id(&self) -> u64 {
-        xx_hash(self)
-    }
-    /// 检测是否要重新加载表格
-    pub fn check_sum_change(&mut self) -> bool {
-        self.check_excel_change() || self.check_config_change()
-    }
-    /// 检测表格是否发生变化
-    pub fn check_excel_change(&mut self) -> bool {
-        let sum = match xx_file(&self.path) {
-            Ok(o) => o,
-            Err(_) => return false,
-        };
-        let changed = self.sum_excel != sum;
-        if changed {
-            self.sum_excel = sum;
-        }
-        changed
-    }
-    /// 检查配置是否发生变化
-    pub fn check_config_change(&mut self) -> bool {
-        let sum = 0;
-        let changed = self.sum_excel != sum;
-        if changed {
-            self.sum_excel = sum;
-        }
-        changed
-    }
-}
-
-impl XTable {
-    pub fn on_config_change(&mut self, global: &ProjectConfig) -> XResult<()> {
-        self.try_load_header(global)?;
-        self.try_load_config(global)?;
-        self.on_excel_change()?;
-        Ok(())
-    }
-    pub fn on_excel_change(&mut self) -> XResult<()> {
-        self.reload_data()?;
         Ok(())
     }
 }

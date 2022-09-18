@@ -1,8 +1,18 @@
-use crate::config::ProjectConfig;
-
 use super::*;
 
 mod display;
+
+pub struct CalamineTable2 {
+    table: calamine::Range<DataType>,
+    line: TableLineMode,
+}
+
+impl CalamineTable2 {
+    pub fn load(path: &Path, config: &ProjectConfig) -> XResult<Self> {
+
+
+    }
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XTable {

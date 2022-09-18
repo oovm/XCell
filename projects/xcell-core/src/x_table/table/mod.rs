@@ -1,18 +1,19 @@
+use xcell_types::TypeMetaInfo;
+
+use crate::XCellHeader;
+
 use super::*;
 
 mod display;
+mod calamine_table;
 
 pub struct CalamineTable2 {
     table: calamine::Range<DataType>,
     line: TableLineMode,
+    typing: TypeMetaInfo,
 }
 
-impl CalamineTable2 {
-    pub fn load(path: &Path, config: &ProjectConfig) -> XResult<Self> {
 
-
-    }
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XTable {

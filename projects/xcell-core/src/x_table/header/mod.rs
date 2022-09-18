@@ -1,6 +1,6 @@
 use crate::{
-    config::{ProjectConfig, TableLineMode},
-    CalamineTable, XArrayTable, XEnumerateTable,
+    CalamineTable,
+    config::{ProjectConfig, TableLineMode}, XArrayTable, XEnumerateTable,
 };
 
 use super::*;
@@ -17,6 +17,8 @@ pub struct XCellHeader {
     pub typing: XCellTyped,
     /// 字段名
     pub field_name: String,
+    /// 是否是完整定义
+    pub complete: bool
 }
 
 impl XCellHeader {
@@ -100,7 +102,7 @@ impl XArrayTable {
         let field_type = table.get_value((line, i as u32))?.get_string()?;
         let typing = XCellTyped::parse(field_type, &project.typing);
         let (summary, details) = read_comment_details(table, i, project.line).unwrap_or_default();
-        self.headers.push(XCellHeader { summary, column: i, typing, field_name: field_name.to_string(), details });
+        self.headers.push(XCellHeader { summary, column: i, typing, field_name: field_name.to_string(), details, complete: true });
         None
     }
 }

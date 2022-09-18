@@ -11,7 +11,7 @@ pub struct XClassItem {
 }
 
 impl XClassTable {
-    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path, meta: &TypeMetaInfo) {
+    pub fn read_table_data(&mut self, table: &CalamineTable3, path: &Path, meta: &TypeMetaInfo) {
         for (line, row) in table.rows().enumerate().skip(3) {
             match XClassItem::parse(row, line, meta) {
                 Ok((field, data)) => {

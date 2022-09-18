@@ -7,11 +7,6 @@ use super::*;
 mod display;
 mod calamine_table;
 
-pub struct CalamineTable2 {
-    path: PathBuf,
-    table: calamine::Range<DataType>,
-    config: TableConfig,
-}
 
 
 

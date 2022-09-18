@@ -5,7 +5,7 @@ use itertools::Itertools;
 use xcell_errors::Validation;
 use xcell_types::{EnumerateDescription, IntegerKind, StringDescription, TypeMetaInfo};
 
-use crate::{CalamineTable, Success, utils::first_not_nil, WorkspaceManager, XCellHeader, XTable};
+use crate::{CalamineTable3, Success, utils::first_not_nil, WorkspaceManager, XCellHeader, XTable};
 use crate::language::XLanguageTable;
 
 use super::*;
@@ -71,7 +71,7 @@ pub struct XDataItem {
 }
 
 impl XTableKind {
-    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path, meta: &TypeMetaInfo) {
+    pub fn read_table_data(&mut self, table: &CalamineTable3, path: &Path, meta: &TypeMetaInfo) {
         match self {
             XTableKind::Array(v) => v.read_table_data(table, path),
             XTableKind::Enumerate(v) => v.read_table_data(table, path),

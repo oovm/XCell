@@ -15,7 +15,7 @@ pub use self::{
         PROJECT_CONFIG,
         ProjectConfig, unity::UnityCodegen, UnityBinaryConfig, WorkspaceManager,
     },
-    x_table::{data::*, header::XCellHeader, language::LanguageManager, table::{CalamineTable2, XTable}},
+    x_table::{data::*, header::XCellHeader, language::LanguageManager, table::{CalamineTable, XTable}},
 };
 
 mod codegen;
@@ -23,5 +23,5 @@ mod config;
 pub mod utils;
 mod x_table;
 
-pub type CalamineTable = calamine::Range<calamine::DataType>;
+pub type CalamineTable3 = calamine::Range<calamine::DataType>;
 

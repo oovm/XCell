@@ -1,5 +1,5 @@
 use crate::{
-    CalamineTable,
+    CalamineTable3,
     config::{ProjectConfig, TableLineMode}, XArrayTable, XEnumerateTable,
 };
 
@@ -28,7 +28,7 @@ impl XCellHeader {
             None => Err(XError::table_error("无法读取数据")),
         }
     }
-    fn try_read_table_kind(table: &CalamineTable, project: &ProjectConfig) -> Option<XTableKind> {
+    fn try_read_table_kind(table: &CalamineTable3, project: &ProjectConfig) -> Option<XTableKind> {
         let line = project.line.field.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
         match cell.get_string()? {
@@ -53,12 +53,12 @@ impl XCellHeader {
 
 impl XTableKind {
     /// 获取表格的类型, 表格类型由于第三行的第一列决定
-    pub fn read_table_kind(&mut self, table: &CalamineTable, project: &ProjectConfig) {
+    pub fn read_table_kind(&mut self, table: &CalamineTable3, project: &ProjectConfig) {
         if let Some(s) = XCellHeader::try_read_table_kind(table, project) {
             *self = s
         }
     }
-    pub fn read_table_headers(&mut self, table: &CalamineTable, project: &ProjectConfig) {
+    pub fn read_table_headers(&mut self, table: &CalamineTable3, project: &ProjectConfig) {
         self.read_table_kind(table, project);
         let res = match self {
             XTableKind::Array(v) => v.read_table_headers(table, project),
@@ -81,7 +81,7 @@ impl XTableKind {
 }
 
 impl XArrayTable {
-    pub fn read_table_headers(&mut self, table: &CalamineTable, project: &ProjectConfig) -> XResult<()> {
+    pub fn read_table_headers(&mut self, table: &CalamineTable3, project: &ProjectConfig) -> XResult<()> {
         let line = project.line.typing;
         let row = match table.rows().take(line).last() {
             Some(s) => s,
@@ -95,7 +95,7 @@ impl XArrayTable {
         }
         Ok(())
     }
-    fn read_valid_header(&mut self, table: &CalamineTable, i: usize, project: &ProjectConfig) -> Option<()> {
+    fn read_valid_header(&mut self, table: &CalamineTable3, i: usize, project: &ProjectConfig) -> Option<()> {
         let line = project.line.field.saturating_sub(1) as u32;
         let field_name = table.get_value((line, i as u32))?.get_string()?;
         let line = project.line.typing.saturating_sub(1) as u32;
@@ -108,7 +108,7 @@ impl XArrayTable {
 }
 
 impl XEnumerateTable {
-    pub fn read_table_headers(&mut self, table: &CalamineTable, project: &ProjectConfig) -> XResult<()> {
+    pub fn read_table_headers(&mut self, table: &CalamineTable3, project: &ProjectConfig) -> XResult<()> {
         let line = project.line.typing;
         let row = match table.rows().take(line).last() {
             Some(s) => s,
@@ -122,7 +122,7 @@ impl XEnumerateTable {
         }
         Ok(())
     }
-    fn read_valid_header(&mut self, table: &CalamineTable, i: usize, project: &ProjectConfig) -> Option<()> {
+    fn read_valid_header(&mut self, table: &CalamineTable3, i: usize, project: &ProjectConfig) -> Option<()> {
         let line = project.line.field.saturating_sub(1) as u32;
         let field_name = table.get_value((line, i as u32))?.get_string()?;
         let mut set_id = false;
@@ -153,7 +153,7 @@ impl XEnumerateTable {
     }
 }
 
-fn read_comment_details(table: &CalamineTable, i: usize, line: TableLineMode) -> Option<(String, String)> {
+fn read_comment_details(table: &CalamineTable3, i: usize, line: TableLineMode) -> Option<(String, String)> {
     let line = line.helper.saturating_sub(1) as u32;
     let comment = table.get_value((line, i as u32))?;
     let summary = comment.to_string();

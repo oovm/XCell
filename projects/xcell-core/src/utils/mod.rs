@@ -5,14 +5,16 @@ use std::{
     path::{Path, PathBuf},
 };
 
-mod watcher;
-
-pub use self::workspace::*;
-use calamine::{open_workbook_auto, DataType, Reader};
+use calamine::{DataType, open_workbook_auto, Reader};
 use itertools::Itertools;
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
+
 use xcell_errors::{XError, XResult};
+
+pub use self::workspace::*;
+
+mod watcher;
 
 mod workspace;
 
@@ -57,8 +59,8 @@ pub fn first_not_nil(row: &[DataType]) -> bool {
 }
 
 pub fn xx_hash<T>(body: T) -> u64
-where
-    T: Hash,
+    where
+        T: Hash,
 {
     let mut hasher = XxHash64::default();
     body.hash(&mut hasher);
@@ -100,4 +102,18 @@ pub fn split_namespace(s: &str) -> Vec<&str> {
         }
     }
     all
+}
+
+
+pub fn norm_string(s: &str) {
+    let mut out = String::with_capacity(s.len());
+    for char in s.chars() {
+        if char == '-' || char == '_' || char == ' ' {
+            continue;
+        }
+        if char.is_ascii() {
+            out.push(char.to_ascii_lowercase());
+        }
+        out.push(char);
+    }
 }

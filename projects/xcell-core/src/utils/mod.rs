@@ -8,7 +8,6 @@ use std::{
 mod watcher;
 
 pub use self::workspace::*;
-use crate::CalamineTable;
 use calamine::{open_workbook_auto, DataType, Reader};
 use itertools::Itertools;
 use pathdiff::diff_paths;
@@ -30,7 +29,7 @@ mod workspace;
 /// ```
 /// use xcell_core;
 /// ```
-pub fn find_first_table(path: &Path) -> XResult<CalamineTable> {
+pub fn find_first_table(path: &Path) -> XResult<calamine::Range<DataType>> {
     let mut workbook = open_workbook_auto(path)?;
     let ranges = match workbook.worksheet_range_at(0) {
         None => return Err(XError::table_error("找不到配置表, 文件是空的, 或者表格式非法")),

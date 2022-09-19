@@ -52,9 +52,6 @@ impl XCellTyped {
             XCellTyped::Enumerate(v) => v.typing.to_owned(),
             XCellTyped::Array(v) => v.as_csharp_type().to_string(),
             XCellTyped::Vector(v) => format!("List<{}>", v.get_type().as_csharp_type()),
-            XCellTyped::LanguageID => {todo!()}
-            XCellTyped::LanguageKey => {todo!()}
-            XCellTyped::LanguageValue => {todo!()}
         }
     }
 }

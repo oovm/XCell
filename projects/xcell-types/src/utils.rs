@@ -1,4 +1,5 @@
 use std::collections::BTreeSet;
+
 use xcell_errors::{for_3rd::DataType, XError, XErrorKind, XResult};
 
 #[macro_export]
@@ -23,6 +24,19 @@ where
 {
     let kind = XErrorKind::TypeMismatch { except: except.into(), current: cell.to_string() };
     Err(XError::new(kind))
+}
+
+pub fn contains_lowercase<I, S>(iter: I, s: &str) -> bool
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
+    for item in iter {
+        if item.as_ref().eq_ignore_ascii_case(s) {
+            return true;
+        }
+    }
+    false
 }
 
 pub fn syntax_error<T, A>(msg: A) -> XResult<T>

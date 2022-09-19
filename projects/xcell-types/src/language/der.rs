@@ -1,15 +1,11 @@
-use super::*;
-
 use crate::default_deserialize;
+
+use super::*;
 
 default_deserialize![LanguageDescription];
 impl Default for LanguageDescription {
     fn default() -> Self {
-        Self {
-            group: BTreeSet::from_iter(vec!["true".to_string()]),
-            reject: BTreeSet::from_iter(vec!["false".to_string()]),
-            default: false,
-        }
+        Self { group: BTreeSet::from_iter(vec!["group".to_string()]) }
     }
 }
 
@@ -25,13 +21,7 @@ impl<'de> Visitor<'de> for LanguageDescription {
     {
         while let Some(key) = map.next_key::<&str>()? {
             match key {
-                "default" => read_map_next_value(&mut map, |e| self.default = e),
-                "accept" | "true" => {
-                    read_map_next_value(&mut map, |e: OneOrMany<String>| self.group = BTreeSet::from_iter(e.unwrap()))
-                }
-                "reject" | "false" => {
-                    read_map_next_value(&mut map, |e: OneOrMany<String>| self.reject = BTreeSet::from_iter(e.unwrap()))
-                }
+                "group" => read_map_next_value(&mut map, |e: OneOrMany<String>| self.group = BTreeSet::from_iter(e.unwrap())),
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
             }
         }

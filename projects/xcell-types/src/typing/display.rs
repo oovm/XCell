@@ -12,9 +12,6 @@ impl Debug for XCellTyped {
             XCellTyped::Enumerate(v) => Debug::fmt(v, f),
             XCellTyped::Array(v) => Debug::fmt(v, f),
             XCellTyped::Vector(v) => Debug::fmt(v, f),
-            XCellTyped::LanguageID => {todo!()}
-            XCellTyped::LanguageKey => {todo!()}
-            XCellTyped::LanguageValue => {todo!()}
         }
     }
 }

@@ -33,9 +33,6 @@ pub struct TypeMetaInfo {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum XCellTyped {
-    LanguageID,
-    LanguageKey,
-    LanguageValue,
     Boolean(Box<BooleanDescription>),
     Integer(Box<IntegerDescription>),
     Decimal(Box<DecimalDescription>),
@@ -65,9 +62,6 @@ impl XCellTyped {
             XCellTyped::Enumerate(typing) => typing.parse_cell(cell),
             XCellTyped::Array(typing) => typing.parse_cell(cell),
             XCellTyped::Vector(typing) => typing.parse_cell(cell),
-            XCellTyped::LanguageID => {todo!()}
-            XCellTyped::LanguageKey => {todo!()}
-            XCellTyped::LanguageValue => {todo!()}
         }
     }
 }

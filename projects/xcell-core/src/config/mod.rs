@@ -1,11 +1,11 @@
 use std::{
     any::type_name,
     collections::BTreeMap,
+    convert::Infallible,
     fmt::{Debug, Formatter},
     fs::read_to_string,
     path::{Path, PathBuf},
 };
-use std::convert::Infallible;
 
 use serde::{
     de::{MapAccess, Visitor},
@@ -25,9 +25,9 @@ use xcell_types::{default_deserialize, EnumerateDescription, TypeMetaInfo};
 use crate::{
     config::unity::UnityCodegen,
     utils::{get_relative, valid_file},
-    XTable, XTableKind,
+    x_table::language::manager::LanguageManager,
+    XLanguageTable, XTable, XTableKind,
 };
-use crate::language::XLanguageTable;
 
 pub use self::{
     project::ProjectConfig,
@@ -39,8 +39,6 @@ pub mod merge_rules;
 mod project;
 mod table;
 pub mod unity;
-use crate::LanguageManager;
-use crate::utils::find_first_table;
 use crate::x_table::table::CalamineTable;
 
 /// 默认的全局项目设置
@@ -50,8 +48,8 @@ pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
     pub file_mapping: BTreeMap<PathBuf, XTable>,
-    pub enum_mapping: BTreeMap<String, EnumerateDescription>,
-    pub lang_mapping: LanguageManager
+    pub enum_mapping: EnumerateManager,
+    pub lang_mapping: LanguageManager,
 }
 
 default_deserialize![ProjectConfig, TableConfig, TableLineMode];
@@ -78,7 +76,13 @@ impl WorkspaceManager {
         }
         let config = ProjectConfig::new(&root);
         let glob_pattern = build_glob_set(&config.include).unwrap();
-        Ok(Self { config, glob_pattern, file_mapping: Default::default(), enum_mapping: Default::default(), lang_mapping: Default::default() })
+        Ok(Self {
+            config,
+            glob_pattern,
+            file_mapping: Default::default(),
+            enum_mapping: Default::default(),
+            lang_mapping: Default::default(),
+        })
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
@@ -130,21 +134,6 @@ impl WorkspaceManager {
             return s.perform(&mut self);
         }
 
-
-        if let XTableKind::Enumerate(e) = &table.data {
-            let mut mapping = BTreeMap::default();
-            for (key, item) in &e.data {
-                mapping.insert(key.clone(), item.id.clone());
-            }
-            let ed = EnumerateDescription {
-                integer: e.id_type,
-                typing: table.name.clone(),
-                // TODO
-                default: "".to_string(),
-                mapping,
-            };
-            self.insert_enum_mapping(ed)
-        }
         self.file_mapping.insert(file.to_path_buf(), table);
         Ok(())
     }

@@ -24,7 +24,7 @@ impl CalamineTable {
     }
 }
 
-impl Iterator for CalamineTableHeaders {
+impl<'i> Iterator for CalamineTableHeaders<'i> {
     type Item = XCellHeader;
 
     fn next(&mut self) -> Option<Self::Item> {

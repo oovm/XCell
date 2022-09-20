@@ -9,13 +9,20 @@ pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult
 pub use xcell_types::*;
 
 pub use self::{
-    codegen::{binary::BinaryWriter, CsvCodegen, xml::DataContractWriter},
+    codegen::{binary::BinaryWriter, xml::DataContractWriter, CsvCodegen},
     config::{
-        merge_rules::{MergedTable, MergeRules, MergeStep},
-        PROJECT_CONFIG,
-        ProjectConfig, unity::UnityCodegen, UnityBinaryConfig, WorkspaceManager,
+        merge_rules::{MergeRules, MergeStep, MergedTable},
+        unity::UnityCodegen,
+        ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG,
     },
-    x_table::{data::*, header::XCellHeader, language::LanguageManager, table::{CalamineTable, XTable}},
+    x_table::{
+        data::*,
+        enumerate::XEnumerateTable,
+        header::XCellHeader,
+        language::{id::XLanguageID, table::XLanguageTable},
+        table::XTable,
+        table::CalamineTable,
+    },
 };
 
 mod codegen;
@@ -24,4 +31,3 @@ pub mod utils;
 mod x_table;
 
 pub type CalamineTable3 = calamine::Range<calamine::DataType>;
-

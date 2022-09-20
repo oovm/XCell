@@ -1,10 +1,26 @@
-use crate::utils::norm_string;
+use calamine::Rows;
+
 use super::*;
 
-pub struct CalamineTableHeaders<'i> {
-    table: &'i CalamineTable,
-    this: usize,
-    last: usize,
+impl CalamineTable {
+    #[inline]
+    pub fn is_language_id(&self, name: &str) -> bool {
+        self.config.typing.language.is_key(name)
+    }
+    #[inline]
+    pub fn is_language_key(&self) -> bool {
+        let name = self.get_header(0).field_name.as_str();
+        self.config.typing.language.is_key(name)
+    }
+    pub fn is_language_value(&self, name: &str) -> bool {
+        self.config.typing.language.is_value(name)
+    }
+    #[inline]
+    pub fn is_group(&self, name: &str) -> bool {
+        self.config.typing.language.is_group(name)
+    }
+
+    pub fn is_enumerate(&self) {}
 }
 
 impl CalamineTable {
@@ -13,11 +29,7 @@ impl CalamineTable {
         let table = find_first_table(&path)?;
         let config = Self::try_load_config(&path, config)?;
         // let toml = config.get_table_config(&table)?;
-        Ok(Self {
-            path,
-            table,
-            config,
-        })
+        Ok(Self { path, table, config })
     }
     fn try_load_config(path: &Path, global: &ProjectConfig) -> XResult<TableConfig> {
         let file = path.with_extension("toml");
@@ -26,35 +38,25 @@ impl CalamineTable {
     }
 }
 
-
-
-
 impl CalamineTable {
     pub fn get_header(&self, index: usize) -> XCellHeader {
         let mut complete = true;
         let field_name = match self.get_field_name(index) {
-            Some(s) => { s }
+            Some(s) => s,
             None => {
                 complete = false;
                 Default::default()
             }
         };
         let typing = match self.get_field_type(index) {
-            Some(s) => { s }
+            Some(s) => s,
             None => {
                 complete = false;
                 Default::default()
             }
         };
         let (summary, details) = self.read_comment_details(index).unwrap_or_default();
-        XCellHeader {
-            column: index,
-            summary,
-            details,
-            typing,
-            field_name,
-            complete,
-        }
+        XCellHeader { column: index, summary, details, typing, field_name, complete }
     }
     fn get_field_name(&self, index: usize) -> Option<String> {
         let line = self.config.line.field.saturating_sub(1) as u32;
@@ -78,35 +80,5 @@ impl CalamineTable {
         let comment = self.table.get_value((line, index as u32))?;
         let summary = comment.to_string();
         Some((summary, String::new()))
-    }
-}
-
-
-impl CalamineTable {
-    pub fn headers(&self) -> CalamineTableHeaders {
-        let mut max_width = 0;
-        for i in self.table.rows() {
-            let width = i.len();
-            if width > max_width {
-                max_width = width;
-            }
-        }
-        CalamineTableHeaders {
-            table: &self,
-            this: 0,
-            last: max_width,
-        }
-    }
-}
-
-impl Iterator for CalamineTableHeaders {
-    type Item = XCellHeader;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.this >= self.last {
-            return None;
-        }
-        self.this += 1;
-        Some(self.table.get_header(self.this))
     }
 }

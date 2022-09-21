@@ -175,7 +175,7 @@ impl XCellTyped {
             XCellTyped::String(_) => "r.ReadString()",
             XCellTyped::Time(_) => "new DateTime(r.ReadInt64(), DateTimeKind.Utc)",
             XCellTyped::Color(_) => "new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
-            XCellTyped::Enumerate(v) => return format!("({}) {}", v.typing, v.integer.as_csharp_reader()),
+            XCellTyped::Enumerate(v) => return format!("({}) {}", v.name, v.integer.as_csharp_reader()),
             XCellTyped::Array(v) => match v.kind {
                 ArrayKind::Vector2 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
                 ArrayKind::Vector3 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",

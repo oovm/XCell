@@ -8,9 +8,13 @@ use xcell_errors::{
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct EnumerateDescription {
+    /// 枚举的名称
+    pub name: String,
+    /// 枚举的类型
     pub integer: IntegerKind,
-    pub typing: String,
+    /// 枚举的默认值
     pub default: String,
+    /// 枚举的字段映射
     pub mapping: BTreeMap<String, BigInt>,
 }
 
@@ -25,7 +29,7 @@ impl EnumerateDescription {
     where
         S: Into<String>,
     {
-        Self { integer: Default::default(), typing: typing.into(), default: "".to_string(), mapping: Default::default() }
+        Self { integer: Default::default(), name: typing.into(), default: "".to_string(), mapping: Default::default() }
     }
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         self.parse_value(cell).map(XCellValue::Enumerate)

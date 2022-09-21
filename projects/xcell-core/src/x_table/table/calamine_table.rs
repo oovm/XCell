@@ -2,6 +2,10 @@ use super::*;
 
 impl CalamineTable {
     #[inline]
+    pub fn get_name(&self) -> String {
+        self.path.file_name().and_then(|s| s.to_str()).unwrap_or("").to_string()
+    }
+    #[inline]
     pub fn is_language_id(&self, name: &str) -> bool {
         self.config.typing.language.is_key(name)
     }

@@ -1,5 +1,5 @@
 use super::*;
-
+use crate::EnumerateManager;
 
 impl WorkspaceManager {
     pub fn link_enumerate(&mut self) {
@@ -7,7 +7,7 @@ impl WorkspaceManager {
             if table.enumeration_linked {
                 return;
             }
-            for e in table.link_enumerate(&self.enum_mapping) {
+            for e in table.link_enumerate(&self.enumerates) {
                 log::error!("{e}")
             }
         }
@@ -15,7 +15,7 @@ impl WorkspaceManager {
 }
 
 impl XTable {
-    pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> Vec<XError> {
+    pub fn link_enumerate(&mut self, all: &EnumerateManager) -> Vec<XError> {
         let mut errors = vec![];
         match &mut self.data {
             XTableKind::Array(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
@@ -30,17 +30,17 @@ impl XTable {
 }
 
 impl XCellHeader {
-    pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> XResult<()> {
+    pub fn link_enumerate(&mut self, all: &EnumerateManager) -> XResult<()> {
         let ed = match self.typing.mut_enumerate() {
             Some(s) => s,
             None => return Ok(()),
         };
-        match all.get(&ed.typing) {
+        match all.get(&ed.name) {
             Some(v) => {
                 *ed = v.clone();
                 Ok(())
             }
-            None => Err(XError::runtime_error(format!("未知的枚举类 `{}`", &ed.typing)).with_x(self.column)),
+            None => Err(XError::runtime_error(format!("未知的枚举类 `{}`", &ed.name)).with_x(self.column)),
         }
     }
 }
@@ -72,7 +72,7 @@ impl XTableKind {
     }
 }
 
-fn link_enumerate_head(headers: &mut Vec<XCellHeader>, errors: &mut Vec<XError>, all: &BTreeMap<String, EnumerateDescription>) {
+fn link_enumerate_head(headers: &mut Vec<XCellHeader>, errors: &mut Vec<XError>, all: &EnumerateManager) {
     for header in headers {
         if let Err(e) = header.link_enumerate(all) {
             errors.push(e)

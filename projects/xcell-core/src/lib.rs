@@ -16,12 +16,12 @@ pub use self::{
         ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG,
     },
     x_table::{
+        comment::XComment,
         data::*,
-        enumerate::XEnumerateTable,
+        enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
         header::XCellHeader,
         language::{id::XLanguageID, table::XLanguageTable},
-        table::XTable,
-        table::CalamineTable,
+        table::{CalamineTable, XTable},
     },
 };
 

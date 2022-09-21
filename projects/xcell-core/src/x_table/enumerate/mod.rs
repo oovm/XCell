@@ -5,12 +5,13 @@ use log::log;
 use xcell_errors::for_3rd::Zero;
 use xcell_types::IntegerDescription;
 
-use crate::{CalamineTable, XDataItem};
+use crate::{CalamineTable, XDataItem, XEnumerateData};
 
 use super::*;
 
+pub mod data;
 mod linker;
-mod manager;
+pub mod manager;
 
 #[derive(Clone, Debug)]
 pub struct XEnumerateTable {
@@ -38,7 +39,10 @@ impl XEnumerateTable {
             }
             if table.is_enumerate_id(&header.field_name) {
                 match header.typing.as_integer() {
-                    Some(s) => out.id_type = s.clone(),
+                    Some(s) => {
+                        out.id_column = header.column;
+                        out.id_type = s.clone()
+                    }
                     None => continue,
                 }
             }
@@ -49,32 +53,45 @@ impl XEnumerateTable {
         }
         Ok(out)
     }
-
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XEnumerateData> {
         let mut mapping = BTreeMap::default();
         let mut available_id = BigInt::zero();
         for (row, data) in self.table.rows() {
             let key = match data.get(0).and_then(|s| s.get_string()) {
                 Some(s) => s.to_string(),
                 None => {
-                    log::error!("{} 行首格不是字符串", row);
+                    log::error!("{} 行首格不是字符串, 已跳过", row);
                     continue;
                 }
             };
             let value = self.read_id(data, &mut available_id);
-
             match data.get(self.doc_column) {
                 None => {}
-                Some(_) => {}
+                Some(s) => {}
             }
-            XDataItem { id: Default::default(), name: "".to_string(), comment: "".to_string(), data: vec![] };
+            for header in self.headers {
+                match data.get(header.column) {
+                    None => {}
+                    Some(s) => {}
+                }
+
+            }
 
             mapping.insert(key, value);
         }
-        EnumerateDescription { integer: Default::default(), typing: "".to_string(), default: "".to_string(), mapping };
-        Ok(())
+        ws.enumerates.insert(EnumerateDescription {
+            integer: self.id_type.kind,
+            name: self.table.get_name(),
+            default: "".to_string(),
+            mapping,
+        })?;
+        Ok(                XEnumerateData {
+            name: key.clone(),
+            comment: "".to_string(),
+            data: vec![],
+        })
     }
-    fn read_comment_details(&self, row: &[DataType], item: &mut XDataItem) -> Option<()> {
+    fn read_document(&self, row: &[DataType]) -> Option<()> {
         match self.doc_column {
             0 => {}
             s => item.comment = row.get(s)?.to_string(),
@@ -85,13 +102,8 @@ impl XEnumerateTable {
         item.name = row.get(0)?.to_string();
         None
     }
-
     fn read_id(&self, row: &[DataType], default_id: &mut BigInt) -> BigInt {
-        let id: Option<BigInt> = try {
-            let id = row.get(self.id_column)?;
-            self.id_type.parse_value(id).ok()?
-        };
-        match id {
+        match self.try_read_id(row) {
             Some(s) => s,
             None => {
                 default_id.add_assign(1);
@@ -99,7 +111,11 @@ impl XEnumerateTable {
             }
         }
     }
-    pub fn insert(&mut self, item: XDataItem) {
-        self.data.insert(item.name.clone(), item);
+    pub fn try_read_id(&self, row: &[DataType]) -> Option<BigInt> {
+        if self.id_column == 0 {
+            return None;
+        }
+        let id = row.get(self.id_column)?;
+        self.id_type.parse_value(id).ok()
     }
 }

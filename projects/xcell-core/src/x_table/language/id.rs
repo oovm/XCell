@@ -1,6 +1,5 @@
 use super::*;
-
-
+use crate::XLanguageTable;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XLanguageID {
@@ -22,11 +21,7 @@ impl XLanguageID {
                 group_column = header.column;
             }
         }
-        Ok(XLanguageTable {
-            table: table.clone(),
-            value_column,
-            group_column,
-        })
+        Ok(XLanguageID { table: table.clone(), value_column, group_column })
     }
     pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {}
 }

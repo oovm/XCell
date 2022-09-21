@@ -25,7 +25,7 @@ use crate::{
     config::unity::UnityCodegen,
     utils::{get_relative, valid_file},
     x_table::language::manager::LanguageManager,
-    EnumerateManager, XEnumerateTable, XLanguageTable, XTable, XTableKind,
+    EnumerateManager, XEnumerateTable, XExportData, XLanguageTable, XTable,
 };
 
 pub use self::{

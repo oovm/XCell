@@ -47,19 +47,19 @@ impl UnityCodegen {
             log::info!("写入 C#: {}", o);
         }
         match table.data {
-            XTableKind::Array(_) => {
+            XExportData::Array(_) => {
                 tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
-            XTableKind::Enumerate(_) => {
+            XExportData::Enumerate(_) => {
                 tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
-            XTableKind::Class(_) => {
+            XExportData::Class(_) => {
                 tera_render(include_str!("PartClass.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
-            XTableKind::Dictionary(_) => {
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
         }
@@ -120,33 +120,33 @@ struct CSharpEnum {
     number: String,
 }
 
-impl XTableKind {
+impl XExportData {
     fn make_class_field(&self) -> Vec<CSharpField> {
         match self {
-            XTableKind::Array(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
-            XTableKind::Enumerate(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
-            XTableKind::Class(v) => v.items.iter().map(|v| v.make_class_field()).collect(),
-            XTableKind::Dictionary(_) => {
+            XExportData::Array(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
+            XExportData::Enumerate(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
+            XExportData::Class(v) => v.items.iter().map(|v| v.make_class_field()).collect(),
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
         }
     }
     fn make_enum_field(&self) -> Vec<CSharpEnum> {
         match self {
-            XTableKind::Array(_) => vec![],
-            XTableKind::Enumerate(v) => {
+            XExportData::Array(_) => vec![],
+            XExportData::Enumerate(v) => {
                 v.data.values().map(|v| CSharpEnum { name: v.name.to_string(), number: v.id.to_string() }).collect()
             }
-            XTableKind::Class(_) => {
+            XExportData::Class(_) => {
                 vec![]
             }
-            XTableKind::Dictionary(_) => {
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
         }
@@ -174,7 +174,7 @@ impl XCellHeader {
     fn make_class_field(&self) -> CSharpField {
         let default = self.typing.as_csharp_default();
         CSharpField {
-            summary: self.summary.lines().map(|v| v.to_string()).collect(),
+            summary: self.comment.lines().map(|v| v.to_string()).collect(),
             remarks: self.details.lines().map(|v| v.to_string()).collect(),
             has_default: !default.is_empty(),
             typing: self.typing.as_csharp_type(),

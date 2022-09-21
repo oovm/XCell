@@ -6,7 +6,7 @@ mod class;
 mod dictionary;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum XTableKind {
+pub enum XExportData {
     /// 不需要导出的数据
     Internal,
     Array(Box<XArrayTable>),
@@ -16,7 +16,7 @@ pub enum XTableKind {
     Language(Box<XLanguageTable>),
 }
 
-impl Default for XTableKind {
+impl Default for XExportData {
     fn default() -> Self {
         Self::Array(Default::default())
     }
@@ -47,25 +47,25 @@ pub struct XDataItem {
     pub id: BigInt,
     /// 该字段的名称
     pub name: String,
-    pub comment: String,
+    pub comment: XComment,
     pub data: Vec<XCellValue>,
 }
 
-impl XTableKind {
+impl XExportData {
     pub fn read_table_data(&mut self, table: &CalamineTable3, path: &Path, meta: &TypeMetaInfo) {
         match self {
-            XTableKind::Array(v) => v.read_table_data(table, path),
-            XTableKind::Enumerate(v) => v.read_table_data(table, path),
-            XTableKind::Class(v) => v.read_table_data(table, path, meta),
-            XTableKind::Dictionary(_) => {
+            XExportData::Array(v) => v.read_table_data(table, path),
+            XExportData::Enumerate(v) => v.read_table_data(table, path),
+            XExportData::Class(v) => v.read_table_data(table, path, meta),
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {}
+            XExportData::Language(_) => {}
         }
     }
 }
 
-impl XTableKind {
+impl XExportData {
     pub fn key_field(&self) -> String {
         self.key_item().map(|v| v.field_name.as_str()).unwrap_or("id").to_string()
     }
@@ -74,54 +74,54 @@ impl XTableKind {
     }
     fn key_item(&self) -> Option<&XCellHeader> {
         match self {
-            XTableKind::Array(v) => v.headers.get(0),
-            XTableKind::Enumerate(v) => v.headers.get(0),
-            XTableKind::Class(_) => None,
-            XTableKind::Dictionary(_) => {
+            XExportData::Array(v) => v.headers.get(0),
+            XExportData::Enumerate(v) => v.headers.get(0),
+            XExportData::Class(_) => None,
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
         }
     }
     pub fn rows(&self) -> Vec<&XDataItem> {
         match self {
-            XTableKind::Array(v) => v.data.iter().collect(),
-            XTableKind::Enumerate(v) => v.data.values().collect(),
-            XTableKind::Class(_) => vec![],
-            XTableKind::Dictionary(_) => {
+            XExportData::Array(v) => v.data.iter().collect(),
+            XExportData::Enumerate(v) => v.data.values().collect(),
+            XExportData::Class(_) => vec![],
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
         }
     }
     pub fn headers(&self) -> Vec<&XCellHeader> {
         match self {
-            XTableKind::Array(v) => v.headers.iter().collect(),
-            XTableKind::Enumerate(v) => v.headers.iter().collect(),
-            XTableKind::Class(_) => {
+            XExportData::Array(v) => v.headers.iter().collect(),
+            XExportData::Enumerate(v) => v.headers.iter().collect(),
+            XExportData::Class(_) => {
                 vec![]
             }
-            XTableKind::Dictionary(_) => {
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
         }
     }
     pub fn rows_count(&self) -> usize {
         match self {
-            XTableKind::Array(v) => v.data.len(),
-            XTableKind::Enumerate(v) => v.data.len(),
-            XTableKind::Class(v) => v.items.len(),
-            XTableKind::Dictionary(_) => {
+            XExportData::Array(v) => v.data.len(),
+            XExportData::Enumerate(v) => v.data.len(),
+            XExportData::Class(v) => v.items.len(),
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
         }

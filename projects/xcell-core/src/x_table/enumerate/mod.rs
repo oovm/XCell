@@ -5,8 +5,6 @@ use log::log;
 use xcell_errors::for_3rd::Zero;
 use xcell_types::IntegerDescription;
 
-use crate::{CalamineTable, XDataItem, XEnumerateData};
-
 use super::*;
 
 pub mod data;
@@ -17,7 +15,9 @@ pub mod manager;
 pub struct XEnumerateTable {
     /// 0 表示未设置
     id_column: usize,
+    /// id 的类型
     id_type: IntegerDescription,
+
     doc_column: usize,
     headers: Vec<XCellHeader>,
     table: CalamineTable,
@@ -28,9 +28,13 @@ impl XEnumerateTable {
         Self { id_column: 0, id_type: Default::default(), doc_column: 0, headers: vec![], table }
     }
     pub fn confirm(table: &CalamineTable) -> XResult<Self> {
-        if table.is_enumerate() {
+        let fst = table.get_header(0);
+        if !table.is_enumerate(&fst.field_name) {
             return Err(XError::runtime_error("首格字段不是 enum"));
         }
+        Ok(Self::force_confirm(table))
+    }
+    pub(crate) fn force_confirm(table: &CalamineTable) -> Self {
         let mut out = Self::new(table.clone());
         for header in table.headers().skip(1) {
             // skip first column
@@ -53,9 +57,11 @@ impl XEnumerateTable {
         }
         Ok(out)
     }
+
     pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XEnumerateData> {
         let mut mapping = BTreeMap::default();
         let mut available_id = BigInt::zero();
+        let mut data = vec![];
         for (row, data) in self.table.rows() {
             let key = match data.get(0).and_then(|s| s.get_string()) {
                 Some(s) => s.to_string(),
@@ -65,38 +71,30 @@ impl XEnumerateTable {
                 }
             };
             let value = self.read_id(data, &mut available_id);
-            match data.get(self.doc_column) {
-                None => {}
-                Some(s) => {}
-            }
+            let comment = XComment::read_document(data, self.doc_column);
             for header in self.headers {
                 match data.get(header.column) {
                     None => {}
                     Some(s) => {}
                 }
-
             }
-
+            XDataItem { id: Default::default(), name: "".to_string(), comment, data: vec![] };
             mapping.insert(key, value);
         }
         ws.enumerates.insert(EnumerateDescription {
             integer: self.id_type.kind,
-            name: self.table.get_name(),
+            name: self.enumerate_name(),
             default: "".to_string(),
             mapping,
         })?;
-        Ok(                XEnumerateData {
-            name: key.clone(),
-            comment: "".to_string(),
-            data: vec![],
-        })
+        Ok(XEnumerateData { name: key.clone(), comment: self.enumerate_document(), data })
     }
-    fn read_document(&self, row: &[DataType]) -> Option<()> {
-        match self.doc_column {
-            0 => {}
-            s => item.comment = row.get(s)?.to_string(),
-        }
-        None
+
+    pub fn enumerate_name(&self) -> String {
+        self.table.get_name()
+    }
+    pub fn enumerate_document(&self) -> XComment {
+        self.table.get_header(0).comment
     }
     fn read_name(&self, row: &[DataType], item: &mut XDataItem) -> Option<()> {
         item.name = row.get(0)?.to_string();
@@ -111,7 +109,7 @@ impl XEnumerateTable {
             }
         }
     }
-    pub fn try_read_id(&self, row: &[DataType]) -> Option<BigInt> {
+    fn try_read_id(&self, row: &[DataType]) -> Option<BigInt> {
         if self.id_column == 0 {
             return None;
         }

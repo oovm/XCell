@@ -15,7 +15,7 @@ use xcell_types::{EnumerateDescription, StringDescription, TypeMetaInfo, XCellTy
 use crate::{
     config::{ProjectConfig, TableConfig, TableLineMode},
     utils::{find_first_table, first_not_nil},
-    CalamineTable, CalamineTable3, Success, WorkspaceManager, XCellHeader, XComment, XDataItem, XEnumerateData, XError,
+    CalamineTable, CalamineTable3, Success, WorkspaceManager, XCellHeader, XDocument, XDataItem, XEnumerateData, XError,
     XExportData, XResult, XTable,
 };
 

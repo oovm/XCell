@@ -16,7 +16,7 @@ pub use self::{
         ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG,
     },
     x_table::{
-        comment::XComment,
+        comment::XDocument,
         data::*,
         enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
         header::XCellHeader,

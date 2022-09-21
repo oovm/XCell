@@ -47,7 +47,7 @@ pub struct XDataItem {
     pub id: BigInt,
     /// 该字段的名称
     pub name: String,
-    pub comment: XComment,
+    pub comment: XDocument,
     pub data: Vec<XCellValue>,
 }
 

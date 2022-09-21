@@ -17,7 +17,7 @@ pub struct XEnumerateTable {
     id_column: usize,
     /// id 的类型
     id_type: IntegerDescription,
-
+    /// 0 表示未设置
     doc_column: usize,
     headers: Vec<XCellHeader>,
     table: CalamineTable,
@@ -55,10 +55,10 @@ impl XEnumerateTable {
             }
             out.headers.push(header.clone());
         }
-        Ok(out)
+        out
     }
 
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XEnumerateData> {
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
         let mut mapping = BTreeMap::default();
         let mut available_id = BigInt::zero();
         let mut data = vec![];
@@ -71,7 +71,7 @@ impl XEnumerateTable {
                 }
             };
             let value = self.read_id(data, &mut available_id);
-            let comment = XComment::read_document(data, self.doc_column);
+            let comment = XDocument::read_document(data, self.doc_column);
             for header in self.headers {
                 match data.get(header.column) {
                     None => {}
@@ -87,13 +87,13 @@ impl XEnumerateTable {
             default: "".to_string(),
             mapping,
         })?;
-        Ok(XEnumerateData { name: key.clone(), comment: self.enumerate_document(), data })
+        Ok(XExportData::Enumerate(box XEnumerateData { name: key.clone(), comment: self.enumerate_document(), data }))
     }
 
     pub fn enumerate_name(&self) -> String {
         self.table.get_name()
     }
-    pub fn enumerate_document(&self) -> XComment {
+    pub fn enumerate_document(&self) -> XDocument {
         self.table.get_header(0).comment
     }
     fn read_name(&self, row: &[DataType], item: &mut XDataItem) -> Option<()> {

@@ -127,7 +127,7 @@ impl WorkspaceManager {
             log::error!("{e}")
         }
     }
-    pub fn try_perform_file(&mut self, file: &Path) -> XResult<()> {
+    pub fn try_perform_file(&mut self, file: &Path) -> XResult<XExportData> {
         let table = CalamineTable::load(file, &self.config)?;
         if let Ok(s) = XLanguageTable::confirm(&table) {
             return s.perform(&mut self);

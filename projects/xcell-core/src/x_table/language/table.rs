@@ -27,5 +27,8 @@ impl XLanguageTable {
         }
         Ok(out)
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {}
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
+        Ok(XExportData::Internal)
+        
+    }
 }

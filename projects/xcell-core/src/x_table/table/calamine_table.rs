@@ -87,11 +87,11 @@ impl CalamineTable {
         let typing = XCellTyped::parse(value, &self.config.typing);
         Some(typing)
     }
-    fn read_comment_details(&self, index: usize) -> XComment {
+    fn read_comment_details(&self, index: usize) -> XDocument {
         let line = self.config.line.helper.saturating_sub(1) as u32;
         match self.table.get_value((line, index as u32)) {
-            Some(s) => XComment::from(s),
-            None => XComment::default(),
+            Some(s) => XDocument::from(s),
+            None => XDocument::default(),
         }
     }
 }

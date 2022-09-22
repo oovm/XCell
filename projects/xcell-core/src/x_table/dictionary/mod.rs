@@ -1,11 +1,27 @@
 use itertools::Itertools;
 
-use crate::{utils::first_not_nil, CalamineTable3};
+use crate::utils::first_not_nil;
 
 use super::*;
 
+pub mod data;
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XArrayTable {
+    pub headers: Vec<XCellHeader>,
+    pub data: Vec<XDataItem>,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XDictionaryTable {
+    pub headers: Vec<XCellHeader>,
+    pub data: Vec<XDataItem>,
+}
+
+impl XDictionaryTable {}
+
 impl XArrayTable {
-    pub fn read_table_data(&mut self, table: &CalamineTable3, path: &Path) {
+    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
         // 防止双重 borrow
         let typing = self.headers.iter().cloned().collect_vec();
         let rows = table.rows().skip(3).filter(|v| first_not_nil(v));

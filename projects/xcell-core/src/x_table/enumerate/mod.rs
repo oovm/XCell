@@ -1,7 +1,5 @@
 use std::ops::{AddAssign, Sub};
 
-use log::log;
-
 use xcell_errors::for_3rd::Zero;
 use xcell_types::IntegerDescription;
 
@@ -61,7 +59,7 @@ impl XEnumerateTable {
     pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
         let mut mapping = BTreeMap::default();
         let mut available_id = BigInt::zero();
-        let mut data = vec![];
+        let mut data_items = vec![];
         for (row, data) in self.table.rows() {
             let key = match data.get(0).and_then(|s| s.get_string()) {
                 Some(s) => s.to_string(),
@@ -72,33 +70,33 @@ impl XEnumerateTable {
             };
             let value = self.read_id(data, &mut available_id);
             let comment = XDocument::read_document(data, self.doc_column);
+            let mut line_items = vec![];
             for header in self.headers {
-                match data.get(header.column) {
-                    None => {}
-                    Some(s) => {}
-                }
+                match header.parse_cell(data) {
+                    Ok(o) => line_items.push(o),
+                    Err(e) => {
+                        log::error!("{} 行 {} 列解析失败: {}", row, header.column, e);
+                        line_items.push(Default::default())
+                    }
+                };
             }
-            XDataItem { id: Default::default(), name: "".to_string(), comment, data: vec![] };
+            data_items.push(XDataItem { id: value.clone(), name: key.clone(), comment, data: line_items });
             mapping.insert(key, value);
         }
+        let mut name = self.enumerate_name();
         ws.enumerates.insert(EnumerateDescription {
             integer: self.id_type.kind,
-            name: self.enumerate_name(),
+            name: name.clone(),
             default: "".to_string(),
             mapping,
         })?;
-        Ok(XExportData::Enumerate(box XEnumerateData { name: key.clone(), comment: self.enumerate_document(), data }))
+        Ok(XExportData::Enumerate(box XEnumerateData { name, comment: self.enumerate_document(), data: data_items }))
     }
-
     pub fn enumerate_name(&self) -> String {
         self.table.get_name()
     }
     pub fn enumerate_document(&self) -> XDocument {
         self.table.get_header(0).comment
-    }
-    fn read_name(&self, row: &[DataType], item: &mut XDataItem) -> Option<()> {
-        item.name = row.get(0)?.to_string();
-        None
     }
     fn read_id(&self, row: &[DataType], default_id: &mut BigInt) -> BigInt {
         match self.try_read_id(row) {

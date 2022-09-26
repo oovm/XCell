@@ -1,13 +1,18 @@
-use crate::x_table::class::XClassData;
 use super::*;
+use crate::{x_table::class::XClassData, XArrayData, XDictionaryTable};
+use crate::x_table::dictionary::XDictionaryData;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XExportData {
     /// 不需要导出的数据
     Internal,
-    // Array(Box<XArrayTable>),
-    // Dictionary(Box<XDictionaryTable>),
+    /// key 为数字的表
+    Array(Box<XArrayData>),
+    /// key 为字符串的表
+    Dictionary(Box<XDictionaryData>),
+    /// 类定义
     Class(Box<XClassData>),
+    /// 枚举定义
     Enumerate(Box<XEnumerateData>),
     // Language(Box<XLanguageTable>),
 }

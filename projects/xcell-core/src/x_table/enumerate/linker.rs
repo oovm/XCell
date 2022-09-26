@@ -1,5 +1,6 @@
-use super::*;
 use crate::EnumerateManager;
+
+use super::*;
 
 impl WorkspaceManager {
     pub fn link_enumerate(&mut self) {
@@ -14,18 +15,29 @@ impl WorkspaceManager {
     }
 }
 
-impl XTable {
+impl XExportData {
     pub fn link_enumerate(&mut self, all: &EnumerateManager) -> Vec<XError> {
-        let mut errors = vec![];
-        match &mut self.data {
-            XExportData::Array(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
-            XExportData::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
-            XExportData::Class(_) => {}
-            XExportData::Dictionary(_) => {}
-            XExportData::Language(_) => {}
-        };
-        self.enumeration_linked = true;
-        errors
+        match self {
+            XExportData::Internal => {
+                vec![]
+            }
+            XExportData::Array(x) => {
+                for x in x.values.iter_mut() {
+                    x.link_enumerate(all)
+                }
+            }
+            XExportData::Dictionary(x) => {
+                for x in x.values.iter_mut() {
+                    x.link_enumerate(all)
+                }
+            }
+            XExportData::Class(x) => {
+                for x in x.values.iter_mut() {
+                    x.link_enumerate(all)
+                }
+            }
+            XExportData::Enumerate(x) => x.link_enumerate_head(),
+        }
     }
 }
 
@@ -42,33 +54,6 @@ impl XCellHeader {
             }
             None => Err(XError::runtime_error(format!("未知的枚举类 `{}`", &ed.name)).with_x(self.column)),
         }
-    }
-}
-
-impl XExportData {
-    pub fn link_enumerate(&self, path: &Path) -> Validation<XExportData> {
-        let mut value = self.clone();
-        let mut diagnostics = vec![];
-        match &mut value {
-            XExportData::Array(v) => {
-                for item in v.data.iter_mut() {
-                    link_enumerate_data_line(item, &v.headers, &mut diagnostics, path)
-                }
-            }
-            XExportData::Enumerate(v) => {
-                for (_, item) in v.data.iter_mut() {
-                    link_enumerate_data_line(item, &v.headers, &mut diagnostics, path)
-                }
-            }
-            XExportData::Class(v) => v.link_enumerate(),
-            XExportData::Dictionary(_) => {
-                todo!()
-            }
-            XExportData::Language(_) => {
-                todo!()
-            }
-        }
-        Success { value, diagnostics }
     }
 }
 

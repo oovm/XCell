@@ -13,7 +13,7 @@ impl XLanguageTable {
     }
 
     pub fn confirm(table: &CalamineTable) -> XResult<Self> {
-        if table.is_language_key() {
+        if !table.is_language_key() {
             return Err(XError::runtime_error("首格字段不是 language-id"));
         }
         let mut out = Self::new(table.clone());

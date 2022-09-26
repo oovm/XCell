@@ -1,3 +1,4 @@
+use crate::XClassItem;
 use convert_case::{Case, Casing};
 use itertools::Itertools;
 use serde::Serialize;
@@ -10,7 +11,6 @@ use std::{
 };
 use tera::{Context, Tera};
 use url::Url;
-
 use xcell_errors::XResult;
 use xcell_types::{
     codegen::{CSharpReader, CSharpWriter},

@@ -19,7 +19,7 @@ use xcell_errors::{
     },
     XError, XResult,
 };
-use xcell_types::{default_deserialize, EnumerateDescription, TypeMetaInfo};
+use xcell_types::{default_deserialize, TypeMetaInfo};
 
 use crate::{
     config::unity::UnityCodegen,

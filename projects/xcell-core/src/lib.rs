@@ -18,12 +18,12 @@ pub use self::{
     },
     x_table::{
         class::{XClassData, XClassItem, XClassTable},
-        dictionary::{XArrayData, XArrayTable, XDictionaryData, XDictionaryTable},
+        dictionary::{XArrayTable, XDictData, XDictionaryTable, XListData},
         enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
         export::XExportData,
         header::XCellHeader,
         language::{id::XLanguageID, table::XLanguageTable},
-        table::{CalamineTable, XTable},
+        table::{CalamineTable},
     },
 };
 
@@ -31,5 +31,3 @@ mod codegen;
 mod config;
 pub mod utils;
 mod x_table;
-
-pub type CalamineTable3 = calamine::Range<calamine::DataType>;

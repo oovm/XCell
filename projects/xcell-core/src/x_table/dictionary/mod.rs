@@ -1,7 +1,3 @@
-use itertools::Itertools;
-
-use crate::{utils::first_not_nil, x_table::export::XDataItem};
-
 use super::*;
 
 pub mod data;
@@ -19,13 +15,26 @@ pub struct XDictionaryTable {
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XArrayData {
-    pub values: BTreeMap<BigInt, XDataItem>,
+pub struct XListData {
+    map: BTreeMap<BigInt, XDataItem>,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XDictionaryData {
-    pub values: BTreeMap<String, XDataItem>,
+pub struct XDictData {
+    map: BTreeMap<String, XDataItem>,
+}
+
+/// 表单中的一行数据
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XDataItem {
+    /// 该表单数据的编号
+    pub id: BigInt,
+    /// 该表单数据的键
+    pub key: String,
+    /// 该表单数据的注释
+    pub comment: XDocument,
+    /// 该表单数据的有效值
+    pub data: Vec<XCellValue>,
 }
 
 impl XArrayTable {
@@ -43,52 +52,49 @@ impl XArrayTable {
         Ok(out)
     }
     pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
-        let mut items = vec![];
+        let mut errors = vec![];
+        let mut values = BTreeMap::default();
         for (row, data) in self.table.rows().skip(1) {
-            match XArrayData::parse_cell() {
+            match XDataItem::parse_id_cell(data, &mut errors) {
                 Ok(o) => {
-                    items.push(o);
+                    values.push(o);
                 }
                 Err(e) => {
                     log::error!("{}", e.with_y(row));
                 }
             }
         }
-        Ok(XExportData::Array(box XArrayData { name: self.table.get_name(), items }))
+        Ok(XExportData::List(box XListData { map: values }))
     }
 }
 
-impl XArrayData {
-    pub fn parse_cell(&self, data: &[DataType]) -> XResult<Self> {}
-    fn try_parse_key(&self, data: &[DataType]) -> XResult<BigInt> {
-        match data.get(0) {
-            Some(_) => {}
-            None => Err(XError::runtime_error("id 不能为空"))?,
+impl XDictData {
+    pub fn confirm(table: &CalamineTable) -> XResult<Self> {
+        let header = table.get_header(0);
+        if !table.is_array(&header.field_name) {
+            return Err(XError::runtime_error("首格字段不是 id"));
         }
-    }
-}
-
-impl XArrayTable {
-    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
-        // 防止双重 borrow
-        let typing = self.headers.iter().cloned().collect_vec();
-        let rows = table.rows().skip(3).filter(|v| first_not_nil(v));
-        for (x, row_raw) in rows.enumerate() {
-            let mut item = XDataItem { id: Default::default(), name: "".to_string(), comment: "".to_string(), data: vec![] };
-            for (y, typed) in typing.iter().enumerate() {
-                let cell = match typed.parse_cell(row_raw) {
-                    Ok(o) => o,
-                    Err(e) => {
-                        log::error!("{}", e.with_xy(x, y).with_path(path));
-                        Default::default()
-                    }
-                };
-                item.data.push(cell)
+        let mut out = Self { table: table.clone(), headers: vec![] };
+        for header in table.headers() {
+            if header.complete {
+                out.headers.push(header);
             }
-            self.insert(item)
         }
+        Ok(out)
     }
-    pub fn insert(&mut self, item: XDataItem) {
-        self.data.push(item);
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
+        let mut errors = vec![];
+        let mut values = BTreeMap::default();
+        for (row, data) in self.table.rows().skip(1) {
+            match XDataItem::parse_id_cell(data, &mut errors) {
+                Ok(o) => {
+                    values.push(o);
+                }
+                Err(e) => {
+                    log::error!("{}", e.with_y(row));
+                }
+            }
+        }
+        Ok(XExportData::List(box XListData { map: values }))
     }
 }

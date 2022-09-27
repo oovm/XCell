@@ -10,7 +10,7 @@ pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult
 pub use xcell_types::*;
 
 pub use self::{
-    codegen::{binary::BinaryWriter, xml::DataContractWriter, CsvCodegen},
+    codegen::{xml::DataContractWriter, CsvCodegen},
     config::{
         merge_rules::{MergeRules, MergeStep, MergedTable},
         unity::UnityCodegen,
@@ -18,12 +18,16 @@ pub use self::{
     },
     x_table::{
         class::{XClassData, XClassItem, XClassTable},
-        dictionary::{XListTable, XDictData, XDictTable, XListData},
+        dictionary::{
+            data::{XDictData, XListData},
+            manager::DictionaryManager,
+            XDictTable, XListTable,
+        },
         enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
         export::XExportData,
         header::XCellHeader,
         language::{id::XLanguageID, table::XLanguageTable},
-        table::{CalamineTable},
+        table::CalamineTable,
     },
 };
 

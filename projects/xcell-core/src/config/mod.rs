@@ -21,12 +21,7 @@ use xcell_errors::{
 };
 use xcell_types::{default_deserialize, TypeMetaInfo};
 
-use crate::{
-    config::unity::UnityCodegen,
-    utils::{get_relative, valid_file},
-    x_table::{language::manager::LanguageManager, table::CalamineTable},
-    EnumerateManager, XDictTable, XEnumerateTable, XExportData, XLanguageID, XLanguageTable, XListTable,
-};
+use crate::{config::unity::UnityCodegen, utils::{get_relative, valid_file}, x_table::{language::manager::LanguageManager, table::CalamineTable}, EnumerateManager, XDictTable, XEnumerateTable, XExportData, XLanguageID, XLanguageTable, XListTable, DictionaryManager};
 
 pub use self::{
     project::ProjectConfig,
@@ -45,8 +40,7 @@ pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
 pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
-    pub dicts: BTreeMap<String, XDictTable>,
-    pub lists: BTreeMap<String, XListTable>,
+    pub dictionaries: DictionaryManager,
     pub enumerates: EnumerateManager,
     pub languages: LanguageManager,
 }

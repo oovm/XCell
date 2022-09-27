@@ -21,32 +21,8 @@ impl MergeRules {
     pub fn merge() {}
 }
 
-impl WorkspaceManager {
-    pub fn collect_merged(&self) -> MergedTable {
-        MergedTable { inner: self.file_mapping.values().cloned().collect() }
-    }
-}
+impl WorkspaceManager {}
 
 pub struct MergedTable {
     inner: Vec<XExportData>,
-}
-
-impl MergedTable {
-    pub fn table_names(&self, suffix_table: &str) -> Vec<String> {
-        self.inner
-            .iter()
-            .map(|v| match &v.data {
-                XExportData::List(_) => {
-                    format!("{}{}", v.name, suffix_table)
-                }
-                XExportData::Enumerate(_) => {
-                    format!("{}{}", v.name, suffix_table)
-                }
-                XExportData::Class(_) => v.name.to_string(),
-                XExportData::Dict(_) => {
-                    todo!()
-                }
-            })
-            .collect()
-    }
 }

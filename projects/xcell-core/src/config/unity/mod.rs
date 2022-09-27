@@ -59,13 +59,7 @@ impl UnityCodegen {
         };
         Ok(project.canonicalize()?)
     }
-
-    /// 生成二进制配置的文件夹
-    pub fn unity_binary_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
-        let dir = self.unity_path(root)?.join(&self.binary.output);
-        let path = dir.join(file_name).with_extension("binary");
-        Ok(path)
-    }
+    
     /// 生成二进制配置的文件夹
     pub fn unity_xml_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
         let dir = self.unity_path(root)?.join(&self.binary.output);

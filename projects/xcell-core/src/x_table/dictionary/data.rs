@@ -1,6 +1,29 @@
-use std::collections::btree_map::Values;
-
 use super::*;
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XListData {
+    pub name: String,
+    pub map: BTreeMap<BigInt, XDataItem>,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XDictData {
+    pub name: String,
+    pub map: BTreeMap<String, XDataItem>,
+}
+
+/// 表单中的一行数据
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XDataItem {
+    /// 该表单数据的编号
+    pub id: BigInt,
+    /// 该表单数据的键
+    pub key: String,
+    /// 该表单数据的注释
+    pub comment: XDocument,
+    /// 该表单数据的有效值
+    pub data: Vec<XCellValue>,
+}
 
 impl XDataItem {
     pub fn parse_key_cell(data: &[DataType], errors: &mut Vec<XError>) -> XResult<Self> {
@@ -31,23 +54,5 @@ impl XDataItem {
             Some(s) => s.get_string(),
             None => Err(XError::runtime_error("id 不能为空"))?,
         }
-    }
-}
-
-impl XListData {
-    pub fn length(&self) -> usize {
-        self.map.len()
-    }
-    pub fn values(&self) -> Values<'_, BigInt, XDataItem> {
-        self.map.values()
-    }
-}
-
-impl XDictData {
-    pub fn length(&self) -> usize {
-        self.map.len()
-    }
-    pub fn values(&self) -> Values<'_, String, XDataItem> {
-        self.map.values()
     }
 }

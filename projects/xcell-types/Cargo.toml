@@ -28,7 +28,7 @@ features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine", "serde_
 
 
 [dev-dependencies]
-
+askama = "0.11.1"
 
 [build-dependencies]
 

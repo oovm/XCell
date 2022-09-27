@@ -24,8 +24,8 @@ use xcell_types::{default_deserialize, TypeMetaInfo};
 use crate::{
     config::unity::UnityCodegen,
     utils::{get_relative, valid_file},
-    x_table::language::manager::LanguageManager,
-    EnumerateManager, XEnumerateTable, XExportData, XLanguageTable, XTable,
+    x_table::{language::manager::LanguageManager, table::CalamineTable},
+    EnumerateManager, XDictTable, XEnumerateTable, XExportData, XLanguageID, XLanguageTable, XListTable,
 };
 
 pub use self::{
@@ -38,7 +38,6 @@ pub mod merge_rules;
 mod project;
 mod table;
 pub mod unity;
-use crate::x_table::table::CalamineTable;
 
 /// 默认的全局项目设置
 pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
@@ -46,7 +45,8 @@ pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
 pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
-    pub file_mapping: BTreeMap<PathBuf, XTable>,
+    pub dicts: BTreeMap<String, XDictTable>,
+    pub lists: BTreeMap<String, XListTable>,
     pub enumerates: EnumerateManager,
     pub languages: LanguageManager,
 }
@@ -129,13 +129,22 @@ impl WorkspaceManager {
     }
     pub fn try_perform_file(&mut self, file: &Path) -> XResult<XExportData> {
         let table = CalamineTable::load(file, &self.config)?;
-        if let Ok(s) = XLanguageTable::confirm(&table) {
+        if let Ok(s) = XListTable::confirm(&table) {
+            return s.perform(&mut self);
+        }
+        if let Ok(s) = XDictTable::confirm(&table) {
             return s.perform(&mut self);
         }
         if let Ok(s) = XEnumerateTable::confirm(&table) {
             return s.perform(&mut self);
         }
-        Ok(())
+        if let Ok(s) = XLanguageTable::confirm(&table) {
+            return s.perform(&mut self);
+        }
+        if let Ok(s) = XLanguageID::confirm(&table) {
+            return s.perform(&mut self);
+        }
+        Err(XError::table_error(format!("{} 不是有效的表格", file.display())))
     }
     pub fn write_unity(&self) -> XResult<()> {
         for table in self.file_mapping.values() {

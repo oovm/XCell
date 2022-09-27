@@ -1,5 +1,7 @@
 use super::*;
 
+mod enumerate;
+
 #[derive(Serialize)]
 pub struct UnityManagerWriter {
     compiler_version: &'static str,
@@ -40,39 +42,36 @@ impl UnityCodegen {
         tera_render(include_str!("PartManager.cs.djv"), &ctx, &path, "PartManager.cs")?;
         Ok(())
     }
-    pub fn write_class(&self, table: &XTable, root: &Path) -> XResult<()> {
+    pub fn write_class(&self, table: &XExportData, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_csharp_path(root, &file)?;
         if let Ok(o) = Url::from_file_path(&path) {
             log::info!("写入 C#: {}", o);
         }
-        match table.data {
-            XExportData::List(_) => {
+        match table {
+            XExportData::List(v) => {
                 tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
-            XExportData::Enumerate(_) => {
+            XExportData::Enumerate(v) => {
                 tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
-            XExportData::Class(_) => {
+            XExportData::Class(v) => {
                 tera_render(include_str!("PartClass.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
-            XExportData::Dict(_) => {
-                todo!()
-            }
-            XExportData::Language(_) => {
+            XExportData::Dict(v) => {
                 todo!()
             }
         }
         Ok(())
     }
-    pub fn write_binary(&self, table: &XTable, root: &Path) -> XResult<()> {
+    pub fn write_binary(&self, table: &XExportData, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_binary_path(root, &file)?;
         log::info!("写入二进制: {}\n{}", self.unity_bin_relative(&file), Url::from_file_path(&path)?);
         let cg = BinaryWriter::default();
         cg.write_binary(table, &path)
     }
-    pub fn write_data_contract(&self, table: &XTable, root: &Path) -> XResult<()> {
+    pub fn write_data_contract(&self, table: &XExportData, root: &Path) -> XResult<()> {
         if !self.xml.enable {
             return Ok(());
         }
@@ -85,7 +84,7 @@ impl UnityCodegen {
 }
 
 impl UnityCodegen {
-    fn make_context(&self, table: &XTable) -> Context {
+    fn make_context(&self, table: &XExportData) -> Context {
         let mut ctx = Context::new();
         ctx.insert("VERSION", env!("CARGO_PKG_VERSION"));
         ctx.insert("config", &self);
@@ -126,12 +125,8 @@ impl XExportData {
             XExportData::List(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
             XExportData::Enumerate(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
             XExportData::Class(v) => v.items.iter().map(|v| v.make_class_field()).collect(),
-            XExportData::Dict(_) => {
-                todo!()
-            }
-            XExportData::Language(_) => {
-                todo!()
-            }
+            XExportData::Internal => {}
+            XExportData::Dict(_) => {}
         }
     }
     fn make_enum_field(&self) -> Vec<CSharpEnum> {

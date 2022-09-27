@@ -15,7 +15,7 @@ use xcell_types::{EnumerateDescription, StringDescription, XCellTyped, XCellValu
 use crate::{
     config::{ProjectConfig, TableConfig},
     utils::find_first_table,
-    CalamineTable, WorkspaceManager, XCellHeader, XDocument, XEnumerateData, XError, XExportData, XResult, XTable,
+    CalamineTable, WorkspaceManager, XCellHeader, XDocument, XEnumerateData, XError, XExportData, XResult,
 };
 
 pub mod class;

@@ -18,7 +18,7 @@ pub use self::{
     },
     x_table::{
         class::{XClassData, XClassItem, XClassTable},
-        dictionary::{XArrayTable, XDictData, XDictionaryTable, XListData},
+        dictionary::{XListTable, XDictData, XDictTable, XListData},
         enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
         export::XExportData,
         header::XCellHeader,

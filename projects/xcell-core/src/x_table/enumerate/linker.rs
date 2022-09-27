@@ -1,4 +1,4 @@
-use crate::EnumerateManager;
+use crate::{x_table::dictionary::XDataItem, EnumerateManager};
 
 use super::*;
 
@@ -22,7 +22,7 @@ impl XExportData {
                 vec![]
             }
             XExportData::List(x) => {
-                for x in x.values.iter_mut() {
+                for x in x.values().iter_mut() {
                     x.link_enumerate(all)
                 }
             }

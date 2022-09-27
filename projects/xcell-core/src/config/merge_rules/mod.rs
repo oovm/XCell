@@ -28,7 +28,7 @@ impl WorkspaceManager {
 }
 
 pub struct MergedTable {
-    inner: Vec<XTable>,
+    inner: Vec<XExportData>,
 }
 
 impl MergedTable {
@@ -44,9 +44,6 @@ impl MergedTable {
                 }
                 XExportData::Class(_) => v.name.to_string(),
                 XExportData::Dict(_) => {
-                    todo!()
-                }
-                XExportData::Language(_) => {
                     todo!()
                 }
             })

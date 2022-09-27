@@ -3,6 +3,8 @@ use std::ops::{AddAssign, Sub};
 use xcell_errors::for_3rd::Zero;
 use xcell_types::IntegerDescription;
 
+use crate::x_table::dictionary::XDataItem;
+
 use super::*;
 
 pub mod data;
@@ -19,6 +21,19 @@ pub struct XEnumerateTable {
     doc_column: usize,
     headers: Vec<XCellHeader>,
     table: CalamineTable,
+}
+
+/// 需要导出的枚举数据
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct XEnumerateData {
+    /// 该枚举的名称
+    pub name: String,
+    /// 该枚举的注释
+    pub comment: XDocument,
+    /// 该枚举的字段类型
+    pub headers: Vec<XCellHeader>,
+    /// 该枚举的字段值
+    pub data: Vec<XDataItem>,
 }
 
 impl XEnumerateTable {
@@ -55,7 +70,6 @@ impl XEnumerateTable {
         }
         out
     }
-
     pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
         let mut mapping = BTreeMap::default();
         let mut available_id = BigInt::zero();
@@ -80,17 +94,15 @@ impl XEnumerateTable {
                     }
                 };
             }
-            data_items.push(XDataItem { id: value.clone(), name: key.clone(), comment, data: line_items });
+            data_items.push(XDataItem { id: value.clone(), key: key.clone(), comment, data: line_items });
             mapping.insert(key, value);
         }
-        let mut name = self.enumerate_name();
-        ws.enumerates.insert(EnumerateDescription {
-            integer: self.id_type.kind,
-            name: name.clone(),
-            default: "".to_string(),
-            mapping,
-        })?;
-        Ok(XExportData::Enumerate(box XEnumerateData { name, comment: self.enumerate_document(), data: data_items }))
+        let name = self.enumerate_name();
+        ws.enumerates.insert(
+            EnumerateDescription { name: name.clone(), integer: self.id_type.kind, default: "".to_string(), mapping },
+            XEnumerateData { name, comment: self.enumerate_document(), headers: self.headers.clone(), data: data_items },
+        )?;
+        Ok(XExportData::Internal)
     }
     pub fn enumerate_name(&self) -> String {
         self.table.get_name()

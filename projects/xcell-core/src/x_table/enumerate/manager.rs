@@ -1,16 +1,21 @@
 use super::*;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct EnumerateManager {
-    map: BTreeMap<String, EnumerateDescription>,
+    define: BTreeMap<String, EnumerateDescription>,
+    data: BTreeMap<String, XEnumerateData>,
 }
 
 impl EnumerateManager {
-    pub fn insert(&mut self, value: EnumerateDescription) -> XResult<()> {
-        let name = value.name.clone();
-        match self.map.insert(name, value) {
-            Some(_) => Err(XError::runtime_error(format!("枚举类 `{}` 重复定义", name))),
-            None => Ok(()),
+    pub fn insert(&mut self, define: EnumerateDescription, data: XEnumerateData) -> XResult<()> {
+        if self.define.contains_key(define.name.as_str()) {
+            return Err(XError::runtime_error(format!("重复的枚举定义: {}", define.name)));
         }
+        self.data.insert(data.name.to_string(), data);
+        self.define.insert(define.name.to_string(), define);
+        Ok(())
+    }
+    pub fn get(&self, name: &str) -> Option<&EnumerateDescription> {
+        self.define.get(name)
     }
 }

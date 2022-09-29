@@ -19,7 +19,7 @@ impl UnityManagerWriter {
             table_version: version.to_string(),
             edit_time: XCellValue::csharp_now(),
             config: unity.clone(),
-            tables: table.table_names(&unity.suffix_table).into_iter().sorted().collect(),
+            tables: vec![],
         }
     }
 }

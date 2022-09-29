@@ -24,5 +24,5 @@ impl MergeRules {
 impl WorkspaceManager {}
 
 pub struct MergedTable {
-    inner: Vec<XExportData>,
+
 }

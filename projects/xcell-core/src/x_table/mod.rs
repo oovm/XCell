@@ -1,9 +1,9 @@
 use crate::{XClassData, XClassTable, XDictData, XListData};
 use calamine::{DataType, Rows};
-use itertools::Itertools;
+
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::{btree_map::Values, BTreeMap},
+    collections::BTreeMap,
     fmt::Debug,
     path::{Path, PathBuf},
 };
@@ -14,7 +14,7 @@ use xcell_types::{EnumerateDescription, XCellTyped, XCellValue};
 use crate::{
     config::{ProjectConfig, TableConfig},
     utils::find_first_table,
-    CalamineTable, WorkspaceManager, XCellHeader, XDocument, XEnumerateData, XError, XExportData, XResult,
+    CalamineTable, WorkspaceManager, XCellHeader, XDocument, XEnumerateData, XError, XResult,
 };
 
 pub mod class;

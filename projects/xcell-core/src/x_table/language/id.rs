@@ -14,7 +14,7 @@ impl XLanguageID {
         }
         Ok(Self { wrap: XEnumerateTable::force_confirm(table) })
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
-        Ok(XExportData::Internal)
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
+        Ok(())
     }
 }

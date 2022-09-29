@@ -3,7 +3,7 @@ use std::ops::{AddAssign, Sub};
 use xcell_errors::for_3rd::Zero;
 use xcell_types::IntegerDescription;
 
-use crate::x_table::dictionary::data::XDataItem;
+use crate::x_table::dictionary::data::XDataLine;
 
 use super::*;
 
@@ -66,7 +66,7 @@ impl XEnumerateTable {
         }
         out
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
         let mut mapping = BTreeMap::default();
         let mut available_id = BigInt::zero();
         let mut data_items = vec![];
@@ -90,15 +90,23 @@ impl XEnumerateTable {
                     }
                 };
             }
-            data_items.push(XDataItem { id: value.clone(), key: key.clone(), comment, data: line_items });
+            data_items.push(XDataLine { id: value.clone(), key: key.clone(), comment, data: line_items });
             mapping.insert(key, value);
         }
         let name = self.enumerate_name();
-        ws.enumerates.insert_enumerate(
-            EnumerateDescription { name: name.clone(), integer: self.id_type.kind, default: "".to_string(), mapping },
-            XEnumerateData { name, comment: self.enumerate_document(), headers: self.headers.clone(), data: data_items },
-        )?;
-        Ok(XExportData::Internal)
+        ws.add_define(EnumerateDescription {
+            name: name.clone(),
+            integer: self.id_type.kind,
+            default: "".to_string(),
+            mapping,
+        })?;
+        ws.add_enumerate(XEnumerateData {
+            name,
+            comment: self.enumerate_document(),
+            headers: self.headers.clone(),
+            lines: data_items,
+        });
+        Ok(())
     }
     pub fn enumerate_name(&self) -> String {
         self.table.get_name()

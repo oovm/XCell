@@ -3,18 +3,18 @@ use super::*;
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XListData {
     pub name: String,
-    pub map: BTreeMap<BigInt, XDataItem>,
+    pub map: BTreeMap<BigInt, XDataLine>,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XDictData {
     pub name: String,
-    pub map: BTreeMap<String, XDataItem>,
+    pub map: BTreeMap<String, XDataLine>,
 }
 
 /// 表单中的一行数据
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XDataItem {
+pub struct XDataLine {
     /// 该表单数据的编号
     pub id: BigInt,
     /// 该表单数据的键
@@ -25,7 +25,7 @@ pub struct XDataItem {
     pub data: Vec<XCellValue>,
 }
 
-impl XDataItem {
+impl XDataLine {
     pub fn parse_key_cell(data: &[DataType], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.key = out.try_parse_key(data)?;
@@ -41,7 +41,7 @@ impl XDataItem {
     }
 }
 
-impl XDataItem {
+impl XDataLine {
     pub fn parse_id_cell(data: &[DataType], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.key = out.try_parse_key(data)?;

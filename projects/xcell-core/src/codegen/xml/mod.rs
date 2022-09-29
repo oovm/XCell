@@ -1,4 +1,4 @@
-use crate::x_table::dictionary::data::XDataItem;
+use crate::x_table::dictionary::data::XDataLine;
 use super::*;
 
 #[derive(Serialize)]
@@ -22,14 +22,6 @@ pub struct XmlField {
 }
 
 impl DataContractWriter {
-    pub fn new(namespace: &str, table: &XExportData, table_suffix: &str) -> Self {
-        Self {
-            class_name: table.name.clone(),
-            table_name: format!("{}{}", table.name, table_suffix),
-            namespace: namespace.to_string(),
-            items: table.as_xml(),
-        }
-    }
     pub fn write_xml(&self, output: &Path) -> XResult<()> {
         let ctx = Context::from_serialize(self)?;
         tera_render(include_str!("DataContract.xml.djv"), &ctx, output, "DataContract.xml")?;
@@ -37,14 +29,7 @@ impl DataContractWriter {
     }
 }
 
-impl XExportData {
-    fn as_xml(&self) -> Vec<XmlItem> {
-        let headers = self.data.headers();
-        self.data.rows().iter().map(|v| XmlItem { is_vector: false, fields: v.as_xml(&headers) }).collect()
-    }
-}
-
-impl XDataItem {
+impl XDataLine {
     fn as_xml(&self, headers: &[&XCellHeader]) -> Vec<XmlField> {
         let mut out = vec![];
 

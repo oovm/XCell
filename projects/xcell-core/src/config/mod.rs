@@ -1,6 +1,6 @@
 use std::{
     any::type_name,
-    collections::BTreeMap,
+
     fmt::{Debug, Formatter},
     fs::read_to_string,
     path::{Path, PathBuf},
@@ -24,8 +24,8 @@ use xcell_types::{default_deserialize, TypeMetaInfo};
 use crate::{
     config::unity::UnityCodegen,
     utils::{get_relative, valid_file},
-    x_table::{language::manager::LanguageManager, table::CalamineTable},
-    EnumerateManager, XDictTable, XEnumerateTable, XLanguageID, XLanguageTable, XListTable,
+    x_table::{enumerate::EnumerateManager, table::CalamineTable},
+    LanguageManager, XDictTable, XEnumerateTable, XLanguageID, XLanguageTable, XListTable,
 };
 
 pub use self::{
@@ -46,6 +46,7 @@ pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
     pub enumerates: EnumerateManager,
+    pub languages: LanguageManager,
 }
 
 default_deserialize![ProjectConfig, TableConfig, TableLineMode];
@@ -72,13 +73,7 @@ impl WorkspaceManager {
         }
         let config = ProjectConfig::new(&root);
         let glob_pattern = build_glob_set(&config.include).unwrap();
-        Ok(Self {
-            config,
-            glob_pattern,
-            dictionaries: Default::default(),
-            enumerates: Default::default(),
-            languages: Default::default(),
-        })
+        Ok(Self { config, glob_pattern, enumerates: Default::default(), languages: Default::default() })
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
@@ -124,7 +119,7 @@ impl WorkspaceManager {
             log::error!("{e}")
         }
     }
-    pub fn try_perform_file(&mut self, file: &Path) -> XResult<XExportData> {
+    pub fn try_perform_file(&mut self, file: &Path) -> XResult<()> {
         let table = CalamineTable::load(file, &self.config)?;
         if let Ok(s) = XListTable::confirm(&table) {
             return s.perform(&mut self);

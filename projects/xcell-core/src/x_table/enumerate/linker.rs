@@ -12,16 +12,14 @@ impl EnumerateManager {
     pub fn link_enumerate(&mut self) -> Vec<XError> {
         let mut errors = vec![];
         for item in self.enumerate.values_mut() {
-            assert_eq!(item.headers.len(), item.data.len());
+            assert_eq!(item.headers.len(), item.lines.len());
             for define in item.headers.iter_mut() {
                 if let Err(e) = define.link_enumerate(self) {
                     errors.push(e);
                 }
             }
-            for define in item.data.iter_mut() {
-                if let Err(e) = define.link_enumerate(self) {
-                    errors.push(e);
-                }
+            for define in item.lines.iter_mut() {
+                errors.extend(define.link_enumerate(self, &item.headers))
             }
         }
         errors
@@ -30,39 +28,27 @@ impl EnumerateManager {
 
 impl XCellHeader {
     pub fn link_enumerate(&mut self, all: &EnumerateManager) -> XResult<()> {
-        let ed = match self.typing.mut_enumerate() {
+        let define = match self.typing.mut_enumerate() {
             Some(s) => s,
-            None => return Ok(()),
+            None => return Ok(()), // skip non enum
         };
-        match all.get(&ed.name) {
+        match all.define.get(&define.name) {
             Some(v) => {
-                *ed = v.clone();
+                *define = v.clone();
                 Ok(())
             }
-            None => Err(XError::runtime_error(format!("未知的枚举类 `{}`", &ed.name)).with_x(self.column)),
+            None => Err(XError::runtime_error(format!("未知的枚举类 `{}`", &define.name)).with_x(self.column)),
         }
     }
 }
 
-impl XDataItem {
-    pub fn link_enumerate(&mut self, all: &EnumerateManager) -> XResult<()> {
-        let ed = match self.typing.mut_enumerate() {
-            Some(s) => s,
-            None => return Ok(()),
-        };
-        match all.get(&ed.name) {
-            Some(v) => {
-                *ed = v.clone();
-                Ok(())
+impl XDataLine {
+    pub fn link_enumerate(&mut self, all: &EnumerateManager, headers: &[XCellHeader]) -> Vec<XError> {
+        assert_eq!(self.data.len(), headers.len());
+        for x in self.data.iter_mut() {
+            if let Err(e) = x.link_enumerate(self) {
+                errors.push(e);
             }
-            None => Err(XError::runtime_error(format!("未知的枚举类 `{}`", &ed.name)).with_x(self.column)),
         }
-    }
-}
-
-fn link_enumerate_data_cell(headers: &[XCellHeader], index: usize, data: &mut XCellValue) -> XResult<()> {
-    match headers.get(index) {
-        Some(s) => data.link_enumerate(&s.typing),
-        None => Err(XError::table_error("not found")),
     }
 }

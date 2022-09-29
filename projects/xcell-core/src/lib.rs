@@ -20,12 +20,11 @@ pub use self::{
         class::{XClassData, XClassItem, XClassTable},
         dictionary::{
             data::{XDictData, XListData},
-            manager::DictionaryManager,
             XDictTable, XListTable,
         },
-        enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
+        enumerate::{data::XEnumerateData, EnumerateManager, XEnumerateTable},
         header::XCellHeader,
-        language::{id::XLanguageID, table::XLanguageTable},
+        language::{id::XLanguageID, table::XLanguageTable, manager::LanguageManager},
         table::CalamineTable,
     },
 };

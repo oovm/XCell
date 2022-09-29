@@ -11,5 +11,5 @@ pub struct XEnumerateData {
     /// 该枚举的字段类型
     pub headers: Vec<XCellHeader>,
     /// 该枚举的字段值
-    pub data: Vec<XDataItem>,
+    pub lines: Vec<XDataLine>,
 }

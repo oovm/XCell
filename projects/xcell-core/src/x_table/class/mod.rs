@@ -56,7 +56,7 @@ impl XClassTable {
         }
         Ok(out)
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
         let mut items = vec![];
         for (row, data) in self.table.rows() {
             match XClassItem::parse_cell(data, &self) {
@@ -67,6 +67,6 @@ impl XClassTable {
                 }
             }
         }
-        Ok(XExportData::Class(box XClassData { name: self.table.get_name(), items }))
+        Ok(())
     }
 }

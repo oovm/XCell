@@ -1,5 +1,5 @@
 use super::*;
-use crate::x_table::dictionary::data::XDataItem;
+use crate::x_table::dictionary::data::XDataLine;
 
 pub mod data;
 pub mod manager;
@@ -30,11 +30,11 @@ impl XListTable {
         }
         Ok(out)
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
         let mut errors = vec![];
         let mut values = BTreeMap::default();
         for (row, data) in self.table.rows().skip(1) {
-            match XDataItem::parse_id_cell(data, &mut errors) {
+            match XDataLine::parse_id_cell(data, &mut errors) {
                 Ok(o) => {
                     values.insert(o.id.clone(), o);
                 }
@@ -43,7 +43,7 @@ impl XListTable {
                 }
             }
         }
-        Ok(XExportData::List(box XListData { name: "".to_string(), map: values }))
+        Ok(())
     }
 }
 
@@ -61,11 +61,11 @@ impl XDictTable {
         }
         Ok(out)
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
         let mut errors = vec![];
         let mut values = BTreeMap::default();
         for (row, data) in self.table.rows().skip(1) {
-            match XDataItem::parse_key_cell(data, &mut errors) {
+            match XDataLine::parse_key_cell(data, &mut errors) {
                 Ok(o) => {
                     values.insert(o.key.clone(), o);
                 }
@@ -74,6 +74,6 @@ impl XDictTable {
                 }
             }
         }
-        Ok(XExportData::Dict(box XDictData { name: "".to_string(), map: values }))
+        Ok(())
     }
 }

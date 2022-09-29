@@ -46,7 +46,10 @@ impl XDataItem {
         let mut out = Self::default();
         out.key = out.try_parse_key(data)?;
 
-        for (column, datum) in data.iter().enumerate().skip(1) {}
+        for (column, datum) in data.iter().enumerate().skip(1) {
+            todo!()
+        }
+        todo!()
     }
 
     fn try_parse_id(&self, data: &[DataType]) -> XResult<String> {

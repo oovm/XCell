@@ -1,17 +1,32 @@
-use crate::x_table::enumerate::XEnumerateData;
+use std::fmt::{Debug, Display, Formatter};
+
+use crate::XEnumerateData;
 use askama::Template;
+use serde::Deserialize;
 
 use super::*;
 
 #[derive(Template)]
-#[template(path = "BuildEnumerate.cs.djv")]
+#[template(path = "BuildEnumerate.cs.djv", ext = "txt", escape = "none")]
 pub struct UnityEnumerate {
     version: &'static str,
     class_name: String,
     table_name: String,
     id_type: String,
     config: UnityCodegen,
-    enumerate_fields: String,
+    enumerate_fields: Vec<EnumerateField>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct EnumerateField {
+    document: Vec<String>,
+    remarks: Vec<String>,
+}
+
+impl Display for EnumerateField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(self, f)
+    }
 }
 
 impl UnityCodegen {
@@ -23,9 +38,9 @@ impl UnityCodegen {
             version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             class_name: table.name.clone(),
-            table_name: table.data.key_type().as_csharp_type(),
-            id_type: table.data.key_type().as_csharp_type(),
-            enumerate_fields: table.data.make_enum_field(),
+            table_name: "".to_string(),
+            id_type: "".to_string(),
+            enumerate_fields: vec![],
         }
     }
 }

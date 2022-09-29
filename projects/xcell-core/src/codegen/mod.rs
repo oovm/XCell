@@ -1,4 +1,3 @@
-use crate::XClassItem;
 use convert_case::{Case, Casing};
 use itertools::Itertools;
 use serde::Serialize;
@@ -17,7 +16,7 @@ use xcell_types::{
     ByteOrder, StreamWriter, XCellValue,
 };
 
-use crate::{CBinaryWriter, DataContractWriter, MergedTable, UnityCodegen, XCellHeader, XExportData};
+use crate::{MergedTable, UnityCodegen, XCellHeader};
 
 pub mod binary;
 pub mod readable;

@@ -1,4 +1,5 @@
 use super::*;
+use crate::x_table::dictionary::data::XDataItem;
 
 pub mod data;
 pub mod manager;
@@ -42,7 +43,7 @@ impl XListTable {
                 }
             }
         }
-        Ok(XExportData::List(box XListData { map: values }))
+        Ok(XExportData::List(box XListData { name: "".to_string(), map: values }))
     }
 }
 
@@ -73,6 +74,6 @@ impl XDictTable {
                 }
             }
         }
-        Ok(XExportData::Dict(box XDictData { map: values }))
+        Ok(XExportData::Dict(box XDictData { name: "".to_string(), map: values }))
     }
 }

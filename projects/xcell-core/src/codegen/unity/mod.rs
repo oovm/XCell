@@ -41,25 +41,6 @@ impl UnityCodegen {
         tera_render(include_str!("PartManager.cs.djv"), &ctx, &path, "PartManager.cs")?;
         Ok(())
     }
-    pub fn write_class(&self, table: &XExportData, root: &Path) -> XResult<()> {
-        let file = format!("{}{}", table.name, self.suffix_table);
-        let path = self.unity_csharp_path(root, &file)?;
-        if let Ok(o) = Url::from_file_path(&path) {
-            log::info!("写入 C#: \n{}", o);
-        }
-        Ok(())
-    }
-
-    pub fn write_data_contract(&self, table: &XExportData, root: &Path) -> XResult<()> {
-        if !self.xml.enable {
-            return Ok(());
-        }
-        let file = format!("{}{}", table.name, self.suffix_table);
-        let path = self.unity_xml_path(root, &file)?;
-        log::info!("写入 {}", self.unity_xml_relative(&file));
-        let cg = DataContractWriter::new(&self.namespace, table, &self.suffix_table);
-        cg.write_xml(&path)
-    }
 }
 
 #[derive(Serialize)]

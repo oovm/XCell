@@ -24,7 +24,6 @@ pub use self::{
             XDictTable, XListTable,
         },
         enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
-        export::XExportData,
         header::XCellHeader,
         language::{id::XLanguageID, table::XLanguageTable},
         table::CalamineTable,

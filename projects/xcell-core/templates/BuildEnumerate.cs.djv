@@ -5,40 +5,33 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace {% config.namespace %}
+namespace {{ config.namespace }}
 {
     [DataContract, Serializable]
     public enum {{ class_name }}: {{ id_type }}
     {
 {%- for field in enumerate_fields %}
 	    [EnumMember]
-        {% field.name %} = {% field.number %},
-{%- end-for %}
+        {{ field.name }} = {{ field.number }},
+{%- endfor %}
     }
 
     public static class {{ class_name }}Extension
     {
-{%- for field in CLASS_FIELDS %}
-        /// <summary>
-    {%- for line in field.summary %}
-        /// {% line %}
-    {%- end-for %}
-        /// </summary>
-        /// <remarks>
-    {%- for line in field.remarks %}
-        /// {% line %}
-    {%- end-for %}
-        /// </remarks>
-        public static {% field.typing %} {% field.getter %}(this {{ class_name }} self)
+{%- for field in enumerate_fields %}
+    {%- for line in field.document %}
+        /// {{ line }}
+    {%- endfor %}
+        public static {{ field.typing }} {{ field.getter }}(this {{ class_name }} self)
         {
             return self switch
             {
             {% for line in field.remarks %}
-                {{ class_name }}.{% field %} => {% value %},
-            {% end-for %}
+                {{ class_name }}.{{ field }} => {{ value }},
+            {% endfor %}
                 _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
             };
         }
-{% end-for %}
+{% endfor %}
     }
 }

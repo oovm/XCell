@@ -21,7 +21,12 @@ use xcell_errors::{
 };
 use xcell_types::{default_deserialize, TypeMetaInfo};
 
-use crate::{config::unity::UnityCodegen, utils::{get_relative, valid_file}, x_table::{language::manager::LanguageManager, table::CalamineTable}, EnumerateManager, XDictTable, XEnumerateTable, XExportData, XLanguageID, XLanguageTable, XListTable, DictionaryManager};
+use crate::{
+    config::unity::UnityCodegen,
+    utils::{get_relative, valid_file},
+    x_table::{language::manager::LanguageManager, table::CalamineTable},
+    EnumerateManager, XDictTable, XEnumerateTable, XLanguageID, XLanguageTable, XListTable,
+};
 
 pub use self::{
     project::ProjectConfig,
@@ -40,9 +45,7 @@ pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
 pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
-    pub dictionaries: DictionaryManager,
     pub enumerates: EnumerateManager,
-    pub languages: LanguageManager,
 }
 
 default_deserialize![ProjectConfig, TableConfig, TableLineMode];
@@ -72,7 +75,7 @@ impl WorkspaceManager {
         Ok(Self {
             config,
             glob_pattern,
-            file_mapping: Default::default(),
+            dictionaries: Default::default(),
             enumerates: Default::default(),
             languages: Default::default(),
         })
@@ -141,12 +144,7 @@ impl WorkspaceManager {
         Err(XError::table_error(format!("{} 不是有效的表格", file.display())))
     }
     pub fn write_unity(&self) -> XResult<()> {
-        for table in self.file_mapping.values() {
-            table.config.unity.ensure_path(&self.config.root)?;
-            table.config.unity.write_class(table, &self.config.root)?;
-            table.config.unity.write_binary(table, &self.config.root)?;
-            table.config.unity.write_data_contract(table, &self.config.root)?;
-        }
+        self.config.unity.write_binary(self)?;
         self.config.unity.write_manager(&self.collect_merged(), &self.config.root, &self.config.version)?;
         Ok(())
     }

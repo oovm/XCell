@@ -1,4 +1,4 @@
-use crate::x_table::dictionary::XDataItem;
+use crate::x_table::dictionary::data::XDataItem;
 use super::*;
 
 #[derive(Serialize)]

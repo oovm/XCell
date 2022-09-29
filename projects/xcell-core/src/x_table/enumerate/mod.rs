@@ -3,7 +3,7 @@ use std::ops::{AddAssign, Sub};
 use xcell_errors::for_3rd::Zero;
 use xcell_types::IntegerDescription;
 
-use crate::x_table::dictionary::XDataItem;
+use crate::x_table::dictionary::data::XDataItem;
 
 use super::*;
 
@@ -23,17 +23,13 @@ pub struct XEnumerateTable {
     table: CalamineTable,
 }
 
-/// 需要导出的枚举数据
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct XEnumerateData {
-    /// 该枚举的名称
-    pub name: String,
-    /// 该枚举的注释
-    pub comment: XDocument,
-    /// 该枚举的字段类型
-    pub headers: Vec<XCellHeader>,
-    /// 该枚举的字段值
-    pub data: Vec<XDataItem>,
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct EnumerateManager {
+    define: BTreeMap<String, EnumerateDescription>,
+    enumerate: BTreeMap<String, XEnumerateData>,
+    dict: BTreeMap<String, XDictData>,
+    list: BTreeMap<String, XListData>,
+    class: BTreeMap<String, XClassData>,
 }
 
 impl XEnumerateTable {
@@ -98,7 +94,7 @@ impl XEnumerateTable {
             mapping.insert(key, value);
         }
         let name = self.enumerate_name();
-        ws.enumerates.insert(
+        ws.enumerates.insert_enumerate(
             EnumerateDescription { name: name.clone(), integer: self.id_type.kind, default: "".to_string(), mapping },
             XEnumerateData { name, comment: self.enumerate_document(), headers: self.headers.clone(), data: data_items },
         )?;

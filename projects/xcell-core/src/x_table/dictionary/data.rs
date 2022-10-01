@@ -40,7 +40,7 @@ impl XDataLine {
     fn try_parse_key(&self, data: &[DataType]) -> XResult<String> {
         match data.get(0).and_then(|s| s.get_string()) {
             Some(s) => Ok(s.to_string()),
-            None => Err(XError::runtime_error("id 不能为空"))?,
+            None => Err(XError::runtime_error("key 不能为空").with_x(0))?,
         }
     }
 }
@@ -48,7 +48,7 @@ impl XDataLine {
 impl XDataLine {
     pub fn parse_id_cell(data: &[DataType], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
-        out.key = out.try_parse_key(data)?;
+        out.id = out.try_parse_id(data)?;
 
         for (column, datum) in data.iter().enumerate().skip(1) {
             todo!()
@@ -63,7 +63,7 @@ impl XDataLine {
                 DataType::String(s) => Ok(BigInt::from_str(s)?),
                 _ => Err(XError::runtime_error("id 必须是整数"))?,
             },
-            None => Err(XError::runtime_error("id 不能为空"))?,
+            None => Err(XError::runtime_error("id 不能为空").with_x(0))?,
         }
     }
 }

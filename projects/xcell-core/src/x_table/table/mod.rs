@@ -21,21 +21,21 @@ impl CalamineTable {
     }
     #[inline]
     pub fn is_language_id(&self) -> bool {
-        let name = self.get_header(0).field_name.as_str();
-        self.config.typing.language.is_id(name)
+        let name = self.get_header(0);
+        self.config.typing.language.is_id(name.field_name.as_str())
     }
     #[inline]
     pub fn is_language_key(&self) -> bool {
-        let name = self.get_header(0).field_name.as_str();
-        self.config.typing.language.is_key(name)
+        let name = self.get_header(0);
+        self.config.typing.language.is_key(name.field_name.as_str())
     }
     pub fn is_language_value(&self, name: &str) -> bool {
         self.config.typing.language.is_value(name)
     }
     #[inline]
     pub fn is_class(&self) -> bool {
-        let name = self.get_header(0).field_name.as_str();
-        name == "class"
+        let name = self.get_header(0);
+        name.field_name.as_str() == "class"
     }
     #[inline]
     pub fn is_array(&self, name: &str) -> bool {

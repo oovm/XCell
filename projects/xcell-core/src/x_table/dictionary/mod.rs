@@ -30,7 +30,7 @@ impl XListTable {
         }
         Ok(out)
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> Vec<XError> {
         let mut errors = vec![];
         let mut values = BTreeMap::default();
         for (row, data) in self.table.rows().skip(1) {
@@ -38,12 +38,10 @@ impl XListTable {
                 Ok(o) => {
                     values.insert(o.id.clone(), o);
                 }
-                Err(e) => {
-                    log::error!("{}", e.with_y(row));
-                }
+                Err(e) => errors.push(e.with_y(row)),
             }
         }
-        Ok(())
+        errors
     }
 }
 
@@ -61,7 +59,7 @@ impl XDictTable {
         }
         Ok(out)
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> Vec<XError> {
         let mut errors = vec![];
         let mut values = BTreeMap::default();
         for (row, data) in self.table.rows().skip(1) {
@@ -70,10 +68,10 @@ impl XDictTable {
                     values.insert(o.key.clone(), o);
                 }
                 Err(e) => {
-                    log::error!("{}", e.with_y(row));
+                    errors.push(e.with_y(row));
                 }
             }
         }
-        Ok(())
+        errors
     }
 }

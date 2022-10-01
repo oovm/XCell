@@ -121,19 +121,25 @@ impl WorkspaceManager {
     pub fn try_perform_file(&mut self, file: &Path) -> XResult<()> {
         let table = CalamineTable::load(file, &self.config)?;
         if let Ok(s) = XListTable::confirm(&table) {
-            return s.perform(&mut self);
+            for error in s.perform(self) {
+                log::error!("{}", error.with_path(file));
+            }
+            return Ok(());
         }
         if let Ok(s) = XDictTable::confirm(&table) {
-            return s.perform(&mut self);
+            for error in s.perform(self) {
+                log::error!("{}", error.with_path(file));
+            }
+            return Ok(());
         }
         if let Ok(s) = XEnumerateTable::confirm(&table) {
-            return s.perform(&mut self);
+            return s.perform(self);
         }
         if let Ok(s) = XLanguageTable::confirm(&table) {
-            return s.perform(&mut self);
+            return s.perform(self);
         }
         if let Ok(s) = XLanguageID::confirm(&table) {
-            return s.perform(&mut self);
+            return s.perform(self);
         }
         Err(XError::table_error(format!("{} 不是有效的表格", file.display())))
     }

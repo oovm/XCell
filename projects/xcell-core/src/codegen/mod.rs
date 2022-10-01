@@ -6,15 +6,16 @@ use std::{
     collections::HashMap,
     fs::{create_dir_all, File},
     io::Write,
-    path::Path,
+    path::{Path, PathBuf},
 };
 use tera::{Context, Tera};
-use url::Url;
-use xcell_errors::XResult;
+use xcell_errors::{for_3rd::Url, XResult};
 use xcell_types::{
     codegen::{CSharpReader, CSharpWriter},
     ByteOrder, StreamWriter, XCellValue,
 };
+
+use crate::{WorkspaceManager, XClassData, XDictData, XListData};
 
 use crate::{MergedTable, UnityCodegen, XCellHeader};
 

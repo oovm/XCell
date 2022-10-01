@@ -30,7 +30,7 @@ integer-encoding = "3.0.4"
 [dependencies.xcell-errors]
 version = "0.1.2"
 path = "../xcell-errors"
-features = ["tera", "toml", "globset", "async-walkdir", "notify", "num"]
+features = ["tera", "toml", "globset", "async-walkdir", "notify", "num", "url"]
 
 [dependencies.xcell-types]
 version = "0.2.1"

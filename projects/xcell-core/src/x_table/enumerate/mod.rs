@@ -81,7 +81,7 @@ impl XEnumerateTable {
             let value = self.read_id(data, &mut available_id);
             let comment = XDocument::read_document(data, self.doc_column);
             let mut line_items = vec![];
-            for header in self.headers {
+            for header in &self.headers {
                 match header.parse_cell(data) {
                     Ok(o) => line_items.push(o),
                     Err(e) => {
@@ -119,7 +119,7 @@ impl XEnumerateTable {
             Some(s) => s,
             None => {
                 default_id.add_assign(1);
-                default_id.sub(1)
+                default_id.clone().sub(1)
             }
         }
     }

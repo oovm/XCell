@@ -14,7 +14,7 @@ impl EnumerateManager {
         for item in self.enumerate.values_mut() {
             assert_eq!(item.headers.len(), item.lines.len());
             for define in item.headers.iter_mut() {
-                if let Err(e) = define.link_enumerate(self) {
+                if let Err(e) = define.link_enumerate(&self.define) {
                     errors.push(e);
                 }
             }
@@ -22,17 +22,18 @@ impl EnumerateManager {
                 errors.extend(define.link_enumerate(&item.headers))
             }
         }
+
         errors
     }
 }
 
 impl XCellHeader {
-    pub fn link_enumerate(&mut self, all: &EnumerateManager) -> XResult<()> {
+    pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> XResult<()> {
         let define = match self.typing.mut_enumerate() {
             Some(s) => s,
             None => return Ok(()), // skip non enum
         };
-        match all.define.get(&define.name) {
+        match all.get(&define.name) {
             Some(v) => {
                 *define = v.clone();
                 Ok(())

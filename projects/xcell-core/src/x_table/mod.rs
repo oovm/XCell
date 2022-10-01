@@ -1,4 +1,4 @@
-use crate::{XClassData, XClassTable, XDictData, XListData};
+use crate::{XClassData, XDictData, XListData};
 use calamine::{DataType, Rows};
 
 use serde::{Deserialize, Serialize};

@@ -48,3 +48,6 @@ mod for_walkdir;
 mod for_serde;
 #[cfg(feature = "serde_json")]
 mod for_serde_json;
+
+#[cfg(feature = "url")]
+pub use url::Url;

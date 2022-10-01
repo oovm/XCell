@@ -11,7 +11,6 @@ edition = "2021"
 
 
 [dependencies]
-url = "2.2.2"
 log = "0.4.17"
 calamine = "0.19.1"
 convert_case = "0.6.0"

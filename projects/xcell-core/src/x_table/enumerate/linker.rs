@@ -19,7 +19,7 @@ impl EnumerateManager {
                 }
             }
             for define in item.lines.iter_mut() {
-                errors.extend(define.link_enumerate(self, &item.headers))
+                errors.extend(define.link_enumerate(&item.headers))
             }
         }
         errors
@@ -43,12 +43,14 @@ impl XCellHeader {
 }
 
 impl XDataLine {
-    pub fn link_enumerate(&mut self, all: &EnumerateManager, headers: &[XCellHeader]) -> Vec<XError> {
+    pub fn link_enumerate(&mut self, headers: &[XCellHeader]) -> Vec<XError> {
         assert_eq!(self.data.len(), headers.len());
-        for x in self.data.iter_mut() {
-            if let Err(e) = x.link_enumerate(self) {
+        let mut errors = vec![];
+        for (value, typing) in self.data.iter_mut().zip(headers.iter()) {
+            if let Err(e) = value.link_enumerate(&typing.typing) {
                 errors.push(e);
             }
         }
+        errors
     }
 }

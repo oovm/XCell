@@ -1,6 +1,5 @@
 use std::{
     any::type_name,
-
     fmt::{Debug, Formatter},
     fs::read_to_string,
     path::{Path, PathBuf},
@@ -140,7 +139,7 @@ impl WorkspaceManager {
     }
     pub fn write_unity(&self) -> XResult<()> {
         self.config.unity.write_binary(self)?;
-        self.config.unity.write_manager(&self.collect_merged(), &self.config.root, &self.config.version)?;
+        // self.config.unity.write_manager(&self.collect_merged(), &self.config.root, &self.config.version)?;
         Ok(())
     }
 }

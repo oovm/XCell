@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use super::*;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -29,13 +31,15 @@ impl XDataLine {
     pub fn parse_key_cell(data: &[DataType], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.key = out.try_parse_key(data)?;
-
-        for (column, datum) in data.iter().enumerate().skip(1) {}
+        for (column, datum) in data.iter().enumerate().skip(1) {
+            todo!()
+        }
+        Ok(out)
     }
 
     fn try_parse_key(&self, data: &[DataType]) -> XResult<String> {
-        match data.get(0) {
-            Some(s) => s.get_string(),
+        match data.get(0).and_then(|s| s.get_string()) {
+            Some(s) => Ok(s.to_string()),
             None => Err(XError::runtime_error("id 不能为空"))?,
         }
     }
@@ -49,12 +53,16 @@ impl XDataLine {
         for (column, datum) in data.iter().enumerate().skip(1) {
             todo!()
         }
-        todo!()
+        Ok(out)
     }
 
-    fn try_parse_id(&self, data: &[DataType]) -> XResult<String> {
+    fn try_parse_id(&self, data: &[DataType]) -> XResult<BigInt> {
         match data.get(0) {
-            Some(s) => s.get_string(),
+            Some(s) => match s {
+                DataType::Int(s) => Ok(BigInt::from(*s)),
+                DataType::String(s) => Ok(BigInt::from_str(s)?),
+                _ => Err(XError::runtime_error("id 必须是整数"))?,
+            },
             None => Err(XError::runtime_error("id 不能为空"))?,
         }
     }

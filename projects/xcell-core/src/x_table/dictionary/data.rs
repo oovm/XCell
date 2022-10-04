@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use xcell_errors::for_3rd::FromPrimitive;
 
 use super::*;
 
@@ -58,10 +59,14 @@ impl XDataLine {
 
     fn try_parse_id(&self, data: &[DataType]) -> XResult<BigInt> {
         match data.get(0) {
-            Some(s) => match s {
-                DataType::Int(s) => Ok(BigInt::from(*s)),
-                DataType::String(s) => Ok(BigInt::from_str(s)?),
-                _ => Err(XError::runtime_error("id 必须是整数"))?,
+            Some(cell) => match cell {
+                DataType::String(str) => Ok(BigInt::from_str(str)?),
+                DataType::Int(int) => Ok(BigInt::from(*int)),
+                DataType::Float(float) => match (float.round() - float) < 0.01f64 {
+                    true => Ok(BigInt::from_f64(*float).unwrap_or_default()),
+                    false => Err(XError::runtime_error(format!("id 必须是整数, 实际为 {}", float)))?,
+                },
+                _ => Err(XError::runtime_error(format!("id 必须是整数类型, 实际为 {:?}", cell)))?,
             },
             None => Err(XError::runtime_error("id 不能为空").with_x(0))?,
         }

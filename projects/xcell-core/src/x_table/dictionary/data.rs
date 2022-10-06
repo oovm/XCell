@@ -1,4 +1,5 @@
 use std::str::FromStr;
+
 use xcell_errors::for_3rd::FromPrimitive;
 
 use super::*;
@@ -47,12 +48,17 @@ impl XDataLine {
 }
 
 impl XDataLine {
-    pub fn parse_id_cell(data: &[DataType], errors: &mut Vec<XError>) -> XResult<Self> {
+    pub fn parse_id_cell(data: &[DataType], headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.id = out.try_parse_id(data)?;
-
-        for (column, datum) in data.iter().enumerate().skip(1) {
-            todo!()
+        let mut column = 1;
+        // skip column 0, which is id
+        for (data, header) in data.iter().skip(1).zip(headers.iter()) {
+            match header.typing.parse_cell(data) {
+                Ok(o) => out.data.push(o),
+                Err(e) => errors.push(e.with_x(column)),
+            }
+            column += 1;
         }
         Ok(out)
     }

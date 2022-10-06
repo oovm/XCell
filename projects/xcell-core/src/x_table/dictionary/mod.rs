@@ -1,5 +1,5 @@
 use super::*;
-use crate::x_table::dictionary::data::XDataLine;
+use crate::{utils::first_not_nil, x_table::dictionary::data::XDataLine};
 
 pub mod data;
 pub mod manager;
@@ -34,7 +34,11 @@ impl XListTable {
         let mut errors = vec![];
         let mut values = BTreeMap::default();
         for (row, data) in self.table.rows().skip(1) {
-            match XDataLine::parse_id_cell(data, &mut errors) {
+            if !first_not_nil(data) {
+                // 首行是空的, 数据无效且不报错
+                continue;
+            }
+            match XDataLine::parse_id_cell(data, &self.headers, &mut errors) {
                 Ok(o) => {
                     values.insert(o.id.clone(), o);
                 }

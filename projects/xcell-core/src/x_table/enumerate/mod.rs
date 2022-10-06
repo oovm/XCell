@@ -3,7 +3,7 @@ use std::ops::{AddAssign, Sub};
 use xcell_errors::for_3rd::Zero;
 use xcell_types::IntegerDescription;
 
-use crate::x_table::dictionary::data::XDataLine;
+use crate::{utils::first_not_nil, x_table::dictionary::data::XDataLine};
 
 use super::*;
 
@@ -66,17 +66,24 @@ impl XEnumerateTable {
         }
         out
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> Vec<XError> {
+        let mut errors = vec![];
         let mut mapping = BTreeMap::default();
         let mut available_id = BigInt::zero();
         let mut data_items = vec![];
         for (row, data) in self.table.rows() {
-            let key = match data.get(0).and_then(|s| s.get_string()) {
-                Some(s) => s.to_string(),
-                None => {
-                    log::error!("{} 行首格不是字符串, 已跳过", row);
+            if !first_not_nil(data) {
+                // 首行是空的, 数据无效且不报错
+                continue;
+            }
+            let key = match data.get(0) {
+                Some(DataType::String(s)) => s.to_string(),
+                Some(s) => {
+                    errors.push(XError::runtime_error(format!("枚举首格字段不是字符串, 实际 {}", s)).with_y(row));
                     continue;
                 }
+                // 已判空
+                None => unreachable!(),
             };
             let value = self.read_id(data, &mut available_id);
             let comment = XDocument::read_document(data, self.doc_column);
@@ -94,19 +101,17 @@ impl XEnumerateTable {
             mapping.insert(key, value);
         }
         let name = self.enumerate_name();
-        ws.add_define(EnumerateDescription {
-            name: name.clone(),
-            integer: self.id_type.kind,
-            default: "".to_string(),
-            mapping,
-        })?;
+        let define = EnumerateDescription { name: name.clone(), integer: self.id_type.kind, default: "".to_string(), mapping };
+        if let Err(e) = ws.add_define(define) {
+            errors.push(e);
+        }
         ws.add_enumerate(XEnumerateData {
             name,
             comment: self.enumerate_document(),
             headers: self.headers.clone(),
             lines: data_items,
         });
-        Ok(())
+        errors
     }
     pub fn enumerate_name(&self) -> String {
         self.table.get_name()

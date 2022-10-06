@@ -1,3 +1,5 @@
+use crate::utils::norm_string;
+
 use super::*;
 
 mod display;
@@ -20,14 +22,16 @@ impl CalamineTable {
         self.path.file_name().and_then(|s| s.to_str()).unwrap_or("").to_string()
     }
     #[inline]
-    pub fn is_language_id(&self) -> bool {
+    pub fn is_language_define(&self) -> bool {
         let name = self.get_header(0);
-        self.config.typing.language.is_id(name.field_name.as_str())
+        let norm = norm_string(&name.field_name);
+        self.config.typing.language.is_id(&norm)
     }
     #[inline]
-    pub fn is_language_key(&self) -> bool {
+    pub fn is_language_table(&self) -> bool {
         let name = self.get_header(0);
-        self.config.typing.language.is_key(name.field_name.as_str())
+        let norm = norm_string(&name.field_name);
+        self.config.typing.language.is_key(&norm)
     }
     pub fn is_language_value(&self, name: &str) -> bool {
         self.config.typing.language.is_value(name)

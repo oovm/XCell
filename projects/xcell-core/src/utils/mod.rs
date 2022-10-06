@@ -106,7 +106,7 @@ pub fn split_namespace(s: &str) -> Vec<&str> {
 }
 
 
-pub fn norm_string(s: &str) {
+pub fn norm_string(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for char in s.chars() {
         if char == '-' || char == '_' || char == ' ' {
@@ -117,4 +117,5 @@ pub fn norm_string(s: &str) {
         }
         out.push(char);
     }
+    out
 }

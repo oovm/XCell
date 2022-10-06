@@ -12,7 +12,6 @@ impl EnumerateManager {
     pub fn link_enumerate(&mut self) -> Vec<XError> {
         let mut errors = vec![];
         for item in self.enumerate.values_mut() {
-            assert_eq!(item.headers.len(), item.lines.len());
             for define in item.headers.iter_mut() {
                 if let Err(e) = define.link_enumerate(&self.define) {
                     errors.push(e);
@@ -31,7 +30,8 @@ impl XCellHeader {
     pub fn link_enumerate(&mut self, all: &BTreeMap<String, EnumerateDescription>) -> XResult<()> {
         let define = match self.typing.mut_enumerate() {
             Some(s) => s,
-            None => return Ok(()), // skip non enum
+            // 非枚举类型, 跳过
+            None => return Ok(()),
         };
         match all.get(&define.name) {
             Some(v) => {
@@ -45,7 +45,9 @@ impl XCellHeader {
 
 impl XDataLine {
     pub fn link_enumerate(&mut self, headers: &[XCellHeader]) -> Vec<XError> {
-        assert_eq!(self.data.len(), headers.len());
+        if self.data.len() != headers.len() {
+            return vec![XError::runtime_error(format!("字段数量和类型数量不一致"))];
+        }
         let mut errors = vec![];
         for (value, typing) in self.data.iter_mut().zip(headers.iter()) {
             if let Err(e) = value.link_enumerate(&typing.typing) {

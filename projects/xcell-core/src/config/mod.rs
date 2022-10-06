@@ -20,12 +20,7 @@ use xcell_errors::{
 };
 use xcell_types::{default_deserialize, TypeMetaInfo};
 
-use crate::{
-    config::unity::UnityCodegen,
-    utils::{get_relative, valid_file},
-    x_table::{enumerate::EnumerateManager, table::CalamineTable},
-    LanguageManager, XDictTable, XEnumerateTable, XLanguageID, XLanguageTable, XListTable,
-};
+use crate::{config::unity::UnityCodegen, utils::{get_relative, valid_file}, x_table::{enumerate::EnumerateManager, table::CalamineTable}, LanguageManager, XDictTable, XEnumerateTable, XLanguageID, XLanguageTable, XListTable, XClassTable};
 
 pub use self::{
     project::ProjectConfig,
@@ -133,6 +128,12 @@ impl WorkspaceManager {
             return Ok(());
         }
         if let Ok(s) = XEnumerateTable::confirm(&table) {
+            for error in s.perform(self) {
+                log::error!("{}", error.with_path(file));
+            }
+            return Ok(());
+        }
+        if let Ok(s) = XClassTable::confirm(&table) {
             return s.perform(self);
         }
         if let Ok(s) = XLanguageTable::confirm(&table) {
@@ -141,7 +142,7 @@ impl WorkspaceManager {
         if let Ok(s) = XLanguageID::confirm(&table) {
             return s.perform(self);
         }
-        Err(XError::table_error(format!("{} 不是有效的表格", file.display())))
+        Err(XError::table_error(format!("{} 不是有效的表格类型", table.get_header(0).field_name)).with_path(file))
     }
     pub fn write_unity(&self) -> XResult<()> {
         self.config.unity.write_binary(self)?;

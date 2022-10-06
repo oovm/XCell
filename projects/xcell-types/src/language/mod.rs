@@ -25,13 +25,13 @@ pub struct LanguageDescription {
 
 impl LanguageDescription {
     pub fn is_id(&self, s: &str) -> bool {
-        contains_lowercase(&["LanguageID"], s)
+        contains_lowercase(["LanguageID"], s)
     }
     pub fn is_key(&self, s: &str) -> bool {
-        contains_lowercase(&["LanguageKey"], s)
+        contains_lowercase(["LanguageKey"], s)
     }
     pub fn is_value(&self, s: &str) -> bool {
-        contains_lowercase(&["LanguageValue"], s)
+        contains_lowercase(["LanguageValue"], s)
     }
     pub fn is_group(&self, s: &str) -> bool {
         contains_lowercase(&self.group, s)

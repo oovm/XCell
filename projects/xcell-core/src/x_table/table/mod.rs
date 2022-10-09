@@ -42,8 +42,12 @@ impl CalamineTable {
         name.field_name.as_str() == "class"
     }
     #[inline]
-    pub fn is_array(&self, name: &str) -> bool {
+    pub fn is_list(&self, name: &str) -> bool {
         name == "id"
+    }
+    #[inline]
+    pub fn is_dict(&self, name: &str) -> bool {
+        name == "key"
     }
     #[inline]
     pub fn is_group(&self, name: &str) -> bool {

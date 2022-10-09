@@ -1,5 +1,5 @@
-use std::collections::btree_map::Values;
 use super::*;
+use std::collections::btree_map::Values;
 
 impl WorkspaceManager {
     pub fn add_define(&mut self, define: EnumerateDescription) -> XResult<()> {
@@ -11,6 +11,12 @@ impl WorkspaceManager {
     }
     pub fn add_enumerate(&mut self, enumerate: XEnumerateData) {
         self.enumerates.enumerate.insert(enumerate.name.to_string(), enumerate);
+    }
+    pub fn add_list(&mut self, list: XListData) {
+        self.enumerates.list.insert(list.name.to_string(), list);
+    }
+    pub fn add_dict(&mut self, dict: XDictData) {
+        self.enumerates.dict.insert(dict.name.to_string(), dict);
     }
 }
 

@@ -1,5 +1,6 @@
-use super::*;
 use crate::{utils::first_not_nil, x_table::dictionary::data::XDataLine};
+
+use super::*;
 
 pub mod data;
 pub mod manager;
@@ -19,7 +20,7 @@ pub struct XDictTable {
 impl XListTable {
     pub fn confirm(table: &CalamineTable) -> XResult<Self> {
         let header = table.get_header(0);
-        if !table.is_array(&header.field_name) {
+        if !table.is_list(&header.field_name) {
             return Err(XError::runtime_error("首格字段不是 id"));
         }
         let mut out = Self { table: table.clone(), headers: vec![] };
@@ -45,6 +46,7 @@ impl XListTable {
                 Err(e) => errors.push(e.with_y(row)),
             }
         }
+        ws.add_list(XListData { name: self.table.get_name(), map: values });
         errors
     }
 }
@@ -52,7 +54,7 @@ impl XListTable {
 impl XDictTable {
     pub fn confirm(table: &CalamineTable) -> XResult<Self> {
         let header = table.get_header(0);
-        if !table.is_array(&header.field_name) {
+        if !table.is_dict(&header.field_name) {
             return Err(XError::runtime_error("首格字段不是 key"));
         }
         let mut out = Self { table: table.clone(), headers: vec![] };
@@ -67,7 +69,7 @@ impl XDictTable {
         let mut errors = vec![];
         let mut values = BTreeMap::default();
         for (row, data) in self.table.rows().skip(1) {
-            match XDataLine::parse_key_cell(data, &mut errors) {
+            match XDataLine::parse_key_cell(data, &self.headers, &mut errors) {
                 Ok(o) => {
                     values.insert(o.key.clone(), o);
                 }
@@ -76,6 +78,7 @@ impl XDictTable {
                 }
             }
         }
+        ws.add_dict(XDictData { name: self.table.get_name(), map: values });
         errors
     }
 }

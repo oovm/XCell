@@ -30,19 +30,27 @@ pub struct XDataLine {
 }
 
 impl XDataLine {
-    pub fn parse_key_cell(data: &[DataType], errors: &mut Vec<XError>) -> XResult<Self> {
+    pub fn parse_key_cell(data: &[DataType], headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.key = out.try_parse_key(data)?;
-        for (column, datum) in data.iter().enumerate().skip(1) {
-            todo!()
-        }
+        out.try_parse_data(data, headers, errors);
         Ok(out)
     }
-
     fn try_parse_key(&self, data: &[DataType]) -> XResult<String> {
         match data.get(0).and_then(|s| s.get_string()) {
             Some(s) => Ok(s.to_string()),
             None => Err(XError::runtime_error("key 不能为空").with_x(0))?,
+        }
+    }
+    fn try_parse_data(&mut self, data: &[DataType], headers: &[XCellHeader], errors: &mut Vec<XError>) {
+        let mut column = 1;
+        // skip column 0, which is key
+        for (data, header) in data.iter().skip(1).zip(headers.iter()) {
+            match header.typing.parse_cell(data) {
+                Ok(o) => self.data.push(o),
+                Err(e) => errors.push(e.with_x(column)),
+            }
+            column += 1;
         }
     }
 }
@@ -51,15 +59,7 @@ impl XDataLine {
     pub fn parse_id_cell(data: &[DataType], headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.id = out.try_parse_id(data)?;
-        let mut column = 1;
-        // skip column 0, which is id
-        for (data, header) in data.iter().skip(1).zip(headers.iter()) {
-            match header.typing.parse_cell(data) {
-                Ok(o) => out.data.push(o),
-                Err(e) => errors.push(e.with_x(column)),
-            }
-            column += 1;
-        }
+        out.try_parse_data(data, headers, errors);
         Ok(out)
     }
 

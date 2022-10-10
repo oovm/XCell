@@ -46,7 +46,7 @@ impl XListTable {
                 Err(e) => errors.push(e.with_y(row)),
             }
         }
-        ws.add_list(XListData { name: self.table.get_name(), map: values });
+        ws.add_list(XListData { name: self.table.get_name(), headers: self.headers.clone(), mapping: values });
         errors
     }
 }
@@ -78,7 +78,7 @@ impl XDictTable {
                 }
             }
         }
-        ws.add_dict(XDictData { name: self.table.get_name(), map: values });
+        ws.add_dict(XDictData { name: self.table.get_name(), headers: self.headers.clone(), mapping: values });
         errors
     }
 }

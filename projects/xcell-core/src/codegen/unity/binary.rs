@@ -1,4 +1,3 @@
-
 use super::*;
 
 impl UnityCodegen {
@@ -49,8 +48,8 @@ impl Default for CBinaryWriter {
 
 impl CBinaryWriter {
     pub fn write_dict(&self, file: &mut File, table: &XDictData) -> XResult<()> {
-        (table.map.len() as u32).write_to(file, ByteOrder::LittleEndian)?;
-        for row in table.map.values() {
+        (table.mapping.len() as u32).write_to(file, ByteOrder::LittleEndian)?;
+        for row in table.mapping.values() {
             for item in &row.data {
                 item.write_to(file, ByteOrder::LittleEndian)?
             }
@@ -58,8 +57,8 @@ impl CBinaryWriter {
         Ok(())
     }
     pub fn write_list(&self, file: &mut File, table: &XListData) -> XResult<()> {
-        (table.map.len() as u32).write_to(file, ByteOrder::LittleEndian)?;
-        for row in table.map.values() {
+        (table.mapping.len() as u32).write_to(file, ByteOrder::LittleEndian)?;
+        for row in table.mapping.values() {
             for item in &row.data {
                 item.write_to(file, ByteOrder::LittleEndian)?
             }

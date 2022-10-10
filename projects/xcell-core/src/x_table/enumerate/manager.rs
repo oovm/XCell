@@ -27,4 +27,7 @@ impl WorkspaceManager {
     pub fn dicts(&self) -> Values<'_, String, XDictData> {
         self.enumerates.dict.values()
     }
+    pub fn classes(&self) -> Values<'_, String, XClassData> {
+        self.enumerates.class.values()
+    }
 }

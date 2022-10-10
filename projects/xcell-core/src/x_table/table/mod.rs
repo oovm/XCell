@@ -19,7 +19,7 @@ pub struct CalamineTable {
 impl CalamineTable {
     #[inline]
     pub fn get_name(&self) -> String {
-        self.path.file_name().and_then(|s| s.to_str()).unwrap_or("").to_string()
+        self.path.file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string()
     }
     #[inline]
     pub fn is_language_define(&self) -> bool {

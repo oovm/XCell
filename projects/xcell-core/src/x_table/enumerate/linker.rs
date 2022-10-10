@@ -21,7 +21,26 @@ impl EnumerateManager {
                 errors.extend(define.link_enumerate(&item.headers))
             }
         }
-
+        for item in self.list.values_mut() {
+            for define in item.headers.iter_mut() {
+                if let Err(e) = define.link_enumerate(&self.define) {
+                    errors.push(e);
+                }
+            }
+            for define in item.mapping.values_mut() {
+                errors.extend(define.link_enumerate(&item.headers))
+            }
+        }
+        for item in self.dict.values_mut() {
+            for define in item.headers.iter_mut() {
+                if let Err(e) = define.link_enumerate(&self.define) {
+                    errors.push(e);
+                }
+            }
+            for define in item.mapping.values_mut() {
+                errors.extend(define.link_enumerate(&item.headers))
+            }
+        }
         errors
     }
 }

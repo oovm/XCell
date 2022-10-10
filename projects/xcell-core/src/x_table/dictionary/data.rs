@@ -7,13 +7,15 @@ use super::*;
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XListData {
     pub name: String,
-    pub map: BTreeMap<BigInt, XDataLine>,
+    pub headers: Vec<XCellHeader>,
+    pub mapping: BTreeMap<BigInt, XDataLine>,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XDictData {
     pub name: String,
-    pub map: BTreeMap<String, XDataLine>,
+    pub headers: Vec<XCellHeader>,
+    pub mapping: BTreeMap<String, XDataLine>,
 }
 
 /// 表单中的一行数据

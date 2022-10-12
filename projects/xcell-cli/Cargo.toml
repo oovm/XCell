@@ -1,6 +1,6 @@
 [package]
 name = "xcell"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Aster <192607617@qq.com>"]
 description = "XCell command line tool"
 repository = "https://github.com/oovm/XCell"
@@ -19,7 +19,7 @@ clap = { version = "4.0.32", features = ["derive"] }
 tokio = { version = "1.23.0", features = ["full"] }
 
 [dependencies.xcell-core]
-version = "0.1.0"
+version = "0.2.0"
 path = "../xcell-core"
 
 [dev-dependencies]

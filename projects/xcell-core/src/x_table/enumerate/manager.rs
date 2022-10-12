@@ -1,4 +1,5 @@
 use super::*;
+use crate::XClassItem;
 use std::collections::btree_map::Values;
 
 impl WorkspaceManager {
@@ -12,6 +13,10 @@ impl WorkspaceManager {
     pub fn add_enumerate(&mut self, enumerate: XEnumerateData) {
         self.enumerates.enumerate.insert(enumerate.name.to_string(), enumerate);
     }
+    pub fn add_class(&mut self, class: XClassData) {
+        self.enumerates.class.insert(class.name.to_string(), class);
+    }
+
     pub fn add_list(&mut self, list: XListData) {
         self.enumerates.list.insert(list.name.to_string(), list);
     }

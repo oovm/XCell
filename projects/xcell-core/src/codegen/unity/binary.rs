@@ -11,12 +11,16 @@ impl UnityCodegen {
     pub fn unity_bin_relative(&self, file_name: &str) -> String {
         format!("{}/{}.bytes", self.binary.output, file_name)
     }
-
     pub fn write_binary(&self, ws: &WorkspaceManager) -> XResult<()> {
         if let Some(s) = self.unity_binary_path(&ws.config.root, "test")?.parent() {
             create_dir_all(s)?
         }
-        let mut w = CBinaryWriter::default();
+        let w = CBinaryWriter::default();
+        for class in ws.classes() {
+            if let Err(e) = self.log_write(ws, &class.name).and_then(|mut o| w.write_class(&mut o, class)) {
+                log::error!("write class {} failed: {}", class.name, e);
+            }
+        }
         for list in ws.lists() {
             if let Err(e) = self.log_write(ws, &list.name).and_then(|mut o| w.write_list(&mut o, list)) {
                 log::error!("write list {} failed: {}", list.name, e);
@@ -24,17 +28,16 @@ impl UnityCodegen {
         }
         for dict in ws.dicts() {
             if let Err(e) = self.log_write(ws, &dict.name).and_then(|mut o| w.write_dict(&mut o, dict)) {
-                log::error!("write list {} failed: {}", dict.name, e);
+                log::error!("write dict {} failed: {}", dict.name, e);
             }
         }
-
         Ok(())
     }
     fn log_write(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {
         let file = format!("{}{}", name, self.suffix_table);
         let path = self.unity_binary_path(&ws.config.root, &file)?;
         log::info!("写入二进制: {}\n{}", self.unity_bin_relative(&file), Url::from_file_path(&path)?);
-        return Ok(File::create(path)?);
+        Ok(File::create(path)?)
     }
 }
 

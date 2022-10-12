@@ -34,7 +34,7 @@ impl XClassTable {
     }
     pub fn confirm(table: &CalamineTable) -> XResult<Self> {
         if !table.is_class() {
-            return Err(XError::runtime_error("首格字段不是 Class"));
+            return Err(XError::runtime_error("首格字段不是 class"));
         }
         let mut out = XClassTable::new(table.clone());
         for header in table.headers() {
@@ -57,16 +57,15 @@ impl XClassTable {
         Ok(out)
     }
     pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
+        let mut errors = vec![];
         let mut items = vec![];
         for (row, data) in self.table.rows() {
-            match XClassItem::parse_cell(data, &self) {
+            match XClassItem::parse_cell(data, self) {
                 Ok(o) => items.push(o),
-                Err(e) => {
-                    log::error!("{}", e.with_y(row));
-                    continue;
-                }
+                Err(e) => errors.push(e.with_y(row)),
             }
         }
+        ws.add_class(XClassData { name: self.table.get_name(), items });
         Ok(())
     }
 }

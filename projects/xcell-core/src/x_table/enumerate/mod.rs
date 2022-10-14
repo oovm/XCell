@@ -68,7 +68,7 @@ impl XEnumerateTable {
     }
     pub fn perform(&self, ws: &mut WorkspaceManager) -> Vec<XError> {
         let mut errors = vec![];
-        let mut mapping = BTreeMap::default();
+        let mut define = EnumerateDescription::new(self.enumerate_name());
         let mut available_id = BigInt::zero();
         let mut data_items = vec![];
         for (row, data) in self.table.rows() {
@@ -92,26 +92,28 @@ impl XEnumerateTable {
                 match header.parse_cell(data) {
                     Ok(o) => line_items.push(o),
                     Err(e) => {
-                        log::error!("{} 行 {} 列解析失败: {}", row, header.column, e);
+                        errors.push(e.with_y(row));
                         line_items.push(Default::default())
                     }
                 };
             }
             data_items.push(XDataLine { id: value.clone(), key: key.clone(), comment, data: line_items });
-            mapping.insert(key, value);
-        }
-        let name = self.enumerate_name();
-        let define = EnumerateDescription { name: name.clone(), integer: self.id_type.kind, default: "".to_string(), mapping };
-        if let Err(e) = ws.add_define(define) {
-            errors.push(e);
+            if let Err(e) = define.add_mapping(&key, value) {
+                errors.push(e.with_y(row));
+                return errors;
+            }
         }
         ws.add_enumerate(XEnumerateData {
-            name,
+            name: define.name.clone(),
             typing: self.id_type.clone(),
             comment: self.enumerate_document(),
             headers: self.headers.clone(),
             lines: data_items,
         });
+        define.integer = self.id_type.kind;
+        if let Err(e) = ws.add_define(define) {
+            errors.push(e);
+        }
         errors
     }
     pub fn enumerate_name(&self) -> String {

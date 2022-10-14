@@ -1,10 +1,13 @@
-use crate::{utils::syntax_error, IntegerKind, XCellTyped, XCellValue};
-use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+
+use serde::{Deserialize, Serialize};
+
 use xcell_errors::{
     for_3rd::{BigInt, DataType},
-    XResult,
+    XError, XResult,
 };
+
+use crate::{utils::syntax_error, IntegerKind, XCellTyped, XCellValue};
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct EnumerateDescription {
@@ -30,6 +33,13 @@ impl EnumerateDescription {
         S: Into<String>,
     {
         Self { integer: Default::default(), name: typing.into(), default: "".to_string(), mapping: Default::default() }
+    }
+    pub fn add_mapping(&mut self, name: &str, value: BigInt) -> XResult {
+        if self.mapping.contains_key(name) {
+            return Err(XError::runtime_error(format!("枚举值 {name} 重复定义")));
+        }
+        self.mapping.insert(name.to_string(), value);
+        Ok(())
     }
     pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         self.parse_value(cell).map(XCellValue::Enumerate)

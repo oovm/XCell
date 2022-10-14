@@ -28,17 +28,21 @@ impl XDocument {
     }
     pub fn lines(&self) -> Vec<String> {
         let mut out = String::new();
-        out.push_str("<summary>");
-        out.push('\n');
-        out.push_str(&self.summary);
-        out.push('\n');
-        out.push_str("</summary>");
-        out.push('\n');
-        out.push_str("<detail>");
-        out.push('\n');
-        out.push_str(&self.detail);
-        out.push('\n');
-        out.push_str("</detail>");
+        if !self.summary.trim().is_empty() {
+            out.push_str("<summary>");
+            out.push('\n');
+            out.push_str(&self.summary);
+            out.push('\n');
+            out.push_str("</summary>");
+            out.push('\n');
+        }
+        if !self.detail.trim().is_empty() {
+            out.push_str("<detail>");
+            out.push('\n');
+            out.push_str(&self.detail);
+            out.push('\n');
+            out.push_str("</detail>");
+        }
         out.lines().map(|s| s.to_string()).collect()
     }
 }

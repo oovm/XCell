@@ -1,4 +1,3 @@
-
 use super::*;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -27,7 +26,19 @@ impl XDocument {
         }
         row.get(id).map(XDocument::from).unwrap_or_default()
     }
-    pub fn lines() -> Vec<String> {
-        vec![]
+    pub fn lines(&self) -> Vec<String> {
+        let mut out = String::new();
+        out.push_str("<summary>");
+        out.push('\n');
+        out.push_str(&self.summary);
+        out.push('\n');
+        out.push_str("</summary>");
+        out.push('\n');
+        out.push_str("<detail>");
+        out.push('\n');
+        out.push_str(&self.detail);
+        out.push('\n');
+        out.push_str("</detail>");
+        out.lines().map(|s| s.to_string()).collect()
     }
 }

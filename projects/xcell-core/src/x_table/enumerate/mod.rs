@@ -24,7 +24,7 @@ pub struct XEnumerateTable {
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct EnumerateManager {
+pub struct DefineManager {
     define: BTreeMap<String, EnumerateDescription>,
     enumerate: BTreeMap<String, XEnumerateData>,
     dict: BTreeMap<String, XDictData>,
@@ -107,6 +107,7 @@ impl XEnumerateTable {
         }
         ws.add_enumerate(XEnumerateData {
             name,
+            typing: self.id_type.clone(),
             comment: self.enumerate_document(),
             headers: self.headers.clone(),
             lines: data_items,

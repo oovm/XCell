@@ -22,7 +22,7 @@ pub use self::{
             data::{XDictData, XListData},
             XDictTable, XListTable,
         },
-        enumerate::{data::XEnumerateData, EnumerateManager, XEnumerateTable},
+        enumerate::{data::XEnumerateData, DefineManager, XEnumerateTable},
         header::XCellHeader,
         language::{id::XLanguageID, table::XLanguageTable, manager::LanguageManager},
         table::CalamineTable,

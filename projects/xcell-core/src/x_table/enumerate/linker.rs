@@ -1,14 +1,14 @@
-use crate::EnumerateManager;
+use crate::DefineManager;
 
 use super::*;
 
 impl WorkspaceManager {
     pub fn link_enumerate(&mut self) -> Vec<XError> {
-        self.enumerates.link_enumerate()
+        self.defines.link_enumerate()
     }
 }
 
-impl EnumerateManager {
+impl DefineManager {
     pub fn link_enumerate(&mut self) -> Vec<XError> {
         let mut errors = vec![];
         for item in self.enumerate.values_mut() {

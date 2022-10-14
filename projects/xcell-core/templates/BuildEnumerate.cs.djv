@@ -10,9 +10,11 @@ namespace {{ config.namespace }}
     [DataContract, Serializable]
     public enum {{ class_name }}: {{ id_type }}
     {
-{%- for field in enumerate_fields %}
-	    [EnumMember]
-        {{ field.name }} = {{ field.number }},
+{%- for field in enumerate_ids %}
+    {%- for line in field.document %}
+        /// {{ line }}
+    {%- endfor %}
+        [EnumMember] {{ field.key }} = {{ field.value }},
 {%- endfor %}
     }
 
@@ -26,8 +28,8 @@ namespace {{ config.namespace }}
         {
             return self switch
             {
-            {% for line in field.remarks %}
-                {{ class_name }}.{{ field }} => {{ value }},
+            {% for line in field.switch %}
+                {{ class_name }}.{{ field }} => {{ field.value }},
             {% endfor %}
                 _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
             };

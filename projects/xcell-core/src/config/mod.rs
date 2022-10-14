@@ -20,7 +20,12 @@ use xcell_errors::{
 };
 use xcell_types::{default_deserialize, TypeMetaInfo};
 
-use crate::{config::unity::UnityCodegen, utils::{get_relative, valid_file}, x_table::{enumerate::EnumerateManager, table::CalamineTable}, LanguageManager, XDictTable, XEnumerateTable, XLanguageID, XLanguageTable, XListTable, XClassTable};
+use crate::{
+    config::unity::UnityCodegen,
+    utils::{get_relative, valid_file},
+    x_table::{enumerate::DefineManager, table::CalamineTable},
+    LanguageManager, XClassTable, XDictTable, XEnumerateTable, XLanguageID, XLanguageTable, XListTable,
+};
 
 pub use self::{
     project::ProjectConfig,
@@ -39,7 +44,7 @@ pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
 pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
-    pub enumerates: EnumerateManager,
+    pub defines: DefineManager,
     pub languages: LanguageManager,
 }
 
@@ -67,7 +72,7 @@ impl WorkspaceManager {
         }
         let config = ProjectConfig::new(&root);
         let glob_pattern = build_glob_set(&config.include).unwrap();
-        Ok(Self { config, glob_pattern, enumerates: Default::default(), languages: Default::default() })
+        Ok(Self { config, glob_pattern, defines: Default::default(), languages: Default::default() })
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
@@ -146,6 +151,8 @@ impl WorkspaceManager {
     }
     pub fn write_unity(&self) -> XResult<()> {
         self.config.unity.write_binary(self)?;
+        self.config.unity.write_csharp(self)?;
+
         // self.config.unity.write_manager(&self.collect_merged(), &self.config.root, &self.config.version)?;
         Ok(())
     }

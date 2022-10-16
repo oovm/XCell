@@ -36,7 +36,7 @@ impl EnumerateDescription {
     }
     pub fn add_mapping(&mut self, name: &str, value: BigInt) -> XResult {
         if self.mapping.contains_key(name) {
-            return Err(XError::runtime_error(format!("枚举值 {name} 重复定义")));
+            return Err(XError::table_error(format!("枚举值 {name} 重复定义")));
         }
         self.mapping.insert(name.to_string(), value);
         Ok(())

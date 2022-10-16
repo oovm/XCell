@@ -33,12 +33,8 @@ impl XCellValue {
             XCellValue::Unsigned16(v) => v.to_string(),
             XCellValue::Unsigned32(v) => v.to_string(),
             XCellValue::Unsigned64(v) => v.to_string(),
-            XCellValue::Float32(_) => {
-                todo!()
-            }
-            XCellValue::Float64(_) => {
-                todo!()
-            }
+            XCellValue::Float32(v) => format!("{}f", v),
+            XCellValue::Float64(v) => format!("{}d", v),
             XCellValue::Vector2(_) => {
                 todo!()
             }
@@ -54,8 +50,8 @@ impl XCellValue {
             XCellValue::Quaternion4(_) => {
                 todo!()
             }
-            XCellValue::String(_) => {
-                todo!()
+            XCellValue::String(s) => {
+                format!("\"{}\"", s)
             }
             XCellValue::Color(_) => {
                 todo!()

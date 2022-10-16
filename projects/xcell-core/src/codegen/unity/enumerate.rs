@@ -1,12 +1,3 @@
-use std::fmt::{Debug, Display, Formatter};
-
-use askama::Template;
-use serde::Deserialize;
-
-use xcell_errors::XError;
-
-use crate::{x_table::dictionary::data::XDataLine, XEnumerateData};
-
 use super::*;
 
 #[derive(Template)]
@@ -61,13 +52,13 @@ impl UnityCodegen {
             class_name: table.name.clone(),
             id_type: table.typing.kind.as_csharp_type(),
             enumerate_ids: table.lines.iter().map(|data| data.as_enumerate()).collect(),
-            enumerate_fields: table.headers.iter().map(|data| data.as_enumerate(&table.lines)).collect(),
+            enumerate_fields: table.headers.iter().enumerate().map(|(id, data)| data.as_enumerate(&table.lines, id)).collect(),
         }
     }
 }
 
 impl XCellHeader {
-    fn as_enumerate(&self, values: &[XDataLine]) -> EnumerateField {
+    fn as_enumerate(&self, values: &[XDataLine], index: usize) -> EnumerateField {
         EnumerateField {
             name: self.field_name.clone(),
             number: "number".to_string(),
@@ -75,7 +66,7 @@ impl XCellHeader {
             getter: format!("Get{}", self.field_name.to_case(Case::Pascal)),
             value: "value".to_string(),
             document: self.comment.lines(),
-            switch: vec![],
+            switch: values.iter().map(|data| data.as_pair(index)).collect(),
         }
     }
 }
@@ -83,5 +74,10 @@ impl XCellHeader {
 impl XDataLine {
     fn as_enumerate(&self) -> EnumeratePair {
         EnumeratePair { key: self.key.clone(), value: self.id.to_string(), document: self.comment.lines() }
+    }
+    fn as_pair(&self, index: usize) -> EnumeratePair {
+        // 枚举和字段一样长, 必定存在
+        let data = self.data.get(index).unwrap();
+        EnumeratePair { key: self.key.clone(), value: data.as_csharp_value(), document: self.comment.lines() }
     }
 }

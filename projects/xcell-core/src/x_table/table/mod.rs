@@ -17,51 +17,51 @@ pub struct CalamineTable {
 }
 
 impl CalamineTable {
-    #[inline]
     pub fn get_name(&self) -> String {
         self.path.file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string()
     }
-    #[inline]
+
     pub fn is_language_define(&self) -> bool {
         let name = self.get_header(0);
         let norm = norm_string(&name.field_name);
         self.config.typing.language.is_id(&norm)
     }
-    #[inline]
+
     pub fn is_language_table(&self) -> bool {
         let name = self.get_header(0);
         let norm = norm_string(&name.field_name);
         self.config.typing.language.is_key(&norm)
     }
     pub fn is_language_value(&self, name: &str) -> bool {
-        self.config.typing.language.is_value(name)
+        let norm = norm_string(name);
+        self.config.typing.language.is_value(&norm)
     }
-    #[inline]
+
     pub fn is_class(&self) -> bool {
         let name = self.get_header(0);
         name.field_name.as_str() == "class"
     }
-    #[inline]
+
     pub fn is_list(&self, name: &str) -> bool {
-        name == "id"
+        self.is_numeric_key(name)
     }
-    #[inline]
+
     pub fn is_dict(&self, name: &str) -> bool {
         name == "key"
     }
-    #[inline]
+
     pub fn is_group(&self, name: &str) -> bool {
         self.config.typing.language.is_group(name)
     }
-    #[inline]
+
     pub fn is_enumerate(&self, name: &str) -> bool {
         name == "enum"
     }
-    #[inline]
-    pub fn is_enumerate_id(&self, name: &str) -> bool {
+
+    pub fn is_numeric_key(&self, name: &str) -> bool {
         name == "id"
     }
-    #[inline]
+
     pub fn is_document(&self, name: &str) -> bool {
         name == "document"
     }

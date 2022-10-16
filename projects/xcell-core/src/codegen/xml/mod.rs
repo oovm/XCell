@@ -1,5 +1,5 @@
-use crate::x_table::dictionary::data::XDataLine;
 use super::*;
+use crate::x_table::dictionary::data::XDataLine;
 
 #[derive(Serialize)]
 pub struct DataContractWriter {
@@ -23,8 +23,8 @@ pub struct XmlField {
 
 impl DataContractWriter {
     pub fn write_xml(&self, output: &Path) -> XResult<()> {
-        let ctx = Context::from_serialize(self)?;
-        tera_render(include_str!("DataContract.xml.djv"), &ctx, output, "DataContract.xml")?;
+        // let ctx = Context::from_serialize(self)?;
+        // tera_render(include_str!("DataContract.xml.djv"), &ctx, output, "DataContract.xml")?;
         Ok(())
     }
 }

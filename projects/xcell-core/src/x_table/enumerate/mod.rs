@@ -50,7 +50,7 @@ impl XEnumerateTable {
             if table.is_document(&header.field_name) {
                 out.doc_column = header.column;
             }
-            if table.is_enumerate_id(&header.field_name) {
+            if table.is_numeric_key(&header.field_name) {
                 match header.typing.as_integer() {
                     Some(s) => {
                         out.id_column = header.column;

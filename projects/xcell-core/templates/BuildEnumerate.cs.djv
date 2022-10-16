@@ -28,9 +28,9 @@ namespace {{ config.namespace }}
         {
             return self switch
             {
-            {% for line in field.switch %}
-                {{ class_name }}.{{ field }} => {{ field.value }},
-            {% endfor %}
+            {%- for line in field.switch %}
+                {{ class_name }}.{{ line.key }} => {{ line.value }},
+            {%- endfor %}
                 _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
             };
         }

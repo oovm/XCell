@@ -36,16 +36,16 @@ namespace {{ config.namespace }}
         private static readonly Lazy<{{ config.manager_name }}> singleton = new(() => new {{ config.manager_name }}());
         public static {{ config.manager_name }} {{ config.instance_name }} => singleton.Value;
 {% for table in tables %}
-        private {{ table }} {{ table | private_name }};
-        /// <inheritdoc cref="{{config.namespace}}.{{ table }}"/>
-        public {{ table }} {{ table | public_name }}
+        private {{ table.typing }} {{ table.private_name }};
+        /// <inheritdoc cref="{{config.namespace}}.{{ table.typing }}"/>
+        public {{ table.typing }} {{ table.public_name }}
         {
 {%- if config.legacy_null_null %}
-            get { return {{ table | private_name }} != null ? {{ table | private_name }} : new {{ table }}(); }
+            get { return {{ table.private_name }} != null ? {{ table.private_name }} : new {{ table.typing }}(); }
 {%- else %}
-            get => {{ table | private_name }} ?? new {{ table }}();
+            get => {{ table.private_name }} ?? new {{ table.typing }}();
 {%- endif %}
-            set => {{ table | private_name }} = value;
+            set => {{ table.private_name }} = value;
         }
 {% endfor %}
 #if UNITY_EDITOR
@@ -53,14 +53,14 @@ namespace {{ config.namespace }}
         public static void Reload()
         {
 {%- for table in tables %}
-            {{ config.instance_name }}.{{ table | private_name }} = new {{ table }}();
+            {{ config.instance_name }}.{{ table.private_name }} = new {{ table.typing }}();
 {%- endfor %}
         }
         [MenuItem("Tools/XCell/ClearAll")]
         public static void Clear()
         {
 {%- for table in tables %}
-            {{ config.instance_name }}.{{ table | private_name }} = null;
+            {{ config.instance_name }}.{{ table.private_name }} = null;
 {%- endfor %}
         }
 
@@ -68,7 +68,7 @@ namespace {{ config.namespace }}
         public static void ExportXML()
         {
 {%- for table in tables %}
-            SerializerXML("Assets/Data/Table/Binary/{{ table }}.xml", {{ config.instance_name }}.{{ table | private_name }});
+            SerializerXML("Assets/Data/Table/Binary/{{ table.typing }}.xml", {{ config.instance_name }}.{{ table.private_name }});
 {%- endfor %}
         }
 
@@ -76,7 +76,7 @@ namespace {{ config.namespace }}
         public static void ExportJSON()
         {
 {%- for table in tables %}
-            SerializerJSON("Assets/Data/Table/Readable/{{ table }}.json", {{ config.instance_name }}.{{ table | private_name }});
+            SerializerJSON("Assets/Data/Table/Readable/{{ table.typing }}.json", {{ config.instance_name }}.{{ table.private_name }});
 {%- endfor %}
         }
 #endif

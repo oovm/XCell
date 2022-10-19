@@ -1,5 +1,6 @@
+use std::collections::{btree_map::Values, BTreeSet};
+
 use super::*;
-use std::collections::btree_map::Values;
 
 impl WorkspaceManager {
     pub fn add_define(&mut self, define: EnumerateDescription) -> XResult<()> {
@@ -30,8 +31,15 @@ impl WorkspaceManager {
     pub fn dicts(&self) -> Values<'_, String, XDictData> {
         self.defines.dict.values()
     }
-    pub fn classes(&self) -> Values<'_, String, XClassData> {
+    pub fn class_data(&self) -> Values<'_, String, XClassData> {
         self.defines.class.values()
+    }
+    pub fn class_names(&self) -> BTreeSet<String> {
+        let mut names = BTreeSet::new();
+        names.extend(self.defines.class.keys().cloned());
+        names.extend(self.defines.list.keys().cloned());
+        names.extend(self.defines.dict.keys().cloned());
+        names
     }
     pub fn enumerates(&self) -> Values<'_, String, XEnumerateData> {
         self.defines.enumerate.values()

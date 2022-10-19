@@ -16,7 +16,7 @@ impl UnityCodegen {
             create_dir_all(s)?
         }
         let w = CBinaryWriter::default();
-        for class in ws.classes() {
+        for class in ws.class_data() {
             if let Err(e) = self.log_write(ws, &class.name).and_then(|mut o| w.write_class(&mut o, class)) {
                 log::error!("write class {} failed: {}", class.name, e);
             }

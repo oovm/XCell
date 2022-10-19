@@ -19,7 +19,7 @@ use serde::Deserialize;
 
 use xcell_errors::XError;
 
-use crate::{x_table::dictionary::data::XDataLine, MergedTable, UnityCodegen, XCellHeader, XEnumerateData};
+use crate::{x_table::dictionary::data::XDataLine, UnityCodegen, XCellHeader, XEnumerateData};
 
 pub mod binary;
 pub mod readable;

@@ -1,6 +1,7 @@
 use super::*;
 
 mod binary;
+mod dictionary;
 mod enumerate;
 mod manager;
 
@@ -20,6 +21,7 @@ impl UnityCodegen {
                 log::error!("生成枚举失败: {}", e);
             }
         }
+        self.write_manager(ws)?;
         Ok(())
     }
     fn log_csharp(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {

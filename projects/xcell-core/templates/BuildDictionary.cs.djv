@@ -13,56 +13,28 @@ using UnityEngine;
 
 namespace {{ config.namespace }}
 {
-{%- if enumerate %}
     [DataContract, Serializable]
-    public enum {{CLASS_NAME}} : {{ ID_TYPE }}
-    {
-{%- for field in enumerate_fields %}
-	    [EnumMember]
-        {{ field.name }} = {{ field.number }},
-{%- endfor %}
-    }
-
-    public static class {{CLASS_NAME}}Extension
-    {
-{%- for field in CLASS_FIELDS %}
-        /// <inheritdoc cref="{{ CLASS_NAME }}Element.{{ field.name }}"/>
-        public static {{ field.typing }} {{ field.getter }}(this {{CLASS_NAME}} self)
-        {
-            return {{ config.manager_name }}.{{ config.instance_name }}.{{ TABLE_NAME | public_name }}.GetElement(({{ ID_TYPE }}) self).{{ field.name }};
-        }
-{%- endfor %}
-    }
-{%- endif %}
-    [DataContract, Serializable]
-    public partial class {{ TABLE_NAME }}
+    public partial class {{ table_name }}
     {
 		[NonSerialized]
-        public readonly Dictionary<{{ ID_TYPE }}, {{ CLASS_NAME }}Element> dict = new();
+        public readonly Dictionary<{{ id_type }}, {{ class_name }}Element> dict = new();
 
         [DataMember]
-        public readonly List<{{ CLASS_NAME }}Element> elements = new();
+        public readonly List<{{ class_name }}Element> elements = new();
 
-        public {{ CLASS_NAME }}Element GetElement({{ ID_TYPE }} {{ KEY }})
+        public {{ class_name }}Element GetElement({{ id_type }} {{ key_name }})
         {
-            return dict.TryGetValue({{ KEY }}, out var item) ? item : null;
+            return dict.TryGetValue({{ key_name }}, out var item) ? item : null;
         }
     }
 
     [DataContract, Serializable]
-    public partial class {{ CLASS_NAME }}Element
+    public partial class {{ class_name }}Element
     {
-{%- for field in CLASS_FIELDS %}
-        /// <summary>
-    {%- for line in field.summary %}
+{%- for field in class_fields %}
+    {%- for line in field.document %}
         /// {{line}}
     {%- endfor %}
-        /// </summary>
-        /// <remarks>
-    {%- for line in field.remarks %}
-        /// {{line}}
-    {%- endfor %}
-        /// </remarks>
         [DataMember]
     {%- if field.has_default %}
         public {{field.typing}} {{field.name}} = {{field.default}};
@@ -72,11 +44,11 @@ namespace {{ config.namespace }}
 {%- endfor %}
     }
 {% if config.binary.enable %}
-    public partial class {{TABLE_NAME}} : IBinarySupport
+    public partial class {{ table_name }} : IBinarySupport
     {
-        public {{TABLE_NAME}}()
+        public {{ table_name }}()
         {
-            BinaryRead("{{ config.binary.output }}/{{ TABLE_NAME }}.binary");
+            BinaryRead("{{ config.binary.output }}/{{ table_name }}.binary");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据
@@ -91,9 +63,16 @@ namespace {{ config.namespace }}
         /// </example>
         public void BinaryRead(string path)
         {
+    {% if config.addressable %}
+            var textAsset = Addressables.LoadAssetAsync<TextAsset>(path).WaitForCompletion();
+            using var stream = new MemoryStream(textAsset.bytes);
+            using var reader = new BinaryReader(stream, Encoding.UTF8, false);
+            BinaryRead(reader);
+    {%- else %}
             using var stream = File.Open(path, FileMode.Open);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
             BinaryRead(reader);
+    {% endif %}
         }
 
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
@@ -104,10 +83,10 @@ namespace {{ config.namespace }}
             var count = r.ReadUInt32();
             for (var i = 0; i < count; i++)
             {
-                var item = new {{ CLASS_NAME }}Element();
+                var item = new {{ class_name }}Element();
                 item.BinaryRead(r);
                 elements.Add(item);
-                dict[item.{{ KEY }}] = item;
+                dict[item.{{ key_name }}] = item;
             }
         }
 
@@ -122,12 +101,12 @@ namespace {{ config.namespace }}
         }
     }
 
-    public partial class {{ CLASS_NAME }}Element : IBinarySupport
+    public partial class {{ class_name }}Element : IBinarySupport
     {
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
-{%- for field in CLASS_FIELDS %}
+{%- for field in class_fields %}
     {%- if field.reader.is_vector %}
             var {{ field.reader.field }}Count = r.ReadUInt32();
             {{ field.reader.field }} = new((int) {{ field.reader.field }}Count);
@@ -144,18 +123,18 @@ namespace {{ config.namespace }}
 		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
-{%- for field in CLASS_FIELDS %}
+{%- for field in class_fields %}
 	{%- if field.writer.is_vector %}
             w.Write((uint) {{ field.writer.field }}.Count);
             foreach (var {{ field.writer.field }}Item in {{ field.writer.field }})
             {
 		{%- for property in field.writer.properties %}
-                w.Write({{ field.writer.field }}Item{{property}});
+                w.Write({{ field.writer.field }}Item{{ property }});
 		{%- endfor %}
             }
 	{%- else %}
 		{%- for property in field.writer.properties %}
-            w.Write({{ field.writer.cast }}{{ field.writer.field }}{{property}});
+            w.Write({{ field.writer.cast }}{{ field.writer.field }}{{ property }});
 		{%- endfor %}
 	{%- endif %}
 {%- endfor %}
@@ -163,7 +142,7 @@ namespace {{ config.namespace }}
     }
 {%- endif %}
 {% if config.support_clone %}
-    public partial class {{TABLE_NAME}} : ICloneable
+    public partial class {{ table_name }} : ICloneable
     {
         public object Clone()
         {
@@ -171,7 +150,7 @@ namespace {{ config.namespace }}
         }
     }
 
-    partial class {{ CLASS_NAME }}Element : ICloneable
+    partial class {{ class_name }}Element : ICloneable
     {
         public object Clone()
         {

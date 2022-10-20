@@ -21,6 +21,7 @@ impl Default for UnityCodegen {
             legacy_using: false,
             legacy_null_null: false,
             xml: Default::default(),
+            addressable: false,
         }
     }
 }

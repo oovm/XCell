@@ -16,10 +16,8 @@ pub struct EnumerateField {
     document: Vec<String>,
     switch: Vec<EnumeratePair>,
     name: String,
-    number: String,
     typing: String,
     getter: String,
-    value: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -41,7 +39,7 @@ impl UnityCodegen {
             Ok(o) => o,
             Err(e) => Err(XError::runtime_error(format!("生成枚举失败: {}", e)))?,
         };
-        let mut file = self.log_csharp(ws, &format!("{}Table", table.name))?;
+        let mut file = self.log_csharp(ws, &table.name)?;
         file.write_all(out.as_bytes())?;
         Ok(())
     }
@@ -61,10 +59,8 @@ impl XCellHeader {
     fn as_enumerate(&self, values: &[XDataLine], index: usize) -> EnumerateField {
         EnumerateField {
             name: self.field_name.clone(),
-            number: "number".to_string(),
             typing: self.typing.as_csharp_type(),
             getter: format!("Get{}", self.field_name.to_case(Case::Pascal)),
-            value: "value".to_string(),
             document: self.comment.lines(),
             switch: values.iter().map(|data| data.as_pair(index)).collect(),
         }

@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use xcell_errors::for_3rd::{Datelike, Timelike, Utc, Zero};
 
@@ -10,14 +10,14 @@ use crate::{
 
 mod default;
 
-#[derive(Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CSharpReader {
     pub is_vector: bool,
     pub field: String,
     pub function: String,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CSharpWriter {
     pub is_vector: bool,
     pub field: String,

@@ -21,6 +21,12 @@ impl UnityCodegen {
                 log::error!("生成枚举失败: {}", e);
             }
         }
+        for table in ws.dicts() {
+            if let Err(e) = self.write_dict(ws, table) {
+                log::error!("生成枚举失败: {}", e);
+            }
+        }
+
         self.write_manager(ws)?;
         Ok(())
     }
@@ -31,15 +37,3 @@ impl UnityCodegen {
     }
 }
 
-#[derive(Serialize)]
-struct CSharpField {
-    summary: Vec<String>,
-    remarks: Vec<String>,
-    typing: String,
-    reader: CSharpReader,
-    writer: CSharpWriter,
-    name: String,
-    getter: String,
-    default: String,
-    has_default: bool,
-}

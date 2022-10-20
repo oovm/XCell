@@ -27,6 +27,8 @@ pub struct UnityCodegen {
     pub legacy_using: bool,
     /// 转译 `??` 语法
     pub legacy_null_null: bool,
+    /// 是否启用 `AddressableAssets`
+    pub addressable: bool,
     /// 是否支持二进制序列化
     pub binary: UnityBinaryConfig,
     /// 是否支持二进制序列化

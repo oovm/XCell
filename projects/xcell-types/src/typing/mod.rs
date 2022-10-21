@@ -1,11 +1,17 @@
-use std::any::type_name;
-use std::fmt::{Debug, Display, Formatter};
+use std::{
+    any::type_name,
+    fmt::{Debug, Display, Formatter},
+};
 
-use serde::{Deserialize, Serialize};
-use serde::de::{MapAccess, Visitor};
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserialize, Serialize,
+};
 
-use xcell_errors::{for_3rd::DataType, XResult};
-use xcell_errors::for_3rd::{read_map_next_extra, read_map_next_key_lowercase, read_map_next_value};
+use xcell_errors::{
+    for_3rd::{read_map_next_extra, read_map_next_key_lowercase, read_map_next_value, DataType},
+    XResult,
+};
 
 pub use crate::{
     array::{ArrayDescription, ArrayKind},
@@ -18,9 +24,9 @@ pub use crate::{
 };
 use crate::{BooleanDescription, LanguageDescription, XCellValue};
 
+mod der;
 mod display;
 mod parser;
-mod der;
 mod ser;
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -29,6 +35,7 @@ pub struct TypeMetaInfo {
     pub string: StringDescription,
     pub vector: VectorDescription,
     pub language: LanguageDescription,
+    pub enumerate: EnumerateDescription,
 }
 
 #[derive(Clone, Serialize, Deserialize)]

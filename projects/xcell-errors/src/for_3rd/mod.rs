@@ -49,5 +49,8 @@ mod for_serde;
 #[cfg(feature = "serde_json")]
 mod for_serde_json;
 
+#[cfg(feature = "askama")]
+mod for_askama;
+
 #[cfg(feature = "url")]
 pub use url::Url;

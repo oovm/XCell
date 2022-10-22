@@ -5,35 +5,16 @@ use super::*;
 pub struct UnityDictionary {
     version: &'static str,
     class_name: String,
-    public_name: String,
     table_name: String,
     id_type: &'static str,
     config: UnityCodegen,
     key_name: String,
-    enumerate: String,
-    enumerate_ids: Vec<EnumeratePair>,
     class_fields: Vec<DictField>,
 }
 
-#[derive(Serialize)]
-struct CSharpField {
-    summary: Vec<String>,
-    remarks: Vec<String>,
-    typing: String,
-    reader: CSharpReader,
-    writer: CSharpWriter,
-    name: String,
-    getter: String,
-    default: String,
-    has_default: bool,
-}
-
-
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DictField {
-    number: String,
     document: Vec<String>,
-    remarks: Vec<EnumeratePair>,
     name: String,
     typing: String,
     getter: String,
@@ -74,59 +55,58 @@ impl Display for DictField {
 
 impl UnityCodegen {
     pub(super) fn write_dict(&self, ws: &WorkspaceManager, table: &XDictData) -> XResult<()> {
-        let out = match self.make_dict(table).render() {
-            Ok(o) => o,
-            Err(e) => Err(XError::runtime_error(format!("生成表单失败: {}", e)))?,
-        };
-        let mut file = self.log_csharp(ws, &table.name)?;
+        let table_name = format!("{}{}", table.name, ws.config.unity.suffix_table);
+        let mut file = self.log_csharp(ws, &table_name)?;
+        let out = self.make_dict(table, table_name).render()?;
         file.write_all(out.as_bytes())?;
         Ok(())
     }
-    fn make_dict(&self, table: &XDictData) -> UnityDictionary {
+    fn make_dict(&self, table: &XDictData, table_name: String) -> UnityDictionary {
         UnityDictionary {
             version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
-            key_name: "<key_name>".to_string(),
-            table_name: table.name.clone(),
-            id_type: "<id_type>",
-            enumerate_ids: vec![],
-            class_fields: vec![DictField {
-                number: "<number>".to_string(),
-                document: vec![],
-                remarks: vec![],
-                name: "<name>".to_string(),
-                typing: "<typing>".to_string(),
-                getter: "<getter>".to_string(),
-                has_default: true,
-                default: "<default>".to_string(),
-                reader: CSharpReader { is_vector: false, field: "<field>".to_string(), function: "<function>".to_string() },
-                writer: CSharpWriter {
-                    is_vector: false,
-                    field: "<field>".to_string(),
-                    cast: "<cast>".to_string(),
-                    properties: vec![],
-                },
-            }],
-            public_name: "<public_name>".to_string(),
-            enumerate: "<enumerate>".to_string(),
-            class_name: "<class_name>".to_string(),
+            table_name,
+            class_name: table.name.clone(),
+            key_name: "key".to_string(),
+            id_type: "string",
+            class_fields: table.headers.iter().map(|s| s.as_dict()).collect(),
+        }
+    }
+}
+
+impl UnityCodegen {
+    pub(super) fn write_list(&self, ws: &WorkspaceManager, table: &XListData) -> XResult<()> {
+        let table_name = format!("{}{}", table.name, ws.config.unity.suffix_table);
+        let mut file = self.log_csharp(ws, &table_name)?;
+        let out = self.make_list(table, table_name).render()?;
+        file.write_all(out.as_bytes())?;
+        Ok(())
+    }
+    fn make_list(&self, table: &XListData, table_name: String) -> UnityDictionary {
+        UnityDictionary {
+            version: env!("CARGO_PKG_VERSION"),
+            config: self.clone(),
+            table_name,
+            class_name: table.name.clone(),
+            key_name: "id".to_string(),
+            id_type: table.id_type.as_csharp_type(),
+            class_fields: table.headers.iter().map(|s| s.as_dict()).collect(),
         }
     }
 }
 
 impl XCellHeader {
-    fn as_dict(&self, values: &[XDataLine], index: usize) -> DictField {
+    fn as_dict(&self) -> DictField {
+        let default = self.typing.as_csharp_default();
         DictField {
-            number: "<number>".to_string(),
+            document: self.document.lines(),
             name: self.field_name.clone(),
             typing: self.typing.as_csharp_type(),
-            getter: format!("Get{}", self.field_name.to_case(Case::Pascal)),
-            has_default: true,
-            document: self.comment.lines(),
-            remarks: values.iter().map(|data| data.as_pair2(index)).collect(),
-            default: "<default>".to_string(),
-            reader: CSharpReader { is_vector: false, field: "".to_string(), function: "".to_string() },
-            writer: CSharpWriter { is_vector: false, field: "".to_string(), cast: "".to_string(), properties: vec![] },
+            has_default: !default.is_empty(),
+            default,
+            getter: "<getter>".to_string(),
+            reader: self.typing.make_cs_binary_reader(&self.field_name),
+            writer: self.typing.make_cs_binary_writer(&self.field_name),
         }
     }
 }

@@ -1,4 +1,5 @@
 use crate::utils::norm_string;
+use xcell_types::IntegerKind;
 
 use super::*;
 
@@ -20,7 +21,6 @@ impl CalamineTable {
     pub fn get_name(&self) -> String {
         self.path.file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string()
     }
-
     pub fn is_language_define(&self) -> bool {
         let name = self.get_header(0);
         let norm = norm_string(&name.field_name);
@@ -42,12 +42,14 @@ impl CalamineTable {
         name.field_name.as_str() == "class"
     }
 
-    pub fn is_list(&self, name: &str) -> bool {
-        self.is_numeric_key(name)
+    pub fn is_list(&self) -> bool {
+        let head = self.get_header(0);
+        self.is_numeric_key(&head.field_name)
     }
 
-    pub fn is_dict(&self, name: &str) -> bool {
-        name == "key"
+    pub fn is_dict(&self) -> bool {
+        let head = self.get_header(0);
+        head.field_name.eq_ignore_ascii_case("key")
     }
 
     pub fn is_group(&self, name: &str) -> bool {
@@ -59,11 +61,15 @@ impl CalamineTable {
     }
 
     pub fn is_numeric_key(&self, name: &str) -> bool {
-        name == "id"
+        name.eq_ignore_ascii_case("id")
     }
 
     pub fn is_document(&self, name: &str) -> bool {
         name == "document"
+    }
+
+    pub fn default_enumerate(&self) -> IntegerKind {
+        self.config.typing.enumerate.integer
     }
 }
 
@@ -105,7 +111,7 @@ impl CalamineTable {
                 Default::default()
             }
         };
-        XCellHeader { column: index, comment: self.read_comment_details(index), typing, field_name, complete }
+        XCellHeader { column: index, document: self.read_comment_details(index), typing, field_name, complete }
     }
     fn get_field_name(&self, index: usize) -> Option<String> {
         let line = self.config.line.field.saturating_sub(1) as u32;

@@ -11,7 +11,7 @@ pub struct XCellHeader {
     /// 类型信息
     pub typing: XCellTyped,
     /// 短描述
-    pub comment: XDocument,
+    pub document: XDocument,
     /// 是否是完整定义
     pub complete: bool,
 }

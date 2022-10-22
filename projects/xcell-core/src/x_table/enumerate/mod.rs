@@ -120,7 +120,7 @@ impl XEnumerateTable {
         self.table.get_name()
     }
     pub fn enumerate_document(&self) -> XDocument {
-        self.table.get_header(0).comment
+        self.table.get_header(0).document
     }
     fn read_id(&self, row: &[DataType], default_id: &mut BigInt) -> BigInt {
         match self.try_read_id(row) {

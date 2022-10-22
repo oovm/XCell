@@ -1,6 +1,5 @@
 use super::*;
 
-
 pub struct CalamineTableHeaders<'i> {
     table: &'i CalamineTable,
     this: usize,
@@ -16,11 +15,7 @@ impl CalamineTable {
                 max_width = width;
             }
         }
-        CalamineTableHeaders {
-            table: &self,
-            this: 0,
-            last: max_width,
-        }
+        CalamineTableHeaders { table: self, this: 0, last: max_width }
     }
 }
 

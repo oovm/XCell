@@ -48,7 +48,7 @@ namespace {{ config.namespace }}
     {
         public {{ table_name }}()
         {
-            BinaryRead("{{ config.binary.output }}/{{ table_name }}.binary");
+            BinaryRead("{{ config.binary.output }}/{{ table_name }}.bytes");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据

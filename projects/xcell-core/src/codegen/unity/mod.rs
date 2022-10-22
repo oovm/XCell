@@ -26,7 +26,11 @@ impl UnityCodegen {
                 log::error!("生成枚举失败: {}", e);
             }
         }
-
+        for table in ws.lists() {
+            if let Err(e) = self.write_list(ws, table) {
+                log::error!("生成枚举失败: {}", e);
+            }
+        }
         self.write_manager(ws)?;
         Ok(())
     }
@@ -36,4 +40,3 @@ impl UnityCodegen {
         Ok(File::create(path)?)
     }
 }
-

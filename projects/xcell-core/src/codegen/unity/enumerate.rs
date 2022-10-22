@@ -61,7 +61,7 @@ impl XCellHeader {
             name: self.field_name.clone(),
             typing: self.typing.as_csharp_type(),
             getter: format!("Get{}", self.field_name.to_case(Case::Pascal)),
-            document: self.comment.lines(),
+            document: self.document.lines(),
             switch: values.iter().map(|data| data.as_pair(index)).collect(),
         }
     }

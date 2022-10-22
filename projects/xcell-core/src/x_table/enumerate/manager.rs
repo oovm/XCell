@@ -36,7 +36,7 @@ impl WorkspaceManager {
     }
     pub fn class_names(&self) -> BTreeSet<String> {
         let mut names = BTreeSet::new();
-        names.extend(self.defines.class.keys().cloned());
+        // names.extend(self.defines.class.keys().cloned());
         names.extend(self.defines.list.keys().cloned());
         names.extend(self.defines.dict.keys().cloned());
         names

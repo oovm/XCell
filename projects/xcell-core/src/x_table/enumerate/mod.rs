@@ -47,17 +47,15 @@ impl XEnumerateTable {
         let mut out = Self::new(table.clone());
         for header in table.headers().skip(1) {
             // skip first column
+            if table.is_numeric_key(&header.field_name) {
+                if let Some(s) = header.typing.as_integer() {
+                    out.id_column = header.column;
+                    out.id_type = s.clone();
+                }
+                continue;
+            }
             if table.is_document(&header.field_name) {
                 out.doc_column = header.column;
-            }
-            if table.is_numeric_key(&header.field_name) {
-                match header.typing.as_integer() {
-                    Some(s) => {
-                        out.id_column = header.column;
-                        out.id_type = s.clone()
-                    }
-                    None => continue,
-                }
             }
             if !header.complete {
                 continue;

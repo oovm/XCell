@@ -70,10 +70,11 @@ impl XDataLine {
 
 impl XDataLine {
     fn try_parse_data(&mut self, data: &[DataType], headers: &[XCellHeader], errors: &mut Vec<XError>) {
-        for (column, (data, header)) in data.iter().zip(headers.iter()).enumerate() {
+        for header in headers {
+            let data = data.get(header.column).unwrap_or(&DataType::Empty);
             match header.typing.parse_cell(data) {
                 Ok(o) => self.data.push(o),
-                Err(e) => errors.push(e.with_x(column)),
+                Err(e) => errors.push(e.with_x(header.column)),
             }
         }
     }

@@ -133,16 +133,16 @@ impl WorkspaceManager {
             return Ok(());
         }
         if let Ok(s) = XEnumerateTable::confirm(&table) {
-            for error in s.perform(self) {
-                log::error!("{}", error.with_path(file));
-            }
             return Ok(());
         }
         if let Ok(s) = XClassTable::confirm(&table) {
             return s.perform(self);
         }
         if let Ok(s) = XLanguageTable::confirm(&table) {
-            return s.perform(self);
+            for error in s.perform(self) {
+                log::error!("{}", error.with_path(file));
+            }
+            return Ok(());
         }
         if let Ok(s) = XLanguageID::confirm(&table) {
             return s.perform(self);

@@ -1,4 +1,4 @@
-use xcell_types::{IntegerDescription, IntegerKind};
+use xcell_types::{IntegerDescription};
 
 use crate::{utils::first_not_nil, x_table::dictionary::data::XDataLine};
 

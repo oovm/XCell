@@ -43,6 +43,9 @@ impl DefineManager {
         }
         errors
     }
+    pub fn get_enumerate(&mut self, name: &str) -> Option<&mut XEnumerateData> {
+        self.enumerate.get_mut(name)
+    }
 }
 
 impl XCellHeader {

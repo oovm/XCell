@@ -14,8 +14,10 @@ impl XLanguageID {
         }
         Ok(Self { wrap: XEnumerateTable::force_confirm(table) })
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
-        // ws.languages;
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> Vec<XError> {
+        let errors = self.wrap.perform(ws);
+        ws.add_language_item(self.table.get_name())
+        
 
         Ok(())
     }

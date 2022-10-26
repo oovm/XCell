@@ -24,7 +24,7 @@ pub use self::{
         },
         enumerate::{data::XEnumerateData, DefineManager, XEnumerateTable},
         header::XCellHeader,
-        language::{id::XLanguageID, table::XLanguageTable, manager::LanguageManager},
+        language::{LanguageManager, XLanguageData, XLanguageID, XLanguageTable},
         table::CalamineTable,
     },
 };

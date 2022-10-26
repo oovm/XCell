@@ -1,16 +1,6 @@
 use super::*;
 
-#[derive(Clone, Debug, Default)]
-pub struct LanguageManager {
-    store: BTreeMap<String, LanguageItem>,
-    // data: XEnumerateData,
-}
 
-#[derive(Clone, Debug, Default)]
-pub struct LanguageItem {
-    key: String,
-    localizations: BTreeMap<String, String>,
-}
 
 impl WorkspaceManager {
     pub fn add_language_id(&mut self, language_id: &str) -> XResult {
@@ -32,7 +22,7 @@ impl WorkspaceManager {
         }
         let key = if group.is_empty() { key.to_string() } else { format!("{}/{}", group, key) };
         if !self.languages.store.contains_key(&key) {
-            self.languages.store.insert(key.clone(), LanguageItem { key: key.clone(), localizations: Default::default() });
+            self.languages.store.insert(key.clone(), XLanguageData { key: key.clone(), localizations: Default::default() });
         }
         let item = unsafe { self.languages.store.get_mut(&key).unwrap_unchecked() };
         if item.localizations.contains_key(language) {
@@ -42,8 +32,8 @@ impl WorkspaceManager {
         Ok(())
     }
     /// 获取所有语言中的 key 的交集
-    pub fn get_language_keys(&self) -> Vec<String> {
-        self.languages.store.keys().cloned().collect()
+    pub fn get_language_keys(&self) -> Vec<&str> {
+        self.languages.store.keys().map(|s| s.as_str()).collect()
     }
     pub fn languages(&self) -> &LanguageManager {
         let languages = self.defines.get_language_ids("LanguageID");

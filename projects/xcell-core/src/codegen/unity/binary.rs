@@ -1,4 +1,5 @@
 use super::*;
+use crate::XLanguageData;
 
 impl UnityCodegen {
     /// 生成二进制产物的文件夹
@@ -17,26 +18,37 @@ impl UnityCodegen {
         }
         let w = CBinaryWriter::default();
         for class in ws.class_data() {
-            if let Err(e) = self.log_write(ws, &class.name).and_then(|mut o| w.write_class(&mut o, class)) {
+            if let Err(e) = self
+                .log_binary(ws, &format!("{}{}", class.name, ws.config.unity.suffix_table))
+                .and_then(|mut o| w.write_class(&mut o, class))
+            {
                 log::error!("write class {} failed: {}", class.name, e);
             }
         }
         for list in ws.lists() {
-            if let Err(e) = self.log_write(ws, &list.name).and_then(|mut o| w.write_list(&mut o, list)) {
+            if let Err(e) = self
+                .log_binary(ws, &format!("{}{}", list.name, ws.config.unity.suffix_table))
+                .and_then(|mut o| w.write_list(&mut o, list))
+            {
                 log::error!("write list {} failed: {}", list.name, e);
             }
         }
         for dict in ws.dicts() {
-            if let Err(e) = self.log_write(ws, &dict.name).and_then(|mut o| w.write_dict(&mut o, dict)) {
+            if let Err(e) = self
+                .log_binary(ws, &format!("{}{}", dict.name, ws.config.unity.suffix_table))
+                .and_then(|mut o| w.write_dict(&mut o, dict))
+            {
                 log::error!("write dict {} failed: {}", dict.name, e);
             }
         }
+        if let Err(e) = self.write_language_keys(ws) {
+            log::error!("write language failed: {}", e);
+        }
         Ok(())
     }
-    fn log_write(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {
-        let file = format!("{}{}", name, self.suffix_table);
-        let path = self.unity_binary_path(&ws.config.root, &file)?;
-        log::info!("写入二进制: {}\n{}", self.unity_bin_relative(&file), Url::from_file_path(&path)?);
+    fn log_binary(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {
+        let path = self.unity_binary_path(&ws.config.root, name)?;
+        log::info!("写入二进制: {}\n{}", self.unity_bin_relative(&name), Url::from_file_path(&path)?);
         Ok(File::create(path)?)
     }
 }
@@ -71,6 +83,35 @@ impl CBinaryWriter {
     pub fn write_class(&self, file: &mut File, table: &XClassData) -> XResult<()> {
         for item in &table.items {
             item.default.write_to(file, ByteOrder::LittleEndian)?
+        }
+        Ok(())
+    }
+    // fn write_language_table(&self, file: &mut File, table: &BTreeMap<String, String>) -> XResult<()> {
+    //     (table.len() as u32).write_to(file, ByteOrder::LittleEndian)?;
+    //     for (key, value) in table {
+    //         key.write_to(file, ByteOrder::LittleEndian)?;
+    //         value.write_to(file, ByteOrder::LittleEndian)?;
+    //     }
+    //     Ok(())
+    // }
+}
+
+impl UnityCodegen {
+    fn write_language_table(&self, ws: &WorkspaceManager, table: &XLanguageData) -> XResult<()> {
+        (table.len() as u32).write_to(file, ByteOrder::LittleEndian)?;
+        for (key, value) in table {
+            key.write_to(file, ByteOrder::LittleEndian)?;
+            value.write_to(file, ByteOrder::LittleEndian)?;
+        }
+        Ok(())
+    }
+
+    fn write_language_keys(&self, ws: &WorkspaceManager) -> XResult<()> {
+        let mut file = self.log_binary(ws, "LanguageKeys")?;
+        let table = ws.get_language_keys();
+        (table.len() as u32).write_to(&mut file, ByteOrder::LittleEndian)?;
+        for key in table {
+            XCellValue::String(key.to_string()).write_to(&mut file, ByteOrder::LittleEndian)?
         }
         Ok(())
     }

@@ -22,7 +22,6 @@ namespace DataTable.Generated
         }
 
         private Dictionary<string, string> _zh_hans;
-
         [DataMember]
         public Dictionary<string, string> ZhHans
         {

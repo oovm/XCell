@@ -25,11 +25,11 @@ pub struct XEnumerateTable {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct DefineManager {
-    define: BTreeMap<String, EnumerateDescription>,
-    enumerate: BTreeMap<String, XEnumerateData>,
-    dict: BTreeMap<String, XDictData>,
-    list: BTreeMap<String, XListData>,
-    class: BTreeMap<String, XClassData>,
+    pub(crate) define: BTreeMap<String, EnumerateDescription>,
+    pub(crate) enumerate: BTreeMap<String, XEnumerateData>,
+    pub(crate) dict: BTreeMap<String, XDictData>,
+    pub(crate) list: BTreeMap<String, XListData>,
+    pub(crate) class: BTreeMap<String, XClassData>,
 }
 
 impl XEnumerateTable {
@@ -117,7 +117,7 @@ impl XEnumerateTable {
     pub fn enumerate_name(&self) -> String {
         self.table.get_name()
     }
-    
+
     pub fn enumerate_document(&self) -> XDocument {
         self.table.get_header(0).document
     }

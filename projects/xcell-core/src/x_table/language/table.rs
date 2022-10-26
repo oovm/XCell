@@ -1,12 +1,6 @@
 use super::*;
 
-#[derive(Clone, Debug)]
-pub struct XLanguageTable {
-    table: CalamineTable,
-    language: String,
-    value_column: usize,
-    group_column: usize,
-}
+
 
 impl XLanguageTable {
     fn new(table: CalamineTable) -> Self {

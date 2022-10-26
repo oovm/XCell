@@ -2,10 +2,7 @@ use crate::XEnumerateTable;
 
 use super::*;
 
-#[derive(Clone, Debug)]
-pub struct XLanguageID {
-    wrap: XEnumerateTable,
-}
+
 
 impl XLanguageID {
     pub fn confirm(table: &CalamineTable) -> XResult<Self> {

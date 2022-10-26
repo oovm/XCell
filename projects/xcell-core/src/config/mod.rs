@@ -133,6 +133,9 @@ impl WorkspaceManager {
             return Ok(());
         }
         if let Ok(s) = XEnumerateTable::confirm(&table) {
+            for error in s.perform(self) {
+                log::error!("{}", error.with_path(file));
+            }
             return Ok(());
         }
         if let Ok(s) = XClassTable::confirm(&table) {
@@ -145,7 +148,10 @@ impl WorkspaceManager {
             return Ok(());
         }
         if let Ok(s) = XLanguageID::confirm(&table) {
-            return s.perform(self);
+            for error in s.perform(self) {
+                log::error!("{}", error.with_path(file));
+            }
+            return Ok(());
         }
         Err(XError::table_error(format!("{} 不是有效的表格类型", table.get_header(0).field_name)).with_path(file))
     }

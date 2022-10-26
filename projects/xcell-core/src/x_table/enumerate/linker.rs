@@ -46,6 +46,14 @@ impl DefineManager {
     pub fn get_enumerate(&mut self, name: &str) -> Option<&mut XEnumerateData> {
         self.enumerate.get_mut(name)
     }
+    pub fn get_language_ids(&self, table_name: &str) -> Vec<&str> {
+        match self.enumerate.get(table_name) {
+            Some(s) => s.lines.iter().map(|s| s.key.as_str()).collect(),
+            None => {
+                vec![]
+            }
+        }
+    }
 }
 
 impl XCellHeader {

@@ -3,7 +3,7 @@ use super::*;
 #[derive(Clone, Debug, Default)]
 pub struct LanguageManager {
     store: BTreeMap<String, LanguageItem>,
-    data: XEnumerateData,
+    // data: XEnumerateData,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -16,11 +16,12 @@ impl WorkspaceManager {
     pub fn add_language_id(&mut self, language_id: &str) -> XResult {
         match self.defines.get_enumerate(language_id) {
             None => {
-                return Err(XError::runtime_error(format!("语言表中的语言 {} 未定义", language_id)));
+                return Err(XError::runtime_error("未定义语言表"));
             }
-            Some(s) => {}
+            Some(s) => {
+                s.name = "LanguageID".to_string();
+            }
         }
-
         Ok(())
     }
 
@@ -40,7 +41,12 @@ impl WorkspaceManager {
         item.localizations.insert(language.to_string(), value);
         Ok(())
     }
+    /// 获取所有语言中的 key 的交集
+    pub fn get_language_keys(&self) -> Vec<String> {
+        self.languages.store.keys().cloned().collect()
+    }
     pub fn languages(&self) -> &LanguageManager {
-        &self.languages
+        let languages = self.defines.get_language_ids("LanguageID");
+        todo!()
     }
 }

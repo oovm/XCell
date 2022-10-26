@@ -66,7 +66,7 @@ impl XEnumerateTable {
     }
     pub fn perform(&self, ws: &mut WorkspaceManager) -> Vec<XError> {
         let mut errors = vec![];
-        let mut define = EnumerateDescription::new(self.table.get_name());
+        let mut define = EnumerateDescription::new(self.enumerate_name());
         let mut available_id = BigInt::zero();
         let mut data_items = vec![];
         for (row, data) in self.table.rows() {
@@ -114,6 +114,10 @@ impl XEnumerateTable {
         }
         errors
     }
+    pub fn enumerate_name(&self) -> String {
+        self.table.get_name()
+    }
+    
     pub fn enumerate_document(&self) -> XDocument {
         self.table.get_header(0).document
     }

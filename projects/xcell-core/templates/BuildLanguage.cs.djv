@@ -10,7 +10,7 @@ using System.Text;
 namespace DataTable.Generated
 {
     [DataContract, Serializable]
-    public partial class Language{{ table_suffix }}
+    public partial class Language{{ config.suffix_table }}
     {
         private List<string> _language_keys;
         [DataMember]
@@ -28,7 +28,7 @@ namespace DataTable.Generated
             set => {{ field.private_name }} = value;
         }
 {%- endfor %}
-        public Language{{ table_suffix }}()
+        public Language{{ config.suffix_table }}()
         {
 #if UNITY_EDITOR
             LoadAll();
@@ -37,15 +37,13 @@ namespace DataTable.Generated
 
         public string GetElement(LanguageID language, string key)
         {
-            switch (language)
+            return language switch
             {
 {%- for field in language_fields %}
-                case LanguageID.{{ field.class_name }}:
-                    return {{ field.public_name }}.TryGetValue(key, out var item) ? item : "";
+                LanguageID.{{ field.public_name }} => {{ field.public_name }}.TryGetValue(key, out var item) ? item : "",
 {%- endfor %}
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(language), language, null);
-            }
+                _ => throw new ArgumentOutOfRangeException(nameof(language), language, null)
+            };
         }
 
         private Dictionary<string, string> ReadMaps(string path)
@@ -97,7 +95,7 @@ namespace DataTable.Generated
         }
     }
 
-    public partial class Language{{ table_suffix }} : ICloneable
+    public partial class Language{{ config.suffix_table }} : ICloneable
     {
         public object Clone()
         {

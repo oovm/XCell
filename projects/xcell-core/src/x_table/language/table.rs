@@ -1,7 +1,5 @@
 use super::*;
 
-
-
 impl XLanguageTable {
     fn new(table: CalamineTable) -> Self {
         Self { table, language: "".to_string(), value_column: 0, group_column: 0 }
@@ -14,7 +12,7 @@ impl XLanguageTable {
         let mut out = Self::new(table.clone());
         for header in table.headers() {
             if table.is_language_value(&header.field_name) {
-                out.language = header.field_name.clone();
+                out.language = header.typing.as_csharp_type();
                 out.value_column = header.column;
             }
             if table.is_group(&header.field_name) {
@@ -36,7 +34,10 @@ impl XLanguageTable {
 
     fn get_value<'a>(&self, row: &'a [DataType]) -> (&'a str, &'a str, String) {
         let key = row.get(0).and_then(|v| v.get_string()).unwrap_or_default();
-        let group = row.get(self.group_column).and_then(|v| v.get_string()).unwrap_or_default();
+        let group = match self.group_column {
+            0 => "",
+            i => row.get(i).and_then(|v| v.get_string()).unwrap_or_default(),
+        };
         let value = row.get(self.value_column).map(|v| v.to_string()).unwrap_or_default();
         (group, key, value)
     }

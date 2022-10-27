@@ -3,6 +3,7 @@ use super::*;
 mod binary;
 mod dictionary;
 mod enumerate;
+mod language;
 mod manager;
 
 impl UnityCodegen {
@@ -31,6 +32,7 @@ impl UnityCodegen {
                 log::error!("生成枚举失败: {}", e);
             }
         }
+        self.write_language(ws)?;
         self.write_manager(ws)?;
         Ok(())
     }

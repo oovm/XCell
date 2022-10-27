@@ -1,0 +1,55 @@
+use super::*;
+
+#[derive(Template)]
+#[template(path = "BuildLanguage.cs.djv", ext = "txt", escape = "none")]
+pub struct UnityLanguage {
+    compiler_version: &'static str,
+    table_version: String,
+    table_suffix: String,
+    binary_path: String,
+    config: UnityCodegen,
+    language_fields: Vec<LanguageField>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct LanguageField {
+    class_name: String,
+    public_name: String,
+    private_name: String,
+}
+
+impl Display for LanguageField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
+
+impl UnityCodegen {
+    pub(super) fn write_language(&self, ws: &WorkspaceManager) -> XResult<()> {
+        let out = match self.make_languages(ws).render() {
+            Ok(o) => o,
+            Err(e) => Err(XError::runtime_error(format!("生成语言表失败: {}", e)))?,
+        };
+        let mut file = self.log_csharp(ws, &ws.config.unity.manager_name.to_string())?;
+        file.write_all(out.as_bytes())?;
+        Ok(())
+    }
+    fn make_languages(&self, ws: &WorkspaceManager) -> UnityLanguage {
+        UnityLanguage {
+            compiler_version: env!("CARGO_PKG_VERSION"),
+            table_version: ws.config.version.clone(),
+            table_suffix: "<table_suffix>".to_string(),
+            binary_path: "<binary_path>".to_string(),
+            config: ws.config.unity.clone(),
+            language_fields: ws
+                .class_names()
+                .iter()
+                .map(|name| LanguageField {
+                    class_name: name.to_case(Case::Pascal),
+                    public_name: name.to_case(Case::Camel),
+                    private_name: format!("_{}", name.to_case(Case::Snake)),
+                })
+                .collect(),
+        }
+    }
+}

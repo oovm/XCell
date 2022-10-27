@@ -22,7 +22,7 @@ pub struct XLanguageTable {
     group_column: usize,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XLanguageData {
     pub key: String,
     pub localizations: BTreeMap<String, String>,

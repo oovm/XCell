@@ -10,26 +10,25 @@ using System.Text;
 namespace DataTable.Generated
 {
     [DataContract, Serializable]
-    public partial class LanguageTable
+    public partial class Language{{ table_suffix }}
     {
         private List<string> _language_keys;
-
         [DataMember]
-        public List<string> LanguageKeys
+        public List<string> languageKeys
         {
-            get => _language_keys ??= ReadKeys("Assets/Data/Table/Binary/LanguageKeys.bytes");
+            get => _language_keys ??= ReadKeys("{{ binary_path }}/LanguageKeys.bytes");
             set => _language_keys = value;
         }
-
-        private Dictionary<string, string> _zh_hans;
+{%- for field in language_fields %}
+        private Dictionary<string, string> {{ field.private_name }};
         [DataMember]
-        public Dictionary<string, string> ZhHans
+        public Dictionary<string, string> {{ field.public_name }}
         {
-            get => _zh_hans ??= ReadMaps("Assets/Data/Table/Binary/LanguageZhHans.bytes");
-            set => _zh_hans = value;
+            get => {{ field.private_name }} ??= ReadMaps("{{ binary_path }}/Language{{ field.class_name }}.bytes");
+            set => {{ field.private_name }} = value;
         }
-
-        public LanguageTable()
+{%- endfor %}
+        public Language{{ table_suffix }}()
         {
 #if UNITY_EDITOR
             LoadAll();
@@ -40,8 +39,10 @@ namespace DataTable.Generated
         {
             switch (language)
             {
-                case LanguageID.ZhHans:
-                    return ZhHans.TryGetValue(key, out var item) ? item : "";
+{%- for field in language_fields %}
+                case LanguageID.{{ field.class_name }}:
+                    return {{ field.public_name }}.TryGetValue(key, out var item) ? item : "";
+{%- endfor %}
                 default:
                     throw new ArgumentOutOfRangeException(nameof(language), language, null);
             }
@@ -81,18 +82,22 @@ namespace DataTable.Generated
 
         public void LoadAll()
         {
-            _language_keys = ReadKeys("Assets/Data/Table/Binary/LanguageKeys.bytes");
-            _zh_hans = ReadMaps("Assets/Data/Table/Binary/LanguageZhHans.bytes");
+            _language_keys = ReadKeys("{{ binary_path }}/LanguageKeys.bytes");
+{%- for field in language_fields %}
+            {{ field.private_name }} = ReadMaps("{{ binary_path }}/Language{{ field.class_name }}.bytes");
+{%- endfor %}
         }
 
         public void DropAll()
         {
             _language_keys = null;
-            _zh_hans = null;
+{%- for field in language_fields %}
+            {{ field.private_name }} = null;
+{%- endfor %}
         }
     }
 
-    public partial class LanguageTable : ICloneable
+    public partial class Language{{ table_suffix }} : ICloneable
     {
         public object Clone()
         {

@@ -110,14 +110,3 @@ impl XCellHeader {
         }
     }
 }
-
-impl XDataLine {
-    fn as_enumerate2(&self) -> EnumeratePair {
-        EnumeratePair { key: self.key.clone(), value: self.id.to_string(), document: self.comment.lines() }
-    }
-    fn as_pair2(&self, index: usize) -> EnumeratePair {
-        // 枚举和字段一样长, 必定存在
-        let data = self.data.get(index).unwrap();
-        EnumeratePair { key: self.key.clone(), value: data.as_csharp_value(), document: self.comment.lines() }
-    }
-}

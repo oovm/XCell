@@ -1,5 +1,6 @@
-use super::*;
 use crate::XLanguageData;
+
+use super::*;
 
 impl UnityCodegen {
     /// 生成二进制产物的文件夹
@@ -44,6 +45,8 @@ impl UnityCodegen {
         if let Err(e) = self.write_language_keys(ws) {
             log::error!("write language failed: {}", e);
         }
+        self.write_language_tables(ws);
+
         Ok(())
     }
     fn log_binary(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {
@@ -97,21 +100,28 @@ impl CBinaryWriter {
 }
 
 impl UnityCodegen {
-    fn write_language_table(&self, ws: &WorkspaceManager, table: &XLanguageData) -> XResult<()> {
-        (table.len() as u32).write_to(file, ByteOrder::LittleEndian)?;
-        for (key, value) in table {
-            key.write_to(file, ByteOrder::LittleEndian)?;
-            value.write_to(file, ByteOrder::LittleEndian)?;
-        }
-        Ok(())
-    }
-
     fn write_language_keys(&self, ws: &WorkspaceManager) -> XResult<()> {
         let mut file = self.log_binary(ws, "LanguageKeys")?;
         let table = ws.get_language_keys();
         (table.len() as u32).write_to(&mut file, ByteOrder::LittleEndian)?;
         for key in table {
             XCellValue::String(key.to_string()).write_to(&mut file, ByteOrder::LittleEndian)?
+        }
+        Ok(())
+    }
+    fn write_language_tables(&self, ws: &WorkspaceManager) {
+        for language in ws.languages() {
+            if let Err(e) = self.write_language_table(ws, &language) {
+                log::error!("write language table {} failed: {}", language.key, e);
+            }
+        }
+    }
+    fn write_language_table(&self, ws: &WorkspaceManager, table: &XLanguageData) -> XResult<()> {
+        let mut file = self.log_binary(ws, &format!("Language{}", table.key))?;
+        (table.localizations.len() as u32).write_to(&mut file, ByteOrder::LittleEndian)?;
+        for (key, value) in &table.localizations {
+            XCellValue::String(key.to_string()).write_to(&mut file, ByteOrder::LittleEndian)?;
+            XCellValue::String(value.to_string()).write_to(&mut file, ByteOrder::LittleEndian)?;
         }
         Ok(())
     }

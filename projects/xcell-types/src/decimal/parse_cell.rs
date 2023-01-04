@@ -2,7 +2,7 @@ use super::*;
 use std::str::FromStr;
 
 impl DecimalDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValueKind> {
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
         match self.kind {
             DecimalKind::Float32 => self.parse_f32(cell),
             DecimalKind::Float64 => self.parse_f64(cell),
@@ -25,24 +25,24 @@ impl DecimalDescription {
             _ => syntax_error(format!("{} 无法解析为 decimal 类型", cell)),
         }
     }
-    fn parse_f32(&self, cell: &DataType) -> XResult<XCellValueKind> {
+    fn parse_f32(&self, cell: &DataType) -> XResult<XCellValue> {
         let dec = self.parse_value(cell)?;
         match dec.to_f32() {
-            Some(s) => Ok(XCellValueKind::Float32(s)),
+            Some(s) => Ok(XCellValue::Float32(s)),
             None => syntax_error(format!("{dec} 无法转化为 f32 类型")),
         }
     }
-    fn parse_f64(&self, cell: &DataType) -> XResult<XCellValueKind> {
+    fn parse_f64(&self, cell: &DataType) -> XResult<XCellValue> {
         let dec = self.parse_value(cell)?;
         match dec.to_f64() {
-            Some(s) => Ok(XCellValueKind::Float64(s)),
+            Some(s) => Ok(XCellValue::Float64(s)),
             None => syntax_error(format!("{dec} 无法转化为 f64 类型")),
         }
     }
-    fn parse_d128(&self, cell: &DataType) -> XResult<XCellValueKind> {
+    fn parse_d128(&self, cell: &DataType) -> XResult<XCellValue> {
         let dec = self.parse_value(cell)?;
         match dec.to_f64() {
-            Some(s) => Ok(XCellValueKind::Float64(s)),
+            Some(s) => Ok(XCellValue::Float64(s)),
             None => syntax_error(format!("{dec} 无法转化为 d128 类型")),
         }
     }

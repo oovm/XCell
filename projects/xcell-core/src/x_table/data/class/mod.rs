@@ -2,11 +2,10 @@ use xcell_types::TypeMetaInfo;
 
 use super::*;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XClassItem {
     pub field: String,
     pub r#type: XCellTyped,
-    pub default: XCellValueKind,
     pub summary: String,
     pub details: String,
 }
@@ -15,7 +14,10 @@ impl XClassTable {
     pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path, meta: &TypeMetaInfo) {
         for (line, row) in table.rows().enumerate().skip(3) {
             match XClassItem::parse(row, line, meta) {
-                Ok(o) => self.items.push(o),
+                Ok((field, data)) => {
+                    self.items.push(field);
+                    self.data.push(data);
+                }
                 Err(e) => {
                     log::error!("{}", e.with_path(path));
                 }
@@ -25,32 +27,14 @@ impl XClassTable {
     pub fn link_enumerate(&mut self) {}
 }
 
-impl Default for XClassItem {
-    fn default() -> Self {
-        Self {
-            field: "".to_string(),
-            r#type: Default::default(),
-            default: Default::default(),
-            summary: "".to_string(),
-            details: "".to_string(),
-        }
-    }
-}
-
 impl XClassItem {
-    fn parse(row: &[DataType], line: usize, meta: &TypeMetaInfo) -> XResult<Self> {
-        let mut item = XClassItem {
-            field: "".to_string(),
-            r#type: Default::default(),
-            default: Default::default(),
-            summary: "".to_string(),
-            details: "".to_string(),
-        };
+    fn parse(row: &[DataType], line: usize, meta: &TypeMetaInfo) -> XResult<(Self, XCellValue)> {
+        let mut item = XClassItem::default();
         item.parse_field(row, line)?;
         item.parse_type(row, line, meta)?;
-        item.parse_default(row, line)?;
         item.parse_comment(row);
-        Ok(item)
+        let data = item.parse_data(row, line)?;
+        Ok((item, data))
     }
 
     fn parse_field(&mut self, row: &[DataType], line: usize) -> XResult {
@@ -79,11 +63,11 @@ impl XClassItem {
         }
         Ok(())
     }
-    fn parse_default(&mut self, row: &[DataType], line: usize) -> XResult {
-        if let Some(s) = row.get(2) {
-            self.default = self.r#type.parse_cell(s).map_err(|e| e.with_xy(0, line))?
+    fn parse_data(&mut self, row: &[DataType], line: usize) -> XResult<XCellValue> {
+        match row.get(2) {
+            Some(s) => Ok(self.r#type.parse_cell(s).map_err(|e| e.with_xy(0, line))?),
+            None => Err(XError::table_error("缺失 class 值").with_xy(2, line))?,
         }
-        Ok(())
     }
     fn parse_comment(&mut self, row: &[DataType]) {
         self.try_parse_comment(row);

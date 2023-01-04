@@ -50,7 +50,7 @@ impl XEnumerateTable {
 
 impl WorkspaceManager {
     pub fn link_enumerate(&mut self) {
-        for (_, table) in &mut self.file_mapping {
+        for table in self.file_mapping.values_mut() {
             if table.enumeration_linked {
                 return;
             }
@@ -133,7 +133,7 @@ fn link_enumerate_data_line(item: &mut XDataItem, headers: &[XCellHeader], error
     }
 }
 
-fn link_enumerate_data_cell(headers: &[XCellHeader], index: usize, data: &mut XCellValueKind) -> XResult<()> {
+fn link_enumerate_data_cell(headers: &[XCellHeader], index: usize, data: &mut XCellValue) -> XResult<()> {
     match headers.get(index) {
         Some(s) => data.link_enumerate(&s.typing),
         None => Err(XError::table_error("not found")),

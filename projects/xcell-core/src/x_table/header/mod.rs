@@ -20,7 +20,7 @@ pub struct XCellHeader {
 }
 
 impl XCellHeader {
-    pub fn parse_cell(&self, row: &[DataType]) -> XResult<XCellValueKind> {
+    pub fn parse_cell(&self, row: &[DataType]) -> XResult<XCellValue> {
         match row.get(self.column) {
             Some(cell) => self.typing.parse_cell(cell),
             None => Err(XError::table_error("无法读取数据")),

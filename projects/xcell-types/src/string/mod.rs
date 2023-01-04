@@ -10,7 +10,7 @@ use xcell_errors::{
     XResult,
 };
 
-use crate::{utils::syntax_error, XCellTyped, XCellValueKind};
+use crate::{utils::syntax_error, XCellTyped, XCellValue};
 
 mod der;
 
@@ -41,8 +41,8 @@ impl StringDescription {
     pub fn mut_pattern(&mut self) -> &mut BTreeSet<String> {
         &mut self.patterns
     }
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValueKind> {
-        self.parse_value(cell).map(XCellValueKind::String)
+    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+        self.parse_value(cell).map(XCellValue::String)
     }
     pub fn parse_value(&self, cell: &DataType) -> XResult<String> {
         match cell {

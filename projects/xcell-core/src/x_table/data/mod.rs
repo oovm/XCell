@@ -55,6 +55,7 @@ pub struct XEnumerateTable {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XClassTable {
     pub items: Vec<XClassItem>,
+    pub data: Vec<XCellValue>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -62,7 +63,7 @@ pub struct XDataItem {
     pub id: BigInt,
     pub name: String,
     pub comment: String,
-    pub data: Vec<XCellValueKind>,
+    pub data: Vec<XCellValue>,
 }
 
 impl XTableKind {
@@ -99,9 +100,7 @@ impl XTableKind {
         match self {
             XTableKind::Array(v) => v.data.iter().collect(),
             XTableKind::Enumerate(v) => v.data.values().collect(),
-            XTableKind::Class(_) => {
-                vec![]
-            }
+            XTableKind::Class(_) => vec![],
             XTableKind::Dictionary(_) => {
                 todo!()
             }

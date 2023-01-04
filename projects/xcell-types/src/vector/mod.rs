@@ -11,7 +11,7 @@ use xcell_errors::{
     XResult,
 };
 
-use crate::{utils::push_delimiter, XCellTyped, XCellValueKind};
+use crate::{utils::push_delimiter, XCellTyped, XCellValue};
 
 mod der;
 mod parse_cell;
@@ -21,7 +21,7 @@ pub struct VectorDescription {
     delimiter: BTreeSet<char>,
     suffix: BTreeSet<String>,
     typing: XCellTyped,
-    pub default: Vec<XCellValueKind>,
+    pub default: Vec<XCellValue>,
 }
 
 impl VectorDescription {

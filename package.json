@@ -6,6 +6,8 @@
         "fmt": "cargo fmt --all",
         "reset": "git reset Head~ --soft",
         "u": "cargo upgrade --workspace",
-        "p": "git push && git push --tags --prune"
+        "p": "git push && git push --tags --prune",
+        "gnu": "cargo +nightly-x86_64-pc-windows-gnu build --release",
+        "msvc": "cargo +nightly-x86_64-pc-windows-msvc build --release"
     }
 }

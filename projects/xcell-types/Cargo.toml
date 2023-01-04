@@ -1,6 +1,6 @@
 [package]
 name = "xcell-types"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Aster <192607617@qq.com>"]
 description = "Types definition for xcell"
 repository = "https://github.com/oovm/XCell"
@@ -22,7 +22,7 @@ version = "0.1.1"
 features = []
 
 [dependencies.xcell-errors]
-#version = "0.1.2"
+version = "0.1.2"
 path = "../xcell-errors"
 features = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine", "serde_json"]
 

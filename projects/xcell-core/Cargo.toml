@@ -1,8 +1,8 @@
 [package]
 name = "xcell-core"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Aster <192607617@qq.com>"]
-description = "..."
+description = "XCell core library"
 repository = "https://github.com/oovm/XCell"
 documentation = "https://docs.rs/xcell-core"
 readme = "Readme.md"
@@ -28,12 +28,12 @@ tokio = { version = "1.23.0", features = ["full"] }
 integer-encoding = "3.0.4"
 
 [dependencies.xcell-errors]
-#version = "0.1.2"
+version = "0.1.2"
 path = "../xcell-errors"
 features = ["tera", "toml", "globset", "async-walkdir", "notify", "num"]
 
 [dependencies.xcell-types]
-#version = "0.2.0"
+version = "0.2.1"
 path = "../xcell-types"
 features = ["csharp"]
 

@@ -1,6 +1,6 @@
 use super::*;
 
-impl Args {
+impl XCellArgs {
     pub fn resolve_workspace(&self) -> XResult<PathBuf> {
         if self.workspace.is_empty() {
             return Ok(current_dir()?);

@@ -1,10 +1,10 @@
 [package]
 name = "xcell"
-version = "0.0.0"
+version = "0.1.1"
 authors = ["Aster <192607617@qq.com>"]
-description = "..."
+description = "XCell command line tool"
 repository = "https://github.com/oovm/XCell"
-documentation = "https://docs.rs/sub_projects"
+documentation = "https://docs.rs/xcell"
 readme = "Readme.md"
 license = "MPL-2.0"
 edition = "2021"
@@ -17,8 +17,10 @@ colored = "2.0.0"
 chrono = "0.4.23"
 clap = { version = "4.0.32", features = ["derive"] }
 tokio = { version = "1.23.0", features = ["full"] }
-xcell-core= "0.0.0"
-#path = "../xcell-core"
+
+[dependencies.xcell-core]
+version = "0.1.0"
+path = "../xcell-core"
 
 [dev-dependencies]
 

@@ -26,7 +26,7 @@ pub fn logger() {
     }
     else {
         let _ = builder()
-            .format(log_writter)
+            .format(log_writer)
             .filter(Some("globset"), LevelFilter::Off)
             .filter_level(LevelFilter::Trace)
             // .is_test(cfg!(debug_assertions))
@@ -34,7 +34,7 @@ pub fn logger() {
     }
 }
 
-pub fn log_writter(w: &mut Formatter, record: &Record) -> std::io::Result<()> {
+pub fn log_writer(w: &mut Formatter, record: &Record) -> std::io::Result<()> {
     let header = match record.level() {
         Level::Error => "Error".bright_red(),
         Level::Warn => "Warn ".bright_yellow(),

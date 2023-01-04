@@ -1,0 +1,44 @@
+// 代码生成, 修改无效!
+// ReSharper disable EnumUnderlyingTypeIsInt
+// ReSharper disable CheckNamespace
+
+using System;
+using System.Runtime.Serialization;
+
+namespace {% config.namespace %}
+{
+    [DataContract, Serializable]
+    public enum {% CLASS_NAME %}: {% ID_TYPE %}
+    {
+{%- for field in enumerate_fields %}
+	    [EnumMember]
+        {% field.name %} = {% field.number %},
+{%- end-for %}
+    }
+
+    public static class {% CLASS_NAME %}Extension
+    {
+{%- for field in CLASS_FIELDS %}
+        /// <summary>
+    {%- for line in field.summary %}
+        /// {% line %}
+    {%- end-for %}
+        /// </summary>
+        /// <remarks>
+    {%- for line in field.remarks %}
+        /// {% line %}
+    {%- end-for %}
+        /// </remarks>
+        public static {% field.typing %} {% field.getter %}(this {% CLASS_NAME %} self)
+        {
+            return self switch
+            {
+            {% for line in field.remarks %}
+                {% CLASS_NAME %}.{% field %} => {% value %},
+            {% end-for %}
+                _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
+            };
+        }
+{% end-for %}
+    }
+}

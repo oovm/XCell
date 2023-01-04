@@ -68,9 +68,7 @@ impl XTable {
             XTableKind::Array(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
             XTableKind::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
             XTableKind::Class(_) => {}
-            XTableKind::Dictionary(_) => {
-                todo!()
-            }
+            XTableKind::Dictionary(_) => {}
         };
         self.enumeration_linked = true;
         errors

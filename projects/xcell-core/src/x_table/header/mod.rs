@@ -67,6 +67,9 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
+            XTableKind::Language(_) => {
+                todo!()
+            }
         };
         match res {
             Ok(_) => {}

@@ -1,7 +1,7 @@
 use crate::XClassItem;
 
 use super::*;
-
+use url::Url;
 #[derive(Serialize)]
 pub struct UnityManagerWriter {
     compiler_version: &'static str,
@@ -45,7 +45,9 @@ impl UnityCodegen {
     pub fn write_class(&self, table: &XTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_csharp_path(root, &file)?;
-        log::info!("写入 {}", self.unity_cs_relative(&file));
+        if let Ok(o) = Url::from_file_path(&path) {
+            log::info!("写入 C#: {}", o);
+        }
         match table.data {
             XTableKind::Array(_) => {
                 tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
@@ -57,6 +59,9 @@ impl UnityCodegen {
                 tera_render(include_str!("PartClass.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
             XTableKind::Dictionary(_) => {
+                todo!()
+            }
+            XTableKind::Language(_) => {
                 todo!()
             }
         }
@@ -126,6 +131,7 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
+            XTableKind::Language(_) => {   todo!()}
         }
     }
     fn make_enum_field(&self) -> Vec<CSharpEnum> {
@@ -140,6 +146,7 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
+            XTableKind::Language(_) => {   todo!()}
         }
     }
 }

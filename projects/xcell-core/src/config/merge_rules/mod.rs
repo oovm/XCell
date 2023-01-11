@@ -46,6 +46,9 @@ impl MergedTable {
                 XTableKind::Dictionary(_) => {
                     todo!()
                 }
+                XTableKind::Language(_) => {
+                    todo!()
+                }
             })
             .collect()
     }

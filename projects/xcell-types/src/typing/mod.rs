@@ -1,8 +1,11 @@
+use std::any::type_name;
 use std::fmt::{Debug, Display, Formatter};
 
 use serde::{Deserialize, Serialize};
+use serde::de::{MapAccess, Visitor};
 
 use xcell_errors::{for_3rd::DataType, XResult};
+use xcell_errors::for_3rd::{read_map_next_extra, read_map_next_key_lowercase, read_map_next_value};
 
 pub use crate::{
     array::{ArrayDescription, ArrayKind},
@@ -13,14 +16,10 @@ pub use crate::{
     value::{color::ColorDescription, time::TimeDescription},
     vector::VectorDescription,
 };
-use crate::{BooleanDescription, XCellValue};
+use crate::{BooleanDescription, LanguageDescription, XCellValue};
 
 mod display;
 mod parser;
-use serde::de::{MapAccess, Visitor};
-use std::any::type_name;
-use xcell_errors::for_3rd::{read_map_next_extra, read_map_next_key_lowercase, read_map_next_value};
-
 mod der;
 mod ser;
 
@@ -29,10 +28,14 @@ pub struct TypeMetaInfo {
     pub boolean: BooleanDescription,
     pub string: StringDescription,
     pub vector: VectorDescription,
+    pub language: LanguageDescription,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum XCellTyped {
+    LanguageID,
+    LanguageKey,
+    LanguageValue,
     Boolean(Box<BooleanDescription>),
     Integer(Box<IntegerDescription>),
     Decimal(Box<DecimalDescription>),
@@ -62,6 +65,9 @@ impl XCellTyped {
             XCellTyped::Enumerate(typing) => typing.parse_cell(cell),
             XCellTyped::Array(typing) => typing.parse_cell(cell),
             XCellTyped::Vector(typing) => typing.parse_cell(cell),
+            XCellTyped::LanguageID => {todo!()}
+            XCellTyped::LanguageKey => {todo!()}
+            XCellTyped::LanguageValue => {todo!()}
         }
     }
 }

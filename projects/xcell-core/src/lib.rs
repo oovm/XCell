@@ -9,13 +9,13 @@ pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult
 pub use xcell_types::*;
 
 pub use self::{
-    codegen::{binary::BinaryWriter, xml::DataContractWriter, CsvCodegen},
+    codegen::{binary::BinaryWriter, CsvCodegen, xml::DataContractWriter},
     config::{
-        merge_rules::{MergeRules, MergeStep, MergedTable},
-        unity::UnityCodegen,
-        ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG,
+        merge_rules::{MergedTable, MergeRules, MergeStep},
+        PROJECT_CONFIG,
+        ProjectConfig, unity::UnityCodegen, UnityBinaryConfig, WorkspaceManager,
     },
-    x_table::{data::*, header::XCellHeader, table::XTable, language::LanguageManager},
+    x_table::{data::*, header::XCellHeader, language::LanguageManager, table::{CalamineTable2, XTable}},
 };
 
 mod codegen;

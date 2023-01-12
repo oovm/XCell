@@ -8,9 +8,9 @@ mod display;
 mod calamine_table;
 
 pub struct CalamineTable2 {
+    path: PathBuf,
     table: calamine::Range<DataType>,
-    line: TableLineMode,
-    typing: TypeMetaInfo,
+    config: TableConfig,
 }
 
 

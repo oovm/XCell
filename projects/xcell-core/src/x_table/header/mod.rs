@@ -148,7 +148,7 @@ impl XEnumerateTable {
             _ => {}
         }
         let (summary, details) = read_comment_details(table, i, project.line).unwrap_or_default();
-        self.headers.push(XCellHeader { summary, column: i, typing, field_name: field_name.to_string(), details });
+        self.headers.push(XCellHeader { summary, column: i, typing, field_name: field_name.to_string(), details, complete: true });
         None
     }
 }

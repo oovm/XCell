@@ -2,17 +2,19 @@
 
 pub use stream_io::{ByteOrder, StreamReader, StreamWriter};
 
+pub use xcell_errors::for_3rd::DateTime;
+
 pub use self::{
     array::{ArrayDescription, ArrayKind},
     boolean::BooleanDescription,
     decimal::{DecimalDescription, DecimalKind},
     integer::{IntegerDescription, IntegerKind},
+    language::LanguageDescription,
     string::StringDescription,
     typing::*,
     value::{color::ColorDescription, time::TimeDescription, XCellValue},
     vector::VectorDescription,
 };
-pub use xcell_errors::for_3rd::DateTime;
 
 pub(crate) mod utils;
 
@@ -27,3 +29,4 @@ mod string;
 mod typing;
 mod value;
 mod vector;
+mod language;

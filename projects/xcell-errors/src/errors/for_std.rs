@@ -8,6 +8,16 @@ impl Default for XErrorKind {
     }
 }
 
+impl From<()> for XError {
+    #[track_caller]
+    fn from(_: ()) -> Self {
+        let caller_location = std::panic::Location::caller();
+        XError::new(XErrorKind::RuntimeError {
+            message: format!("空指针调用: {}", caller_location),
+        })
+    }
+}
+
 impl From<&IOError> for XErrorKind {
     fn from(e: &IOError) -> Self {
         XErrorKind::IOError(e.to_string())

@@ -18,10 +18,6 @@ pub struct XTable {
     pub enumeration_linked: bool,
     /// 产物是否已生成
     pub output_generated: bool,
-    /// Excel 的校验和
-    pub sum_excel: u64,
-    /// 全局配置和本地配置的校验和
-    pub sum_config: u64,
 }
 
 impl XTable {
@@ -51,8 +47,6 @@ impl XTable {
             name: "".to_string(),
             data: Default::default(),
             config: Default::default(),
-            sum_excel: 0,
-            sum_config: 0,
             enumeration_linked: false,
             output_generated: false,
         };

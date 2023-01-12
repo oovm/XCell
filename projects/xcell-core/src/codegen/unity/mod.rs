@@ -70,7 +70,7 @@ impl UnityCodegen {
     pub fn write_binary(&self, table: &XTable, root: &Path) -> XResult<()> {
         let file = format!("{}{}", table.name, self.suffix_table);
         let path = self.unity_binary_path(root, &file)?;
-        log::info!("写入 {}", self.unity_bin_relative(&file));
+        log::info!("写入二进制: {}\n{}", self.unity_bin_relative(&file),  Url::from_file_path(&path)?);
         let cg = BinaryWriter::default();
         cg.write_binary(table, &path)
     }

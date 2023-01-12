@@ -37,6 +37,7 @@ pub mod merge_rules;
 mod project;
 mod table;
 pub mod unity;
+use crate::LanguageManager;
 
 /// 默认的全局项目设置
 pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
@@ -46,6 +47,7 @@ pub struct WorkspaceManager {
     pub glob_pattern: GlobSet,
     pub file_mapping: BTreeMap<PathBuf, XTable>,
     pub enum_mapping: BTreeMap<String, EnumerateDescription>,
+    pub lang_mapping: LanguageManager
 }
 
 default_deserialize![ProjectConfig, TableConfig, TableLineMode];
@@ -72,7 +74,7 @@ impl WorkspaceManager {
         }
         let config = ProjectConfig::new(&root);
         let glob_pattern = build_glob_set(&config.include).unwrap();
-        Ok(Self { config, glob_pattern, file_mapping: Default::default(), enum_mapping: Default::default() })
+        Ok(Self { config, glob_pattern, file_mapping: Default::default(), enum_mapping: Default::default(), lang_mapping: Default::default() })
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {

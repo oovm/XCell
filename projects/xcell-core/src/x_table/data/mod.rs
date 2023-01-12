@@ -1,3 +1,5 @@
+use crate::{x_table::data::class::XClassItem, XEnumerateData, XLanguageTable};
+
 use super::*;
 
 mod class;
@@ -5,9 +7,11 @@ mod dictionary;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XTableKind {
+    /// 不需要导出的数据
+    Internal,
     Array(Box<XArrayTable>),
     Dictionary(Box<XDictionaryTable>),
-    Enumerate(Box<XEnumerateTable>),
+    Enumerate(Box<XEnumerateData>),
     Class(Box<XClassTable>),
     Language(Box<XLanguageTable>),
 }
@@ -37,9 +41,11 @@ pub struct XClassTable {
     pub data: Vec<XCellValue>,
 }
 
+/// 字段数据
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XDataItem {
     pub id: BigInt,
+    /// 该字段的名称
     pub name: String,
     pub comment: String,
     pub data: Vec<XCellValue>,

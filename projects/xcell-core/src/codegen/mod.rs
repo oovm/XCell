@@ -1,15 +1,15 @@
+use convert_case::{Case, Casing};
+use itertools::Itertools;
+use serde::Serialize;
+use serde_json::Value;
 use std::{
     collections::HashMap,
     fs::{create_dir_all, File},
     io::Write,
     path::Path,
 };
-
-use convert_case::{Case, Casing};
-use itertools::Itertools;
-use serde::Serialize;
-use serde_json::Value;
 use tera::{Context, Tera};
+use url::Url;
 
 use xcell_errors::XResult;
 use xcell_types::{

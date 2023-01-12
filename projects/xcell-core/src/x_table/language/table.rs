@@ -1,7 +1,6 @@
-
 use super::*;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct XLanguageTable {
     table: CalamineTable,
     value_column: usize,
@@ -10,11 +9,7 @@ pub struct XLanguageTable {
 
 impl XLanguageTable {
     fn new(table: CalamineTable) -> Self {
-        Self {
-            table,
-            value_column: 0,
-            group_column: 0,
-        }
+        Self { table, value_column: 0, group_column: 0 }
     }
 
     pub fn confirm(table: &CalamineTable) -> XResult<Self> {
@@ -32,7 +27,5 @@ impl XLanguageTable {
         }
         Ok(out)
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {
-
-    }
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {}
 }

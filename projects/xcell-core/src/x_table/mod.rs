@@ -24,3 +24,4 @@ pub mod enumerate;
 pub mod header;
 pub mod language;
 pub mod table;
+pub mod comment;

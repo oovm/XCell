@@ -1,7 +1,6 @@
 use std::{
     any::type_name,
     collections::BTreeMap,
-    convert::Infallible,
     fmt::{Debug, Formatter},
     fs::read_to_string,
     path::{Path, PathBuf},
@@ -26,7 +25,7 @@ use crate::{
     config::unity::UnityCodegen,
     utils::{get_relative, valid_file},
     x_table::language::manager::LanguageManager,
-    XLanguageTable, XTable, XTableKind,
+    EnumerateManager, XEnumerateTable, XLanguageTable, XTable, XTableKind,
 };
 
 pub use self::{
@@ -48,8 +47,8 @@ pub struct WorkspaceManager {
     pub config: ProjectConfig,
     pub glob_pattern: GlobSet,
     pub file_mapping: BTreeMap<PathBuf, XTable>,
-    pub enum_mapping: EnumerateManager,
-    pub lang_mapping: LanguageManager,
+    pub enumerates: EnumerateManager,
+    pub languages: LanguageManager,
 }
 
 default_deserialize![ProjectConfig, TableConfig, TableLineMode];
@@ -80,8 +79,8 @@ impl WorkspaceManager {
             config,
             glob_pattern,
             file_mapping: Default::default(),
-            enum_mapping: Default::default(),
-            lang_mapping: Default::default(),
+            enumerates: Default::default(),
+            languages: Default::default(),
         })
     }
     /// 首次加载目录
@@ -133,8 +132,9 @@ impl WorkspaceManager {
         if let Ok(s) = XLanguageTable::confirm(&table) {
             return s.perform(&mut self);
         }
-
-        self.file_mapping.insert(file.to_path_buf(), table);
+        if let Ok(s) = XEnumerateTable::confirm(&table) {
+            return s.perform(&mut self);
+        }
         Ok(())
     }
     pub fn write_unity(&self) -> XResult<()> {
@@ -146,8 +146,5 @@ impl WorkspaceManager {
         }
         self.config.unity.write_manager(&self.collect_merged(), &self.config.root, &self.config.version)?;
         Ok(())
-    }
-    pub fn insert_enum_mapping(&mut self, define: EnumerateDescription) {
-        self.enum_mapping.insert(define.typing.clone(), define);
     }
 }

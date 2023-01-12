@@ -2,7 +2,7 @@ use crate::XEnumerateTable;
 
 use super::*;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub struct XLanguageID {
     wrap: XEnumerateTable,
 }

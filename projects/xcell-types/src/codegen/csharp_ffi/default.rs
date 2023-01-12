@@ -17,9 +17,6 @@ impl XCellTyped {
                 }
                 format!("new () {{{}}}", v.default.iter().map(|v| v.as_csharp_value()).join(", "))
             }
-            XCellTyped::LanguageID => {todo!()}
-            XCellTyped::LanguageKey => {todo!()}
-            XCellTyped::LanguageValue => {todo!()}
         }
     }
 }
@@ -187,9 +184,6 @@ impl XCellTyped {
                 ArrayKind::Quaternion4 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
             },
             XCellTyped::Vector(_) => unreachable!(),
-            XCellTyped::LanguageID => {todo!()}
-            XCellTyped::LanguageKey => {todo!()}
-            XCellTyped::LanguageValue => {todo!()}
         };
         str.to_string()
     }

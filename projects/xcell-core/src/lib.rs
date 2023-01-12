@@ -16,11 +16,11 @@ pub use self::{
         ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG,
     },
     x_table::{
-        class::{XClassItem, XClassTable},
+        class::{XClassData, XClassItem, XClassTable},
         comment::XDocument,
-        export::*,
         dictionary::{XArrayTable, XDictionaryTable},
         enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
+        export::*,
         header::XCellHeader,
         language::{id::XLanguageID, table::XLanguageTable},
         table::{CalamineTable, XTable},

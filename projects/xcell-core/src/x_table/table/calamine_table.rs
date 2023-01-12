@@ -1,12 +1,13 @@
+use crate::utils::norm_string;
 use super::*;
 
 pub struct CalamineTableHeaders<'i> {
-    table: &'i CalamineTable2,
+    table: &'i CalamineTable,
     this: usize,
     last: usize,
 }
 
-impl CalamineTable2 {
+impl CalamineTable {
     pub fn load(path: &Path, config: &ProjectConfig) -> XResult<Self> {
         let path = path.canonicalize()?;
         let table = find_first_table(&path)?;
@@ -25,7 +26,10 @@ impl CalamineTable2 {
     }
 }
 
-impl CalamineTable2 {
+
+
+
+impl CalamineTable {
     pub fn get_header(&self, index: usize) -> XCellHeader {
         let mut complete = true;
         let field_name = match self.get_field_name(index) {
@@ -78,7 +82,7 @@ impl CalamineTable2 {
 }
 
 
-impl CalamineTable2 {
+impl CalamineTable {
     pub fn headers(&self) -> CalamineTableHeaders {
         let mut max_width = 0;
         for i in self.table.rows() {

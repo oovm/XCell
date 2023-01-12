@@ -1,11 +1,11 @@
 use itertools::Itertools;
 
-use crate::{utils::first_not_nil, CalamineTable};
+use crate::{utils::first_not_nil, CalamineTable3};
 
 use super::*;
 
 impl XArrayTable {
-    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
+    pub fn read_table_data(&mut self, table: &CalamineTable3, path: &Path) {
         // 防止双重 borrow
         let typing = self.headers.iter().cloned().collect_vec();
         let rows = table.rows().skip(3).filter(|v| first_not_nil(v));

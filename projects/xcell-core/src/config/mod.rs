@@ -41,7 +41,7 @@ mod table;
 pub mod unity;
 use crate::LanguageManager;
 use crate::utils::find_first_table;
-use crate::x_table::table::CalamineTable2;
+use crate::x_table::table::CalamineTable;
 
 /// 默认的全局项目设置
 pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
@@ -125,16 +125,12 @@ impl WorkspaceManager {
         }
     }
     pub fn try_perform_file(&mut self, file: &Path) -> XResult<()> {
-        let table = CalamineTable2::load(file, &self.config)?;
-        match XLanguageTable::perform(&mut self, &table) {
-            Ok(_) => {
-                return Ok(())
-            }
-            Err(_) => {}
+        let table = CalamineTable::load(file, &self.config)?;
+        if let Ok(s) = XLanguageTable::confirm(&table) {
+            return s.perform(&mut self);
         }
 
 
-        let table = XTable::load_file(file, &self.config)?;
         if let XTableKind::Enumerate(e) = &table.data {
             let mut mapping = BTreeMap::default();
             for (key, item) in &e.data {

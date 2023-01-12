@@ -1,7 +1,7 @@
 use super::*;
 
 impl XEnumerateTable {
-    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
+    pub fn read_table_data(&mut self, table: &CalamineTable3, path: &Path) {
         // 防止双重 borrow
         let typing = self.headers.iter().cloned().collect_vec();
         for (x, row_raw) in table.rows().enumerate().skip(3) {

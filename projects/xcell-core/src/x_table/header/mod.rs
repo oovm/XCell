@@ -129,7 +129,7 @@ impl XEnumerateTable {
         match field_name {
             "enum" => return None,
             "comment" => {
-                self.comment_column = i;
+                self.doc_column = i;
                 return None;
             }
             "id" => {

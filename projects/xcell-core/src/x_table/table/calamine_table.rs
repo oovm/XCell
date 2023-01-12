@@ -1,5 +1,3 @@
-use calamine::Rows;
-
 use super::*;
 
 impl CalamineTable {
@@ -19,8 +17,19 @@ impl CalamineTable {
     pub fn is_group(&self, name: &str) -> bool {
         self.config.typing.language.is_group(name)
     }
-
-    pub fn is_enumerate(&self) {}
+    #[inline]
+    pub fn is_enumerate(&self) -> bool {
+        let name = self.get_header(0).field_name.as_str();
+        name == "enum"
+    }
+    #[inline]
+    pub fn is_enumerate_id(&self, name: &str) -> bool {
+        name == "id"
+    }
+    #[inline]
+    pub fn is_document(&self, name: &str) -> bool {
+        name == "document"
+    }
 }
 
 impl CalamineTable {

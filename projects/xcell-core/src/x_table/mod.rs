@@ -6,22 +6,18 @@ use std::{
     str::FromStr,
 };
 
-use calamine::DataType;
+use calamine::{DataType, Rows};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use calamine::Rows;
+
 use xcell_errors::{for_3rd::BigInt, Validation};
 use xcell_types::{EnumerateDescription, IntegerKind, StringDescription, TypeMetaInfo, XCellTyped, XCellValue};
 
 use crate::{
     config::{ProjectConfig, TableConfig, TableLineMode},
-    language::XLanguageTable,
     utils::{find_first_table, first_not_nil},
-    CalamineTable3, Success, WorkspaceManager, XCellHeader, XError, XResult, XTable, XTableKind,
+    CalamineTable, CalamineTable3, Success, WorkspaceManager, XCellHeader, XError, XResult, XTable, XTableKind,
 };
-
-pub use self::class::XClassItem;
-
 
 pub mod data;
 pub mod enumerate;

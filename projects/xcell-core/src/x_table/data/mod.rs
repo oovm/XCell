@@ -1,13 +1,7 @@
-
-
 use super::*;
-
-
 
 mod class;
 mod dictionary;
-mod enumerate;
-pub mod language;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum XTableKind {
@@ -80,7 +74,9 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => { todo!() }
+            XTableKind::Language(_) => {
+                todo!()
+            }
         }
     }
     pub fn rows(&self) -> Vec<&XDataItem> {
@@ -91,7 +87,9 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => { todo!() }
+            XTableKind::Language(_) => {
+                todo!()
+            }
         }
     }
     pub fn headers(&self) -> Vec<&XCellHeader> {
@@ -117,7 +115,9 @@ impl XTableKind {
             XTableKind::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => { todo!() }
+            XTableKind::Language(_) => {
+                todo!()
+            }
         }
     }
 }

@@ -6,8 +6,9 @@ impl CalamineTable {
         self.path.file_name().and_then(|s| s.to_str()).unwrap_or("").to_string()
     }
     #[inline]
-    pub fn is_language_id(&self, name: &str) -> bool {
-        self.config.typing.language.is_key(name)
+    pub fn is_language_id(&self) -> bool {
+        let name = self.get_header(0).field_name.as_str();
+        self.config.typing.language.is_id(name)
     }
     #[inline]
     pub fn is_language_key(&self) -> bool {
@@ -22,8 +23,7 @@ impl CalamineTable {
         self.config.typing.language.is_group(name)
     }
     #[inline]
-    pub fn is_enumerate(&self) -> bool {
-        let name = self.get_header(0).field_name.as_str();
+    pub fn is_enumerate(&self, name: &str) -> bool {
         name == "enum"
     }
     #[inline]
@@ -68,8 +68,7 @@ impl CalamineTable {
                 Default::default()
             }
         };
-        let (summary, details) = self.read_comment_details(index).unwrap_or_default();
-        XCellHeader { column: index, summary, details, typing, field_name, complete }
+        XCellHeader { column: index, comment: self.read_comment_details(index), typing, field_name, complete }
     }
     fn get_field_name(&self, index: usize) -> Option<String> {
         let line = self.config.line.field.saturating_sub(1) as u32;
@@ -85,13 +84,14 @@ impl CalamineTable {
         if value.is_empty() {
             return None;
         }
-        let typing = XCellTyped::parse(value, &self.typing);
+        let typing = XCellTyped::parse(value, &self.config.typing);
         Some(typing)
     }
-    fn read_comment_details(&self, index: usize) -> Option<(String, String)> {
+    fn read_comment_details(&self, index: usize) -> XComment {
         let line = self.config.line.helper.saturating_sub(1) as u32;
-        let comment = self.table.get_value((line, index as u32))?;
-        let summary = comment.to_string();
-        Some((summary, String::new()))
+        match self.table.get_value((line, index as u32)) {
+            Some(s) => XComment::from(s),
+            None => XComment::default(),
+        }
     }
 }

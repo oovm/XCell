@@ -19,7 +19,7 @@ impl BinaryWriter {
         let mut file = File::create(output)?;
         let data = table.data.link_enumerate(&table.path).result(|e| log::error!("{e}"))?;
         match &data {
-            XTableKind::Array(_) | XTableKind::Dictionary(_) | XTableKind::Enumerate(_) => {
+            XExportData::Array(_) | XExportData::Dictionary(_) | XExportData::Enumerate(_) => {
                 let rows = data.rows_count();
                 (rows as u32).write_to(&mut file, ByteOrder::LittleEndian)?;
                 for row in data.rows() {
@@ -28,12 +28,12 @@ impl BinaryWriter {
                     }
                 }
             }
-            XTableKind::Class(v) => {
+            XExportData::Class(v) => {
                 for item in &v.data {
                     item.write_to(&mut file, ByteOrder::LittleEndian)?
                 }
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
         }

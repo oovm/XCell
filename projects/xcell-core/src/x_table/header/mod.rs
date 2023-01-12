@@ -1,6 +1,6 @@
 use crate::{
-    CalamineTable3,
-    config::{ProjectConfig, TableLineMode}, XArrayTable, XEnumerateTable,
+    config::{ProjectConfig, TableLineMode},
+    CalamineTable3, XArrayTable, XComment, XEnumerateTable,
 };
 
 use super::*;
@@ -10,15 +10,13 @@ pub struct XCellHeader {
     /// 位置信息
     pub column: usize,
     /// 短描述
-    pub summary: String,
-    /// 长描述, 鼠标悬浮时显示
-    pub details: String,
+    pub comment: XComment,
     /// 类型信息
     pub typing: XCellTyped,
     /// 字段名
     pub field_name: String,
     /// 是否是完整定义
-    pub complete: bool
+    pub complete: bool,
 }
 
 impl XCellHeader {
@@ -28,18 +26,18 @@ impl XCellHeader {
             None => Err(XError::table_error("无法读取数据")),
         }
     }
-    fn try_read_table_kind(table: &CalamineTable3, project: &ProjectConfig) -> Option<XTableKind> {
+    fn try_read_table_kind(table: &CalamineTable3, project: &ProjectConfig) -> Option<XExportData> {
         let line = project.line.field.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
         match cell.get_string()? {
-            "enum" => return Some(XTableKind::Enumerate(Box::default())),
-            "class" => return Some(XTableKind::Class(Box::default())),
+            "enum" => return Some(XExportData::Enumerate(Box::default())),
+            "class" => return Some(XExportData::Class(Box::default())),
             _ => {}
         }
         let line = project.line.typing.saturating_sub(1) as u32;
         let cell = table.get_value((line, 0))?;
         match XCellTyped::parse(cell.get_string()?, &project.typing) {
-            XCellTyped::Integer(_) => Some(XTableKind::Array(Box::default())),
+            XCellTyped::Integer(_) => Some(XExportData::Array(Box::default())),
             // XCellTyped::String(_) => Some(XData::String(Box::new(XDataString::default()))),
             // 默认初始化就是 String, 就不用分配了
             XCellTyped::String(_) => None,
@@ -51,7 +49,7 @@ impl XCellHeader {
     }
 }
 
-impl XTableKind {
+impl XExportData {
     /// 获取表格的类型, 表格类型由于第三行的第一列决定
     pub fn read_table_kind(&mut self, table: &CalamineTable3, project: &ProjectConfig) {
         if let Some(s) = XCellHeader::try_read_table_kind(table, project) {
@@ -61,17 +59,18 @@ impl XTableKind {
     pub fn read_table_headers(&mut self, table: &CalamineTable3, project: &ProjectConfig) {
         self.read_table_kind(table, project);
         let res = match self {
-            XTableKind::Array(v) => v.read_table_headers(table, project),
-            XTableKind::Enumerate(v) => v.read_table_headers(table, project),
-            XTableKind::Class(_) => {
+            XExportData::Array(v) => v.read_table_headers(table, project),
+            XExportData::Enumerate(v) => v.read_table_headers(table, project),
+            XExportData::Class(_) => {
                 return;
             }
-            XTableKind::Dictionary(_) => {
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
+            XExportData::Internal => {}
         };
         match res {
             Ok(_) => {}
@@ -102,7 +101,14 @@ impl XArrayTable {
         let field_type = table.get_value((line, i as u32))?.get_string()?;
         let typing = XCellTyped::parse(field_type, &project.typing);
         let (summary, details) = read_comment_details(table, i, project.line).unwrap_or_default();
-        self.headers.push(XCellHeader { summary, column: i, typing, field_name: field_name.to_string(), details, complete: true });
+        self.headers.push(XCellHeader {
+            comment: summary,
+            column: i,
+            typing,
+            field_name: field_name.to_string(),
+            details,
+            complete: true,
+        });
         None
     }
 }
@@ -148,7 +154,14 @@ impl XEnumerateTable {
             _ => {}
         }
         let (summary, details) = read_comment_details(table, i, project.line).unwrap_or_default();
-        self.headers.push(XCellHeader { summary, column: i, typing, field_name: field_name.to_string(), details, complete: true });
+        self.headers.push(XCellHeader {
+            comment: summary,
+            column: i,
+            typing,
+            field_name: field_name.to_string(),
+            details,
+            complete: true,
+        });
         None
     }
 }

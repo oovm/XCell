@@ -18,11 +18,11 @@ impl XTable {
     pub fn link_enumerate(&mut self, all: &EnumerateManager) -> Vec<XError> {
         let mut errors = vec![];
         match &mut self.data {
-            XTableKind::Array(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
-            XTableKind::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
-            XTableKind::Class(_) => {}
-            XTableKind::Dictionary(_) => {}
-            XTableKind::Language(_) => {}
+            XExportData::Array(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
+            XExportData::Enumerate(v) => link_enumerate_head(&mut v.headers, &mut errors, all),
+            XExportData::Class(_) => {}
+            XExportData::Dictionary(_) => {}
+            XExportData::Language(_) => {}
         };
         self.enumeration_linked = true;
         errors
@@ -45,26 +45,26 @@ impl XCellHeader {
     }
 }
 
-impl XTableKind {
-    pub fn link_enumerate(&self, path: &Path) -> Validation<XTableKind> {
+impl XExportData {
+    pub fn link_enumerate(&self, path: &Path) -> Validation<XExportData> {
         let mut value = self.clone();
         let mut diagnostics = vec![];
         match &mut value {
-            XTableKind::Array(v) => {
+            XExportData::Array(v) => {
                 for item in v.data.iter_mut() {
                     link_enumerate_data_line(item, &v.headers, &mut diagnostics, path)
                 }
             }
-            XTableKind::Enumerate(v) => {
+            XExportData::Enumerate(v) => {
                 for (_, item) in v.data.iter_mut() {
                     link_enumerate_data_line(item, &v.headers, &mut diagnostics, path)
                 }
             }
-            XTableKind::Class(v) => v.link_enumerate(),
-            XTableKind::Dictionary(_) => {
+            XExportData::Class(v) => v.link_enumerate(),
+            XExportData::Dictionary(_) => {
                 todo!()
             }
-            XTableKind::Language(_) => {
+            XExportData::Language(_) => {
                 todo!()
             }
         }

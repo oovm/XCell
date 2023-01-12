@@ -21,7 +21,7 @@ pub struct XTable {
     /// 表格的额外配置
     pub config: TableConfig,
     /// 表格中的有效数据
-    pub data: XTableKind,
+    pub data: XExportData,
     /// 枚举定义是否已链接
     pub enumeration_linked: bool,
     /// 产物是否已生成
@@ -30,7 +30,7 @@ pub struct XTable {
 
 impl XTable {
     pub fn is_enumerate(&self) -> bool {
-        matches!(self.data, XTableKind::Enumerate(_))
+        matches!(self.data, XExportData::Enumerate(_))
     }
 }
 

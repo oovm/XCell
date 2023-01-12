@@ -1,27 +1,20 @@
+use crate::XEnumerateTable;
+
 use super::*;
-use crate::XLanguageTable;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XLanguageID {
-    enum_column: usize,
+    wrap: XEnumerateTable,
 }
 
 impl XLanguageID {
     pub fn confirm(table: &CalamineTable) -> XResult<Self> {
-        if table.get_header(0) != XCellTyped::LanguageID {
+        if table.is_language_id() {
             return Err(XError::runtime_error("首格类型不是 LanguageID"));
         }
-        let mut value_column = 0;
-        let mut group_column = 0;
-        for header in table.headers() {
-            if header.typing == XCellTyped::LanguageValue {
-                value_column = header.column;
-            }
-            if table.is_group(&header.field_name) {
-                group_column = header.column;
-            }
-        }
-        Ok(XLanguageID { table: table.clone(), value_column, group_column })
+        Ok(Self { wrap: XEnumerateTable::force_confirm(table) })
     }
-    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<()> {}
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
+        Ok(XExportData::Internal)
+    }
 }

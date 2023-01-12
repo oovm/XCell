@@ -36,17 +36,17 @@ impl MergedTable {
         self.inner
             .iter()
             .map(|v| match &v.data {
-                XTableKind::Array(_) => {
+                XExportData::Array(_) => {
                     format!("{}{}", v.name, suffix_table)
                 }
-                XTableKind::Enumerate(_) => {
+                XExportData::Enumerate(_) => {
                     format!("{}{}", v.name, suffix_table)
                 }
-                XTableKind::Class(_) => v.name.to_string(),
-                XTableKind::Dictionary(_) => {
+                XExportData::Class(_) => v.name.to_string(),
+                XExportData::Dictionary(_) => {
                     todo!()
                 }
-                XTableKind::Language(_) => {
+                XExportData::Language(_) => {
                     todo!()
                 }
             })

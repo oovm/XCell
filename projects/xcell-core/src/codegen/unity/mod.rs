@@ -47,7 +47,7 @@ impl UnityCodegen {
             log::info!("写入 C#: {}", o);
         }
         match table.data {
-            XExportData::Array(_) => {
+            XExportData::List(_) => {
                 tera_render(include_str!("PartDictionary.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
             XExportData::Enumerate(_) => {
@@ -56,7 +56,7 @@ impl UnityCodegen {
             XExportData::Class(_) => {
                 tera_render(include_str!("PartClass.cs.djv"), &self.make_context(table), &path, "PartClass.cs")?;
             }
-            XExportData::Dictionary(_) => {
+            XExportData::Dict(_) => {
                 todo!()
             }
             XExportData::Language(_) => {
@@ -123,10 +123,10 @@ struct CSharpEnum {
 impl XExportData {
     fn make_class_field(&self) -> Vec<CSharpField> {
         match self {
-            XExportData::Array(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
+            XExportData::List(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
             XExportData::Enumerate(v) => v.headers.iter().map(|v| v.make_class_field()).collect(),
             XExportData::Class(v) => v.items.iter().map(|v| v.make_class_field()).collect(),
-            XExportData::Dictionary(_) => {
+            XExportData::Dict(_) => {
                 todo!()
             }
             XExportData::Language(_) => {
@@ -136,14 +136,14 @@ impl XExportData {
     }
     fn make_enum_field(&self) -> Vec<CSharpEnum> {
         match self {
-            XExportData::Array(_) => vec![],
+            XExportData::List(_) => vec![],
             XExportData::Enumerate(v) => {
                 v.data.values().map(|v| CSharpEnum { name: v.name.to_string(), number: v.id.to_string() }).collect()
             }
             XExportData::Class(_) => {
                 vec![]
             }
-            XExportData::Dictionary(_) => {
+            XExportData::Dict(_) => {
                 todo!()
             }
             XExportData::Language(_) => {

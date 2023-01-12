@@ -21,12 +21,12 @@ impl XExportData {
             XExportData::Internal => {
                 vec![]
             }
-            XExportData::Array(x) => {
+            XExportData::List(x) => {
                 for x in x.values.iter_mut() {
                     x.link_enumerate(all)
                 }
             }
-            XExportData::Dictionary(x) => {
+            XExportData::Dict(x) => {
                 for x in x.values.iter_mut() {
                     x.link_enumerate(all)
                 }

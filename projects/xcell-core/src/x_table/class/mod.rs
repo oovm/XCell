@@ -14,7 +14,9 @@ pub struct XClassTable {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XClassData {
+    /// 类名
     pub name: String,
+    /// 类字段
     pub items: Vec<XClassItem>,
 }
 

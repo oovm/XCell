@@ -30,7 +30,7 @@ mod workspace;
 /// ```
 /// use xcell_core;
 /// ```
-pub fn find_first_table(path: &PathBuf) -> XResult<CalamineTable> {
+pub fn find_first_table(path: &Path) -> XResult<CalamineTable> {
     let mut workbook = open_workbook_auto(path)?;
     let ranges = match workbook.worksheet_range_at(0) {
         None => return Err(XError::table_error("找不到配置表, 文件是空的, 或者表格式非法")),

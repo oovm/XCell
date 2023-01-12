@@ -5,6 +5,7 @@ use std::{
     fs::read_to_string,
     path::{Path, PathBuf},
 };
+use std::convert::Infallible;
 
 use serde::{
     de::{MapAccess, Visitor},
@@ -26,6 +27,7 @@ use crate::{
     utils::{get_relative, valid_file},
     XTable, XTableKind,
 };
+use crate::language::XLanguageTable;
 
 pub use self::{
     project::ProjectConfig,
@@ -38,6 +40,7 @@ mod project;
 mod table;
 pub mod unity;
 use crate::LanguageManager;
+use crate::utils::find_first_table;
 
 /// 默认的全局项目设置
 pub const PROJECT_CONFIG: &str = include_str!("ProjectConfig.toml");
@@ -87,7 +90,7 @@ impl WorkspaceManager {
                     let normed = self.get_relative(&file)?;
                     if glob.is_match(&normed) {
                         log::info!("首次加载: {}", normed.display());
-                        self.update_file(&file)
+                        self.load_file(&file)
                     }
                 }
                 None => break,
@@ -115,12 +118,22 @@ impl WorkspaceManager {
 
 impl WorkspaceManager {
     /// path 需要是绝对路径
-    pub fn update_file(&mut self, file: &Path) {
-        if let Err(e) = self.try_update_file(file) {
+    pub fn load_file(&mut self, file: &Path) {
+        if let Err(e) = self.try_perform_file(file) {
             log::error!("{e}")
         }
     }
-    pub fn try_update_file(&mut self, file: &Path) -> XResult<()> {
+    pub fn try_perform_file(&mut self, file: &Path) -> XResult<()> {
+        let file = file.canonicalize()?;
+        let table = find_first_table(&file)?;
+        match XLanguageTable::perform(&mut self, ) {
+            Ok(_) => {
+                return Ok(())
+            }
+            Err(_) => {}
+        }
+
+
         let table = XTable::load_file(file, &self.config)?;
         if let XTableKind::Enumerate(e) = &table.data {
             let mut mapping = BTreeMap::default();

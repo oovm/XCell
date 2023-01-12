@@ -24,3 +24,4 @@ pub mod utils;
 mod x_table;
 
 pub type CalamineTable = calamine::Range<calamine::DataType>;
+

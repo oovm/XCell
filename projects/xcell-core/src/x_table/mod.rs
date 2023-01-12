@@ -7,7 +7,7 @@ use std::{
 
 use calamine::DataType;
 use serde::{Deserialize, Serialize};
-
+use crate::config::{ProjectConfig, TableLineMode};
 use xcell_errors::for_3rd::BigInt;
 use xcell_types::{XCellTyped, XCellValue};
 

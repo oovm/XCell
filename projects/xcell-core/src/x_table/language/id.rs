@@ -9,7 +9,7 @@ pub struct XLanguageID {
 
 impl XLanguageID {
     pub fn confirm(table: &CalamineTable) -> XResult<Self> {
-        if table.get_header(0).typing != XCellTyped::LanguageID {
+        if table.get_header(0) != XCellTyped::LanguageID {
             return Err(XError::runtime_error("首格类型不是 LanguageID"));
         }
         let mut value_column = 0;

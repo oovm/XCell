@@ -1,7 +1,22 @@
 use super::*;
 
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XEnumerateTable {
+    /// 0 表示未设置
+    pub id_column: usize,
+    pub id_type: IntegerKind,
+    pub comment_column: usize,
+    pub headers: Vec<XCellHeader>,
+    pub data: BTreeMap<String, XDataItem>,
+}
+
 impl XEnumerateTable {
-    pub fn read_table_data(&mut self, table: &CalamineTable3, path: &Path) {
+    pub fn confirm(table: &CalamineTable) -> XResult<Self> {
+        
+    }
+    
+    
+    pub fn read_table_data(&mut self, table: &CalamineTable, path: &Path) {
         // 防止双重 borrow
         let typing = self.headers.iter().cloned().collect_vec();
         for (x, row_raw) in table.rows().enumerate().skip(3) {
@@ -47,6 +62,7 @@ impl XEnumerateTable {
         self.data.insert(item.name.clone(), item);
     }
 }
+
 
 impl WorkspaceManager {
     pub fn link_enumerate(&mut self) {

@@ -1,14 +1,16 @@
-use xcell_types::TypeMetaInfo;
-
-use crate::XCellHeader;
-
 use super::*;
 
-mod display;
 mod calamine_table;
+mod display;
+mod headers;
+mod rows;
 
-
-
+#[derive(Clone, Debug)]
+pub struct CalamineTable {
+    path: PathBuf,
+    table: calamine::Range<DataType>,
+    config: TableConfig,
+}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct XTable {

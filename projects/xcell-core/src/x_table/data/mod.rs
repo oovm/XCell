@@ -1,16 +1,8 @@
-use std::str::FromStr;
 
-use itertools::Itertools;
-
-use xcell_errors::Validation;
-use xcell_types::{EnumerateDescription, IntegerKind, StringDescription, TypeMetaInfo};
-
-use crate::{CalamineTable3, Success, utils::first_not_nil, WorkspaceManager, XCellHeader, XTable};
-use crate::language::XLanguageTable;
 
 use super::*;
 
-pub use self::class::XClassItem;
+
 
 mod class;
 mod dictionary;
@@ -42,17 +34,6 @@ pub struct XArrayTable {
 pub struct XDictionaryTable {
     pub headers: Vec<XCellHeader>,
     pub data: Vec<XDataItem>,
-}
-
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct XEnumerateTable {
-    /// 0 表示未设置
-    pub id_column: usize,
-    pub id_type: IntegerKind,
-    pub comment_column: usize,
-    pub headers: Vec<XCellHeader>,
-    pub data: BTreeMap<String, XDataItem>,
 }
 
 /// 生成一个类, 适用于全局配置

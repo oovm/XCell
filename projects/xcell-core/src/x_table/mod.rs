@@ -3,29 +3,28 @@ use std::{
     fmt::{Debug, Display, Formatter},
     hash::{Hash, Hasher},
     path::{Path, PathBuf},
+    str::FromStr,
 };
 
 use calamine::DataType;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use crate::config::{ProjectConfig, TableLineMode};
-use xcell_errors::for_3rd::BigInt;
-use xcell_types::{XCellTyped, XCellValue};
-use crate::WorkspaceManager;
+use calamine::Rows;
+use xcell_errors::{for_3rd::BigInt, Validation};
+use xcell_types::{EnumerateDescription, IntegerKind, StringDescription, TypeMetaInfo, XCellTyped, XCellValue};
+
 use crate::{
-    config::TableConfig,
-    utils::{find_first_table, xx_file, xx_hash},
-    XError, XResult, XTableKind,
+    config::{ProjectConfig, TableConfig, TableLineMode},
+    language::XLanguageTable,
+    utils::{find_first_table, first_not_nil},
+    CalamineTable3, Success, WorkspaceManager, XCellHeader, XError, XResult, XTable, XTableKind,
 };
 
+pub use self::class::XClassItem;
 
-#[derive(Clone, Debug)]
-pub struct CalamineTable {
-    path: PathBuf,
-    table: calamine::Range<DataType>,
-    config: TableConfig,
-}
 
 pub mod data;
+pub mod enumerate;
 pub mod header;
-pub mod table;
 pub mod language;
+pub mod table;

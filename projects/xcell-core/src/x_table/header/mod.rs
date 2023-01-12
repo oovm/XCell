@@ -1,7 +1,4 @@
-use crate::{
-    config::{ProjectConfig, TableLineMode},
-    CalamineTable3, XArrayTable, XDocument, XEnumerateTable,
-};
+use crate::XDocument;
 
 use super::*;
 

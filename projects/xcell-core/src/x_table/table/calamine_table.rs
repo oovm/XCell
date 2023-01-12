@@ -19,6 +19,11 @@ impl CalamineTable {
         self.config.typing.language.is_value(name)
     }
     #[inline]
+    pub fn is_class(&self) -> bool {
+        let name = self.get_header(0).field_name.as_str();
+        name == "class"
+    }
+    #[inline]
     pub fn is_group(&self, name: &str) -> bool {
         self.config.typing.language.is_group(name)
     }

@@ -2,29 +2,54 @@ use xcell_types::TypeMetaInfo;
 
 use super::*;
 
+mod data;
+
+/// 生成一个类, 适用于全局配置
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XClassTable {
+    type_column: usize,
+    default_column: usize,
+    comment_column: usize,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct XClassData {
+    pub items: Vec<XClassItem>,
+    pub data: Vec<XCellValue>,
+}
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XClassItem {
     pub field: String,
-    pub r#type: XCellTyped,
-    pub summary: String,
-    pub details: String,
+    pub typing: XCellTyped,
+    pub document: XDocument,
 }
 
 impl XClassTable {
-    pub fn read_table_data(&mut self, table: &CalamineTable3, path: &Path, meta: &TypeMetaInfo) {
-        for (line, row) in table.rows().enumerate().skip(3) {
-            match XClassItem::parse(row, line, meta) {
-                Ok((field, data)) => {
-                    self.items.push(field);
-                    self.data.push(data);
-                }
-                Err(e) => {
-                    log::error!("{}", e.with_path(path));
-                }
+    pub fn confirm(table: &CalamineTable) -> XResult<Self> {
+        if !table.is_class() {
+            return Err(XError::runtime_error("首格字段不是 Class"));
+        }
+        let mut out = XClassTable::default();
+        for header in table.headers() {
+            if header.field_name.eq_ignore_ascii_case("type") {
+                out.type_column = header.column;
+                continue;
+            }
+            if header.field_name.eq_ignore_ascii_case("default") {
+                out.default_column = header.column;
+                continue;
+            }
+            if header.field_name.eq_ignore_ascii_case("comment") {
+                out.comment_column = header.column;
+                continue;
             }
         }
+        Ok(out)
     }
-    pub fn link_enumerate(&mut self) {}
+    pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
+        Ok(XExportData::Internal)
+    }
 }
 
 impl XClassItem {
@@ -74,7 +99,7 @@ impl XClassItem {
     }
     fn try_parse_comment(&mut self, row: &[DataType]) -> Option<()> {
         let cell = row.get(3)?;
-        self.summary = cell.get_string()?.to_string();
+        self.document = cell.get_string()?.to_string();
         None
     }
 }

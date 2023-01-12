@@ -16,8 +16,10 @@ pub use self::{
         ProjectConfig, UnityBinaryConfig, WorkspaceManager, PROJECT_CONFIG,
     },
     x_table::{
+        class::{XClassItem, XClassTable},
         comment::XDocument,
-        data::*,
+        export::*,
+        dictionary::{XArrayTable, XDictionaryTable},
         enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
         header::XCellHeader,
         language::{id::XLanguageID, table::XLanguageTable},

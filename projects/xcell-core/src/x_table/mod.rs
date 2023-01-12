@@ -12,14 +12,13 @@ use xcell_errors::{for_3rd::BigInt, Validation};
 use xcell_types::{EnumerateDescription, StringDescription, TypeMetaInfo, XCellTyped, XCellValue};
 
 use crate::{
-    config::{ProjectConfig, TableConfig},
-    utils::find_first_table,
-    CalamineTable, CalamineTable3, Success, WorkspaceManager, XCellHeader, XDataItem, XDocument, XEnumerateData, XError,
+    CalamineTable,
+    CalamineTable3,
+    config::{ProjectConfig, TableConfig}, Success, utils::find_first_table, WorkspaceManager, XCellHeader, XDataItem, XDocument, XEnumerateData, XError,
     XExportData, XResult, XTable,
 };
 
 pub mod class;
-pub mod comment;
 pub mod export;
 pub mod dictionary;
 pub mod enumerate;

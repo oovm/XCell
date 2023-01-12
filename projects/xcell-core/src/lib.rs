@@ -5,6 +5,7 @@
 #![feature(path_file_prefix)]
 #![feature(file_create_new)]
 
+pub use utils::comment::XDocument;
 pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
 pub use xcell_types::*;
 
@@ -17,10 +18,9 @@ pub use self::{
     },
     x_table::{
         class::{XClassData, XClassItem, XClassTable},
-        comment::XDocument,
-        dictionary::{XArrayTable, XDictionaryTable},
+        dictionary::{XArrayData, XArrayTable, XDictionaryData, XDictionaryTable},
         enumerate::{data::XEnumerateData, manager::EnumerateManager, XEnumerateTable},
-        export::*,
+        export::XExportData,
         header::XCellHeader,
         language::{id::XLanguageID, table::XLanguageTable},
         table::{CalamineTable, XTable},

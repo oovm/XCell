@@ -1,5 +1,3 @@
-use xcell_types::TypeMetaInfo;
-
 use super::*;
 
 mod data;
@@ -59,14 +57,14 @@ impl XClassTable {
     pub fn perform(&self, ws: &mut WorkspaceManager) -> XResult<XExportData> {
         let mut items = vec![];
         for (row, data) in self.table.rows() {
-            match XClassItem::parse_cell(data, row) {
+            match XClassItem::parse_cell(data, &self) {
                 Ok(o) => items.push(o),
                 Err(e) => {
-                    log::error!("class 表第 {} 行第 1 列为空", row);
+                    log::error!("{}", e.with_y(row));
                     continue;
                 }
             }
         }
-        Ok(XExportData::Class(box XClassData { name: "".to_string(), items }))
+        Ok(XExportData::Class(box XClassData { name: self.table.get_name(), items }))
     }
 }

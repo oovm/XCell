@@ -9,7 +9,7 @@ use calamine::{DataType, open_workbook_auto, Reader};
 use itertools::Itertools;
 use pathdiff::diff_paths;
 use twox_hash::XxHash64;
-
+use serde::{Deserialize, Serialize};
 use xcell_errors::{XError, XResult};
 
 pub use self::workspace::*;
@@ -17,6 +17,7 @@ pub use self::workspace::*;
 mod watcher;
 
 mod workspace;
+pub mod comment;
 
 /// 读取 Excel 文件里的第一张表
 ///

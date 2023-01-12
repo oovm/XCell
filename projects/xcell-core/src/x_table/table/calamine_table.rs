@@ -24,6 +24,10 @@ impl CalamineTable {
         name == "class"
     }
     #[inline]
+    pub fn is_array(&self, name: &str) -> bool {
+        name == "id"
+    }
+    #[inline]
     pub fn is_group(&self, name: &str) -> bool {
         self.config.typing.language.is_group(name)
     }
@@ -38,6 +42,12 @@ impl CalamineTable {
     #[inline]
     pub fn is_document(&self, name: &str) -> bool {
         name == "document"
+    }
+}
+
+impl CalamineTable {
+    pub fn parse_type(&self, name: &str) -> XCellTyped {
+        XCellTyped::parse(name, &self.config.typing)
     }
 }
 

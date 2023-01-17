@@ -1,4 +1,4 @@
-// 代码生成, 修改无效!
+// 代码生成, 修改无效! (XCell {{ compiler_version }})
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident
 // ReSharper disable RedundantAbstractModifier
 // ReSharper disable PartialTypeWithSinglePart
@@ -25,7 +25,7 @@ namespace {{ config.namespace }}
         /// 配置表的版本号
         /// </summary>
         /// <remarks>手动配置</remarks>
-        public const string TableVersion = "{{ table_version }}";
+        public const string TableVersion = "{{ data_version }}";
 
         /// <summary>
         /// 配置表的最后修改时间 (UTC)

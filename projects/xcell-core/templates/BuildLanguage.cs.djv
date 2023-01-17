@@ -1,4 +1,4 @@
-// 代码生成, 修改无效!
+// 代码生成, 修改无效! (XCell {{ compiler_version }})
 // ReSharper disable CheckNamespace
 
 using System;
@@ -37,10 +37,15 @@ namespace DataTable.Generated
 
         public string GetElement(LanguageID language, string key)
         {
+#if UNITY_EDITOR
+            const string missing = "<<文本缺失>>";
+#else
+            const string missing = "";
+#endif
             return language switch
             {
 {%- for field in language_fields %}
-                LanguageID.{{ field.public_name }} => {{ field.public_name }}.TryGetValue(key, out var item) ? item : "",
+                LanguageID.{{ field.class_name }} => {{ field.public_name }}.TryGetValue(key, out var item) ? item : missing,
 {%- endfor %}
                 _ => throw new ArgumentOutOfRangeException(nameof(language), language, null)
             };

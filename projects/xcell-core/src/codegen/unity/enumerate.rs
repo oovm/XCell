@@ -3,7 +3,7 @@ use super::*;
 #[derive(Template)]
 #[template(path = "BuildEnumerate.cs.djv", ext = "txt", escape = "none")]
 pub struct UnityEnumerate {
-    version: &'static str,
+    compiler_version: &'static str,
     class_name: String,
     id_type: &'static str,
     config: UnityCodegen,
@@ -45,7 +45,7 @@ impl UnityCodegen {
     }
     fn make_enumerate(&self, table: &XEnumerateData) -> UnityEnumerate {
         UnityEnumerate {
-            version: env!("CARGO_PKG_VERSION"),
+            compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             class_name: table.name.clone(),
             id_type: table.typing.kind.as_csharp_type(),

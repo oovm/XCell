@@ -3,7 +3,7 @@ use super::*;
 #[derive(Template)]
 #[template(path = "BuildDictionary.cs.djv", ext = "txt", escape = "none")]
 pub struct UnityDictionary {
-    version: &'static str,
+    compiler_version: &'static str,
     class_name: String,
     table_name: String,
     id_type: &'static str,
@@ -63,7 +63,7 @@ impl UnityCodegen {
     }
     fn make_dict(&self, table: &XDictData, table_name: String) -> UnityDictionary {
         UnityDictionary {
-            version: env!("CARGO_PKG_VERSION"),
+            compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             table_name,
             class_name: table.name.clone(),
@@ -84,7 +84,7 @@ impl UnityCodegen {
     }
     fn make_list(&self, table: &XListData, table_name: String) -> UnityDictionary {
         UnityDictionary {
-            version: env!("CARGO_PKG_VERSION"),
+            compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             table_name,
             class_name: table.name.clone(),

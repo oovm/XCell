@@ -4,7 +4,7 @@ use super::*;
 #[template(path = "BuildManager.cs.djv", ext = "txt", escape = "none")]
 pub struct UnityManager {
     compiler_version: &'static str,
-    table_version: String,
+    data_version: String,
     edit_time: String,
     config: UnityCodegen,
     tables: Vec<TableField>,
@@ -36,7 +36,7 @@ impl UnityCodegen {
     fn make_manager(&self, ws: &WorkspaceManager) -> UnityManager {
         UnityManager {
             compiler_version: env!("CARGO_PKG_VERSION"),
-            table_version: ws.config.version.clone(),
+            data_version: ws.config.version.clone(),
             edit_time: XCellValue::csharp_now(),
             config: ws.config.unity.clone(),
             tables: ws

@@ -45,7 +45,7 @@ impl XListTable {
                 // 首行是空的, 数据无效且不报错
                 continue;
             }
-            match XDataLine::parse_id_cell(data, &self.headers, &mut errors) {
+            match XDataLine::parse_id_cell(data, row, &self.headers, &mut errors) {
                 Ok(o) => {
                     values.insert(o.id.clone(), o);
                 }
@@ -79,7 +79,7 @@ impl XDictTable {
         let mut errors = vec![];
         let mut values = BTreeMap::default();
         for (row, data) in self.table.rows() {
-            match XDataLine::parse_key_cell(data, &self.headers, &mut errors) {
+            match XDataLine::parse_key_cell(data, row, &self.headers, &mut errors) {
                 Ok(o) => {
                     values.insert(o.key.clone(), o);
                 }

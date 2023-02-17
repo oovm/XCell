@@ -135,6 +135,14 @@ impl XEnumerateTable {
             return None;
         }
         let id = row.get(self.id_column)?;
-        self.id_type.parse_value(id).ok()
+
+        match self.id_type.parse_value(id) {
+            Ok(o) => {Some(o)}
+            Err(e) => {
+                log::error!("枚举表 {} 的 id 列 {} 无法解析为整数, 错误: {}", self.enumerate_name(), self.id_column, e);
+                None
+            }
+        }
+
     }
 }

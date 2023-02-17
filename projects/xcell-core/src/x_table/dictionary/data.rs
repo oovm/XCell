@@ -34,16 +34,16 @@ pub struct XDataLine {
 }
 
 impl XDataLine {
-    pub fn parse_key_cell(data: &[DataType], headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
+    pub fn parse_key_cell(data: &[DataType], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.key = out.check_parse_key(data)?;
-        out.try_parse_data(data, headers, errors);
+        out.try_parse_data(data, row, headers, errors);
         Ok(out)
     }
-    pub fn parse_id_cell(data: &[DataType], headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
+    pub fn parse_id_cell(data: &[DataType], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.id = out.check_parse_id(data)?;
-        out.try_parse_data(data, headers, errors);
+        out.try_parse_data(data, row, headers, errors);
         Ok(out)
     }
     fn check_parse_key(&self, data: &[DataType]) -> XResult<String> {
@@ -69,12 +69,12 @@ impl XDataLine {
 }
 
 impl XDataLine {
-    fn try_parse_data(&mut self, data: &[DataType], headers: &[XCellHeader], errors: &mut Vec<XError>) {
+    fn try_parse_data(&mut self, data: &[DataType], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) {
         for header in headers {
             let data = data.get(header.column).unwrap_or(&DataType::Empty);
             match header.typing.parse_cell(data) {
                 Ok(o) => self.data.push(o),
-                Err(e) => errors.push(e.with_x(header.column)),
+                Err(e) => errors.push(e.with_xy(header.column, row)),
             }
         }
     }

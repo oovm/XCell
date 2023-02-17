@@ -24,14 +24,14 @@ impl IntegerDescription {
             DataType::Int(i) => Ok(self.clamp(*i)),
             DataType::Float(f) => match BigInt::from_f64(*f) {
                 Some(o) => Ok(o),
-                None => syntax_error(format!("{} 无法解析为 int 类型", f)),
+                None => syntax_error(format!("浮点数 `{}` 无法解析为整数类型", f)),
             },
             DataType::String(s) => match BigInt::from_str(s) {
                 Ok(o) => Ok(o),
-                Err(_) => syntax_error(format!("{} 无法解析为 int 类型", s)),
+                Err(_) => syntax_error(format!("字符串 `{}` 无法解析为整数类型", s)),
             },
             DataType::Empty => Ok(self.default.clone()),
-            _ => syntax_error(format!("{} 无法解析为 int 类型", cell.to_string())),
+            _ => syntax_error(format!("`{}` 无法解析为整数类型", cell.to_string())),
         }
     }
 

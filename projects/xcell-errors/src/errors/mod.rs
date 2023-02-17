@@ -37,11 +37,21 @@ impl Display for XError {
         if let Some(s) = &self.path {
             write!(f, "\n{}", s.display())?;
             if let Some((x, y)) = self.position {
-                write!(f, " ({} 行 {} 列)", y + 1, x + 1)?
+                write!(f, " ({} 行 {} 列)", y + 1, get_excel_column_name(x + 1))?
             }
         }
         Ok(())
     }
+}
+
+fn get_excel_column_name(mut number: usize) -> String {
+    let mut column = String::new();
+    while number > 0 {
+        let modulo = (number - 1) % 26;
+        column = format!("{}{}", (b'A' + modulo as u8) as char, column);
+        number = (number - modulo) / 26;
+    }
+    column
 }
 
 impl Error for XError {
@@ -81,15 +91,15 @@ impl XError {
         self
     }
     pub fn runtime_error<S>(msg: S) -> Self
-    where
-        S: Into<String>,
+        where
+            S: Into<String>,
     {
         let kind = XErrorKind::RuntimeError { message: msg.into() };
         Self { kind: Box::new(kind), path: None, position: None, source: None }
     }
     pub fn table_error<S>(msg: S) -> Self
-    where
-        S: Into<String>,
+        where
+            S: Into<String>,
     {
         let kind = XErrorKind::TableError(msg.into());
         Self { kind: Box::new(kind), path: None, position: None, source: None }

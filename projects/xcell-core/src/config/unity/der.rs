@@ -28,7 +28,7 @@ impl Default for UnityCodegen {
 
 impl Default for UnityBinaryConfig {
     fn default() -> Self {
-        Self { enable: true, output: "Assets/Tables/Binary".to_string() }
+        Self { enable: true, output: "Assets/Tables/Binary".to_string(), addressable: "".to_string() }
     }
 }
 
@@ -76,6 +76,7 @@ impl<'de> Visitor<'de> for UnityCodegen {
                 "legacy_using" => read_map_next_value(&mut map, |v| self.legacy_using = v),
                 "legacy_null_null" => read_map_next_value(&mut map, |v| self.legacy_null_null = v),
                 "binary" => read_map_next_value(&mut map, |v| self.binary = v),
+                "addressable" => read_map_next_value(&mut map, |v| self.addressable = v),
                 "xml" => read_map_next_value(&mut map, |v| self.xml = v),
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
             }
@@ -107,6 +108,7 @@ impl<'de> Visitor<'de> for UnityBinaryConfig {
             match key {
                 "enable" => read_map_next_value(&mut map, |v| self.enable = v),
                 "output" => read_map_next_value(&mut map, |v| self.output = v),
+                "addressable" => read_map_next_value(&mut map, |v| self.addressable = v),
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
             }
         }

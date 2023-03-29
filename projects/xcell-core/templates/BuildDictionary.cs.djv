@@ -10,6 +10,9 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using UnityEngine;
+{%- if config.addressable %}
+using UnityEngine.AddressableAssets;
+{% endif %}
 
 namespace {{ config.namespace }}
 {
@@ -48,7 +51,11 @@ namespace {{ config.namespace }}
     {
         public {{ table_name }}()
         {
+    {%- if config.addressable %}
+            BinaryRead("{{ config.binary.addressable }}/{{ table_name }}.bytes");
+    {%- else %}
             BinaryRead("{{ config.binary.output }}/{{ table_name }}.bytes");
+    {%- endif %}
         }
         /// <summary>
         /// 从二进制文件中读取静态数据
@@ -63,16 +70,18 @@ namespace {{ config.namespace }}
         /// </example>
         public void BinaryRead(string path)
         {
-    {% if config.addressable %}
-            var textAsset = Addressables.LoadAssetAsync<TextAsset>(path).WaitForCompletion();
-            using var stream = new MemoryStream(textAsset.bytes);
-            using var reader = new BinaryReader(stream, Encoding.UTF8, false);
-            BinaryRead(reader);
+    {%- if config.addressable %}
+	        Addressables.LoadAssetAsync<TextAsset>(path).Completed += handle =>
+	        {
+                using var stream = new MemoryStream(handle.Result.bytes);
+	            using var reader = new BinaryReader(stream, Encoding.UTF8, false);
+	            BinaryRead(reader);
+	        };
     {%- else %}
             using var stream = File.Open(path, FileMode.Open);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
             BinaryRead(reader);
-    {% endif %}
+    {%- endif %}
         }
 
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>

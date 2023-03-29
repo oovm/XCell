@@ -8,8 +8,7 @@ use super::*;
 #[tokio::test]
 async fn test_project_a() -> XResult {
     logger();
-    let mut ws = WorkspaceManager::new("F:\\project-a\\table")?;
-    // let mut ws = WorkspaceManager::new("C:\\P4Root\\project\\EndlessHunter\\DataTables")?;
+    let mut ws = WorkspaceManager::new("C:\\P4Root\\project\\OtherPlanet\\DataTables")?;
     ws.first_walk().await;
     Ok(())
 }

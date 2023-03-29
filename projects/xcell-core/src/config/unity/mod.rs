@@ -41,6 +41,8 @@ pub struct UnityBinaryConfig {
     pub enable: bool,
     /// 生成的二进制文件的目录
     pub output: String,
+    /// 设定的 Addressable 路径
+    pub addressable: String,
 }
 
 #[derive(Clone, Debug, Serialize)]

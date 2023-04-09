@@ -1,3 +1,4 @@
+use xcell_errors::for_3rd::read_map_next_key_lowercase;
 use crate::default_deserialize;
 
 use super::*;
@@ -19,10 +20,10 @@ impl<'de> Visitor<'de> for LanguageDescription {
     where
         A: MapAccess<'de>,
     {
-        while let Some(key) = map.next_key::<&str>()? {
-            match key {
+        while let Some(key) = read_map_next_key_lowercase(&mut map)? {
+            match key.as_str() {
                 "group" => read_map_next_value(&mut map, |e: OneOrMany<String>| self.group = BTreeSet::from_iter(e.unwrap())),
-                _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
+                _ => read_map_next_extra(&mut map, type_name::<Self>(), &key),
             }
         }
         Ok(self)

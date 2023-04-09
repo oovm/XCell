@@ -43,7 +43,7 @@ namespace {{ config.namespace }}
 {%- if config.legacy_null_null %}
             get { return {{ table.private_name }} != null ? {{ table.private_name }} : new {{ table.typing }}(); }
 {%- else %}
-            get => {{ table.private_name }} ?? new {{ table.typing }}();
+            get => {{ table.private_name }} ??= new {{ table.typing }}();
 {%- endif %}
             set => {{ table.private_name }} = value;
         }

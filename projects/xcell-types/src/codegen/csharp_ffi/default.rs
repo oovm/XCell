@@ -53,8 +53,8 @@ impl XCellValue {
             XCellValue::String(s) => {
                 format!("\"{}\"", s)
             }
-            XCellValue::Color(_) => {
-                todo!()
+            XCellValue::Color(c) => {
+                format!("new Color32({r}, {g}, {b}, {a})", r = (c.r * 255.0) as u8, g = (c.g * 255.0) as u8, b = (c.b * 255.0) as u8, a = (c.a * 255.0) as u8)
             }
             XCellValue::Enumerate(_) => {
                 todo!()

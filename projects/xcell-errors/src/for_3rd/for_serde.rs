@@ -4,7 +4,7 @@ pub fn read_map_next_key_lowercase<'de, M>(dict: &mut M) -> Result<Option<String
 where
     M: MapAccess<'de>,
 {
-    let key = dict.next_key::<&str>()?;
+    let key = dict.next_key::<String>()?;
     Ok(key.map(|s| s.trim().to_ascii_lowercase()))
 }
 

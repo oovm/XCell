@@ -25,8 +25,8 @@ impl<'de> Visitor<'de> for MergeRules {
     where
         A: MapAccess<'de>,
     {
-        while let Some((order, id)) = map.next_entry::<&str, MergeStep>()? {
-            if let Ok(o) = i64::from_str(order) {
+        while let Some((order, id)) = map.next_entry::<String, MergeStep>()? {
+            if let Ok(o) = i64::from_str(&order) {
                 self.steps.insert(o, id);
             }
         }

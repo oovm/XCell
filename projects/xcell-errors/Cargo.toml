@@ -12,7 +12,7 @@ edition = "2021"
 [dependencies]
 serde = "1.0.159"
 diagnostic = "0.5.1"
-futures = "0.3.27"
+futures = "0.3.28"
 calamine = { version = "0.19.1", optional = true, features = ["dates"] }
 tera = { version = "1.18.1", optional = true }
 askama = { version = "0.12.0", optional = true }

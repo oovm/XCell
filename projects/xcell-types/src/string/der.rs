@@ -1,4 +1,5 @@
 use serde_types::OneOrMany;
+use xcell_errors::for_3rd::read_map_next_key_lowercase;
 
 use crate::default_deserialize;
 
@@ -25,13 +26,13 @@ impl<'de> Visitor<'de> for StringDescription {
     where
         A: MapAccess<'de>,
     {
-        while let Some(key) = map.next_key::<&str>()? {
-            match key {
+        while let Some(key) = read_map_next_key_lowercase(&mut map)? {
+            match key.as_str() {
                 "extra" => read_map_next_value(&mut map, |e: OneOrMany<String>| {
                     e.into_iter().for_each(|s| self.add_pattern(s)) // skip fmk
                 }),
                 "default" => read_map_next_value(&mut map, |e| self.default = e),
-                _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
+                _ => read_map_next_extra(&mut map, type_name::<Self>(), &key),
             }
         }
         Ok(self)

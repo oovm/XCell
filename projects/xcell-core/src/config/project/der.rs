@@ -27,16 +27,16 @@ impl<'de> Visitor<'de> for ProjectConfig {
     where
         A: MapAccess<'de>,
     {
-        while let Some(key) = map.next_key::<&str>()? {
-            match key {
-                "version" => read_map_next_value(&mut map, |v: String| self.version = v),
+        while let Some(key) = read_map_next_key_lowercase(&mut map)? {
+            match key.as_ref() {
+                "version" => read_map_next_value(&mut map, |v: String| self.version = v.to_string()),
                 "line_mode" | "line" => read_map_next_value(&mut map, |v| self.line = v),
                 "exclude" => read_map_next_value(&mut map, |v: String| self.exclude = v.trim().to_string()),
                 "include" => read_map_next_value(&mut map, |v: String| self.include = v.trim().to_string()),
                 "typing" | "type" => read_map_next_value(&mut map, |v| self.typing = v),
                 "merge_rules" | "merge" => read_map_next_value(&mut map, |v| self.merge = v),
                 "unity" => read_map_next_value(&mut map, |v| self.unity = v),
-                _ => read_map_next_extra(&mut map, "ProjectConfig", key),
+                _ => read_map_next_extra(&mut map, "ProjectConfig", &key),
             }
         }
         Ok(self)

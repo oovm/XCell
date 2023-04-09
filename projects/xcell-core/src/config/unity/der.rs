@@ -57,8 +57,8 @@ impl<'de> Visitor<'de> for UnityCodegen {
     where
         A: MapAccess<'de>,
     {
-        while let Some(key) = map.next_key::<&str>()? {
-            match key {
+        while let Some(key) = read_map_next_key_lowercase(&mut map)? {
+            match key.as_str() {
                 "enable" => read_map_next_value(&mut map, |v| self.enable = v),
                 "project" => read_map_next_value(&mut map, |v| self.project = v),
                 "output" => read_map_next_value(&mut map, |v| self.output = v),
@@ -78,7 +78,7 @@ impl<'de> Visitor<'de> for UnityCodegen {
                 "binary" => read_map_next_value(&mut map, |v| self.binary = v),
                 "addressable" => read_map_next_value(&mut map, |v| self.addressable = v),
                 "xml" => read_map_next_value(&mut map, |v| self.xml = v),
-                _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
+                _ => read_map_next_extra(&mut map, type_name::<Self>(), &key),
             }
         }
         Ok(self)
@@ -104,12 +104,12 @@ impl<'de> Visitor<'de> for UnityBinaryConfig {
     where
         A: MapAccess<'de>,
     {
-        while let Some(key) = map.next_key::<&str>()? {
-            match key {
+        while let Some(key) = read_map_next_key_lowercase(&mut map)? {
+            match key.as_str() {
                 "enable" => read_map_next_value(&mut map, |v| self.enable = v),
                 "output" => read_map_next_value(&mut map, |v| self.output = v),
                 "addressable" => read_map_next_value(&mut map, |v| self.addressable = v),
-                _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
+                _ => read_map_next_extra(&mut map, type_name::<Self>(), &key),
             }
         }
         Ok(self)
@@ -135,11 +135,11 @@ impl<'de> Visitor<'de> for UnityXmlConfig {
     where
         A: MapAccess<'de>,
     {
-        while let Some(key) = map.next_key::<&str>()? {
-            match key {
+        while let Some(key) = read_map_next_key_lowercase(&mut map)? {
+            match key.as_ref() {
                 "enable" => read_map_next_value(&mut map, |v| self.enable = v),
                 "output" => read_map_next_value(&mut map, |v| self.output = v),
-                _ => read_map_next_extra(&mut map, type_name::<Self>(), key),
+                _ => read_map_next_extra(&mut map, type_name::<Self>(), &key),
             }
         }
         Ok(self)

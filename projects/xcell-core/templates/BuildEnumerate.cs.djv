@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.Serialization;
+using UnityEngine;
 
 namespace {{ config.namespace }}
 {

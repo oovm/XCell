@@ -14,19 +14,12 @@ using UnityEngine;
 namespace {{ config.namespace }}
 {
     [DataContract, Serializable]
-    public partial class {{ CLASS_NAME }}
+    public partial class {{ class_name }}
     {
-{%- for field in CLASS_FIELDS %}
-        /// <summary>
-    {%- for line in field.summary %}
-        /// {{line}}
+{%- for field in class_fields %}
+    {%- for line in field.document %}
+        /// {{ line }}
     {%- endfor %}
-        /// </summary>
-        /// <remarks>
-    {%- for line in field.remarks %}
-        /// {{line}}
-    {%- endfor %}
-        /// </remarks>
         [DataMember]
     {%- if field.has_default %}
         public {{field.typing}} {{field.name}} = {{field.default}};
@@ -36,11 +29,11 @@ namespace {{ config.namespace }}
 {%- endfor %}
     }
 {% if config.binary.enable %}
-    public partial class {{ CLASS_NAME }} : IBinarySupport
+    public partial class {{ class_name }} : IBinarySupport
     {
-        public {{CLASS_NAME}}()
+        public {{class_name}}()
         {
-            BinaryRead("{{ config.binary.output }}/{{ TABLE_NAME }}.binary");
+            BinaryRead("{{ config.binary.output }}/{{ table_name }}.binary");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据
@@ -62,7 +55,7 @@ namespace {{ config.namespace }}
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
-{%- for field in CLASS_FIELDS %}
+{%- for field in class_fields %}
     {%- if field.reader.is_vector %}
             var {{ field.reader.field }}Count = r.ReadUInt32();
             {{ field.reader.field }} = new((int) {{ field.reader.field }}Count);
@@ -79,7 +72,7 @@ namespace {{ config.namespace }}
 		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
-{%- for field in CLASS_FIELDS %}
+{%- for field in class_fields %}
 	{%- if field.writer.is_vector %}
             w.Write((uint) {{ field.writer.field }}.Count);
             foreach (var {{ field.writer.field }}Item in {{ field.writer.field }})
@@ -98,7 +91,7 @@ namespace {{ config.namespace }}
     }
 {%- endif %}
 {% if config.support_clone %}
-    partial class {{ CLASS_NAME }} : ICloneable
+    partial class {{ class_name }} : ICloneable
     {
         public object Clone()
         {

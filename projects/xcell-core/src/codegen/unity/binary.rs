@@ -18,7 +18,7 @@ impl UnityCodegen {
             create_dir_all(s)?
         }
         let w = CBinaryWriter::default();
-        for class in ws.class_data() {
+        for class in ws.classes() {
             if let Err(e) = self
                 .log_binary(ws, &format!("{}{}", class.name, ws.config.unity.suffix_table))
                 .and_then(|mut o| w.write_class(&mut o, class))

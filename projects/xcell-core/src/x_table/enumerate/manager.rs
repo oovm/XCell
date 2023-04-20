@@ -25,13 +25,13 @@ impl WorkspaceManager {
 }
 
 impl WorkspaceManager {
-    pub fn lists(&self) -> Values<'_, String, XListData> {
+    pub fn lists(&self) -> impl Iterator<Item=&XListData> {
         self.defines.list.values()
     }
-    pub fn dicts(&self) -> Values<'_, String, XDictData> {
+    pub fn dicts(&self) -> impl Iterator<Item=&XDictData> {
         self.defines.dict.values()
     }
-    pub fn class_data(&self) -> Values<'_, String, XClassData> {
+    pub fn classes(&self) -> impl Iterator<Item=&XClassData> {
         self.defines.class.values()
     }
     pub fn class_names(&self) -> BTreeSet<String> {
@@ -42,7 +42,7 @@ impl WorkspaceManager {
         names.extend(self.defines.dict.keys().cloned());
         names
     }
-    pub fn enumerates(&self) -> Values<'_, String, XEnumerateData> {
+    pub fn enumerates(&self) -> impl Iterator<Item=&XEnumerateData> {
         self.defines.enumerate.values()
     }
 }

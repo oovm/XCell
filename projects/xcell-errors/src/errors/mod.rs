@@ -72,10 +72,12 @@ impl XError {
         self.path = Some(path.to_path_buf());
         self
     }
+    /// 设置报错的 x, y 坐标
     pub fn with_xy(mut self, x: usize, y: usize) -> Self {
         self.position = Some((x, y));
         self
     }
+    /// 设置报错位置的 x 坐标
     pub fn with_x(mut self, x: usize) -> Self {
         self.position = match self.position {
             None => Some((x, 0)),
@@ -83,6 +85,7 @@ impl XError {
         };
         self
     }
+    /// 设置报错位置的 y 坐标
     pub fn with_y(mut self, y: usize) -> Self {
         self.position = match self.position {
             None => Some((0, y)),

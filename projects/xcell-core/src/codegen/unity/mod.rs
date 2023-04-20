@@ -5,6 +5,7 @@ mod dictionary;
 mod enumerate;
 mod language;
 mod manager;
+mod class;
 
 impl UnityCodegen {
     pub fn ensure_path(&self, root: &Path) -> XResult<()> {
@@ -16,6 +17,11 @@ impl UnityCodegen {
     pub fn write_csharp(&self, ws: &WorkspaceManager) -> XResult<()> {
         if let Some(s) = self.unity_csharp_path(&ws.config.root, "test")?.parent() {
             create_dir_all(s)?
+        }
+        for table in ws.classes() {
+            if let Err(e) = self.write_class(ws, table) {
+                tracing::error!("生成枚举失败: {}", e);
+            }
         }
         for table in ws.enumerates() {
             if let Err(e) = self.write_enumerate(ws, table) {

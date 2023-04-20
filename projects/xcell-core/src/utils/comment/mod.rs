@@ -6,6 +6,11 @@ pub struct XDocument {
     pub detail: String,
 }
 
+pub struct CsComment {
+    pub summary: String,
+    pub detail: String,
+}
+
 impl From<&DataType> for XDocument {
     fn from(value: &DataType) -> Self {
         let mut out = XDocument::default();

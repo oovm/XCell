@@ -1,3 +1,4 @@
+use tracing::Level;
 use xcell_core::{ProjectConfig, PROJECT_CONFIG};
 
 // use sled_typed::{Database, DiskMap};
@@ -10,7 +11,7 @@ fn ready() {
 }
 
 pub fn logger() {
-    let _ = tracing_subscriber::fmt::init();
+    let _ = tracing_subscriber::fmt().with_max_level(Level::TRACE).try_init().unwrap();
 }
 
 #[test]

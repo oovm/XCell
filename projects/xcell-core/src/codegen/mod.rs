@@ -14,7 +14,7 @@ use xcell_types::{
     codegen::{CSharpReader, CSharpWriter},
     ByteOrder, StreamWriter, XCellValue,
 };
-
+use crate::XClassItem;
 use serde::Deserialize;
 
 use xcell_errors::XError;

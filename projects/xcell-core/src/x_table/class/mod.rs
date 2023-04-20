@@ -52,6 +52,7 @@ impl XClassTable {
             }
         }
         if out.type_column == 0 {
+            tracing::error!("class 表未找到 type 列");
             return Err(XError::runtime_error("class 表未找到 type 列"));
         }
         Ok(out)

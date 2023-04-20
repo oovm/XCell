@@ -39,7 +39,7 @@ impl CalamineTable {
 
     pub fn is_class(&self) -> bool {
         let name = self.get_header(0);
-        name.field_name.as_str().eq_ignore_ascii_case("class")
+        name.field_name.eq_ignore_ascii_case("class")
     }
 
     pub fn is_list(&self) -> bool {

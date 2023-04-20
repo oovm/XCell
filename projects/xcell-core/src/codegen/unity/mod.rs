@@ -19,17 +19,17 @@ impl UnityCodegen {
         }
         for table in ws.enumerates() {
             if let Err(e) = self.write_enumerate(ws, table) {
-                log::error!("生成枚举失败: {}", e);
+                tracing::error!("生成枚举失败: {}", e);
             }
         }
         for table in ws.dicts() {
             if let Err(e) = self.write_dict(ws, table) {
-                log::error!("生成枚举失败: {}", e);
+                tracing::error!("生成枚举失败: {}", e);
             }
         }
         for table in ws.lists() {
             if let Err(e) = self.write_list(ws, table) {
-                log::error!("生成枚举失败: {}", e);
+                tracing::error!("生成枚举失败: {}", e);
             }
         }
         self.write_language(ws)?;
@@ -38,7 +38,7 @@ impl UnityCodegen {
     }
     fn log_csharp(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {
         let path = self.unity_csharp_path(&ws.config.root, name)?;
-        log::info!("写入 C#: {}\n{}", self.unity_cs_relative(name), Url::from_file_path(&path)?);
+        tracing::info!("写入 C#: {}\n{}", self.unity_cs_relative(name), Url::from_file_path(&path)?);
         Ok(File::create(path)?)
     }
 }

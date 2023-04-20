@@ -39,7 +39,7 @@ impl CalamineTable {
 
     pub fn is_class(&self) -> bool {
         let name = self.get_header(0);
-        name.field_name.as_str() == "class"
+        name.field_name.as_str().eq_ignore_ascii_case("class")
     }
 
     pub fn is_list(&self) -> bool {
@@ -95,6 +95,7 @@ impl CalamineTable {
 }
 
 impl CalamineTable {
+    /// 获得第 `index` 列的表头
     pub fn get_header(&self, index: usize) -> XCellHeader {
         let mut complete = true;
         let field_name = match self.get_field_name(index) {

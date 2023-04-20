@@ -23,7 +23,7 @@ impl UnityCodegen {
                 .log_binary(ws, &format!("{}{}", class.name, ws.config.unity.suffix_table))
                 .and_then(|mut o| w.write_class(&mut o, class))
             {
-                log::error!("write class {} failed: {}", class.name, e);
+                tracing::error!("write class {} failed: {}", class.name, e);
             }
         }
         for list in ws.lists() {
@@ -31,7 +31,7 @@ impl UnityCodegen {
                 .log_binary(ws, &format!("{}{}", list.name, ws.config.unity.suffix_table))
                 .and_then(|mut o| w.write_list(&mut o, list))
             {
-                log::error!("write list {} failed: {}", list.name, e);
+                tracing::error!("write list {} failed: {}", list.name, e);
             }
         }
         for dict in ws.dicts() {
@@ -39,11 +39,11 @@ impl UnityCodegen {
                 .log_binary(ws, &format!("{}{}", dict.name, ws.config.unity.suffix_table))
                 .and_then(|mut o| w.write_dict(&mut o, dict))
             {
-                log::error!("write dict {} failed: {}", dict.name, e);
+                tracing::error!("write dict {} failed: {}", dict.name, e);
             }
         }
         if let Err(e) = self.write_language_keys(ws) {
-            log::error!("write language failed: {}", e);
+            tracing::error!("write language failed: {}", e);
         }
         self.write_language_tables(ws);
 
@@ -51,7 +51,7 @@ impl UnityCodegen {
     }
     fn log_binary(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {
         let path = self.unity_binary_path(&ws.config.root, name)?;
-        log::info!("写入二进制: {}\n{}", self.unity_bin_relative(&name), Url::from_file_path(&path)?);
+        tracing::info!("写入二进制: {}\n{}", self.unity_bin_relative(&name), Url::from_file_path(&path)?);
         Ok(File::create(path)?)
     }
 }
@@ -112,7 +112,7 @@ impl UnityCodegen {
     fn write_language_tables(&self, ws: &WorkspaceManager) {
         for language in ws.languages() {
             if let Err(e) = self.write_language_table(ws, &language) {
-                log::error!("write language table {} failed: {}", language.key, e);
+                tracing::error!("write language table {} failed: {}", language.key, e);
             }
         }
     }

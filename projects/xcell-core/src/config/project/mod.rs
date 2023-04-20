@@ -30,7 +30,7 @@ mod ser;
 
 impl ProjectConfig {
     pub fn new(workspace: &Path) -> Self {
-        log::info!("工作目录: {}", workspace.display());
+        tracing::info!("工作目录: {}", workspace.display());
         let cfg = workspace.join("XCell.toml");
         let success;
         let mut config = match Self::load_toml(&cfg) {
@@ -40,12 +40,12 @@ impl ProjectConfig {
             }
             Err(e) => {
                 success = "失败";
-                log::error!("{}", e.with_path(&cfg));
+                tracing::error!("{}", e.with_path(&cfg));
                 Default::default()
             }
         };
         config.root = workspace.to_path_buf();
-        log::trace!("加载项目配置{success}, 当前配置\n{config:#?}");
+        tracing::trace!("加载项目配置{success}, 当前配置\n{config:#?}");
         config
     }
     fn load_toml(file: &Path) -> XResult<Self> {

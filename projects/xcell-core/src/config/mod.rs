@@ -76,7 +76,7 @@ impl WorkspaceManager {
     }
     /// 首次加载目录
     pub async fn first_walk(&mut self) -> XResult<()> {
-        let glob = build_glob_set(&self.config.include).result(|e| log::error!("{e}"))?;
+        let glob = build_glob_set(&self.config.include).result(|e| tracing::error!("{e}"))?;
         let mut entries = WalkDir::new(&self.config.root);
         loop {
             match entries.next().await {
@@ -84,7 +84,7 @@ impl WorkspaceManager {
                     let file = o.path();
                     let normed = self.get_relative(&file)?;
                     if glob.is_match(&normed) {
-                        log::info!("首次加载: {}", normed.display());
+                        tracing::info!("首次加载: {}", normed.display());
                         self.load_file(&file)
                     }
                 }
@@ -101,7 +101,7 @@ impl WorkspaceManager {
         loop {
             match watcher.next().await {
                 Some(Ok(o)) => {
-                    log::trace!("文件变更: {:?}", o);
+                    tracing::trace!("文件变更: {:?}", o);
                 }
                 None => break,
                 _ => continue,
@@ -115,26 +115,26 @@ impl WorkspaceManager {
     /// path 需要是绝对路径
     pub fn load_file(&mut self, file: &Path) {
         if let Err(e) = self.try_perform_file(file) {
-            log::error!("{e}")
+            tracing::error!("{e}")
         }
     }
     pub fn try_perform_file(&mut self, file: &Path) -> XResult<()> {
         let table = CalamineTable::load(file, &self.config)?;
         if let Ok(s) = XListTable::confirm(&table) {
             for error in s.perform(self) {
-                log::error!("{}", error.with_path(file));
+                tracing::error!("{}", error.with_path(file));
             }
             return Ok(());
         }
         if let Ok(s) = XDictTable::confirm(&table) {
             for error in s.perform(self) {
-                log::error!("{}", error.with_path(file));
+                tracing::error!("{}", error.with_path(file));
             }
             return Ok(());
         }
         if let Ok(s) = XEnumerateTable::confirm(&table) {
             for error in s.perform(self) {
-                log::error!("{}", error.with_path(file));
+                tracing::error!("{}", error.with_path(file));
             }
             return Ok(());
         }
@@ -143,13 +143,13 @@ impl WorkspaceManager {
         }
         if let Ok(s) = XLanguageTable::confirm(&table) {
             for error in s.perform(self) {
-                log::error!("{}", error.with_path(file));
+                tracing::error!("{}", error.with_path(file));
             }
             return Ok(());
         }
         if let Ok(s) = XLanguageID::confirm(&table) {
             for error in s.perform(self) {
-                log::error!("{}", error.with_path(file));
+                tracing::error!("{}", error.with_path(file));
             }
             return Ok(());
         }

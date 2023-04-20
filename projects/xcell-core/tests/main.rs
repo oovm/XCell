@@ -1,6 +1,3 @@
-use env_logger::builder;
-use log::LevelFilter;
-
 use xcell_core::{ProjectConfig, PROJECT_CONFIG};
 
 // use sled_typed::{Database, DiskMap};
@@ -13,7 +10,7 @@ fn ready() {
 }
 
 pub fn logger() {
-    let _ = builder().filter(Some("globset"), LevelFilter::Off).filter_level(LevelFilter::Trace).try_init();
+    let _ = tracing_subscriber::fmt::init();
 }
 
 #[test]

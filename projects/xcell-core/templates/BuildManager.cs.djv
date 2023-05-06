@@ -67,9 +67,6 @@ namespace {{ config.namespace }}
         [MenuItem("Tools/XCell/ExportXML")]
         public static void ExportXML()
         {
-#if UNITY_EDITOR
-            Reload();
-#endif
 {%- for table in tables %}
             SerializerXML("Assets/Data/Table/Binary/{{ table.typing }}.xml", {{ config.instance_name }}.{{ table.private_name }});
 {%- endfor %}
@@ -78,9 +75,6 @@ namespace {{ config.namespace }}
         [MenuItem("Tools/XCell/ExportJSON")]
         public static void ExportJSON()
         {
-#if UNITY_EDITOR
-            Reload();
-#endif
 {%- for table in tables %}
             SerializerJSON("Assets/Data/Table/Readable/{{ table.typing }}.json", {{ config.instance_name }}.{{ table.private_name }});
 {%- endfor %}

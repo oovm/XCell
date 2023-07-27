@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace DataTable.Generated
 {
@@ -16,7 +19,7 @@ namespace DataTable.Generated
         [DataMember]
         public List<string> languageKeys
         {
-            get => _language_keys ??= ReadKeys("{{ binary_path }}/LanguageKeys.bytes");
+            get => _language_keys;
             set => _language_keys = value;
         }
 {%- for field in language_fields %}
@@ -24,7 +27,7 @@ namespace DataTable.Generated
         [DataMember]
         public Dictionary<string, string> {{ field.public_name }}
         {
-            get => {{ field.private_name }} ??= ReadMaps("{{ binary_path }}/Language{{ field.class_name }}.bytes");
+            get => {{ field.private_name }};
             set => {{ field.private_name }} = value;
         }
 {%- endfor %}
@@ -51,9 +54,10 @@ namespace DataTable.Generated
             };
         }
 
-        private Dictionary<string, string> ReadMaps(string path)
+        private async Task<Dictionary<string, string>> ReadMaps(string path)
         {
-            using var stream = File.Open(path, FileMode.Open);
+            var text = await Addressables.LoadAssetAsync<TextAsset>(path).Task;
+            using var stream = new MemoryStream(text.bytes);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
 
             var dict = new Dictionary<string, string>();
@@ -68,9 +72,10 @@ namespace DataTable.Generated
             return dict;
         }
 
-        private List<string> ReadKeys(string path)
+        private async Task<List<string>> ReadKeys(string path)
         {
-            using var stream = File.Open(path, FileMode.Open);
+            var text = await Addressables.LoadAssetAsync<TextAsset>(path).Task;
+            using var stream = new MemoryStream(text.bytes);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
 
             var list = new List<string>();
@@ -83,11 +88,11 @@ namespace DataTable.Generated
             return list;
         }
 
-        public void LoadAll()
+        public async void LoadAll()
         {
-            _language_keys = ReadKeys("{{ binary_path }}/LanguageKeys.bytes");
+            _language_keys = await ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes");
 {%- for field in language_fields %}
-            {{ field.private_name }} = ReadMaps("{{ binary_path }}/Language{{ field.class_name }}.bytes");
+            {{ field.private_name }} = await ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes");
 {%- endfor %}
         }
 

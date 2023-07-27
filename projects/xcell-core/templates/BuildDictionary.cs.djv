@@ -68,20 +68,12 @@ namespace {{ config.namespace }}
         /// AssetDatabase.GUIDToAssetPath // 根据 GUID
         /// </code>
         /// </example>
-        public void BinaryRead(string path)
+        public async void BinaryRead(string path)
         {
-    {%- if config.addressable %}
-	        Addressables.LoadAssetAsync<TextAsset>(path).Completed += handle =>
-	        {
-                using var stream = new MemoryStream(handle.Result.bytes);
-	            using var reader = new BinaryReader(stream, Encoding.UTF8, false);
-	            BinaryRead(reader);
-	        };
-    {%- else %}
-            using var stream = File.Open(path, FileMode.Open);
+            var handle = await Addressables.LoadAssetAsync<TextAsset>(path).Task;
+            using var stream = new MemoryStream(handle.bytes);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
             BinaryRead(reader);
-    {%- endif %}
         }
 
 		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
@@ -110,9 +102,9 @@ namespace {{ config.namespace }}
         }
 {% if config.support_clone %}
         /// <inheritdoc cref="ICloneable.Clone"/>
-        public {{ class_name }} Clone()
+        public {{ table_name }} Clone()
         {
-            return ({{ class_name }}) MemberwiseClone();
+            return ({{ table_name }}) MemberwiseClone();
         }
 {%- endif %}
     }
@@ -157,9 +149,9 @@ namespace {{ config.namespace }}
         }
 {% if config.support_clone %}
         /// <inheritdoc cref="ICloneable.Clone"/>
-        public {{ class_name }} Clone()
+        public {{ class_name }}Element Clone()
         {
-            return ({{ class_name }}) MemberwiseClone();
+            return ({{ class_name }}Element) MemberwiseClone();
         }
 {%- endif %}
     }

@@ -78,12 +78,12 @@ namespace {{ config.namespace }}
             foreach (var {{ field.writer.field }}Item in {{ field.writer.field }})
             {
 		{%- for property in field.writer.properties %}
-                w.Write({{ field.writer.field }}Item{{property}});
+                w.Write({{ field.writer.field }}Item{{ property }});
 		{%- endfor %}
             }
 	{%- else %}
 		{%- for property in field.writer.properties %}
-            w.Write({{ field.writer.cast }}{{ field.writer.field }}{{property}});
+            w.Write({{ field.writer.cast }}{{ field.writer.field }}{{ property }});
 		{%- endfor %}
 	{%- endif %}
 {%- endfor %}

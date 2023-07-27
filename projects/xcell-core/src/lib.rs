@@ -1,7 +1,5 @@
-#![feature(box_syntax)]
 #![feature(try_blocks)]
 #![feature(type_alias_impl_trait)]
-#![feature(once_cell)]
 #![feature(path_file_prefix)]
 #![feature(file_create_new)]
 

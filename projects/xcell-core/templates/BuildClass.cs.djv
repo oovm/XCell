@@ -88,15 +88,13 @@ namespace {{ config.namespace }}
 	{%- endif %}
 {%- endfor %}
         }
-    }
-{%- endif %}
 {% if config.support_clone %}
-    partial class {{ class_name }} : ICloneable
-    {
-        public object Clone()
+        /// <inheritdoc cref="ICloneable.Clone"/>
+        public {{ class_name }} Clone()
         {
-            return MemberwiseClone();
+            return ({{ class_name }}) MemberwiseClone();
         }
+{%- endif %}
     }
 {%- endif %}
 }

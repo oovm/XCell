@@ -1,4 +1,4 @@
-use std::{env::current_dir, path::PathBuf, process::Command};
+use std::{env::current_dir, path::PathBuf};
 
 use clap::{Parser, Subcommand};
 

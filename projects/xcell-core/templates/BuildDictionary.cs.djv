@@ -108,6 +108,13 @@ namespace {{ config.namespace }}
                 item.BinaryWrite(w);
             }
         }
+{% if config.support_clone %}
+        /// <inheritdoc cref="ICloneable.Clone"/>
+        public {{ class_name }} Clone()
+        {
+            return ({{ class_name }}) MemberwiseClone();
+        }
+{%- endif %}
     }
 
     public partial class {{ class_name }}Element : IBinarySupport
@@ -148,23 +155,13 @@ namespace {{ config.namespace }}
 	{%- endif %}
 {%- endfor %}
         }
-    }
-{%- endif %}
 {% if config.support_clone %}
-    public partial class {{ table_name }} : ICloneable
-    {
-        public object Clone()
+        /// <inheritdoc cref="ICloneable.Clone"/>
+        public {{ class_name }} Clone()
         {
-            return MemberwiseClone();
+            return ({{ class_name }}) MemberwiseClone();
         }
-    }
-
-    partial class {{ class_name }}Element : ICloneable
-    {
-        public object Clone()
-        {
-            return MemberwiseClone();
-        }
+{%- endif %}
     }
 {%- endif %}
 }

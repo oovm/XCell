@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Template)]
-#[template(path = "BuildDictionary.cs.djv", ext = "txt", escape = "none")]
+#[template(path = "BuildDictionary.cs", ext = "txt", escape = "none")]
 pub struct UnityDictionary {
     compiler_version: &'static str,
     class_name: String,

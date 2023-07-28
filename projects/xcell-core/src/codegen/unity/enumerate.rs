@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Template)]
-#[template(path = "BuildEnumerate.cs.djv", ext = "txt", escape = "none")]
+#[template(path = "BuildEnumerate.cs", ext = "txt", escape = "none")]
 pub struct UnityEnumerate {
     compiler_version: &'static str,
     class_name: String,

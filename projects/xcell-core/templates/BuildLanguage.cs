@@ -19,7 +19,7 @@ namespace DataTable.Generated
         [DataMember]
         public List<string> languageKeys
         {
-            get => _language_keys;
+            get => _language_keys ??= ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes");
             set => _language_keys = value;
         }
 {%- for field in language_fields %}
@@ -27,7 +27,7 @@ namespace DataTable.Generated
         [DataMember]
         public Dictionary<string, string> {{ field.public_name }}
         {
-            get => {{ field.private_name }};
+            get => {{ field.private_name }} ??= ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes");
             set => {{ field.private_name }} = value;
         }
 {%- endfor %}
@@ -54,9 +54,9 @@ namespace DataTable.Generated
             };
         }
 
-        private async Task<Dictionary<string, string>> ReadMaps(string path)
+        private Task<Dictionary<string, string>> ReadMaps(string path)
         {
-            var text = await Addressables.LoadAssetAsync<TextAsset>(path).Task;
+            var text = Addressables.LoadAssetAsync<TextAsset>(path).WaitForCompletion();
             using var stream = new MemoryStream(text.bytes);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
 
@@ -72,9 +72,9 @@ namespace DataTable.Generated
             return dict;
         }
 
-        private async Task<List<string>> ReadKeys(string path)
+        private List<string> ReadKeys(string path)
         {
-            var text = await Addressables.LoadAssetAsync<TextAsset>(path).Task;
+            var text = Addressables.LoadAssetAsync<TextAsset>(path).WaitForCompletion();
             using var stream = new MemoryStream(text.bytes);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
 
@@ -88,11 +88,11 @@ namespace DataTable.Generated
             return list;
         }
 
-        public async void LoadAll()
+        public void LoadAll()
         {
-            _language_keys = await ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes");
+            _language_keys = ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes");
 {%- for field in language_fields %}
-            {{ field.private_name }} = await ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes");
+            {{ field.private_name }} = ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes");
 {%- endfor %}
         }
 
@@ -103,13 +103,10 @@ namespace DataTable.Generated
             {{ field.private_name }} = null;
 {%- endfor %}
         }
-    }
 
-    public partial class Language{{ config.suffix_table }} : ICloneable
-    {
-        public object Clone()
+        public {{ Language{{ config.suffix_table }} }} Clone()
         {
-            return MemberwiseClone();
+            return ({{ Language{{ config.suffix_table }} }})MemberwiseClone();
         }
     }
 }

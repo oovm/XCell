@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Template)]
-#[template(path = "BuildClass.cs.djv", ext = "txt", escape = "none")]
+#[template(path = "BuildClass.cs", ext = "txt", escape = "none")]
 pub struct UnityClass {
     compiler_version: &'static str,
     class_name: String,

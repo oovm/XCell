@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Template)]
-#[template(path = "BuildManager.cs.djv", ext = "txt", escape = "none")]
+#[template(path = "BuildManager.cs", ext = "txt", escape = "none")]
 pub struct UnityManager {
     compiler_version: &'static str,
     data_version: String,

@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Template)]
-#[template(path = "BuildLanguage.cs.djv", ext = "txt", escape = "none")]
+#[template(path = "BuildLanguage.cs", ext = "txt", escape = "none")]
 pub struct UnityLanguage {
     compiler_version: &'static str,
     binary_path: String,

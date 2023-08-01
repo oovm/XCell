@@ -26,6 +26,14 @@ impl VectorDescription {
         Ok(XCellValue::Vector(out))
     }
     pub fn split<'i>(&self, s: &'i str) -> Vec<&'i str> {
-        s.split(|c: char| self.delimiter.contains(&c)).map(|s| s.trim()).collect()
+        let mut out = Vec::new();
+        for item in s.split(|c: char| self.delimiter.contains(&c)) {
+            let item = item.trim();
+            if item.is_empty() {
+                continue;
+            }
+            out.push(item)
+        }
+        out
     }
 }

@@ -54,7 +54,7 @@ namespace DataTable.Generated
             };
         }
 
-        private Task<Dictionary<string, string>> ReadMaps(string path)
+        private Dictionary<string, string> ReadMaps(string path)
         {
             var text = Addressables.LoadAssetAsync<TextAsset>(path).WaitForCompletion();
             using var stream = new MemoryStream(text.bytes);
@@ -104,9 +104,9 @@ namespace DataTable.Generated
 {%- endfor %}
         }
 
-        public {{ Language{{ config.suffix_table }} }} Clone()
+        public Language{{ config.suffix_table }} Clone()
         {
-            return ({{ Language{{ config.suffix_table }} }})MemberwiseClone();
+            return (Language{{ config.suffix_table }})MemberwiseClone();
         }
     }
 }

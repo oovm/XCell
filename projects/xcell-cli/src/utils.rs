@@ -1,15 +1,13 @@
-use std::fmt::Debug;
-use std::process::Command;
-use tracing::field::Field;
-
-
-use tracing::level_filters::LevelFilter;
-use tracing::span::Record;
-use tracing_subscriber::field::{MakeExt, RecordFields, Visit, VisitOutput};
-use tracing_subscriber::fmt::format::{PrettyVisitor, Writer};
-use tracing_subscriber::fmt::{FormatFields, FormattedFields};
-use tracing_subscriber::fmt::time::{FormatTime, LocalTime};
-
+use std::{
+    fmt::{Debug, Write},
+    process::Command,
+};
+use tracing::{field::Field, Event};
+use tracing_subscriber::{
+    field::{RecordFields, Visit},
+    fmt::{format::Writer, FmtContext, FormatEvent, FormatFields},
+    Registry,
+};
 
 pub fn pause() {
     if cfg!(debug_assertions) {
@@ -17,59 +15,71 @@ pub fn pause() {
     }
     if cfg!(target_os = "windows") {
         let _ = Command::new("cmd.exe").arg("/c").arg("pause").status();
-    } else {
+    }
+    else {
         let _ = Command::new("pause").status();
     }
 }
 
 pub fn logger() {
-    let _ = tracing_subscriber::fmt()
-        .with_max_level(LevelFilter::TRACE)
-        .with_timer(XCellTimer {})
-        .event_format(XCellFields {})
-        .try_init();
+    let _ = tracing_subscriber::fmt().event_format(XCellFormat {}).try_init();
 }
 
-struct XCellTimer {}
+struct XCellFormat {}
 
-struct XCellFields {}
-
-struct XCellFieldVisitor<'writer> {
-    writer: Writer<'writer>,
+struct FieldsVisitor<'a> {
+    writer: Writer<'a>,
 }
 
-impl FormatTime for XCellTimer {
-    fn format_time(&self, w: &mut Writer<'_>) -> std::fmt::Result {
-        let now = chrono::Local::now();
-        write!(w, "{}", now.format("%m-%d %H:%M:%S"))
+impl<'a> Write for FieldsVisitor<'a> {
+    fn write_str(&mut self, s: &str) -> std::fmt::Result {
+        self.writer.write_str(s)
     }
 }
 
-impl<'writer> FormatFields<'writer> for XCellFields {
-    fn format_fields<R: RecordFields>(&self, writer: Writer<'writer>, fields: R) -> std::fmt::Result {
-        let mut v = XCellFieldVisitor { writer };
-        fields.record(&mut v);
-        Ok(())
-    }
-
-    fn add_fields(&self, current: &'writer mut FormattedFields<Self>, fields: &Record<'_>) -> std::fmt::Result {
-        let empty = current.is_empty();
-        let writer = current.as_writer();
-        let mut v = XCellFieldVisitor { writer };
-        fields.record(&mut v);
-        Ok(())
+impl<N> FormatEvent<Registry, N> for XCellFormat
+where
+    N: for<'a> FormatFields<'a> + 'static,
+{
+    fn format_event(&self, _: &FmtContext<'_, Registry, N>, writer: Writer<'_>, event: &Event<'_>) -> std::fmt::Result {
+        let meta = event.metadata();
+        let mut f = FieldsVisitor { writer };
+        for _ in event.fields() {
+            f.write_str("\x1b[37m[")?;
+            match meta.level().as_str() {
+                "TRACE" => f.write_str("\x1b[34mTrace")?,
+                "DEBUG" => f.write_str("\x1b[36mDebug")?,
+                "INFO" => f.write_str("\x1b[32mDebug")?,
+                "WARN" => f.write_str("\x1b[33mAlert")?,
+                _ => f.write_str("\x1b[31mError")?,
+            }
+            f.write_str(" \x1b[37m")?;
+            let now = chrono::Local::now();
+            write!(f, "{}", now.format("%m-%d %H:%M:%S"))?;
+            f.write_str("\x1b[37m]\x1b[0m ")?;
+            #[cfg(debug_assertions)]
+            match (meta.module_path(), meta.line()) {
+                (Some(path), Some(line)) => {
+                    write!(f, "{}:{} ", path, line)?;
+                }
+                _ => {}
+            }
+            event.record(&mut f);
+        }
+        f.write_char('\n')
     }
 }
 
-impl<'writer> Visit for XCellFieldVisitor<'writer> {
-
+impl<'w> Visit for FieldsVisitor<'w> {
     fn record_debug(&mut self, field: &Field, value: &dyn Debug) {
         match field.name() {
             "message" => {
-                let _ = write!(self.writer, "\n{:?}\n", value);
+                let _ = write!(self.writer, "{:?} ", value);
             }
             _ => {
-                // let _ = write!(self.writer, "{}={:?} ", field.name(), value);
+                if cfg!(debug_assertions) {
+                    let _ = write!(self.writer, "\n{}={:?} ", field.name(), value);
+                }
             }
         }
     }

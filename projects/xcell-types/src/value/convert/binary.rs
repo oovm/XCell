@@ -8,8 +8,8 @@ impl StreamWriter for XCellValue {
     fn write_to<W: Write>(&self, buffer: &mut W, order: ByteOrder) -> std::io::Result<()> {
         match self {
             XCellValue::Boolean(v) => match v {
-                true => 0u8.write_to(buffer, order)?,
-                false => 1u8.write_to(buffer, order)?,
+                true => 1u8.write_to(buffer, order)?,
+                false => 0u8.write_to(buffer, order)?,
             },
             XCellValue::Integer8(v) => v.write_to(buffer, order)?,
             XCellValue::Integer16(v) => v.write_to(buffer, order)?,

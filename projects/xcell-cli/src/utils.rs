@@ -1,13 +1,14 @@
-
-
+use std::fmt::Debug;
 use std::process::Command;
-
-
+use tracing::field::Field;
 
 
 use tracing::level_filters::LevelFilter;
-use tracing_subscriber::field::MakeExt;
-use tracing_subscriber::fmt::time::LocalTime;
+use tracing::span::Record;
+use tracing_subscriber::field::{MakeExt, RecordFields, Visit, VisitOutput};
+use tracing_subscriber::fmt::format::{PrettyVisitor, Writer};
+use tracing_subscriber::fmt::{FormatFields, FormattedFields};
+use tracing_subscriber::fmt::time::{FormatTime, LocalTime};
 
 
 pub fn pause() {
@@ -22,36 +23,54 @@ pub fn pause() {
 }
 
 pub fn logger() {
-    if cfg!(debug_assertions) {
-        let _ = tracing_subscriber::fmt().with_max_level(LevelFilter::TRACE).try_init();
-    } else {
-        let _ = tracing_subscriber::fmt()
-            .with_max_level(LevelFilter::TRACE)
-            .with_timer(
-                LocalTime::rfc_3339()
-            )
-            .fmt_fields(tracing_subscriber::fmt::format::debug_fn(|writer, field, value| write!(writer, "{}: {:?}", field, value))
-                .delimited(", "))
-            .try_init();
+    let _ = tracing_subscriber::fmt()
+        .with_max_level(LevelFilter::TRACE)
+        .with_timer(XCellTimer {})
+        .event_format(XCellFields {})
+        .try_init();
+}
+
+struct XCellTimer {}
+
+struct XCellFields {}
+
+struct XCellFieldVisitor<'writer> {
+    writer: Writer<'writer>,
+}
+
+impl FormatTime for XCellTimer {
+    fn format_time(&self, w: &mut Writer<'_>) -> std::fmt::Result {
+        let now = chrono::Local::now();
+        write!(w, "{}", now.format("%m-%d %H:%M:%S"))
     }
 }
 
-// pub fn log_writer(w: &mut Formatter, record: &Record) -> std::io::Result<()> {
-//     let header = match record.level() {
-//         Level::Error => "Error".bright_red(),
-//         Level::Warn => "Warn ".bright_yellow(),
-//         Level::Info => "Info ".bright_green(),
-//         Level::Debug => "Debug".bright_purple(),
-//         Level::Trace => "Trace".bright_magenta(),
-//     };
-//     let logs = format!("[{header} {}] {}", Local::now().format("%Y-%d-%m %H:%M:%S"), record.args());
-//     for (i, line) in logs.lines().enumerate() {
-//         if i != 0 {
-//             w.write(b"\n")?;
-//             w.write(b"    ")?;
-//         }
-//         w.write(line.as_bytes())?;
-//     }
-//     w.write(b"\n")?;
-//     Ok(())
-// }
+impl<'writer> FormatFields<'writer> for XCellFields {
+    fn format_fields<R: RecordFields>(&self, writer: Writer<'writer>, fields: R) -> std::fmt::Result {
+        let mut v = XCellFieldVisitor { writer };
+        fields.record(&mut v);
+        Ok(())
+    }
+
+    fn add_fields(&self, current: &'writer mut FormattedFields<Self>, fields: &Record<'_>) -> std::fmt::Result {
+        let empty = current.is_empty();
+        let writer = current.as_writer();
+        let mut v = XCellFieldVisitor { writer };
+        fields.record(&mut v);
+        Ok(())
+    }
+}
+
+impl<'writer> Visit for XCellFieldVisitor<'writer> {
+
+    fn record_debug(&mut self, field: &Field, value: &dyn Debug) {
+        match field.name() {
+            "message" => {
+                let _ = write!(self.writer, "\n{:?}\n", value);
+            }
+            _ => {
+                // let _ = write!(self.writer, "{}={:?} ", field.name(), value);
+            }
+        }
+    }
+}

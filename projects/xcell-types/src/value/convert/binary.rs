@@ -36,11 +36,6 @@ impl StreamWriter for XCellValue {
                     item.write_to(buffer, order)?;
                 }
             }
-            XCellValue::Color4(v) => {
-                for item in v {
-                    item.write_to(buffer, order)?;
-                }
-            }
             XCellValue::Quaternion4(v) => {
                 for item in v {
                     item.write_to(buffer, order)?;
@@ -54,10 +49,10 @@ impl StreamWriter for XCellValue {
                 }
             }
             XCellValue::Color(v) => {
-                v.r.write_to(buffer, order)?;
-                v.g.write_to(buffer, order)?;
-                v.b.write_to(buffer, order)?;
-                v.a.write_to(buffer, order)?;
+                ((v.r * 255.0) as u8).write_to(buffer, order)?;
+                ((v.g * 255.0) as u8).write_to(buffer, order)?;
+                ((v.b * 255.0) as u8).write_to(buffer, order)?;
+                ((v.a * 255.0) as u8).write_to(buffer, order)?;
             }
             XCellValue::Vector(v) => {
                 (v.len() as u32).write_to(buffer, order)?;

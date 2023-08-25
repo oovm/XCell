@@ -21,7 +21,7 @@ impl XCellTyped {
             "decimal" | "d128" | "f128" => Self::Decimal(Default::default()),
             // other
             "color" | "colour" => Self::Color(Default::default()),
-            // "c4" | "color32" | "color4" => Self::Custom(ArrayDescription::new(s)),
+            "color32" => Self::Color(Default::default()),
             // "date" | "time" | "datetime" => Self::Time(Default::default()),
             // array
             "v2" | "vec2" => ArrayDescription::new(ArrayKind::Vector2).into(),

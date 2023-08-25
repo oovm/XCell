@@ -19,7 +19,6 @@ impl ArrayKind {
             ArrayKind::Vector2 => "Vector2",
             ArrayKind::Vector3 => "Vector3",
             ArrayKind::Vector4 => "Vector4",
-            ArrayKind::Color4 => "Color4",
             ArrayKind::Quaternion4 => "Quaternion4",
         }
     }

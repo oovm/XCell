@@ -13,7 +13,6 @@ pub enum ArrayKind {
     Vector2,
     Vector3,
     Vector4,
-    Color4,
     Quaternion4,
 }
 

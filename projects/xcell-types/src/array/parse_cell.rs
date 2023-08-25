@@ -12,7 +12,6 @@ impl ArrayDescription {
             ArrayKind::Vector2 => self.parse_vec2(cell),
             ArrayKind::Vector3 => self.parse_vec3(cell),
             ArrayKind::Vector4 => self.parse_vec4(cell),
-            ArrayKind::Color4 => self.parse_color4(cell),
             ArrayKind::Quaternion4 => self.parse_quaternion4(cell),
         }
     }
@@ -48,10 +47,6 @@ impl ArrayDescription {
     fn parse_vec4(&self, cell: &DataType) -> XResult<XCellValue> {
         let vec = self.parse_value(cell)?;
         Ok(XCellValue::Vector4(fill_array(&vec)))
-    }
-    fn parse_color4(&self, cell: &DataType) -> XResult<XCellValue> {
-        let vec = self.parse_value(cell)?;
-        Ok(XCellValue::Color4(fill_array(&vec)))
     }
     fn parse_quaternion4(&self, cell: &DataType) -> XResult<XCellValue> {
         let vec = self.parse_value(cell)?;

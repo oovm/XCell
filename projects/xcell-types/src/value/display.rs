@@ -51,9 +51,6 @@ impl Display for XCellValue {
             XCellValue::Vector4(_) => {
                 todo!()
             }
-            XCellValue::Color4(_) => {
-                todo!()
-            }
             XCellValue::Quaternion4(_) => {
                 todo!()
             }

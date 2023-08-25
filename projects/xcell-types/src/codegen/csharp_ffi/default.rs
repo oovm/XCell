@@ -44,9 +44,6 @@ impl XCellValue {
             XCellValue::Vector4(_) => {
                 todo!()
             }
-            XCellValue::Color4(_) => {
-                todo!()
-            }
             XCellValue::Quaternion4(_) => {
                 todo!()
             }
@@ -54,7 +51,13 @@ impl XCellValue {
                 format!("\"{}\"", s)
             }
             XCellValue::Color(c) => {
-                format!("new Color32({r}, {g}, {b}, {a})", r = (c.r * 255.0) as u8, g = (c.g * 255.0) as u8, b = (c.b * 255.0) as u8, a = (c.a * 255.0) as u8)
+                format!(
+                    "new Color32({r}, {g}, {b}, {a})",
+                    r = (c.r * 255.0) as u8,
+                    g = (c.g * 255.0) as u8,
+                    b = (c.b * 255.0) as u8,
+                    a = (c.a * 255.0) as u8
+                )
             }
             XCellValue::Enumerate(_) => {
                 todo!()
@@ -176,7 +179,6 @@ impl XCellTyped {
                 ArrayKind::Vector2 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
                 ArrayKind::Vector3 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
                 ArrayKind::Vector4 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
-                ArrayKind::Color4 => unreachable!(),
                 ArrayKind::Quaternion4 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
             },
             XCellTyped::Vector(_) => unreachable!(),

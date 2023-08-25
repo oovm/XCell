@@ -46,7 +46,6 @@ pub enum XCellValue {
     Vector2([f32; 2]),
     Vector3([f32; 3]),
     Vector4([f32; 4]),
-    Color4([f32; 4]),
     Quaternion4([f32; 4]),
     String(String),
     Color(Color),

@@ -7,6 +7,8 @@ pub struct XCellHeader {
     /// 位置信息
     pub column: usize,
     /// 字段名
+    pub access: XCellAccess,
+    /// 字段名
     pub field_name: String,
     /// 类型信息
     pub typing: XCellTyped,
@@ -14,6 +16,13 @@ pub struct XCellHeader {
     pub document: XDocument,
     /// 是否是完整定义
     pub complete: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum XCellAccess {
+    Default,
+    Public,
+    Private,
 }
 
 impl XCellHeader {

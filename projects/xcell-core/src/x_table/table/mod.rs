@@ -1,4 +1,4 @@
-use crate::utils::norm_string;
+use crate::{utils::norm_string, x_table::header::XCellAccess};
 use xcell_types::IntegerKind;
 
 use super::*;
@@ -112,7 +112,8 @@ impl CalamineTable {
                 Default::default()
             }
         };
-        XCellHeader { column: index, document: self.read_comment_details(index), typing, field_name, complete }
+        let access = if field_name.starts_with("_") { XCellAccess::Private } else { XCellAccess::Public };
+        XCellHeader { column: index, document: self.read_comment_details(index), typing, field_name, complete, access }
     }
     fn get_field_name(&self, index: usize) -> Option<String> {
         let line = self.config.line.field.saturating_sub(1) as u32;

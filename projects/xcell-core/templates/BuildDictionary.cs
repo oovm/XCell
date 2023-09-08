@@ -4,7 +4,9 @@
 // ReSharper disable EnumUnderlyingTypeIsInt
 // ReSharper disable CheckNamespace
 
+#nullable enable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
@@ -17,17 +19,35 @@ using UnityEngine.AddressableAssets;
 namespace {{ config.namespace }}
 {
     [DataContract, Serializable]
-    public partial class {{ table_name }}
+    public partial class {{ table_name }}: IReadOnlyDictionary<{{ id_type }}, {{ class_name }}Element>
     {
-		[NonSerialized]
-        public readonly Dictionary<{{ id_type }}, {{ class_name }}Element> dict = new();
-
+        [NonSerialized]
+        private readonly Dictionary<{{ id_type }}, {{ class_name }}Element> dict = new();
         [DataMember]
         public readonly List<{{ class_name }}Element> elements = new();
-
-        public {{ class_name }}Element GetElement({{ id_type }} {{ key_name }})
+        public int Count => dict.Count;
+        public IEnumerable<{{ id_type }}> Keys => dict.Keys;
+        public IEnumerable<{{ class_name }}Element> Values => dict.Values;
+        public {{ class_name }}Element this[{{ id_type }} key] => dict[key];
+        IEnumerator IEnumerable.GetEnumerator()
         {
-            return dict.TryGetValue({{ key_name }}, out var item) ? item : null;
+            return dict.GetEnumerator();
+        }
+        public IEnumerator<KeyValuePair<{{ id_type }}, {{ class_name }}Element>> GetEnumerator()
+        {
+            return dict.GetEnumerator();
+        }
+        public bool ContainsKey({{ id_type }} key)
+        {
+            return dict.ContainsKey(key);
+        }
+        public bool TryGetValue({{ id_type }} key, out {{ class_name }}Element value)
+        {
+            return dict.TryGetValue(key, out value);
+        }
+        public {{ class_name }}Element? GetValue(uint key)
+        {
+            return dict.TryGetValue(key, out var value) ? value : null;
         }
     }
 
@@ -40,9 +60,9 @@ namespace {{ config.namespace }}
     {%- endfor %}
         [DataMember]
     {%- if field.has_default %}
-        public {{field.typing}} {{field.name}} = {{field.default}};
+        {{field.access}}{{field.typing}} {{field.name}} = {{field.default}};
     {% else %}
-        public {{field.typing}} {{field.name}};
+        {{field.access}}{{field.typing}} {{field.name}};
     {%- endif %}
 {%- endfor %}
     }

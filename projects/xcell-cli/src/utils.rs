@@ -4,7 +4,7 @@ use std::{
 };
 use tracing::{field::Field, Event};
 use tracing_subscriber::{
-    field::{RecordFields, Visit},
+    field::Visit,
     fmt::{format::Writer, FmtContext, FormatEvent, FormatFields},
     Registry,
 };

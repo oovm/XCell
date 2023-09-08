@@ -1,4 +1,5 @@
 use super::*;
+use crate::x_table::header::XCellAccess;
 
 #[derive(Template)]
 #[template(path = "BuildDictionary.cs", ext = "txt", escape = "none")]
@@ -16,6 +17,7 @@ pub struct UnityDictionary {
 pub struct DictField {
     document: Vec<String>,
     name: String,
+    access: &'static str,
     typing: String,
     getter: String,
     has_default: bool,
@@ -98,9 +100,15 @@ impl UnityCodegen {
 impl XCellHeader {
     fn as_dict(&self) -> DictField {
         let default = self.typing.as_csharp_default();
+        let access = match self.access {
+            XCellAccess::Default => "",
+            XCellAccess::Public => "public ",
+            XCellAccess::Private => "private ",
+        };
         DictField {
             document: self.document.lines(),
             name: self.field_name.clone(),
+            access,
             typing: self.typing.as_csharp_type(),
             has_default: !default.is_empty(),
             default,

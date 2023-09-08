@@ -5,7 +5,6 @@
 
 pub use utils::comment::XDocument;
 pub use xcell_errors::{Failure, Success, Validation, XError, XErrorKind, XResult};
-pub use xcell_types::*;
 
 pub use self::{
     codegen::{xml::DataContractWriter, CsvCodegen},

@@ -2,6 +2,7 @@
 // ReSharper disable EnumUnderlyingTypeIsInt
 // ReSharper disable CheckNamespace
 
+#nullable enable
 using System;
 using System.Runtime.Serialization;
 using UnityEngine;

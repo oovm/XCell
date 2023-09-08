@@ -92,7 +92,7 @@ impl DecimalDescription {
 
 impl StringDescription {
     pub fn as_csharp_default(&self) -> String {
-        if self.default.is_empty() { "".to_string() } else { format!("{:?}", self.default) }
+        if self.default.is_empty() { "\"\"".to_string() } else { format!("{:?}", self.default) }
     }
 }
 

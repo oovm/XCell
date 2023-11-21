@@ -1,5 +1,4 @@
 use super::*;
-use crate::x_table::dictionary::data::XDataLine;
 
 #[derive(Serialize)]
 pub struct DataContractWriter {

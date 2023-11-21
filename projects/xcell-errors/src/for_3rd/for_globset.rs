@@ -1,8 +1,6 @@
-use diagnostic::{Failure, Success};
+use crate::{Failure, Success, Validation, XError, XErrorKind::SyntaxError};
 pub use globset::GlobSet;
 use globset::{Error, Glob, GlobSetBuilder};
-
-use crate::{Validation, XError, XErrorKind::SyntaxError};
 
 impl From<Error> for XError {
     fn from(e: Error) -> Self {

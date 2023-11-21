@@ -19,7 +19,7 @@ namespace DataTable.Generated
         [DataMember]
         public List<string> languageKeys
         {
-            get => _language_keys ??= ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes");
+            get => _language_keys ??= ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes").Result;
             set => _language_keys = value;
         }
 {%- for field in language_fields %}
@@ -27,7 +27,7 @@ namespace DataTable.Generated
         [DataMember]
         public Dictionary<string, string> {{ field.public_name }}
         {
-            get => {{ field.private_name }} ??= ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes");
+            get => {{ field.private_name }} ??= ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes").Result;
             set => {{ field.private_name }} = value;
         }
 {%- endfor %}
@@ -48,15 +48,15 @@ namespace DataTable.Generated
             return language switch
             {
 {%- for field in language_fields %}
-                LanguageID.{{ field.class_name }} => {{ field.public_name }}.TryGetValue(key, out var item) ? item : missing,
+                LanguageID.{{ field.class_name }} => {{ field.public_name }}.GetValueOrDefault(key, missing),
 {%- endfor %}
                 _ => throw new ArgumentOutOfRangeException(nameof(language), language, null)
             };
         }
 
-        private Dictionary<string, string> ReadMaps(string path)
+        private async Task<Dictionary<string, string>> ReadMaps(string path)
         {
-            var text = Addressables.LoadAssetAsync<TextAsset>(path).WaitForCompletion();
+            var text = await Addressables.LoadAssetAsync<TextAsset>(path).Task;
             using var stream = new MemoryStream(text.bytes);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
 
@@ -72,9 +72,9 @@ namespace DataTable.Generated
             return dict;
         }
 
-        private List<string> ReadKeys(string path)
+        private async Task<List<string>> ReadKeys(string path)
         {
-            var text = Addressables.LoadAssetAsync<TextAsset>(path).WaitForCompletion();
+            var text = await Addressables.LoadAssetAsync<TextAsset>(path).Task;
             using var stream = new MemoryStream(text.bytes);
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
 
@@ -88,11 +88,11 @@ namespace DataTable.Generated
             return list;
         }
 
-        public void LoadAll()
+        public async void LoadAll()
         {
-            _language_keys = ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes");
+            _language_keys = await ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes");
 {%- for field in language_fields %}
-            {{ field.private_name }} = ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes");
+            {{ field.private_name }} = await ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes");
 {%- endfor %}
         }
 

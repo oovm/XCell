@@ -53,6 +53,9 @@ impl StringDescription {
             DataType::DateTime(v) => Ok(v.to_string()),
             DataType::Empty => Ok(self.default.clone()),
             DataType::Error(e) => syntax_error(format!("未知错误 {e}")),
+            DataType::Duration(v) => Ok(v.to_string()),
+            DataType::DateTimeIso(v) => Ok(v.to_string()),
+            DataType::DurationIso(v) => Ok(v.to_string()),
         }
     }
 }

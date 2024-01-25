@@ -50,20 +50,23 @@ namespace {{ config.namespace }}
 {% endfor %}
 #if UNITY_EDITOR
         [MenuItem("Tools/XCell/LoadAll")]
+#endif
         public static void Reload()
         {
 {%- for table in tables %}
             {{ config.instance_name }}.{{ table.private_name }} = new {{ table.typing }}();
 {%- endfor %}
         }
+#if UNITY_EDITOR
         [MenuItem("Tools/XCell/ClearAll")]
+#endif
         public static void Clear()
         {
 {%- for table in tables %}
             {{ config.instance_name }}.{{ table.private_name }} = null;
 {%- endfor %}
         }
-
+#if UNITY_EDITOR
         [MenuItem("Tools/XCell/ExportXML")]
         public static void ExportXML()
         {
@@ -71,7 +74,8 @@ namespace {{ config.namespace }}
             SerializerXML("Assets/Data/Table/Binary/{{ table.typing }}.xml", {{ config.instance_name }}.{{ table.private_name }});
 {%- endfor %}
         }
-
+#endif
+#if UNITY_EDITOR
         [MenuItem("Tools/XCell/ExportJSON")]
         public static void ExportJSON()
         {

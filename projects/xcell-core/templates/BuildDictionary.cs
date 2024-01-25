@@ -34,26 +34,21 @@ namespace {{ config.namespace }}
         {
             return _dict.GetEnumerator();
         }
-
         public IEnumerator<KeyValuePair<{{ id_type }}, {{ class_name }}Element>> GetEnumerator()
         {
             return _dict.GetEnumerator();
         }
-
         public bool ContainsKey({{ id_type }} key)
         {
             return _dict.ContainsKey(key);
         }
-
         public bool TryGetValue({{ id_type }} key, out {{ class_name }}Element value)
         {
             return _dict.TryGetValue(key, out value);
         }
-
         public {{ class_name }}Element? GetValue({{ id_type }}? key)
         {
-            if (key == null) return null;
-            return _dict.TryGetValue(key.Value, out var value) ? value : null;
+            return key != null ? _dict.GetValueOrDefault(key.Value) : null;
         }
     }
 

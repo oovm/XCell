@@ -15,7 +15,7 @@ use xcell_errors::{
 
 pub use crate::{
     array::{ArrayDescription, ArrayKind},
-    decimal::{DecimalDescription, DecimalKind},
+    decimal::DecimalDescription,
     enumerate::EnumerateDescription,
     integer::{IntegerDescription, IntegerKind},
     string::StringDescription,

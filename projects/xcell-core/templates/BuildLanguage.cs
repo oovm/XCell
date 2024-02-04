@@ -15,7 +15,7 @@ namespace DataTable.Generated
     [DataContract, Serializable]
     public partial class Language{{ config.suffix_table }}
     {
-        private List<string> _language_keys;
+        private List<string>? _language_keys;
         [DataMember]
         public List<string> languageKeys
         {
@@ -23,7 +23,7 @@ namespace DataTable.Generated
             set => _language_keys = value;
         }
 {%- for field in language_fields %}
-        private Dictionary<string, string> {{ field.private_name }};
+        private Dictionary<string, string>? {{ field.private_name }};
         [DataMember]
         public Dictionary<string, string> {{ field.public_name }}
         {

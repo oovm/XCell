@@ -1,4 +1,5 @@
 // 代码生成, 修改无效! (XCell {{ compiler_version }})
+// ReSharper disable RedundantNullableDirective, RedundantUsingDirective
 // ReSharper disable EnumUnderlyingTypeIsInt
 // ReSharper disable CheckNamespace
 

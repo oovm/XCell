@@ -12,7 +12,7 @@ edition = "2021"
 
 [dependencies]
 tracing = "0.1.40"
-calamine = "0.22.1"
+calamine = "0.23.1"
 convert_case = "0.6.0"
 toml = "0.8.8"
 serde_json = "1.0.108"

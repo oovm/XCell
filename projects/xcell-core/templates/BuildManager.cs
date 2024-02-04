@@ -10,7 +10,6 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml;
-using UnityEditor;
 
 namespace {{ config.namespace }}
 {
@@ -36,7 +35,7 @@ namespace {{ config.namespace }}
         private static readonly Lazy<{{ config.manager_name }}> singleton = new(() => new {{ config.manager_name }}());
         public static {{ config.manager_name }} {{ config.instance_name }} => singleton.Value;
 {% for table in tables %}
-        private {{ table.typing }} {{ table.private_name }};
+        private {{ table.typing }}? {{ table.private_name }};
         /// <inheritdoc cref="{{config.namespace}}.{{ table.typing }}"/>
         public {{ table.typing }} {{ table.public_name }}
         {
@@ -49,7 +48,7 @@ namespace {{ config.namespace }}
         }
 {% endfor %}
 #if UNITY_EDITOR
-        [MenuItem("Tools/XCell/LoadAll")]
+        [UnityEditor.MenuItem("Tools/XCell/LoadAll")]
 #endif
         public static void Reload()
         {
@@ -58,7 +57,7 @@ namespace {{ config.namespace }}
 {%- endfor %}
         }
 #if UNITY_EDITOR
-        [MenuItem("Tools/XCell/ClearAll")]
+        [UnityEditor.MenuItem("Tools/XCell/ClearAll")]
 #endif
         public static void Clear()
         {
@@ -67,23 +66,21 @@ namespace {{ config.namespace }}
 {%- endfor %}
         }
 #if UNITY_EDITOR
-        [MenuItem("Tools/XCell/ExportXML")]
+        [UnityEditor.MenuItem("Tools/XCell/ExportXML")]
         public static void ExportXML()
         {
 {%- for table in tables %}
             SerializerXML("Assets/Data/Table/Binary/{{ table.typing }}.xml", {{ config.instance_name }}.{{ table.private_name }});
 {%- endfor %}
         }
-#endif
-#if UNITY_EDITOR
-        [MenuItem("Tools/XCell/ExportJSON")]
+        [UnityEditor.MenuItem("Tools/XCell/ExportJSON")]
         public static void ExportJSON()
         {
 {%- for table in tables %}
             SerializerJSON("Assets/Data/Table/Readable/{{ table.typing }}.json", {{ config.instance_name }}.{{ table.private_name }});
 {%- endfor %}
         }
-#endif
+
         private static void SerializerXML<T>(string path, T table)
         {
             var serializer = new DataContractSerializer(typeof(T));
@@ -95,7 +92,7 @@ namespace {{ config.namespace }}
                 NewLineChars = "\n",
                 Encoding = new UTF8Encoding(false),
             });
-            serializer.WriteObject(writer, table);
+            serializer.WriteObject(writer, table!);
         }
 
         private static void SerializerJSON<T>(string path, T table)
@@ -103,8 +100,9 @@ namespace {{ config.namespace }}
             var serializer = new DataContractJsonSerializer(typeof(T));
             using var fs = File.Create(path);
             using var writer = JsonReaderWriterFactory.CreateJsonWriter(fs, Encoding.UTF8, true, true, "\t");
-            serializer.WriteObject(writer, table);
+            serializer.WriteObject(writer, table!);
         }
+#endif
     }
 
     public interface IBinarySupport

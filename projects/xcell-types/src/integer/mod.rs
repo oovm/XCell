@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 use xcell_errors::{
-    for_3rd::{BigInt, DataType, FromPrimitive, ToPrimitive},
+    for_3rd::{BigInt, Data, FromPrimitive, ToPrimitive},
     XResult,
 };
 

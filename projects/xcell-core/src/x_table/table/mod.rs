@@ -1,4 +1,5 @@
 use crate::{utils::norm_string, x_table::header::XCellAccess};
+use calamine::DataType;
 use xcell_types::IntegerKind;
 
 use super::*;
@@ -12,7 +13,7 @@ pub struct CalamineTable {
     /// 表格的绝对路径
     path: PathBuf,
     /// 原始表单
-    table: calamine::Range<DataType>,
+    table: calamine::Range<Data>,
     /// 表单的配置
     config: TableConfig,
 }

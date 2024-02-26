@@ -1,4 +1,4 @@
-use calamine::{open_workbook_auto, DataType, Reader};
+use calamine::{open_workbook_auto, Data, Reader};
 use pathdiff::diff_paths;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -24,14 +24,14 @@ mod workspace;
 ///
 /// * `path`:
 ///
-/// returns: Result<Range<DataType>, XError>
+/// returns: Result<Range<Data>, XError>
 ///
 /// # Examples
 ///
 /// ```
 /// use xcell_core;
 /// ```
-pub fn find_first_table(path: &Path) -> XResult<calamine::Range<DataType>> {
+pub fn find_first_table(path: &Path) -> XResult<calamine::Range<Data>> {
     let mut workbook = open_workbook_auto(path)?;
     let ranges = match workbook.worksheet_range_at(0) {
         None => return Err(XError::table_error("找不到配置表, 文件是空的, 或者表格式非法")),
@@ -43,19 +43,18 @@ pub fn find_first_table(path: &Path) -> XResult<calamine::Range<DataType>> {
 /// 确保第一行的 id 不是空的
 ///
 /// 如果是空的, 那么就认为数据非法
-pub fn first_not_nil(row: &[DataType]) -> bool {
+pub fn first_not_nil(row: &[Data]) -> bool {
     match row.first() {
         Some(s) => match s {
-            DataType::Int(_) => true,
-            DataType::Float(_) => true,
-            DataType::String(s) => !s.is_empty(),
-            DataType::Bool(_) => true,
-            DataType::DateTime(_) => true,
-            DataType::Duration(_) => true,
-            DataType::DateTimeIso(_) => true,
-            DataType::DurationIso(_) => true,
-            DataType::Error(_) => false,
-            DataType::Empty => false,
+            Data::Int(_) => true,
+            Data::Float(_) => true,
+            Data::String(s) => !s.is_empty(),
+            Data::Bool(_) => true,
+            Data::DateTime(_) => true,
+            Data::DateTimeIso(_) => true,
+            Data::DurationIso(_) => true,
+            Data::Error(_) => false,
+            Data::Empty => false,
         },
         None => false,
     }

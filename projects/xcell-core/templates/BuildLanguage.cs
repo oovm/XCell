@@ -15,21 +15,13 @@ namespace DataTable.Generated
     [DataContract, Serializable]
     public partial class Language{{ config.suffix_table }}
     {
-        private List<string>? _language_keys;
         [DataMember]
-        public List<string> languageKeys
-        {
-            get => _language_keys ??= ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes").Result;
-            set => _language_keys = value;
-        }
+        public List<string>? language_keys = new();
+
+
 {%- for field in language_fields %}
-        private Dictionary<string, string>? {{ field.private_name }};
         [DataMember]
-        public Dictionary<string, string> {{ field.public_name }}
-        {
-            get => {{ field.private_name }} ??= ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes").Result;
-            set => {{ field.private_name }} = value;
-        }
+        private Dictionary<string, string>? {{ field.private_name }} = new();
 {%- endfor %}
         public Language{{ config.suffix_table }}()
         {
@@ -48,7 +40,7 @@ namespace DataTable.Generated
             return language switch
             {
 {%- for field in language_fields %}
-                LanguageID.{{ field.class_name }} => {{ field.public_name }}.GetValueOrDefault(key, missing),
+                LanguageID.{{ field.class_name }} => {{ field.private_name }}.GetValueOrDefault(key, missing),
 {%- endfor %}
                 _ => throw new ArgumentOutOfRangeException(nameof(language), language, null)
             };
@@ -90,7 +82,7 @@ namespace DataTable.Generated
 
         public async void LoadAll()
         {
-            _language_keys = await ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes");
+            language_keys = await ReadKeys("{{ config.binary.addressable }}/LanguageKeys.bytes");
 {%- for field in language_fields %}
             {{ field.private_name }} = await ReadMaps("{{ config.binary.addressable }}/Language{{ field.class_name }}.bytes");
 {%- endfor %}
@@ -98,7 +90,7 @@ namespace DataTable.Generated
 
         public void DropAll()
         {
-            _language_keys = null;
+            language_keys = null;
 {%- for field in language_fields %}
             {{ field.private_name }} = null;
 {%- endfor %}

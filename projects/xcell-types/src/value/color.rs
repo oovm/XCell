@@ -21,16 +21,16 @@ impl ColorDescription {
         Ok(Color::from_str(input.as_ref())?)
     }
 
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+    pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
         self.parse_value(cell).map(XCellValue::Color)
     }
-    fn parse_value(&self, cell: &DataType) -> XResult<Color> {
+    fn parse_value(&self, cell: &Data) -> XResult<Color> {
         match cell {
-            DataType::Int(i) => Ok(Self::gray(*i as f64)),
-            DataType::Float(f) => Ok(Self::gray(*f)),
-            DataType::String(s) => self.parse(s),
-            DataType::Empty => Ok(self.default.clone()),
-            DataType::Error(e) => syntax_error(format!("未知错误 {e}")),
+            Data::Int(i) => Ok(Self::gray(*i as f64)),
+            Data::Float(f) => Ok(Self::gray(*f)),
+            Data::String(s) => self.parse(s),
+            Data::Empty => Ok(self.default.clone()),
+            Data::Error(e) => syntax_error(format!("未知错误 {e}")),
             _ => type_mismatch("Color", cell),
         }
     }

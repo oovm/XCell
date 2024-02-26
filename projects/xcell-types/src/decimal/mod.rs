@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use xcell_errors::{
-    for_3rd::{BigDecimal, DataType, FromPrimitive, ToPrimitive},
+    for_3rd::{BigDecimal, Data, FromPrimitive, ToPrimitive},
     XResult,
 };
 

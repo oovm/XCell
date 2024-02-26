@@ -1,4 +1,5 @@
 use super::*;
+use calamine::DataType;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct XDocument {
@@ -11,8 +12,8 @@ pub struct CsComment {
     pub detail: String,
 }
 
-impl From<&DataType> for XDocument {
-    fn from(value: &DataType) -> Self {
+impl From<&Data> for XDocument {
+    fn from(value: &Data) -> Self {
         let mut out = XDocument::default();
         if let Some(s) = value.get_string() {
             out.summary = s.to_string()
@@ -22,10 +23,10 @@ impl From<&DataType> for XDocument {
 }
 
 impl XDocument {
-    pub fn read_document(row: &[DataType], id: usize) -> Self {
+    pub fn read_document(row: &[Data], id: usize) -> Self {
         row.get(id).map(XDocument::from).unwrap_or_default()
     }
-    pub fn read_non_zero(row: &[DataType], id: usize) -> Self {
+    pub fn read_non_zero(row: &[Data], id: usize) -> Self {
         if id == 0 {
             return XDocument::default();
         }

@@ -12,12 +12,12 @@ edition = "2021"
 
 [dependencies]
 #colored = "2.0.0"
-time = "0.3.30"
+time = "0.3.34"
 tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.17", features = ["local-time"] }
-chrono = "0.4.31"
-clap = { version = "4.4.7", features = ["derive"] }
-tokio = { version = "1.33.0", features = ["full"] }
+tracing-subscriber = { version = "0.3.18", features = ["local-time"] }
+chrono = "0.4.34"
+clap = { version = "4.5.1", features = ["derive"] }
+tokio = { version = "1.36.0", features = ["full"] }
 
 [dependencies.xcell-core]
 version = "0.2.0"

@@ -9,7 +9,7 @@ use serde::{
 };
 
 use xcell_errors::{
-    for_3rd::{read_map_next_extra, read_map_next_key_lowercase, read_map_next_value, DataType},
+    for_3rd::{read_map_next_extra, read_map_next_key_lowercase, read_map_next_value, Data},
     XResult,
 };
 
@@ -58,7 +58,7 @@ impl Default for XCellTyped {
 }
 
 impl XCellTyped {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+    pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
         match self {
             XCellTyped::Boolean(typing) => typing.parse_cell(cell),
             XCellTyped::Integer(typing) => typing.parse_cell(cell),

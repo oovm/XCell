@@ -1,3 +1,4 @@
+use calamine::DataType;
 use std::str::FromStr;
 
 use xcell_errors::for_3rd::FromPrimitive;
@@ -34,30 +35,30 @@ pub struct XDataLine {
 }
 
 impl XDataLine {
-    pub fn parse_key_cell(data: &[DataType], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
+    pub fn parse_key_cell(data: &[Data], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.key = out.check_parse_key(data)?;
         out.try_parse_data(data, row, headers, errors);
         Ok(out)
     }
-    pub fn parse_id_cell(data: &[DataType], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
+    pub fn parse_id_cell(data: &[Data], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
         out.id = out.check_parse_id(data)?;
         out.try_parse_data(data, row, headers, errors);
         Ok(out)
     }
-    fn check_parse_key(&self, data: &[DataType]) -> XResult<String> {
+    fn check_parse_key(&self, data: &[Data]) -> XResult<String> {
         match data.get(0).and_then(|s| s.get_string()) {
             Some(s) => Ok(s.to_string()),
             None => Err(XError::runtime_error("key 不能为空").with_x(0))?,
         }
     }
-    fn check_parse_id(&self, data: &[DataType]) -> XResult<BigInt> {
+    fn check_parse_id(&self, data: &[Data]) -> XResult<BigInt> {
         match data.get(0) {
             Some(cell) => match cell {
-                DataType::String(str) => Ok(BigInt::from_str(str)?),
-                DataType::Int(int) => Ok(BigInt::from(*int)),
-                DataType::Float(float) => match (float.round() - float) < 0.01f64 {
+                Data::String(str) => Ok(BigInt::from_str(str)?),
+                Data::Int(int) => Ok(BigInt::from(*int)),
+                Data::Float(float) => match (float.round() - float) < 0.01f64 {
                     true => Ok(BigInt::from_f64(*float).unwrap_or_default()),
                     false => Err(XError::runtime_error(format!("id 必须是整数, 实际为 {float}")))?,
                 },
@@ -69,9 +70,9 @@ impl XDataLine {
 }
 
 impl XDataLine {
-    fn try_parse_data(&mut self, data: &[DataType], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) {
+    fn try_parse_data(&mut self, data: &[Data], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) {
         for header in headers {
-            let data = data.get(header.column).unwrap_or(&DataType::Empty);
+            let data = data.get(header.column).unwrap_or(&Data::Empty);
             match header.typing.parse_cell(data) {
                 Ok(o) => self.data.push(o),
                 Err(e) => errors.push(e.with_xy(header.column, row)),

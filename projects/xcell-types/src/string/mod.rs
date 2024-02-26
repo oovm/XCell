@@ -6,7 +6,7 @@ use serde::{
 };
 
 use xcell_errors::{
-    for_3rd::{read_map_next_extra, read_map_next_value, DataType},
+    for_3rd::{read_map_next_extra, read_map_next_value, Data},
     XResult,
 };
 
@@ -41,21 +41,20 @@ impl StringDescription {
     pub fn mut_pattern(&mut self) -> &mut BTreeSet<String> {
         &mut self.patterns
     }
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+    pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
         self.parse_value(cell).map(XCellValue::String)
     }
-    pub fn parse_value(&self, cell: &DataType) -> XResult<String> {
+    pub fn parse_value(&self, cell: &Data) -> XResult<String> {
         match cell {
-            DataType::Int(v) => Ok(v.to_string()),
-            DataType::Float(v) => Ok(v.to_string()),
-            DataType::String(v) => Ok(v.to_string()),
-            DataType::Bool(v) => Ok(v.to_string()),
-            DataType::DateTime(v) => Ok(v.to_string()),
-            DataType::Empty => Ok(self.default.clone()),
-            DataType::Error(e) => syntax_error(format!("未知错误 {e}")),
-            DataType::Duration(v) => Ok(v.to_string()),
-            DataType::DateTimeIso(v) => Ok(v.to_string()),
-            DataType::DurationIso(v) => Ok(v.to_string()),
+            Data::Int(v) => Ok(v.to_string()),
+            Data::Float(v) => Ok(v.to_string()),
+            Data::String(v) => Ok(v.to_string()),
+            Data::Bool(v) => Ok(v.to_string()),
+            Data::DateTime(v) => Ok(v.to_string()),
+            Data::Empty => Ok(self.default.clone()),
+            Data::Error(e) => syntax_error(format!("未知错误 {e}")),
+            Data::DateTimeIso(v) => Ok(v.to_string()),
+            Data::DurationIso(v) => Ok(v.to_string()),
         }
     }
 }

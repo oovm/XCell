@@ -75,7 +75,7 @@ impl XEnumerateTable {
                 continue;
             }
             let key = match data.get(0) {
-                Some(DataType::String(s)) => s.to_string(),
+                Some(Data::String(s)) => s.to_string(),
                 Some(s) => {
                     errors.push(XError::runtime_error(format!("枚举首格字段不是字符串, 实际 {}", s)).with_y(row));
                     continue;
@@ -121,7 +121,7 @@ impl XEnumerateTable {
     pub fn enumerate_document(&self) -> XDocument {
         self.table.get_header(0).document
     }
-    fn read_id(&self, row: &[DataType], default_id: &mut BigInt) -> BigInt {
+    fn read_id(&self, row: &[Data], default_id: &mut BigInt) -> BigInt {
         match self.try_read_id(row) {
             Some(s) => s,
             None => {
@@ -130,19 +130,18 @@ impl XEnumerateTable {
             }
         }
     }
-    fn try_read_id(&self, row: &[DataType]) -> Option<BigInt> {
+    fn try_read_id(&self, row: &[Data]) -> Option<BigInt> {
         if self.id_column == 0 {
             return None;
         }
         let id = row.get(self.id_column)?;
 
         match self.id_type.parse_value(id) {
-            Ok(o) => {Some(o)}
+            Ok(o) => Some(o),
             Err(e) => {
                 tracing::error!("枚举表 {} 的 id 列 {} 无法解析为整数, 错误: {}", self.enumerate_name(), self.id_column, e);
                 None
             }
         }
-
     }
 }

@@ -1,4 +1,3 @@
-
 use super::*;
 
 impl CalamineTable {
@@ -12,12 +11,12 @@ impl CalamineTable {
 }
 
 pub struct CalamineTableRows<'i> {
-    rows: Rows<'i, DataType>,
+    rows: Rows<'i, Data>,
     this: usize,
 }
 
 impl<'i> Iterator for CalamineTableRows<'i> {
-    type Item = (usize, &'i [DataType]);
+    type Item = (usize, &'i [Data]);
 
     fn next(&mut self) -> Option<Self::Item> {
         let item = self.rows.next()?;

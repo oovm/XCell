@@ -9,17 +9,17 @@ impl From<VectorDescription> for XCellTyped {
 }
 
 impl VectorDescription {
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+    pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
         let mut out = vec![];
         let s = match cell {
-            DataType::Error(e) => return syntax_error(format!("未知错误 {e}")),
+            Data::Error(e) => return syntax_error(format!("未知错误 {e}")),
             _ => cell.to_string(),
         };
         if s.trim().is_empty() {
             return Ok(XCellValue::Vector(out));
         }
         for item in self.split(&s) {
-            let cell = DataType::String(item.to_string());
+            let cell = Data::String(item.to_string());
             let s = self.typing.parse_cell(&cell)?;
             out.push(s)
         }

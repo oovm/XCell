@@ -1,6 +1,6 @@
 [package]
 name = "xcell-core"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Aster <192607617@qq.com>"]
 description = "XCell core library"
 repository = "https://github.com/oovm/XCell"
@@ -12,17 +12,17 @@ edition = "2021"
 
 [dependencies]
 tracing = "0.1.40"
-calamine = "0.23.1"
+calamine = "0.24.0"
 convert_case = "0.6.0"
-toml = "0.8.8"
-serde_json = "1.0.108"
+toml = "0.8.10"
+serde_json = "1.0.114"
 pathdiff = "0.2.1"
 askama = "0.12.1"
-regex = "1.10.2"
+regex = "1.10.3"
 twox-hash = "1.6.3"
-serde = { version = "1.0.192", features = ["derive"] }
+serde = { version = "1.0.197", features = ["derive"] }
 #futures = "0.3.17"
-tokio = { version = "1.33.0", features = ["full"] }
+tokio = { version = "1.36.0", features = ["full"] }
 integer-encoding = "4.0.0"
 
 [dependencies.xcell-errors]
@@ -36,10 +36,10 @@ path = "../xcell-types"
 features = ["csharp"]
 
 [dev-dependencies]
-tracing-subscriber = "0.3.17"
+tracing-subscriber = "0.3.18"
 
 [build-dependencies]
-peginator = "0.6.0"
+peginator = "0.7.0"
 
 [features]
 default = []

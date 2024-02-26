@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 use xcell_errors::{
-    for_3rd::{BigInt, DataType},
+    for_3rd::{BigInt, Data},
     XError, XResult,
 };
 
@@ -41,21 +41,20 @@ impl EnumerateDescription {
         self.mapping.insert(name.to_string(), value);
         Ok(())
     }
-    pub fn parse_cell(&self, cell: &DataType) -> XResult<XCellValue> {
+    pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
         self.parse_value(cell).map(XCellValue::Enumerate)
     }
-    fn parse_value(&self, cell: &DataType) -> XResult<String> {
+    fn parse_value(&self, cell: &Data) -> XResult<String> {
         match cell {
-            DataType::Int(v) => Ok(v.to_string()),
-            DataType::Float(v) => Ok(v.to_string()),
-            DataType::String(v) => Ok(v.to_string()),
-            DataType::Bool(v) => Ok(v.to_string()),
-            DataType::DateTime(v) => Ok(v.to_string()),
-            DataType::Empty => Ok(self.default.clone()),
-            DataType::Error(e) => syntax_error(format!("未知错误 {e}")),
-            DataType::Duration(v) => Ok(v.to_string()),
-            DataType::DateTimeIso(v) => Ok(v.to_string()),
-            DataType::DurationIso(v) => Ok(v.to_string()),
+            Data::Int(v) => Ok(v.to_string()),
+            Data::Float(v) => Ok(v.to_string()),
+            Data::String(v) => Ok(v.to_string()),
+            Data::Bool(v) => Ok(v.to_string()),
+            Data::DateTime(v) => Ok(v.to_string()),
+            Data::Empty => Ok(self.default.clone()),
+            Data::Error(e) => syntax_error(format!("未知错误 {e}")),
+            Data::DateTimeIso(v) => Ok(v.to_string()),
+            Data::DurationIso(v) => Ok(v.to_string()),
         }
     }
 }

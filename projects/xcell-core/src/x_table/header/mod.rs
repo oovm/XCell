@@ -26,7 +26,7 @@ pub enum XCellAccess {
 }
 
 impl XCellHeader {
-    pub fn parse_cell(&self, row: &[DataType]) -> XResult<XCellValue> {
+    pub fn parse_cell(&self, row: &[Data]) -> XResult<XCellValue> {
         match row.get(self.column) {
             Some(cell) => self.typing.parse_cell(cell),
             None => Err(XError::table_error("无法读取数据")),

@@ -7,7 +7,7 @@ use serde::{
 
 use serde_types::OneOrMany;
 use xcell_errors::{
-    for_3rd::{read_map_next_extra, read_map_next_value, DataType},
+    for_3rd::{read_map_next_extra, read_map_next_value, Data},
     XResult,
 };
 

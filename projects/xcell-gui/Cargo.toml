@@ -10,9 +10,9 @@ license = "MPL-2.0"
 edition = "2021"
 
 [dependencies]
-iced = "0.10.0"
+iced = "0.12.1"
 log = { version = "0.4.20", features = ["std"] }
-regex = "1.10.2"
+regex = "1.10.3"
 
 [dev-dependencies]
 

@@ -1,4 +1,5 @@
 use super::*;
+use calamine::DataType;
 
 impl XLanguageTable {
     fn new(table: CalamineTable) -> Self {
@@ -32,7 +33,7 @@ impl XLanguageTable {
         out
     }
 
-    fn get_value<'a>(&self, row: &'a [DataType]) -> (&'a str, &'a str, String) {
+    fn get_value<'a>(&self, row: &'a [Data]) -> (&'a str, &'a str, String) {
         let key = row.get(0).and_then(|v| v.get_string()).unwrap_or_default();
         let group = match self.group_column {
             0 => "",

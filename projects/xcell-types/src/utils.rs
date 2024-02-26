@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use xcell_errors::{for_3rd::DataType, XError, XErrorKind, XResult};
+use xcell_errors::{for_3rd::Data, XError, XErrorKind, XResult};
 
 #[macro_export]
 macro_rules! default_deserialize {
@@ -18,7 +18,7 @@ macro_rules! default_deserialize {
     };
 }
 
-pub fn type_mismatch<T, S>(except: S, cell: &DataType) -> XResult<T>
+pub fn type_mismatch<T, S>(except: S, cell: &Data) -> XResult<T>
 where
     S: Into<String>,
 {

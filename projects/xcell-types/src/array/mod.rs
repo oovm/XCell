@@ -1,7 +1,7 @@
 use std::{ops::Deref, str::FromStr};
 
 use serde::{Deserialize, Serialize};
-use xcell_errors::{for_3rd::DataType, XResult};
+use xcell_errors::{for_3rd::Data, XResult};
 
 use crate::{utils::syntax_error, XCellTyped, XCellValue};
 

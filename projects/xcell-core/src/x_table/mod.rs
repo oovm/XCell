@@ -1,6 +1,5 @@
-use crate::{XClassData, XDictData, XListData};
-use calamine::{DataType, Rows};
-use crate::XEnumerateTable;
+use crate::{XClassData, XDictData, XEnumerateTable, XListData};
+use calamine::{Data, Rows};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,

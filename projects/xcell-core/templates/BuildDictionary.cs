@@ -59,7 +59,7 @@ namespace {{ config.namespace }}
     {%- for line in field.document %}
         /// {{line}}
     {%- endfor %}
-        [DataMember]
+        [DataMember, SerializeField]
     {%- if field.has_default %}
         {{field.access}}{{field.typing}} {{field.name}} = {{field.default}};
     {% else %}

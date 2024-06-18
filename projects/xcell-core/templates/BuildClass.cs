@@ -52,7 +52,7 @@ namespace {{ config.namespace }}
             using var reader = new BinaryReader(stream, Encoding.UTF8, false);
             BinaryRead(reader);
         }
-		/// <inheritdoc cref="IBinarySupport.BinaryRead"/>
+        /// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
 {%- for field in class_fields %}
@@ -69,23 +69,23 @@ namespace {{ config.namespace }}
 {%- endfor %}
         }
 
-		/// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
+        /// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
 {%- for field in class_fields %}
-	{%- if field.writer.is_vector %}
+    {%- if field.writer.is_vector %}
             w.Write((uint) {{ field.writer.field }}.Count);
             foreach (var {{ field.writer.field }}Item in {{ field.writer.field }})
             {
-		{%- for property in field.writer.properties %}
+        {%- for property in field.writer.properties %}
                 w.Write({{ field.writer.field }}Item{{ property }});
-		{%- endfor %}
+        {%- endfor %}
             }
-	{%- else %}
-		{%- for property in field.writer.properties %}
+    {%- else %}
+        {%- for property in field.writer.properties %}
             w.Write({{ field.writer.cast }}{{ field.writer.field }}{{ property }});
-		{%- endfor %}
-	{%- endif %}
+        {%- endfor %}
+    {%- endif %}
 {%- endfor %}
         }
 {% if config.support_clone %}

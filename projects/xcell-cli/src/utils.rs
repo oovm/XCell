@@ -6,7 +6,7 @@ use tracing::{field::Field, Event};
 use tracing_subscriber::{
     field::Visit,
     fmt::{format::Writer, FmtContext, FormatEvent, FormatFields},
-    Registry,
+    EnvFilter, Registry,
 };
 
 pub fn pause() {
@@ -22,7 +22,7 @@ pub fn pause() {
 }
 
 pub fn logger() {
-    let _ = tracing_subscriber::fmt().event_format(XCellFormat {}).try_init();
+    let _ = tracing_subscriber::fmt().event_format(XCellFormat {}).with_env_filter(EnvFilter::from_default_env()).try_init();
 }
 
 struct XCellFormat {}

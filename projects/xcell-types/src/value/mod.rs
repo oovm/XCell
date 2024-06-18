@@ -6,7 +6,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use xcell_errors::{
-    for_3rd::{Color, Data, DateTime, NaiveDateTime, TimeZone, Utc},
+    for_3rd::{Color, Data, DateTime, TimeZone, Utc},
     XResult,
 };
 

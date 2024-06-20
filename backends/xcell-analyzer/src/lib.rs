@@ -1,0 +1,32 @@
+#![warn(missing_docs)]
+#![feature(try_blocks)]
+#![feature(type_alias_impl_trait)]
+#![feature(path_file_prefix)]
+
+pub use utils::comment::XDocument;
+pub use xcell_types::{XError, XErrorKind};
+pub type XResult<T> = Result<T, XError>;
+
+pub use xcell_config::{
+    CocosCodegen, MergeRules, MergeStep, PROJECT_CONFIG, ProjectConfig, TableConfig, TableLineMode, UnityBinaryConfig,
+    UnityCodegen,
+};
+
+pub use self::{
+    config::WorkspaceManager,
+    x_table::{
+        class::{XClassData, XClassItem, XClassTable},
+        dictionary::{
+            XDictTable, XListTable,
+            data::{XDictData, XListData},
+        },
+        enumerate::{DefineManager, XEnumerateTable, data::XEnumerateData},
+        language::{LanguageManager, XLanguageData, XLanguageID, XLanguageTable},
+        table::CalamineTable,
+    },
+};
+pub use xcell_provider::XCellHeader;
+mod config;
+pub mod utils;
+mod validation;
+mod x_table;

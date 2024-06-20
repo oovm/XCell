@@ -1,0 +1,53 @@
+[package]
+name = "xcell-analyzer"
+version = { workspace = true }
+authors = { workspace = true }
+description = "XCell analyzer library"
+repository = "https://github.com/oovm/XCell"
+documentation = "https://docs.rs/xcell-analyzer"
+readme = "Readme.md"
+license = { workspace = true }
+edition = { workspace = true }
+
+
+[dependencies]
+tracing = { workspace = true }
+calamine = { workspace = true }
+convert_case = { workspace = true }
+toml = { workspace = true }
+serde_json = { workspace = true }
+pathdiff = { workspace = true }
+dejavu-types = { workspace = true }
+dejavu-macros = { workspace = true }
+regex = { workspace = true }
+twox-hash = { workspace = true }
+serde = { workspace = true }
+csv = { workspace = true }
+#futures = "0.3.17"
+tokio = { workspace = true }
+integer-encoding = { workspace = true }
+# dejavu-core = { path = "../../../dejavu-engine/projects/dejavu-core" }
+
+
+
+[dependencies.xcell-types]
+workspace = true
+features = ["csharp", "typescript", "globset", "notify", "walkdir", "async-walkdir"]
+
+[dependencies.xcell-provider]
+workspace = true
+
+[dependencies.xcell-plugin]
+workspace = true
+
+[dependencies.xcell-config]
+workspace = true
+
+[dev-dependencies]
+tracing-subscriber = { workspace = true }
+
+[build-dependencies]
+peginator = { workspace = true }
+
+[features]
+default = []

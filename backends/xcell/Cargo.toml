@@ -1,0 +1,36 @@
+[package]
+name = "xcell"
+version = { workspace = true }
+authors = { workspace = true }
+description = "XCell command line tool"
+repository = "https://github.com/oovm/XCell"
+documentation = "https://docs.rs/xcell"
+readme = "Readme.md"
+license = { workspace = true }
+edition = { workspace = true }
+
+
+[dependencies]
+#colored = "2.0.0"
+time = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+toml = { workspace = true }
+
+[dependencies.xcell-analyzer]
+workspace = true
+
+[dev-dependencies]
+
+[target.'cfg(windows)'.build-dependencies]
+winres = { workspace = true }
+
+[package.metadata.winres]
+OriginalFilename = "XCell.exe"
+LegalCopyright = "Copyright © 2020"
+
+[features]
+default = []

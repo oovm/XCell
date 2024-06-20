@@ -1,0 +1,46 @@
+[package]
+name = "xcell-gui"
+version = { workspace = true }
+description = "XCell GUI Application"
+authors = { workspace = true }
+license = { workspace = true }
+repository = "https://github.com/oovm/XCell"
+edition = { workspace = true }
+
+[package.metadata]
+tauri = {
+  bundle = {
+    identifier = "com.xcell.desktop"
+  }
+}
+
+tauri-winres = {
+  ProductName = "XCell",
+  FileDescription = "XCell GUI Application",
+  CompanyName = "灵之镜有限公司",
+  OriginalFilename = "xcell-gui.exe"
+}
+
+[build-dependencies]
+tauri-build = { version = "2.0.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0.0", features = ["tray-icon"] }
+tauri-plugin-shell = "^2"
+tauri-plugin-fs = "^2"
+tauri-plugin-dialog = "^2"
+log = { workspace = true }
+regex = { workspace = true }
+serde_json = "^1.0"
+thiserror = "^1.0"
+chrono = "^0.4"
+rand = "^0.8"
+urlencoding = "^2.1"
+tokio = { version = "^1.0", features = ["sync"] }
+xcell-types = { path = "../../backends/xcell-types" }
+xcell-analyzer = { path = "../../backends/xcell-analyzer" }
+xcell-config = { path = "../../backends/xcell-config" }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

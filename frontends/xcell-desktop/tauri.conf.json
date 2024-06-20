@@ -1,0 +1,42 @@
+{
+  "$schema": "https://tauri.app/schemas/config.json",
+  "identifier": "com.xcell.desktop",
+  "productName": "XCell",
+  "version": "0.1.0",
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "pnpm build",
+    "devUrl": "http://localhost:5178",
+    "frontendDist": "../xcell-h5/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "setup",
+        "title": "XCell - 项目选择",
+        "width": 800,
+        "height": 600,
+        "resizable": false,
+        "fullscreen": false,
+        "center": true
+      },
+      {
+        "label": "editor",
+        "title": "XCell - 编辑器",
+        "width": 1200,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "visible": false,
+        "url": "/project"
+    }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": false
+  }
+}

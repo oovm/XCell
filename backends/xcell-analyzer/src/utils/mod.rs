@@ -1,0 +1,125 @@
+use crate::{XError, XResult};
+use calamine::{Data, Reader, open_workbook_auto};
+use pathdiff::diff_paths;
+use serde::{Deserialize, Serialize};
+use std::{
+    fs::File,
+    hash::{Hash, Hasher},
+    io::{BufReader, Read},
+    path::{Path, PathBuf},
+};
+use twox_hash::XxHash64;
+
+use xcell_types::Itertools;
+
+pub use self::workspace::*;
+
+mod watcher;
+
+pub mod comment;
+pub mod file_format;
+mod workspace;
+
+/// 读取 Excel 文件里的第一张表
+///
+/// # Arguments
+///
+/// * `path`:
+///
+/// returns: Result<Range<Data>, XError>
+///
+/// # Examples
+///
+/// ```
+/// use xcell_core;
+/// ```
+pub fn find_first_table(path: &Path) -> XResult<calamine::Range<Data>> {
+    let mut workbook = open_workbook_auto(path)?;
+    let ranges = match workbook.worksheet_range_at(0) {
+        None => return Err(XError::table_error("找不到配置表, 文件是空的, 或者表格式非法")),
+        Some(s) => s?,
+    };
+    Ok(ranges)
+}
+
+/// 确保第一行的 id 不是空的
+///
+/// 如果是空的, 那么就认为数据非法
+pub fn first_not_nil(row: &[Data]) -> bool {
+    match row.first() {
+        Some(s) => match s {
+            Data::Int(_) => true,
+            Data::Float(_) => true,
+            Data::String(s) => !s.is_empty(),
+            Data::Bool(_) => true,
+            Data::DateTime(_) => true,
+            Data::DateTimeIso(_) => true,
+            Data::DurationIso(_) => true,
+            Data::Error(_) => false,
+            Data::Empty => false,
+        },
+        None => false,
+    }
+}
+
+pub fn xx_hash<T>(body: T) -> u64
+where
+    T: Hash,
+{
+    let mut hasher = XxHash64::default();
+    body.hash(&mut hasher);
+    hasher.finish()
+}
+
+pub fn xx_file(path: &Path) -> XResult<u64> {
+    let mut hasher = XxHash64::default();
+    let input = File::open(path)?;
+    let mut reader = BufReader::new(input);
+    let mut buffer = [0; 1024];
+    loop {
+        let count = reader.read(&mut buffer)?;
+        if count == 0 {
+            break;
+        }
+        hasher.write(&buffer[..count]);
+    }
+    Ok(hasher.finish())
+}
+
+pub fn split_file_name(s: &str) -> String {
+    let mut all = vec![];
+    for name in s.split(|c| c == '/' || c == '\\') {
+        if !name.trim().is_empty() {
+            all.push(name)
+        }
+    }
+    all.join("/")
+}
+
+pub fn split_namespace(s: &str) -> Vec<&str> {
+    let mut all = vec![];
+    for s in s.split("::") {
+        for name in s.split('.') {
+            if !name.trim().is_empty() {
+                all.push(name)
+            }
+        }
+    }
+    all
+}
+
+pub fn norm_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for char in s.chars() {
+        if char == '-' || char == '_' || char == ' ' {
+            continue;
+        }
+        if char.is_ascii() {
+            out.push(char.to_ascii_lowercase());
+        }
+        else {
+            out.push(char);
+        }
+    }
+    out
+}

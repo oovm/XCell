@@ -1,0 +1,28 @@
+[package]
+name = "xcell-generator"
+version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+
+
+
+[dependencies]
+xcell-types = { workspace = true }
+xcell-analyzer = { workspace = true }
+xcell-provider = { workspace = true }
+
+# 通用依赖
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }
+serde_json = { workspace = true }
+convert_case = { workspace = true }
+url = { workspace = true }
+
+# 代码生成依赖
+dejavu-engine = { workspace = true }
+dejavu-types = { workspace = true }
+dejavu-macros = { workspace = true }
+tempfile = { workspace = true }

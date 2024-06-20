@@ -1,0 +1,34 @@
+[package]
+publish = false
+name = "xcell-wasi"
+version.workspace = true
+authors.workspace = true
+description = "XCell WASI bindings"
+repository = "https://github.com/oovm/xcell/tree/dev/projects/xcell-wasi"
+documentation = "https://docs.rs/xcell-wasi"
+keywords = ["xcell", "wasm", "wasi"]
+categories = ["wasm", "compilers", "text-processing"]
+license.workspace = true
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wit-bindgen-rt = "0.44.0"
+xcell-analyzer = { workspace = true }
+xcell-types = { workspace = true }
+once_cell = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[package.metadata.component]
+package = "xcell:core"
+
+[package.metadata.component.dependencies]
+
+[profile.release]
+opt-level = "z"  # 优化大小
+lto = true       # 链接时优化
+codegen-units = 1 # 减少代码生成单元以获得更好的优化
+panic = "abort"   # 使用 abort 而不是展开 panic，减少代码大小

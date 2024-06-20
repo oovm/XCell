@@ -1,0 +1,42 @@
+[package]
+name = "xcell-types"
+version = { workspace = true }
+authors = { workspace = true }
+description = "Types definition for xcell"
+repository = "https://github.com/oovm/XCell"
+documentation = "https://docs.rs/xcell-types"
+readme = "Readme.md"
+license = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+serde = { workspace = true }
+itertools = { workspace = true }
+#integer-encoding = "3.0.4"
+vlq-rust = { workspace = true }
+diagnostic = { workspace = true }
+validatus = { workspace = true }
+futures = { workspace = true }
+calamine = { workspace = true, optional = true, features = ["dates"] }
+tera = { workspace = true, optional = true }
+toml = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+async-walkdir = { workspace = true, optional = true }
+notify = { workspace = true, optional = true, features = ["serde"] }
+walkdir = { workspace = true, optional = true }
+globset = { workspace = true, optional = true, features = ["serde"] }
+url = { workspace = true, optional = true, features = ["serde"] }
+num = { workspace = true, optional = true, features = ["serde"] }
+bigdecimal = { workspace = true, optional = true, features = ["serde"] }
+array2d = { workspace = true, optional = true, features = ["serde"] }
+chrono = { workspace = true, optional = true, features = ["serde"] }
+csscolorparser = { workspace = true, optional = true, features = ["serde"] }
+
+[dev-dependencies]
+
+[build-dependencies]
+
+[features]
+default = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine", "serde_json"]
+csharp = []
+typescript = []

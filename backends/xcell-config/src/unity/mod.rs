@@ -1,0 +1,85 @@
+use serde::{Deserialize, Serialize};
+
+use xcell_types::{XError, XResult};
+
+use super::*;
+
+mod der;
+mod ser;
+
+/// Unity 代码生成配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UnityCodegen {
+    pub enable: bool,
+    pub project: String,
+    pub output: String,
+    pub namespace: String,
+    pub manager: String,
+    pub suffix_table: String,
+    pub suffix_element: String,
+    pub support_clone: bool,
+    pub legacy_using: bool,
+    pub legacy_null_null: bool,
+    pub binary: UnityBinaryConfig,
+    pub xlua: UnityXluaConfig,
+    pub xml: UnityXmlConfig,
+    pub json: UnityJsonConfig,
+    pub protobuf: UnityProtobufConfig,
+}
+
+/// Unity XLua 配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UnityXluaConfig {
+    pub enable: bool,
+}
+
+/// Unity XML 配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UnityXmlConfig {
+    pub enable: bool,
+    pub output: String,
+}
+
+/// Unity JSON 配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UnityJsonConfig {
+    pub enable: bool,
+    pub output: String,
+}
+
+/// Unity Protobuf 配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UnityProtobufConfig {
+    pub enable: bool,
+}
+
+/// Unity 代码生成配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UnityCodegenConfig {
+    pub class: bool,
+    pub dictionary: bool,
+    pub enumerate: bool,
+    pub language: bool,
+    pub manager: bool,
+    pub binary: bool,
+    pub csharp: bool,
+}
+
+/// Unity 二进制配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UnityBinaryConfig {
+    pub enable: bool,
+    pub output: String,
+}
+
+impl UnityCodegen {
+    /// 写入二进制数据
+    pub fn write_binary(&self) -> XResult<()> {
+        Ok(())
+    }
+
+    /// 写入 C# 代码
+    pub fn write_csharp(&self) -> XResult<()> {
+        Ok(())
+    }
+}

@@ -1,0 +1,29 @@
+[package]
+name = "xcell-provider"
+version = { workspace = true }
+authors = { workspace = true }
+description = "Table provider for xcell (read and write)"
+repository = "https://github.com/oovm/XCell"
+documentation = "https://docs.rs/xcell-provider"
+readme = "Readme.md"
+license = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+byteorder = { workspace = true }
+concat-idents = { workspace = true }
+csv = { workspace = true }
+calamine = { workspace = true }
+xcell-types = { workspace = true }
+serde = { workspace = true }
+
+
+
+[dev-dependencies]
+
+
+[build-dependencies]
+
+[features]
+default = []
+csharp = []

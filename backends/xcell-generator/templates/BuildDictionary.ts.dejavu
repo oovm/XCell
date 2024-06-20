@@ -1,0 +1,58 @@
+// 代码生成, 修改无效! (XCell {{ compiler_version }})
+
+<$ if config.namespace $>
+export namespace {{ config.namespace }} {
+<$ endif $>
+
+<$- for line in class_document $>
+/** {{ line }} */
+<$- endfor $>
+export class {{ class_name }}Element {
+<$- for field in class_fields $>
+    <$- for line in field.document $>
+    /** {{ line }} */
+    <$- endfor $>
+    <$- if field.has_default $>
+    {{ field.name }}: {{ field.typing }} = {{ field.default }};
+    <$- else $>
+    {{ field.name }}!: {{ field.typing }};
+    <$- endif $>
+<$- endfor $>
+}
+
+export class {{ table_name }} {
+    private _dict: Map<{{ id_type }}, {{ class_name }}Element> = new Map();
+    elements: {{ class_name }}Element[] = [];
+
+    get size(): number {
+        return this._dict.size;
+    }
+
+    get keys(): IterableIterator<{{ id_type }}> {
+        return this._dict.keys();
+    }
+
+    get values(): IterableIterator<{{ class_name }}Element> {
+        return this._dict.values();
+    }
+
+    get(key: {{ id_type }}): {{ class_name }}Element | undefined {
+        return this._dict.get(key);
+    }
+
+    has(key: {{ id_type }}): boolean {
+        return this._dict.has(key);
+    }
+
+    getOrDefault(key: {{ id_type }}, defaultValue: {{ class_name }}Element): {{ class_name }}Element {
+        return this._dict.get(key) ?? defaultValue;
+    }
+
+    [Symbol.iterator](): IterableIterator<[{{ id_type }}, {{ class_name }}Element]> {
+        return this._dict[Symbol.iterator]();
+    }
+}
+
+<$ if config.namespace $>
+}
+<$ endif $>

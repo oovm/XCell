@@ -1,0 +1,9 @@
+Hello, <$ name $>!
+
+<$ loop item in items $>
+- <$ item $>
+<$ end loop $>
+
+<$ if show_extra $>
+This is extra content!
+<$ end if $>

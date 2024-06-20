@@ -1,0 +1,66 @@
+version = "0.0.0"
+
+exclude = ""
+include = "*.csv"
+
+line.field = 1
+line.type = 2
+line.comment = 3
+line.data = 4
+
+[typing]
+
+[typing.boolean]
+accept = ["true", "√"]
+reject = ["false", "x"]
+
+[typing.string]
+
+[typing.vector]
+
+[typing.language]
+
+[typing.enumerate]
+
+[unity]
+enable = true
+project = "../"
+output = "Assets/Scripts/DataTable/Generated"
+namespace = "DataTable.Generated"
+manager = "DataTableManager"
+suffix_table = "Table"
+suffix_element = "Element"
+support_clone = true
+legacy_using = false
+legacy_null_null = false
+
+[unity.binary]
+enable = true
+output = "Assets/Tables/Generated"
+
+[unity.xlua]
+enable = false
+
+[unity.xml]
+enable = false
+output = "Assets/Tables/Readable"
+
+[unity.json]
+enable = false
+output = "Assets/Tables/Readable"
+
+[unity.protobuf]
+enable = false
+
+[cocos]
+enable = false
+project = "../"
+output = "assets/scripts/dataTable/generated"
+namespace = "DataTable.Generated"
+manager_name = "DataTableManager"
+instance_name = "instance"
+suffix_table = "Table"
+
+[cocos.json]
+enable = true
+output = "assets/tables"

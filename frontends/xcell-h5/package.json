@@ -1,0 +1,33 @@
+{
+	"name": "@lingames/xcell-gui",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vue-tsc --noEmit && vite build",
+		"preview": "vite preview",
+		"tauri": "tauri",
+		"p": "cargo publish --allow-dirty"
+	},
+	"dependencies": {
+		"@element-plus/icons-vue": "^2.3.2",
+		"@tauri-apps/api": "^2.10.1",
+		"@tauri-apps/plugin-dialog": "^2.6.0",
+		"element-plus": "^2.13.5",
+		"vue": "^3.5.30",
+		"vue-router": "^4.6.4"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@tailwindcss/postcss": "^4.2.1",
+		"@tauri-apps/cli": "^2.10.1",
+		"@vitejs/plugin-vue": "^6.0.4",
+		"autoprefixer": "^10.4.27",
+		"postcss": "^8.5.8",
+		"tailwindcss": "^4.2.1",
+		"typescript": "^5.9.3",
+		"vite": "^7.3.1",
+		"vue-tsc": "^2.2.12"
+	}
+}

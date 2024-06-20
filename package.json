@@ -3,7 +3,7 @@
     "scripts": {
         "build": "cargo build --release",
         "test": "cargo test --release",
-        "fmt": "cargo fmt --all",
+        "fmt": "cd frontends/homepage && npx @biomejs/biome format --write . && npx @biomejs/biome format --write documentation && cd ../.. && cd projects/xcell-gui && npx @biomejs/biome format --write . && cd ../.. && cargo fmt --all",
         "i": "cd projects/xcell-cli && cargo install --path . --force",
         "u": "cargo upgrade --offline --incompatible --verbose",
         "p": "git push && git push --tags --prune",

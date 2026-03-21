@@ -38,7 +38,7 @@ export interface PlayerLevel {
  * 玩家等级表加载器
  */
 export class PlayerLevelsTable {
-    private playerLevels: PlayerLevel[] = [];
+    private playerLevels: Map<number, PlayerLevel> = new Map();
 
     /**
      * 加载玩家等级表数据
@@ -47,7 +47,14 @@ export class PlayerLevelsTable {
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.playerLevels = data as PlayerLevel[];
+            // 清空现有数据
+            this.playerLevels.clear();
+            
+            // 加载数据
+            for (const level of Object.values(data)) {
+                const typedLevel = level as PlayerLevel;
+                this.playerLevels.set(typedLevel.id, typedLevel);
+            }
         }
     }
 
@@ -56,13 +63,13 @@ export class PlayerLevelsTable {
      * @param id 等级ID
      */
     public getPlayerLevelById(id: number): PlayerLevel | null {
-        return this.playerLevels.find(level => level.id === id) || null;
+        return this.playerLevels.get(id) || null;
     }
 
     /**
      * 获取所有玩家等级
      */
     public getAllPlayerLevels(): PlayerLevel[] {
-        return this.playerLevels;
+        return Array.from(this.playerLevels.values());
     }
 }

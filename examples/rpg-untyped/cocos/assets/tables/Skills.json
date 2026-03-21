@@ -1,5 +1,5 @@
-[
-  {
+{
+  "2": {
     "id": "2",
     "name": "强力攻击",
     "description": "更强大的攻击，造成更多伤害",
@@ -8,7 +8,7 @@
     "mana_cost": "10",
     "level_requirement": "2"
   },
-  {
+  "3": {
     "id": "3",
     "name": "火球术",
     "description": "火系法术，造成魔法伤害",
@@ -17,7 +17,7 @@
     "mana_cost": "20",
     "level_requirement": "3"
   },
-  {
+  "4": {
     "id": "4",
     "name": "治疗术",
     "description": "恢复生命值的治疗法术",
@@ -26,7 +26,7 @@
     "mana_cost": "30",
     "level_requirement": "3"
   },
-  {
+  "5": {
     "id": "5",
     "name": "护盾术",
     "description": "增加防御力的防御法术",
@@ -35,7 +35,7 @@
     "mana_cost": "25",
     "level_requirement": "4"
   },
-  {
+  "6": {
     "id": "6",
     "name": "闪电术",
     "description": "闪电系法术，造成魔法伤害",
@@ -44,7 +44,7 @@
     "mana_cost": "35",
     "level_requirement": "5"
   },
-  {
+  "7": {
     "id": "7",
     "name": "冰霜新星",
     "description": "冰系法术，减缓敌人",
@@ -53,7 +53,7 @@
     "mana_cost": "30",
     "level_requirement": "6"
   },
-  {
+  "8": {
     "id": "8",
     "name": "再生术",
     "description": "被动技能，随时间恢复生命值",
@@ -62,7 +62,7 @@
     "mana_cost": "0",
     "level_requirement": "7"
   },
-  {
+  "9": {
     "id": "9",
     "name": "狂战士之怒",
     "description": "增加伤害但降低防御的 buff",
@@ -71,7 +71,7 @@
     "mana_cost": "40",
     "level_requirement": "8"
   },
-  {
+  "10": {
     "id": "10",
     "name": "奥术冲击",
     "description": "强大的奥术法术，造成大量伤害",
@@ -80,4 +80,4 @@
     "mana_cost": "50",
     "level_requirement": "10"
   }
-]
+}

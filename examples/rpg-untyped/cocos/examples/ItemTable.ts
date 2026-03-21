@@ -38,7 +38,7 @@ export interface Item {
  * 物品表加载器
  */
 export class ItemTable {
-    private items: Item[] = [];
+    private items: Map<number, Item> = new Map();
 
     /**
      * 加载物品表数据
@@ -47,7 +47,14 @@ export class ItemTable {
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.items = data as Item[];
+            // 清空现有数据
+            this.items.clear();
+            
+            // 加载数据
+            for (const item of Object.values(data)) {
+                const typedItem = item as Item;
+                this.items.set(typedItem.id, typedItem);
+            }
         }
     }
 
@@ -56,14 +63,14 @@ export class ItemTable {
      * @param id 物品ID
      */
     public getItemById(id: number): Item | null {
-        return this.items.find(item => item.id === id) || null;
+        return this.items.get(id) || null;
     }
 
     /**
      * 获取所有物品
      */
     public getAllItems(): Item[] {
-        return this.items;
+        return Array.from(this.items.values());
     }
 
     /**
@@ -71,7 +78,7 @@ export class ItemTable {
      * @param type 物品类型
      */
     public getItemsByType(type: string): Item[] {
-        return this.items.filter(item => item.type === type);
+        return Array.from(this.items.values()).filter(item => item.type === type);
     }
 
     /**
@@ -79,6 +86,6 @@ export class ItemTable {
      * @param level 物品等级
      */
     public getItemsByLevel(level: number): Item[] {
-        return this.items.filter(item => item.level === level);
+        return Array.from(this.items.values()).filter(item => item.level === level);
     }
 }

@@ -1,12 +1,14 @@
-# Cocos Codegen Fix - Verification Checklist
+# Cocos 代码生成修复 - 验证清单
 
-- [x] Check 1: Verify the Cocos code generator processes all CSV files in the project directory
-- [x] Check 2: Verify TypeScript files are generated with names like ItemTable.ts, MonstersTable.ts, etc.
-- [x] Check 3: Verify generated TypeScript classes have fields corresponding to CSV headers
-- [x] Check 4: Verify generated TypeScript classes have appropriate types for each field
-- [x] Check 5: Verify the generated code is clean and follows TypeScript best practices
-- [x] Check 6: Verify the code generation runs efficiently
-- [x] Check 7: Verify the fix is backward compatible with existing projects
-- [x] Check 8: Verify the fix works with the RPG example
-- [x] Check 9: Verify no test files with timestamps are generated
-- [x] Check 10: Verify the generated code compiles without errors
+- [ ] 检查生成的文件是否包含完整的接口定义
+- [ ] 检查接口定义是否包含所有字段和详细的文档注释
+- [ ] 检查生成的文件是否包含完整的加载器类
+- [ ] 检查加载器类是否包含 load 方法，且签名正确
+- [ ] 检查加载器类是否包含 getById 方法，且签名正确
+- [ ] 检查加载器类是否包含 getAll 方法
+- [ ] 检查加载器类是否包含根据类型和等级的查询方法（如果适用）
+- [ ] 检查类型定义是否正确，特别是数组类型和枚举类型
+- [ ] 检查文档注释是否完整，格式是否与参考文件一致
+- [ ] 检查生成的文件结构是否与参考文件完全匹配
+- [ ] 检查所有生成的文件是否都已正确生成
+- [ ] 检查代码是否符合 TypeScript 最佳实践

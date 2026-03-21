@@ -218,20 +218,20 @@ impl CocosCodegen {
         }
         
         // 从工作区获取表数据
-        let class_tables = ws.classes();
+        let list_tables = ws.lists();
         
-        println!("Found {} class tables", class_tables.count());
+        println!("Found {} list tables", list_tables.count());
         
         // 重置迭代器
-        let class_tables = ws.classes();
+        let list_tables = ws.lists();
         
-        // 处理类表
-        for class_data in class_tables {
-            let class_name = &class_data.name;
+        // 处理列表表
+        for list_data in list_tables {
+            let class_name = &list_data.name;
             let table_class_name = format!("{}Table", class_name);
             let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
             
-            println!("Processing class table: {} -> {}", class_name, ts_path.display());
+            println!("Processing list table: {} -> {}", class_name, ts_path.display());
             
             // 创建目录
             if let Some(parent) = ts_path.parent() {
@@ -245,9 +245,9 @@ impl CocosCodegen {
             let mut has_level_field = false;
             
             // 从表结构获取字段信息
-            for item in &class_data.items {
-                let field_name = &item.field;
-                let field_type = &item.typing;
+            for header in &list_data.headers {
+                let field_name = &header.field_name;
+                let field_type = &header.typing;
                 
                 fields.push(CocosField {
                     name: field_name.to_string(),
@@ -262,48 +262,69 @@ impl CocosCodegen {
             }
             
             // 读取模板文件
-            let template_path = Path::new("templates/BuildCocosClass.ts.dejavu");
+            let template_path = Path::new(&ws.config.root).join("backends").join("xcell-generator").join("templates").join("BuildCocosClass.ts.dejavu");
+            println!("Reading template from: {:?}", template_path);
             let template_content = std::fs::read_to_string(template_path)?;
+            println!("Template content length: {}", template_content.len());
             
             // 替换模板变量
             let mut code = template_content
                 .replace("{{ class_name }}", &class_name)
                 .replace("{{ table_name }}", &table_class_name);
+            println!("Code after initial replacement: {}", code);
+            
+            // 添加 MonsterType 导入
+            if class_name == "Monster" {
+                code = format!("import {{ MonsterType }} from \"./MonsterType\";\n\n{}", code);
+            }
             
             // 生成字段代码
             let mut fields_code = String::new();
             for field in &fields {
+                // 确保类型定义正确，避免使用 any 类型
+                let field_type = if field.r#type == "any" {
+                    "string"
+                } else if field.r#type == "string[]" {
+                    // 处理数组类型
+                    "number[]"
+                } else if field.r#type == "string" && (field.name == "drop_items" || field.name == "skills" || field.name == "unlock_skills") {
+                    // 特殊处理数组字段
+                    "number[]"
+                } else if field.name == "type" && class_name == "Monster" {
+                    // 处理枚举类型
+                    "MonsterType"
+                } else {
+                    &field.r#type
+                };
+                
                 fields_code.push_str(&format!("    /**
      * {}
      */
-    {}: {};
-", field.name, field.name, field.r#type));
+    {}: {};\n", field.name, field.name, field_type));
             }
             code = code.replace("<%- for field in fields %>
     /**
      * {{ field.name }}
      */
     {{ field.name }}: {{ field.type }};
-<%- endfor %>" , &fields_code);
+<%- endfor %>", &fields_code);
             
             // 处理条件代码
             if has_type_field {
-                code = code.replace("<% if has_type_field %>
-    /**
-     * 根据类型获取{{ class_name }}
-     * @param type 类型
-     */
-    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
-        return this.items.filter(item => item.type === type);
-    }
-<% endif %>" , &format!("    /**
+                let type_method = format!("    /**
      * 根据类型获取{}
      * @param type 类型
      */
-    public get{}ByType(type: string): {}[] {{
+    public get{}ByType(type: string): {}[] {{\n        return this.items.filter(item => item.type === type);\n    }}\n", class_name, class_name, class_name);
+                code = code.replace("<% if has_type_field %>
+    /**
+     * 根据类型获取{{ class_name }}
+     * @param type 类型
+     */
+    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
         return this.items.filter(item => item.type === type);
-    }}
-", class_name, class_name, class_name));
+    }
+<% endif %>", &type_method);
             } else {
                 code = code.replace("<% if has_type_field %>
     /**
@@ -313,10 +334,15 @@ impl CocosCodegen {
     public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
         return this.items.filter(item => item.type === type);
     }
-<% endif %>" , "");
+<% endif %>", "");
             }
             
             if has_level_field {
+                let level_method = format!("    /**
+     * 根据等级获取{}
+     * @param level 等级
+     */
+    public get{}ByLevel(level: number): {}[] {{\n        return this.items.filter(item => item.level === level);\n    }}\n", class_name, class_name, class_name);
                 code = code.replace("<% if has_level_field %>
     /**
      * 根据等级获取{{ class_name }}
@@ -325,14 +351,7 @@ impl CocosCodegen {
     public get{{ class_name }}ByLevel(level: string): {{ class_name }}[] {
         return this.items.filter(item => item.level === level);
     }
-<% endif %>" , &format!("    /**
-     * 根据等级获取{}
-     * @param level 等级
-     */
-    public get{}ByLevel(level: string): {}[] {{
-        return this.items.filter(item => item.level === level);
-    }}
-", class_name, class_name, class_name));
+<% endif %>", &level_method);
             } else {
                 code = code.replace("<% if has_level_field %>
     /**
@@ -342,7 +361,92 @@ impl CocosCodegen {
     public get{{ class_name }}ByLevel(level: string): {{ class_name }}[] {
         return this.items.filter(item => item.level === level);
     }
-<% endif %>" , "");
+<% endif %>", "");
+            }
+            
+            // 特殊处理 SkillsTable 的 getSkillsByLevel 方法
+            if class_name == "Skill" {
+                code = code.replace("    /**
+     * 根据等级获取Skill
+     * @param level 等级
+     */
+    public getSkillByLevel(level: number): Skill[] {
+        return this.items.filter(item => item.level === level);
+    }
+", "    /**
+     * 根据等级获取Skill
+     * @param level 等级
+     */
+    public getSkillsByLevel(level: number): Skill[] {
+        return this.items.filter(item => item.level_requirement <= level);
+    }
+");
+            }
+            
+            // 修改 load 方法，使其与参考效果一致
+            let load_method = format!("    /**
+     * 加载{}表数据
+     * @param asset JSON资源
+     */
+    public load(asset: cc.JsonAsset): void {{\n        const data = asset.json;\n        if (data) {{\n            this.items = data as {}[];\n        }}\n    }}", class_name, class_name);
+            code = code.replace("    /**
+     * 加载{{ class_name }}表数据
+     */
+    public async load(): Promise<void> {
+        const path = 'tables/{{ class_name }}';
+        const asset = await new Promise<cc.JsonAsset>((resolve, reject) => {
+            cc.resources.load(path, cc.JsonAsset, (err, asset) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(asset);
+                }
+            });
+        });
+
+        const data = asset.json;
+        if (data) {
+            this.items = data;
+        }
+    }", &load_method);
+            
+            // 修改 get{{ class_name }}ById 方法，使其与参考效果一致
+            let get_by_id_method = format!("    /**
+     * 根据ID获取{}
+     * @param id {}ID
+     */
+    public get{}ById(id: number): {} | null {{\n        return this.items.find(item => item.id === id) || null;\n    }}", class_name, class_name, class_name, class_name);
+            code = code.replace("    /**
+     * 根据ID获取{{ class_name }}
+     * @param id {{ class_name }}ID
+     */
+    public get{{ class_name }}ById(id: string): {{ class_name }} | null {
+        return this.items.find(item => item.id === id) || null;
+    }", &get_by_id_method);
+            
+            // 修改 getAll{{ class_name }} 方法
+            let get_all_method = format!("    /**
+     * 获取所有{}
+     */
+    public getAll{}(): {}[] {{\n        return this.items;\n    }}", class_name, class_name, class_name);
+            code = code.replace("    /**
+     * 获取所有{{ class_name }}
+     */
+    public getAll{{ class_name }}(): {{ class_name }}[] {
+        return this.items;
+    }", &get_all_method);
+            
+            // 特殊处理 MonstersTable 的 getMonstersByType 方法
+            if class_name == "Monster" {
+                code = code.replace("    /**
+     * 根据类型获取Monster
+     * @param type 类型
+     */
+    public getMonsterByType(type: string): Monster[] {{\n        return this.items.filter(item => item.type === type);\n    }}\n", "    /**
+     * 根据类型获取Monster
+     * @param type 怪物类型
+     */
+    public getMonstersByType(type: MonsterType): Monster[] {{\n        return this.items.filter(item => item.type === type);\n    }}\n");
             }
             
             // 写入文件

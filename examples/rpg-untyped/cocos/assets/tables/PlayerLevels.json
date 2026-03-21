@@ -1,5 +1,5 @@
-[
-  {
+{
+  "2": {
     "id": "2",
     "name": "2级",
     "required_exp": "1000",
@@ -8,7 +8,7 @@
     "defense": "8",
     "unlock_skills": "\"1"
   },
-  {
+  "3": {
     "id": "3",
     "name": "3级",
     "required_exp": "3000",
@@ -17,7 +17,7 @@
     "defense": "12",
     "unlock_skills": "\"1"
   },
-  {
+  "4": {
     "id": "4",
     "name": "4级",
     "required_exp": "6000",
@@ -26,7 +26,7 @@
     "defense": "16",
     "unlock_skills": "\"1"
   },
-  {
+  "5": {
     "id": "5",
     "name": "5级",
     "required_exp": "10000",
@@ -35,7 +35,7 @@
     "defense": "20",
     "unlock_skills": "\"1"
   },
-  {
+  "6": {
     "id": "6",
     "name": "6级",
     "required_exp": "15000",
@@ -44,7 +44,7 @@
     "defense": "24",
     "unlock_skills": "\"1"
   },
-  {
+  "7": {
     "id": "7",
     "name": "7级",
     "required_exp": "21000",
@@ -53,7 +53,7 @@
     "defense": "28",
     "unlock_skills": "\"1"
   },
-  {
+  "8": {
     "id": "8",
     "name": "8级",
     "required_exp": "28000",
@@ -62,7 +62,7 @@
     "defense": "32",
     "unlock_skills": "\"1"
   },
-  {
+  "9": {
     "id": "9",
     "name": "9级",
     "required_exp": "36000",
@@ -71,7 +71,7 @@
     "defense": "36",
     "unlock_skills": "\"1"
   },
-  {
+  "10": {
     "id": "10",
     "name": "10级",
     "required_exp": "45000",
@@ -80,4 +80,4 @@
     "defense": "40",
     "unlock_skills": "\"1"
   }
-]
+}

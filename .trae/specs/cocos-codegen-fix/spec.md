@@ -1,65 +1,79 @@
-# Cocos Codegen Fix - Product Requirement Document
+# Cocos 代码生成修复 - 产品需求文档
 
-## Overview
-- **Summary**: Fix the Cocos code generation to properly process CSV files and generate TypeScript files with appropriate names based on the CSV file names.
-- **Purpose**: The current implementation generates random test files with timestamps instead of processing actual CSV files, which is not what users expect.
-- **Target Users**: Developers using XCell to generate Cocos TypeScript code from CSV files.
+## 概述
+- **摘要**：修复 Cocos 平台代码生成器，使生成的 TypeScript 文件与参考文件结构完全匹配，包括接口定义、加载器类、方法实现和文档注释。
+- **目的**：解决生成的文件与参考效果之间的差距，确保代码生成器能够生成高质量、功能完整的 TypeScript 代码。
+- **目标用户**：使用 XCell 工具链生成 Cocos 平台代码的开发者。
 
-## Goals
-- Fix the Cocos code generation to process actual CSV files
-- Generate TypeScript files with appropriate names based on CSV file names (e.g., Item.csv → ItemTable.ts)
-- Ensure the generated TypeScript classes have the correct fields based on the CSV headers
-- Maintain compatibility with existing project structure
+## 目标
+- 生成的 TypeScript 文件结构与参考文件完全匹配
+- 包含完整的接口定义和详细的文档注释
+- 实现正确的加载器类，包括 load 方法和各种查询方法
+- 确保类型定义正确，特别是数组类型和枚举类型
+- 生成的代码符合 TypeScript 最佳实践
 
-## Non-Goals (Out of Scope)
-- Modifying the CSV file format
-- Changing the Unity code generation logic
-- Adding new features to the code generation
+## 非目标（超出范围）
+- 不修改参考文件的结构和内容
+- 不更改代码生成器的整体架构
+- 不处理其他平台的代码生成
 
-## Background & Context
-The current CocosCodegen implementation in xcell-generator has a simplified write_typescript method that generates test files with timestamps instead of processing actual CSV files. This is causing confusion for users who expect the generated files to match their CSV file names.
+## 背景与上下文
+- 当前的代码生成器只能生成简单的类定义，缺少接口定义和完整的加载器实现
+- 生成的文件与参考文件在结构、方法签名和类型定义上存在较大差异
+- 参考文件提供了完整的实现示例，包括接口定义、加载器类、方法实现和文档注释
 
-## Functional Requirements
-- **FR-1**: The Cocos code generator should process all CSV files in the project directory
-- **FR-2**: For each CSV file, generate a TypeScript file with the name {CSVName}Table.ts
-- **FR-3**: The generated TypeScript class should have fields corresponding to the CSV headers
-- **FR-4**: The generated TypeScript class should be properly structured with appropriate types
+## 功能需求
+- **FR-1**：生成完整的接口定义，包含所有字段和详细的文档注释
+- **FR-2**：生成完整的加载器类，包含 load 方法和各种查询方法
+- **FR-3**：确保类型定义正确，特别是数组类型和枚举类型
+- **FR-4**：生成的代码结构与参考文件完全匹配
 
-## Non-Functional Requirements
-- **NFR-1**: The code generation should be efficient and run in a reasonable time
-- **NFR-2**: The generated code should be clean and follow TypeScript best practices
-- **NFR-3**: The fix should be backward compatible with existing projects
+## 非功能需求
+- **NFR-1**：生成的代码符合 TypeScript 最佳实践
+- **NFR-2**：生成的代码包含详细的文档注释
+- **NFR-3**：代码生成过程稳定可靠，能够处理各种数据类型
 
-## Constraints
-- **Technical**: The fix should work with the existing XCell architecture
-- **Dependencies**: The fix depends on the workspace manager providing access to CSV data
+## 约束
+- **技术**：使用 Rust 实现代码生成逻辑，使用 Dejavu 模板系统
+- **依赖**：依赖于现有的 XCell 工具链和模板系统
 
-## Assumptions
-- The CSV files are properly formatted with headers
-- The workspace manager correctly loads and processes the CSV files
-- The Cocos project structure follows the standard layout
+## 假设
+- 参考文件的结构和实现是正确的，应该作为生成代码的标准
+- 所有需要生成的表都有唯一的 ID 字段
+- 字段类型可以正确映射到 TypeScript 类型
 
-## Acceptance Criteria
+## 验收标准
 
-### AC-1: Generate correct TypeScript files from CSV files
-- **Given**: A project with CSV files (Item.csv, Monsters.csv, etc.)
-- **When**: Running xcell generate
-- **Then**: TypeScript files are generated with names like ItemTable.ts, MonstersTable.ts, etc.
-- **Verification**: `programmatic`
+### AC-1：生成的文件结构与参考文件匹配
+- **给定**：运行代码生成器
+- **当**：生成 TypeScript 文件时
+- **然后**：生成的文件应包含接口定义、加载器类和所有必要的方法
+- **验证**：`human-judgment`
 
-### AC-2: Generated TypeScript classes have correct fields
-- **Given**: A CSV file with headers (id, name, type, etc.)
-- **When**: Running xcell generate
-- **Then**: The generated TypeScript class has fields corresponding to the CSV headers
-- **Verification**: `programmatic`
+### AC-2：生成的接口定义完整
+- **给定**：运行代码生成器
+- **当**：生成接口定义时
+- **然后**：接口应包含所有字段和详细的文档注释
+- **验证**：`human-judgment`
 
-### AC-3: Generated TypeScript files are properly structured
-- **Given**: A valid CSV file
-- **When**: Running xcell generate
-- **Then**: The generated TypeScript file has a properly structured class with appropriate types
-- **Verification**: `human-judgment`
+### AC-3：生成的加载器类功能完整
+- **给定**：运行代码生成器
+- **当**：生成加载器类时
+- **然后**：加载器类应包含 load 方法和各种查询方法
+- **验证**：`human-judgment`
 
-## Open Questions
-- [ ] How to handle different CSV file types (class, dictionary, list, etc.)
-- [ ] What types to use for different CSV column types
-- [ ] How to handle nested structures or complex types
+### AC-4：类型定义正确
+- **给定**：运行代码生成器
+- **当**：处理字段类型时
+- **然后**：字段类型应正确映射到 TypeScript 类型，特别是数组类型和枚举类型
+- **验证**：`human-judgment`
+
+### AC-5：代码质量符合标准
+- **给定**：运行代码生成器
+- **当**：生成代码时
+- **然后**：生成的代码应包含详细的文档注释，符合 TypeScript 最佳实践
+- **验证**：`human-judgment`
+
+## 开放问题
+- [ ] 如何处理复杂的类型映射，特别是数组类型和枚举类型？
+- [ ] 如何确保生成的代码与参考文件的命名规范一致？

@@ -36,7 +36,7 @@ export interface Skill {
  * 技能表加载器
  */
 export class SkillsTable {
-    private skills: Skill[] = [];
+    private skills: Map<number, Skill> = new Map();
 
     /**
      * 加载技能表数据
@@ -45,7 +45,14 @@ export class SkillsTable {
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.skills = data as Skill[];
+            // 清空现有数据
+            this.skills.clear();
+            
+            // 加载数据
+            for (const skill of Object.values(data)) {
+                const typedSkill = skill as Skill;
+                this.skills.set(typedSkill.id, typedSkill);
+            }
         }
     }
 
@@ -54,14 +61,14 @@ export class SkillsTable {
      * @param id 技能ID
      */
     public getSkillById(id: number): Skill | null {
-        return this.skills.find(skill => skill.id === id) || null;
+        return this.skills.get(id) || null;
     }
 
     /**
      * 获取所有技能
      */
     public getAllSkills(): Skill[] {
-        return this.skills;
+        return Array.from(this.skills.values());
     }
 
     /**
@@ -69,6 +76,6 @@ export class SkillsTable {
      * @param level 玩家等级
      */
     public getSkillsByLevel(level: number): Skill[] {
-        return this.skills.filter(skill => skill.level_requirement <= level);
+        return Array.from(this.skills.values()).filter(skill => skill.level_requirement <= level);
     }
 }

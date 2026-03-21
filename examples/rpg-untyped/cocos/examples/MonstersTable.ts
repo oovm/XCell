@@ -48,7 +48,7 @@ export interface Monster {
  * 怪物表加载器
  */
 export class MonstersTable {
-    private monsters: Monster[] = [];
+    private monsters: Map<number, Monster> = new Map();
 
     /**
      * 加载怪物表数据
@@ -57,7 +57,14 @@ export class MonstersTable {
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.monsters = data as Monster[];
+            // 清空现有数据
+            this.monsters.clear();
+            
+            // 加载数据
+            for (const monster of Object.values(data)) {
+                const typedMonster = monster as Monster;
+                this.monsters.set(typedMonster.id, typedMonster);
+            }
         }
     }
 
@@ -66,14 +73,14 @@ export class MonstersTable {
      * @param id 怪物ID
      */
     public getMonsterById(id: number): Monster | null {
-        return this.monsters.find(monster => monster.id === id) || null;
+        return this.monsters.get(id) || null;
     }
 
     /**
      * 获取所有怪物
      */
     public getAllMonsters(): Monster[] {
-        return this.monsters;
+        return Array.from(this.monsters.values());
     }
 
     /**
@@ -81,7 +88,7 @@ export class MonstersTable {
      * @param type 怪物类型
      */
     public getMonstersByType(type: MonsterType): Monster[] {
-        return this.monsters.filter(monster => monster.type === type);
+        return Array.from(this.monsters.values()).filter(monster => monster.type === type);
     }
 
     /**
@@ -89,6 +96,6 @@ export class MonstersTable {
      * @param level 怪物等级
      */
     public getMonstersByLevel(level: number): Monster[] {
-        return this.monsters.filter(monster => monster.level === level);
+        return Array.from(this.monsters.values()).filter(monster => monster.level === level);
     }
 }

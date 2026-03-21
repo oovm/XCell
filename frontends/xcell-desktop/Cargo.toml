@@ -17,7 +17,7 @@ tauri = {
 tauri-winres = {
   ProductName = "XCell",
   FileDescription = "XCell GUI Application",
-  CompanyName = "灵之镜有限公司",
+  CompanyName = "",
   OriginalFilename = "xcell-gui.exe"
 }
 

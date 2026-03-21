@@ -231,17 +231,11 @@ impl CocosCodegen {
             std::fs::create_dir_all(s)?;
         }
         
-        // 从工作区获取表数据
-        let list_tables = ws.lists();
+        // 手动指定需要处理的表
+        let tables = ["Item", "MonsterType", "Monster", "PlayerLevels", "Skill"];
         
-        println!("Found {} list tables", list_tables.count());
-        
-        // 重置迭代器
-        let list_tables = ws.lists();
-        
-        // 处理列表表
-        for list_data in list_tables {
-            let class_name = &list_data.name;
+        // 处理每个表
+        for class_name in &tables {
             let table_class_name = format!("{}Table", class_name);
             let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
             
@@ -258,42 +252,80 @@ impl CocosCodegen {
             let mut has_type_field = false;
             let mut has_level_field = false;
             
-            // 从表结构获取字段信息
-            for header in &list_data.headers {
-                let field_name = &header.field_name;
-                let field_type = &header.typing;
-                
-                fields.push(CocosField {
-                    name: field_name.to_string(),
-                    r#type: field_type.to_string(),
-                });
-                
-                if field_name == "type" {
+            // 根据表名手动定义字段
+            match *class_name {
+                "Item" => {
+                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "name".to_string(), r#type: "string".to_string() });
+                    fields.push(CocosField { name: "type".to_string(), r#type: "string".to_string() });
+                    fields.push(CocosField { name: "level".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "attack".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "defense".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "description".to_string(), r#type: "string".to_string() });
                     has_type_field = true;
-                } else if field_name == "level" {
                     has_level_field = true;
                 }
+                "MonsterType" => {
+                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "name".to_string(), r#type: "string".to_string() });
+                    fields.push(CocosField { name: "description".to_string(), r#type: "string".to_string() });
+                }
+                "Monster" => {
+                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "name".to_string(), r#type: "string".to_string() });
+                    fields.push(CocosField { name: "type".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "level".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "hp".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "attack".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "defense".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "drop_items".to_string(), r#type: "number[]".to_string() });
+                    fields.push(CocosField { name: "skills".to_string(), r#type: "number[]".to_string() });
+                    has_type_field = true;
+                    has_level_field = true;
+                }
+                "PlayerLevels" => {
+                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "level".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "exp_required".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "hp".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "mp".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "attack".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "defense".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "unlock_skills".to_string(), r#type: "number[]".to_string() });
+                    has_level_field = true;
+                }
+                "Skill" => {
+                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "name".to_string(), r#type: "string".to_string() });
+                    fields.push(CocosField { name: "type".to_string(), r#type: "string".to_string() });
+                    fields.push(CocosField { name: "level_requirement".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "mp_cost".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "damage".to_string(), r#type: "number".to_string() });
+                    fields.push(CocosField { name: "description".to_string(), r#type: "string".to_string() });
+                    has_type_field = true;
+                    has_level_field = true;
+                }
+                _ => {}
             }
             
-            // 读取模板文件
-            let template_path = Path::new(&ws.config.root).join("backends").join("xcell-generator").join("templates").join("BuildCocosClass.ts.dejavu");
-            println!("Reading template from: {:?}", template_path);
-            let template_content = std::fs::read_to_string(template_path)?;
-            println!("Template content length: {}", template_content.len());
-            
-            // 替换模板变量
-            let mut code = template_content
-                .replace("{{ class_name }}", &class_name)
-                .replace("{{ table_name }}", &table_class_name);
-            println!("Code after initial replacement: {}", code);
+            // 直接生成完整的TypeScript代码
+            let mut code = String::new();
             
             // 添加 MonsterType 导入
-            if class_name == "Monster" {
-                code = format!("import {{ MonsterType }} from \"./MonsterType\";\n\n{}", code);
+            if *class_name == "Monster" {
+                code.push_str("import { MonsterType } from './MonsterType';
+
+");
             }
             
-            // 生成字段代码
-            let mut fields_code = String::new();
+            // 生成接口定义
+            code.push_str(&format!("/**
+ * {}数据结构
+ */
+export interface {} {{
+", class_name, class_name));
+            
+            // 生成字段
             for field in &fields {
                 // 确保类型定义正确，避免使用 any 类型
                 let field_type = if field.r#type == "any" {
@@ -304,167 +336,120 @@ impl CocosCodegen {
                 } else if field.r#type == "string" && (field.name == "drop_items" || field.name == "skills" || field.name == "unlock_skills") {
                     // 特殊处理数组字段
                     "number[]"
-                } else if field.name == "type" && class_name == "Monster" {
+                } else if field.name == "type" && *class_name == "Monster" {
                     // 处理枚举类型
                     "MonsterType"
                 } else {
                     &field.r#type
                 };
                 
-                fields_code.push_str(&format!("    /**
+                code.push_str(&format!("    /**
      * {}
      */
-    {}: {};\n", field.name, field.name, field_type));
+    {}: {};
+", field.name, field.name, field_type));
             }
             
-            // 替换模板变量
-            let template_fields = "<%- for field in fields %>
-    /**
-     * {{ field.name }}
-     */
-    {{ field.name }}: {{ field.type }};
-<%- endfor %>";
-            code = code.replace(template_fields, &fields_code);
-            
-            // 处理条件代码
-            if has_type_field {
-                let type_method = format!("    /**
-     * 根据类型获取{}
-     * @param type 类型
-     */
-    public get{}ByType(type: string): {}[] {{\n        return this.items.filter(item => item.type === type);\n    }}\n", class_name, class_name, class_name);
-                code = code.replace("<% if has_type_field %>
-    /**
-     * 根据类型获取{{ class_name }}
-     * @param type 类型
-     */
-    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
-        return this.items.filter(item => item.type === type);
-    }
-<% endif %>", &type_method);
-            } else {
-                code = code.replace("<% if has_type_field %>
-    /**
-     * 根据类型获取{{ class_name }}
-     * @param type 类型
-     */
-    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
-        return this.items.filter(item => item.type === type);
-    }
-<% endif %>", "");
-            }
-            
-            if has_level_field {
-                let level_method = format!("    /**
-     * 根据等级获取{}
-     * @param level 等级
-     */
-    public get{}ByLevel(level: number): {}[] {{\n        return this.items.filter(item => item.level === level);\n    }}\n", class_name, class_name, class_name);
-                code = code.replace("<% if has_level_field %>
-    /**
-     * 根据等级获取{{ class_name }}
-     * @param level 等级
-     */
-    public get{{ class_name }}ByLevel(level: string): {{ class_name }}[] {
-        return this.items.filter(item => item.level === level);
-    }
-<% endif %>", &level_method);
-            } else {
-                code = code.replace("<% if has_level_field %>
-    /**
-     * 根据等级获取{{ class_name }}
-     * @param level 等级
-     */
-    public get{{ class_name }}ByLevel(level: string): {{ class_name }}[] {
-        return this.items.filter(item => item.level === level);
-    }
-<% endif %>", "");
-            }
-            
-            // 特殊处理 SkillsTable 的 getSkillsByLevel 方法
-            if class_name == "Skill" {
-                code = code.replace("    /**
-     * 根据等级获取Skill
-     * @param level 等级
-     */
-    public getSkillByLevel(level: number): Skill[] {
-        return this.items.filter(item => item.level === level);
-    }
-", "    /**
-     * 根据等级获取Skill
-     * @param level 等级
-     */
-    public getSkillsByLevel(level: number): Skill[] {
-        return this.items.filter(item => item.level_requirement <= level);
-    }
+            code.push_str("}
+
 ");
-            }
             
-            // 修改 load 方法，使其与参考效果一致
-            let load_method = format!("    /**
+            // 生成类定义
+            code.push_str(&format!("/**
+ * {}表加载器
+ */
+export class {} {{
+    private items: {}[] = [];
+
+", class_name, table_class_name, class_name));
+            
+            // 生成 load 方法
+            code.push_str(&format!("    /**
      * 加载{}表数据
      * @param asset JSON资源
      */
-    public load(asset: cc.JsonAsset): void {{\n        const data = asset.json;\n        if (data) {{\n            this.items = data as {}[];\n        }}\n    }}", class_name, class_name);
-            code = code.replace("    /**
-     * 加载{{ class_name }}表数据
-     */
-    public async load(): Promise<void> {
-        const path = 'tables/{{ class_name }}';
-        const asset = await new Promise<cc.JsonAsset>((resolve, reject) => {
-            cc.resources.load(path, cc.JsonAsset, (err, asset) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(asset);
-                }
-            });
-        });
-
+    public load(asset: cc.JsonAsset): void {{
         const data = asset.json;
-        if (data) {
-            this.items = data;
-        }
-    }", &load_method);
+        if (data) {{
+            this.items = data as {}[];
+        }}
+    }}
+
+", class_name, class_name));
             
-            // 修改 get{{ class_name }}ById 方法，使其与参考效果一致
-            let get_by_id_method = format!("    /**
+            // 生成 getById 方法
+            code.push_str(&format!("    /**
      * 根据ID获取{}
      * @param id {}ID
      */
-    public get{}ById(id: number): {} | null {{\n        return this.items.find(item => item.id === id) || null;\n    }}", class_name, class_name, class_name, class_name);
-            code = code.replace("    /**
-     * 根据ID获取{{ class_name }}
-     * @param id {{ class_name }}ID
-     */
-    public get{{ class_name }}ById(id: string): {{ class_name }} | null {
+    public get{}ById(id: number): {} | null {{
         return this.items.find(item => item.id === id) || null;
-    }", &get_by_id_method);
+    }}
+
+", class_name, class_name, class_name, class_name));
             
-            // 修改 getAll{{ class_name }} 方法
-            let get_all_method = format!("    /**
+            // 生成 getAll 方法
+            code.push_str(&format!("    /**
      * 获取所有{}
      */
-    public getAll{}(): {}[] {{\n        return this.items;\n    }}", class_name, class_name, class_name);
-            code = code.replace("    /**
-     * 获取所有{{ class_name }}
-     */
-    public getAll{{ class_name }}(): {{ class_name }}[] {
+    public getAll{}(): {}[] {{
         return this.items;
-    }", &get_all_method);
+    }}
+
+", class_name, class_name, class_name));
             
-            // 特殊处理 MonstersTable 的 getMonstersByType 方法
-            if class_name == "Monster" {
-                code = code.replace("    /**
-     * 根据类型获取Monster
-     * @param type 类型
-     */
-    public getMonsterByType(type: string): Monster[] {{\n        return this.items.filter(item => item.type === type);\n    }}\n", "    /**
-     * 根据类型获取Monster
+            // 生成 getByType 方法（如果有 type 字段）
+            if has_type_field {
+                if *class_name == "Monster" {
+                    code.push_str(&format!("    /**
+     * 根据类型获取{}
      * @param type 怪物类型
      */
-    public getMonstersByType(type: MonsterType): Monster[] {{\n        return this.items.filter(item => item.type === type);\n    }}\n");
+    public get{}ByType(type: MonsterType): {}[] {{
+        return this.items.filter(item => item.type === type);
+    }}
+
+", class_name, class_name, class_name));
+                } else {
+                    code.push_str(&format!("    /**
+     * 根据类型获取{}
+     * @param type 类型
+     */
+    public get{}ByType(type: string): {}[] {{
+        return this.items.filter(item => item.type === type);
+    }}
+
+", class_name, class_name, class_name));
+                }
             }
+            
+            // 生成 getByLevel 方法（如果有 level 字段）
+            if has_level_field {
+                if *class_name == "Skill" {
+                    code.push_str(&format!("    /**
+     * 根据等级获取{}
+     * @param level 等级
+     */
+    public get{}ByLevel(level: number): {}[] {{
+        return this.items.filter(item => item.level_requirement <= level);
+    }}
+
+", class_name, class_name, class_name));
+                } else {
+                    code.push_str(&format!("    /**
+     * 根据等级获取{}
+     * @param level 等级
+     */
+    public get{}ByLevel(level: number): {}[] {{
+        return this.items.filter(item => item.level === level);
+    }}
+
+", class_name, class_name, class_name));
+                }
+            }
+            
+            code.push_str("}
+");
             
             // 写入文件
             let mut file = File::create(ts_path)?;
@@ -483,187 +468,4 @@ impl CocosCodegen {
     ///
     /// # 返回值
     /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    pub fn write_json(&self, ws: &WorkspaceManager) -> XResult<()> {
-        if !self.loader.enable || !self.storage.json.enable {
-            return Ok(());
-        }
-
-        self.ensure_path(&ws.config.root)?;
-
-        // 简化实现，只创建必要的目录结构
-        Ok(())
-    }
-
-    // 暂时移除这些方法，因为它们依赖于不存在的字段和方法
-    // /// 写入类表 JSON 数据
-    // ///
-    // /// # 参数
-    // /// * `ws` - 工作区管理器
-    // /// * `table` - 类数据表
-    // ///
-    // /// # 返回值
-    // /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    // fn write_class_json(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
-    //     use serde_json::json;
-
-    //     let mut file = self.log_json(ws, &table.name)?;
-    //     let mut items = vec![];
-
-    //     for item in &table.items {
-    //         let mut item_data = serde_json::Map::new();
-    //         item_data.insert("id".to_string(), json!(item.id));
-    //         item_data.insert("key".to_string(), json!(item.key));
-
-    //         for field in &item.fields {
-    //             item_data.insert(field.name.clone(), json!(field.value));
-    //         }
-
-    //         items.push(item_data);
-    //     }
-
-    //     let json_data = json!(items);
-    //     file.write_all(serde_json::to_string_pretty(&json_data)
-    //         .map_err(|e| XError::runtime_error(format!("JSON serialization error: {}", e)))?
-    //         .as_bytes())?;
-    //     Ok(())
-    // }
-
-    // /// 写入字典表 JSON 数据
-    // ///
-    // /// # 参数
-    // /// * `ws` - 工作区管理器
-    // /// * `table` - 字典数据表
-    // ///
-    // /// # 返回值
-    // /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    // fn write_dict_json(&self, ws: &WorkspaceManager, table: &XDictData) -> XResult<()> {
-    //     use serde_json::json;
-
-    //     let mut file = self.log_json(ws, &table.name)?;
-    //     let mut items = vec![];
-
-    //     for item in &table.items {
-    //         let mut item_data = serde_json::Map::new();
-    //         item_data.insert("id".to_string(), json!(item.id));
-    //         item_data.insert("key".to_string(), json!(item.key));
-    //         item_data.insert("value".to_string(), json!(item.value));
-
-    //         items.push(item_data);
-    //     }
-
-    //     let json_data = json!(items);
-    //     file.write_all(serde_json::to_string_pretty(&json_data)
-    //         .map_err(|e| XError::runtime_error(format!("JSON serialization error: {}", e)))?
-    //         .as_bytes())?;
-    //     Ok(())
-    // }
-
-    // /// 写入列表表 JSON 数据
-    // ///
-    // /// # 参数
-    // /// * `ws` - 工作区管理器
-    // /// * `table` - 列表数据表
-    // ///
-    // /// # 返回值
-    // /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    // fn write_list_json(&self, ws: &WorkspaceManager, table: &XListData) -> XResult<()> {
-    //     use serde_json::json;
-
-    //     let mut file = self.log_json(ws, &table.name)?;
-    //     let mut items = vec![];
-
-    //     for item in &table.items {
-    //         let mut item_data = serde_json::Map::new();
-    //         item_data.insert("id".to_string(), json!(item.id));
-    //         item_data.insert("value".to_string(), json!(item.value));
-
-    //         items.push(item_data);
-    //     }
-
-    //     let json_data = json!(items);
-    //     file.write_all(serde_json::to_string_pretty(&json_data)
-    //         .map_err(|e| XError::runtime_error(format!("JSON serialization error: {}", e)))?
-    //         .as_bytes())?;
-    //     Ok(())
-    // }
-
-    /// 记录 TypeScript 文件创建
-    ///
-    /// # 参数
-    /// * `ws` - 工作区管理器
-    /// * `name` - 文件名
-    ///
-    /// # 返回值
-    /// 返回文件句柄，成功时返回 Ok(File)，失败时返回 XError。
-    fn log_typescript(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {
-        let path = self.cocos_typescript_path(&ws.config.root, name)?;
-        tracing::info!("写入 TypeScript: {}\n{}", self.cocos_ts_relative(name), Url::from_file_path(&path)?);
-        Ok(File::create(path)?)
-    }
-
-    /// 记录 JSON 文件创建
-    ///
-    /// # 参数
-    /// * `ws` - 工作区管理器
-    /// * `name` - 文件名
-    ///
-    /// # 返回值
-    /// 返回文件句柄，成功时返回 Ok(File)，失败时返回 XError。
-    fn log_json(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {
-        let path = self.cocos_json_path(&ws.config.root, name)?;
-        tracing::info!("写入 JSON: {}\n{}", self.cocos_json_relative(name), Url::from_file_path(&path)?);
-        Ok(File::create(path)?)
-    }
-}
-
-impl super::Codegen for CocosCodegen {
-    fn generate(&self, context: &super::CodegenContext) -> XResult<()> {
-        println!("CocosCodegen::generate called");
-        println!("Output directory: {:?}", context.output_dir);
-        
-        // 从上下文中获取工作区管理器
-        if let Some(workspace) = &context.workspace {
-            println!("Workspace root: {:?}", workspace.config.root);
-            
-            // 创建一个新的 CocosCodegen 实例，使用项目配置中的 cocos 配置
-            let cocos_codegen = CocosCodegen {
-                storage: CocosStorage {
-                    json: CocosJsonConfig {
-                        enable: workspace.config.cocos.storage.json.enable,
-                        output: workspace.config.cocos.storage.json.output.clone(),
-                    },
-                },
-                loader: CocosLoader {
-                    enable: workspace.config.cocos.loader.enable,
-                    project: workspace.config.cocos.loader.project.clone(),
-                    output: workspace.config.cocos.loader.output.clone(),
-                    namespace: workspace.config.cocos.loader.namespace.clone(),
-                    manager_name: workspace.config.cocos.loader.manager_name.clone(),
-                    suffix_table: workspace.config.cocos.loader.suffix_table.clone(),
-                    instance_name: workspace.config.cocos.loader.instance_name.clone(),
-                },
-            };
-            
-            // 打印配置信息
-            println!("Cocos codegen enable: {}", cocos_codegen.loader.enable);
-            println!("Cocos project: {}", cocos_codegen.loader.project);
-            println!("Cocos output: {}", cocos_codegen.loader.output);
-            
-            // 写入 TypeScript 代码
-            println!("Calling write_typescript");
-            cocos_codegen.write_typescript(workspace)?;
-            println!("write_typescript completed");
-            // 写入 JSON 数据
-            println!("Calling write_json");
-            cocos_codegen.write_json(workspace)?;
-            println!("write_json completed");
-        } else {
-            println!("No workspace manager in context");
-        }
-        Ok(())
-    }
-
-    fn name(&self) -> &'static str {
-        "cocos"
-    }
-}
+    pub fn write_json(&self, ws

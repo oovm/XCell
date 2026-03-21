@@ -156,7 +156,9 @@ impl WorkspaceManager {
         }
     }
     pub fn try_perform_file(&mut self, file: &Path) -> XResult<()> {
+        println!("Processing file: {}", file.display());
         let table = crate::x_table::load_table(file, &self.config)?;
+        println!("Table loaded successfully");
 
         // 执行数据验证
         let validation_result = self.validation_manager.validate(table.as_ref(), self);
@@ -166,6 +168,8 @@ impl WorkspaceManager {
             }
         }
 
+        // 尝试解析为 XListTable
+        println!("Trying to parse as XListTable");
         let result = if let Ok(s) = XListTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
             println!("XListTable::confirm succeeded, calling perform");
             for error in s.perform(self) {

@@ -9,7 +9,7 @@
 //
 // use crate::bindings::exports::xcell_wasi::Guest;
 use serde_json::Value as JsonValueNode;
-use xcell_core::{WorkspaceManager, XResult};
+use xcell_analyzer::{WorkspaceManager, XResult};
 
 // struct XCellWasi;
 //

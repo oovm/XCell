@@ -676,12 +676,40 @@ impl CalamineTable {
         XCellHeader { column: index, document: self.read_comment_details(index), typing, field_name, complete, access }
     }
     fn get_field_name(&self, index: usize) -> Option<String> {
-        self.config.fields.get(index).map(|field| field.name.clone())
+        // 优先从 TOML 配置文件中获取字段名
+        if let Some(field) = self.config.fields.get(index) {
+            if !field.name.is_empty() {
+                return Some(field.name.clone());
+            }
+        }
+        // 如果 TOML 配置文件中没有字段名，则从 CSV 文件的第一行获取
+        // 对于 CSV 文件，字段名总是在第一行
+        let field_row = 0; // CSV 文件的第一行（0-based）
+        if let Some(value) = self.table.get_value((field_row, index as u32)) {
+            if let Data::String(s) = value {
+                return Some(s.to_string());
+            }
+        }
+        None
     }
     fn get_field_type(&self, index: usize) -> Option<XCellTyped> {
-        self.config.fields.get(index).and_then(|field| {
-            if field.r#type.is_empty() { None } else { Some(XCellTyped::parse(&field.r#type, &self.config.typing)) }
-        })
+        // 优先从 TOML 配置文件中获取字段类型
+        if let Some(field) = self.config.fields.get(index) {
+            if !field.r#type.is_empty() {
+                return Some(XCellTyped::parse(&field.r#type, &self.config.typing));
+            }
+        }
+        // 如果 TOML 配置文件中没有字段类型，则从 CSV 文件的第二行获取
+        // 对于 CSV 文件，字段类型总是在第二行
+        let type_row = 1; // CSV 文件的第二行（0-based）
+        if let Some(value) = self.table.get_value((type_row, index as u32)) {
+            if let Data::String(s) = value {
+                if !s.is_empty() {
+                    return Some(XCellTyped::parse(s, &self.config.typing));
+                }
+            }
+        }
+        None
     }
     fn read_comment_details(&self, index: usize) -> XDocument {
         XDocument

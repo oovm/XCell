@@ -1,7 +1,7 @@
 /**
- * MonsterType数据结构
+ * Skill数据结构
  */
-export interface MonsterType {
+export interface Skill {
     /**
      * id
      */
@@ -11,6 +11,22 @@ export interface MonsterType {
      */
     name: string;
     /**
+     * type
+     */
+    type: string;
+    /**
+     * level_requirement
+     */
+    level_requirement: number;
+    /**
+     * mp_cost
+     */
+    mp_cost: number;
+    /**
+     * damage
+     */
+    damage: number;
+    /**
      * description
      */
     description: string;
@@ -18,16 +34,16 @@ export interface MonsterType {
 }
 
 /**
- * MonsterType表加载器
+ * Skill表加载器
  */
-export class MonsterTypeTable {
-    private items: MonsterType[] = [];
+export class SkillTable {
+    private items: Skill[] = [];
 
     /**
-     * 加载MonsterType表数据
+     * 加载Skill表数据
      */
     public async load(): Promise<void> {
-        const path = 'tables/MonsterType';
+        const path = 'tables/Skill';
         const asset = await new Promise<cc.JsonAsset>((resolve, reject) => {
             cc.resources.load(path, cc.JsonAsset, (err, asset) => {
                 if (err) {
@@ -45,36 +61,36 @@ export class MonsterTypeTable {
     }
 
     /**
-     * 根据ID获取MonsterType
-     * @param id MonsterTypeID
+     * 根据ID获取Skill
+     * @param id SkillID
      */
-    public getMonsterTypeById(id: string): MonsterType | null {
+    public getSkillById(id: string): Skill | null {
         return this.items.find(item => item.id === id) || null;
     }
 
     /**
-     * 获取所有MonsterType
+     * 获取所有Skill
      */
-    public getAllMonsterType(): MonsterType[] {
+    public getAllSkill(): Skill[] {
         return this.items;
     }
 
 <% if has_type_field %>
     /**
-     * 根据类型获取MonsterType
+     * 根据类型获取Skill
      * @param type 类型
      */
-    public getMonsterTypeByType(type: string): MonsterType[] {
+    public getSkillByType(type: string): Skill[] {
         return this.items.filter(item => item.type === type);
     }
 <% endif %>
 
 <% if has_level_field %>
     /**
-     * 根据等级获取MonsterType
+     * 根据等级获取Skill
      * @param level 等级
      */
-    public getMonsterTypeByLevel(level: string): MonsterType[] {
+    public getSkillByLevel(level: string): Skill[] {
         return this.items.filter(item => item.level === level);
     }
 <% endif %>

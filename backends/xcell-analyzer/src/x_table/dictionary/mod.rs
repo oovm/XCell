@@ -37,11 +37,7 @@ impl XListTable {
             Some(s) => s.clone(),
             None => {
                 // 为 CSV 文件提供默认的 id 类型
-                IntegerDescription {
-                    kind: IntegerKind::Unsigned32,
-                    byte_order: ByteOrder::LittleEndian,
-                    size: 4,
-                }
+                IntegerDescription::range(0, u32::MAX, IntegerKind::Unsigned32)
             },
         };
         // 先获取表头

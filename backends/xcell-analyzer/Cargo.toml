@@ -1,6 +1,6 @@
 [package]
 name = "xcell-analyzer"
-version = { workspace = true }
+version = "0.2.0"
 authors = { workspace = true }
 description = "XCell analyzer library"
 repository = "https://github.com/oovm/XCell"

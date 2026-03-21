@@ -6,25 +6,30 @@ use xcell_types::{XError, XResult};
 
 use super::*;
 
+mod der;
+mod ser;
+
 /// Cocos 存储格式配置
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[derive(Debug, Clone)]
 pub enum CocosStorage {
     /// JSON 存储配置
-    #[serde(flatten)]
     Json(CocosJsonConfig),
+}
+
+impl Default for CocosStorage {
+    fn default() -> Self {
+        Self::Json(CocosJsonConfig::default())
+    }
 }
 
 /// Cocos 代码生成配置
 ///
 /// 用于配置 Cocos 平台的代码生成
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default)]
 pub struct CocosCodegen {
     /// 存储格式配置
-    #[serde(default)]
     pub storage: CocosStorage,
     /// 开发时用的储存格式
-    #[serde(default)]
     pub development: Option<CocosStorage>,
     /// 是否要生成 cocos 代码
     pub enable: bool,

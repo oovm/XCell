@@ -8,17 +8,16 @@ mod der;
 mod ser;
 
 /// Unity 存储格式配置
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[derive(Debug, Clone)]
 pub enum UnityStorage {
     /// 二进制存储配置
-     #[serde(flatten)]   Binary(UnityBinaryConfig),
+    Binary(UnityBinaryConfig),
     /// JSON 存储配置
-     #[serde(flatten)]   Json(UnityJsonConfig),
+    Json(UnityJsonConfig),
     /// XML 存储配置
-     #[serde(flatten)]   Xml(UnityXmlConfig),
+    Xml(UnityXmlConfig),
     /// Protobuf 存储配置
-      #[serde(flatten)]  Protobuf(UnityProtobufConfig),
+    Protobuf(UnityProtobufConfig),
 }
 
 impl Default for UnityStorage {
@@ -28,20 +27,12 @@ impl Default for UnityStorage {
 }
 
 /// Unity 代码生成配置
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default)]
 pub struct UnityCodegen {
     /// 存储格式配置
-    #[serde(default)]
     pub storage: UnityStorage,
     /// 开发时用的储存格式
-    #[serde(default)]
     pub development: Option<UnityStorage>,
-    /// 编译时存储格式
-    #[serde(default)]
-    pub compile_storage: Option<UnityStorage>,
-    /// 运行时存储格式
-    #[serde(default)]
-    pub runtime_storage: Option<UnityStorage>,
     /// C# 加载器配置
     pub enable: bool,
     pub project: String,
@@ -54,7 +45,6 @@ pub struct UnityCodegen {
     pub legacy_using: bool,
     pub legacy_null_null: bool,
     /// XLua 加载器配置
-    #[serde(default)]
     pub xlua: UnityXluaConfig,
 }
 
@@ -111,12 +101,12 @@ impl UnityCodegen {
 
     /// 获取编译期存储配置
     pub fn get_compile_storage(&self) -> &UnityStorage {
-        self.compile_storage.as_ref().unwrap_or(&self.storage)
+        &self.storage
     }
 
     /// 获取运行期存储配置
     pub fn get_runtime_storage(&self) -> &UnityStorage {
-        self.runtime_storage.as_ref().unwrap_or(&self.storage)
+        &self.storage
     }
 
     /// 写入二进制数据

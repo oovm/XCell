@@ -1,6 +1,6 @@
 [package]
 name = "xcell-provider"
-version = { workspace = true }
+version = "0.2.0"
 authors = { workspace = true }
 description = "Table provider for xcell (read and write)"
 repository = "https://github.com/oovm/XCell"

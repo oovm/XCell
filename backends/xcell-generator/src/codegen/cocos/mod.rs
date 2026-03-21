@@ -316,12 +316,15 @@ impl CocosCodegen {
      */
     {}: {};\n", field.name, field.name, field_type));
             }
-            code = code.replace("<%- for field in fields %>
+            
+            // 替换模板变量
+            let template_fields = "<%- for field in fields %>
     /**
      * {{ field.name }}
      */
     {{ field.name }}: {{ field.type }};
-<%- endfor %>", &fields_code);
+<%- endfor %>";
+            code = code.replace(template_fields, &fields_code);
             
             // 处理条件代码
             if has_type_field {

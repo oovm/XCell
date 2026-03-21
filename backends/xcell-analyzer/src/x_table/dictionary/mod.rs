@@ -29,10 +29,16 @@ pub struct XDictTable {
 
 impl XListTable {
     pub fn confirm(table: ArcTableReader) -> XResult<Self> {
-        if !crate::x_table::table::TableReader::is_list(&table) {
+        let is_list = crate::x_table::table::TableReader::is_list(&table);
+        println!("XListTable::confirm: is_list = {}", is_list);
+        
+        let head = table.get_header(0);
+        println!("XListTable::confirm: first header field_name = {}", head.field_name);
+        
+        if !is_list {
             return Err(XError::runtime_error("首格字段不是 id"));
         }
-        let head = table.get_header(0);
+        
         let id_type = match head.typing.as_integer() {
             Some(s) => s.clone(),
             None => {
@@ -45,6 +51,7 @@ impl XListTable {
         for header in table.headers() {
             headers.push(header);
         }
+        println!("XListTable::confirm: headers count = {}", headers.len());
         // 然后创建实例
         let out = Self { table, id_type, headers };
         Ok(out)

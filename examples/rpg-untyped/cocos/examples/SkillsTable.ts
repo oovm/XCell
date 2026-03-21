@@ -1,5 +1,3 @@
-
-
 /**
  * 技能表数据结构
  */
@@ -7,7 +5,7 @@ export interface Skill {
     /**
      * 技能ID
      */
-    id: string;
+    id: number;
     /**
      * 技能名称
      */
@@ -19,19 +17,19 @@ export interface Skill {
     /**
      * 技能伤害
      */
-    damage: string;
+    damage: number;
     /**
      * 技能冷却时间
      */
-    cooldown: string;
+    cooldown: number;
     /**
      * 技能消耗法力值
      */
-    mana_cost: string;
+    mana_cost: number;
     /**
      * 技能等级要求
      */
-    level_requirement: string;
+    level_requirement: number;
 }
 
 /**
@@ -47,7 +45,7 @@ export class SkillsTable {
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.skills = data;
+            this.skills = data as Skill[];
         }
     }
 
@@ -55,7 +53,7 @@ export class SkillsTable {
      * 根据ID获取技能
      * @param id 技能ID
      */
-    public getSkillById(id: string): Skill | null {
+    public getSkillById(id: number): Skill | null {
         return this.skills.find(skill => skill.id === id) || null;
     }
 
@@ -70,7 +68,7 @@ export class SkillsTable {
      * 根据等级要求获取技能
      * @param level 玩家等级
      */
-    public getSkillsByLevel(level: string): Skill[] {
-        return this.skills.filter(skill => parseInt(skill.level_requirement) <= parseInt(level));
+    public getSkillsByLevel(level: number): Skill[] {
+        return this.skills.filter(skill => skill.level_requirement <= level);
     }
 }

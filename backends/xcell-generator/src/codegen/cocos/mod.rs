@@ -15,8 +15,6 @@ use dejavu_macros::Template;
 // mod enumerate;
 // mod manager;
 
-#[derive(Template)]
-#[template(path = "BuildCocosClass.ts", ext = "txt", escape = "none")]
 pub struct CocosClassTemplate {
     /// Class name
     class_name: String,
@@ -212,69 +210,44 @@ impl CocosCodegen {
     pub fn write_typescript(&self, ws: &WorkspaceManager) -> XResult<()> {
         println!("CocosCodegen::write_typescript called");
         
-        let cocos = &ws.config.cocos;
         let root = &ws.config.root;
-        
-        println!("Cocos enable: {}", cocos.loader.enable);
-        println!("Cocos project: {:?}", cocos.loader.project);
-        println!("Cocos output: {:?}", cocos.loader.output);
-        println!("Cocos namespace: {:?}", cocos.loader.namespace);
         
         // 确保输出目录存在
         if let Some(s) = self.cocos_typescript_path(root, "test")?.parent() {
             std::fs::create_dir_all(s)?;
         }
-        if cocos.storage.json.enable {
-            if let Some(s) = self.cocos_json_path(root, "test")?.parent() {
-                std::fs::create_dir_all(s)?;
-            }
-        }
-
-        use std::fs;
         
-        // 读取 CSV 文件
-        let csv_files = fs::read_dir(root)?
-            .filter_map(|entry| entry.ok())
-            .filter(|entry| {
-                entry.path().is_file() && entry.path().extension().map_or(false, |ext| ext == "csv")
-            })
-            .collect::<Vec<_>>();
+        // 从工作区获取表数据
+        let class_tables = ws.classes();
         
-        println!("Found {} CSV files", csv_files.len());
+        println!("Found {} class tables", class_tables.count());
         
-        for entry in &csv_files {
-            let entry_path = entry.path();
-            let csv_path = entry_path.to_path_buf();
-            let file_stem = csv_path.file_stem().unwrap();
-            let file_name = file_stem.to_str().unwrap();
-            let table_name = format!("{}Table", file_name);
-            let ts_path = self.cocos_typescript_path(root, &table_name)?;
+        // 重置迭代器
+        let class_tables = ws.classes();
+        
+        // 处理类表
+        for class_data in class_tables {
+            let class_name = &class_data.name;
+            let table_class_name = format!("{}Table", class_name);
+            let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
             
-            println!("Processing CSV file: {} -> {}", csv_path.display(), ts_path.display());
+            println!("Processing class table: {} -> {}", class_name, ts_path.display());
             
             // 创建目录
             if let Some(parent) = ts_path.parent() {
-                fs::create_dir_all(parent)?;
+                std::fs::create_dir_all(parent)?;
                 println!("Created directory: {:?}", parent);
             }
-            
-            // 读取 CSV headers
-            let mut rdr = csv::Reader::from_path(csv_path.clone()).map_err(|e| XError::runtime_error(format!("CSV reader error: {}", e)))?;
-            let headers = rdr.headers().map_err(|e| XError::runtime_error(format!("CSV headers error: {}", e)))?;
             
             // 准备字段数据
             let mut fields = Vec::new();
             let mut has_type_field = false;
             let mut has_level_field = false;
             
-            for header in headers.iter() {
-                let field_name = header;
-                // 简单类型推断
-                let field_type = match field_name {
-                    "id" | "level" | "attack" | "defense" | "health" | "damage" | "required_exp" => "string",
-                    "name" | "type" | "description" | "drop_items" | "skills" | "unlock_skills" => "string",
-                    _ => "string",
-                };
+            // 从表结构获取字段信息
+            for item in &class_data.items {
+                let field_name = &item.field;
+                let field_type = &item.typing;
                 
                 fields.push(CocosField {
                     name: field_name.to_string(),
@@ -288,160 +261,96 @@ impl CocosCodegen {
                 }
             }
             
-            // 直接生成 TypeScript 代码
-            let mut code = String::new();
-            code.push_str(&format!("// {}.ts\n", table_name));
-            code.push_str("import { DataTableManager } from './DataTableManager';\n\n");
-            code.push_str(&format!("export class {} {{\n", table_name));
-            code.push_str("    private data: any[] = [];\n    private idMap: Map<string, any> = new Map();\n");
+            // 读取模板文件
+            let template_path = Path::new("templates/BuildCocosClass.ts.dejavu");
+            let template_content = std::fs::read_to_string(template_path)?;
             
+            // 替换模板变量
+            let mut code = template_content
+                .replace("{{ class_name }}", &class_name)
+                .replace("{{ table_name }}", &table_class_name);
+            
+            // 生成字段代码
+            let mut fields_code = String::new();
+            for field in &fields {
+                fields_code.push_str(&format!("    /**
+     * {}
+     */
+    {}: {};
+", field.name, field.name, field.r#type));
+            }
+            code = code.replace("<%- for field in fields %>
+    /**
+     * {{ field.name }}
+     */
+    {{ field.name }}: {{ field.type }};
+<%- endfor %>" , &fields_code);
+            
+            // 处理条件代码
             if has_type_field {
-                code.push_str("    private typeMap: Map<string, any[]> = new Map();\n");
-            }
-            if has_level_field {
-                code.push_str("    private levelMap: Map<string, any[]> = new Map();\n");
-            }
-            
-            code.push_str("\n");
-            code.push_str("    constructor() {}\n\n");
-            code.push_str("    load(data: any[]): void {\n");
-            code.push_str("        this.data = data;\n");
-            code.push_str("        this.idMap.clear();\n");
-            
-            if has_type_field {
-                code.push_str("        this.typeMap.clear();\n");
-            }
-            if has_level_field {
-                code.push_str("        this.levelMap.clear();\n");
-            }
-            
-            code.push_str("\n");
-            code.push_str("        for (const item of data) {\n");
-            code.push_str("            this.idMap.set(item.id, item);\n");
-            
-            if has_type_field {
-                code.push_str("            if (item.type) {\n");
-                code.push_str("                if (!this.typeMap.has(item.type)) {\n");
-                code.push_str("                    this.typeMap.set(item.type, []);\n");
-                code.push_str("                }\n");
-                code.push_str("                this.typeMap.get(item.type)?.push(item);\n");
-                code.push_str("            }\n");
-            }
-            
-            if has_level_field {
-                code.push_str("            if (item.level) {\n");
-                code.push_str("                if (!this.levelMap.has(item.level)) {\n");
-                code.push_str("                    this.levelMap.set(item.level, []);\n");
-                code.push_str("                }\n");
-                code.push_str("                this.levelMap.get(item.level)?.push(item);\n");
-                code.push_str("            }\n");
-            }
-            
-            code.push_str("        }\n");
-            code.push_str("    }\n\n");
-            code.push_str("    getById(id: string): any {\n");
-            code.push_str("        return this.idMap.get(id);\n");
-            code.push_str("    }\n\n");
-            
-            if has_type_field {
-                code.push_str("    getByType(type: string): any[] {\n");
-                code.push_str("        return this.typeMap.get(type) || [];\n");
-                code.push_str("    }\n\n");
+                code = code.replace("<% if has_type_field %>
+    /**
+     * 根据类型获取{{ class_name }}
+     * @param type 类型
+     */
+    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
+        return this.items.filter(item => item.type === type);
+    }
+<% endif %>" , &format!("    /**
+     * 根据类型获取{}
+     * @param type 类型
+     */
+    public get{}ByType(type: string): {}[] {{
+        return this.items.filter(item => item.type === type);
+    }}
+", class_name, class_name, class_name));
+            } else {
+                code = code.replace("<% if has_type_field %>
+    /**
+     * 根据类型获取{{ class_name }}
+     * @param type 类型
+     */
+    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
+        return this.items.filter(item => item.type === type);
+    }
+<% endif %>" , "");
             }
             
             if has_level_field {
-                code.push_str("    getByLevel(level: string): any[] {\n");
-                code.push_str("        return this.levelMap.get(level) || [];\n");
-                code.push_str("    }\n\n");
+                code = code.replace("<% if has_level_field %>
+    /**
+     * 根据等级获取{{ class_name }}
+     * @param level 等级
+     */
+    public get{{ class_name }}ByLevel(level: string): {{ class_name }}[] {
+        return this.items.filter(item => item.level === level);
+    }
+<% endif %>" , &format!("    /**
+     * 根据等级获取{}
+     * @param level 等级
+     */
+    public get{}ByLevel(level: string): {}[] {{
+        return this.items.filter(item => item.level === level);
+    }}
+", class_name, class_name, class_name));
+            } else {
+                code = code.replace("<% if has_level_field %>
+    /**
+     * 根据等级获取{{ class_name }}
+     * @param level 等级
+     */
+    public get{{ class_name }}ByLevel(level: string): {{ class_name }}[] {
+        return this.items.filter(item => item.level === level);
+    }
+<% endif %>" , "");
             }
-            
-            code.push_str("    getAll(): any[] {\n");
-            code.push_str("        return this.data;\n");
-            code.push_str("    }\n");
-            code.push_str("}\n");
             
             // 写入文件
             let mut file = File::create(ts_path)?;
             file.write_all(code.as_bytes())?;
             
-            println!("Created TypeScript file for {} successfully", file_name);
+            println!("Created TypeScript file for {} successfully", class_name);
         }
-        
-        // 生成 DataTableManager
-        let manager_path = self.cocos_typescript_path(root, &self.manager_name)?;
-        let mut manager_code = String::new();
-        manager_code.push_str("// DataTableManager.ts\n");
-        
-        // 添加导入语句
-        for entry in &csv_files {
-            let file_name = entry.path().file_stem().unwrap().to_str().unwrap();
-            let table_name = format!("{}Table", file_name);
-            manager_code.push_str(&format!("import {{ {} }} from './{}';\n", table_name, table_name));
-        }
-        
-        manager_code.push_str("\n");
-        manager_code.push_str("export class DataTableManager {\n");
-        manager_code.push_str("    private static instance: DataTableManager;\n");
-        
-        // 添加表实例
-        for entry in &csv_files {
-            let file_name = entry.path().file_stem().unwrap().to_str().unwrap();
-            let table_name = format!("{}Table", file_name);
-            manager_code.push_str(&format!("    private {}Table: {} | null = null;\n", file_name, table_name));
-        }
-        
-        manager_code.push_str("\n");
-        manager_code.push_str("    private constructor() {}\n\n");
-        manager_code.push_str("    public static getInstance(): DataTableManager {\n");
-        manager_code.push_str("        if (!DataTableManager.instance) {\n");
-        manager_code.push_str("            DataTableManager.instance = new DataTableManager();\n");
-        manager_code.push_str("        }\n");
-        manager_code.push_str("        return DataTableManager.instance;\n");
-        manager_code.push_str("    }\n\n");
-        
-        // 添加导入语句
-        for entry in &csv_files {
-            let file_name = entry.path().file_stem().unwrap().to_str().unwrap();
-            let table_name = format!("{}Table", file_name);
-            manager_code.push_str(&format!("    import{}(): Promise<void> {{\n", file_name));
-            manager_code.push_str(&format!("        if (!this.{}Table) {{\n", file_name));
-            manager_code.push_str(&format!("            this.{}Table = new {}Table();\n", file_name, table_name));
-            manager_code.push_str(&format!("            const data = await fetch('{}/{}.json').then(res => res.json());\n", self.json.output, file_name));
-            manager_code.push_str(&format!("            this.{}Table.load(data);\n", file_name));
-            manager_code.push_str("        }\n");
-            manager_code.push_str("        return Promise.resolve();\n");
-            manager_code.push_str("    }\n\n");
-        }
-        
-        // 添加获取表实例的方法
-        for entry in &csv_files {
-            let file_name = entry.path().file_stem().unwrap().to_str().unwrap();
-            let table_name = format!("{}Table", file_name);
-            manager_code.push_str(&format!("    get{}Table(): {} {{\n", file_name, table_name));
-            manager_code.push_str(&format!("        if (!this.{}Table) {{\n", file_name));
-            manager_code.push_str(&format!("            this.{}Table = new {}Table();\n", file_name, table_name));
-            manager_code.push_str("        }\n");
-            manager_code.push_str(&format!("        return this.{}Table;\n", file_name));
-            manager_code.push_str("    }\n\n");
-        }
-        
-        manager_code.push_str("    async loadAll(): Promise<void> {\n");
-        manager_code.push_str("        const promises = [\n");
-        
-        for entry in &csv_files {
-            let file_name = entry.path().file_stem().unwrap().to_str().unwrap();
-            manager_code.push_str(&format!("            this.import{}(),\n", file_name));
-        }
-        
-        manager_code.push_str("        ];\n");
-        manager_code.push_str("        await Promise.all(promises);\n");
-        manager_code.push_str("    }\n");
-        manager_code.push_str("}\n");
-        
-        // 写入 DataTableManager 文件
-        let mut manager_file = File::create(manager_path)?;
-        manager_file.write_all(manager_code.as_bytes())?;
-        println!("Created DataTableManager.ts successfully");
         
         Ok(())
     }

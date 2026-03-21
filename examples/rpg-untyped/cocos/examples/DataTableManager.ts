@@ -1,5 +1,4 @@
 import { ItemTable } from "./ItemTable";
-import { MonsterTypeTable } from "./MonsterTypeTable";
 import { MonstersTable } from "./MonstersTable";
 import { PlayerLevelsTable } from "./PlayerLevelsTable";
 import { SkillsTable } from "./SkillsTable";
@@ -13,7 +12,6 @@ export class DataTableManager {
 
     // 惰性缓存字段
     private _itemTable: ItemTable | null = null;
-    private _monsterTypeTable: MonsterTypeTable | null = null;
     private _monstersTable: MonstersTable | null = null;
     private _playerLevelsTable: PlayerLevelsTable | null = null;
     private _skillsTable: SkillsTable | null = null;
@@ -36,14 +34,11 @@ export class DataTableManager {
         // 预加载所有表
         await Promise.all([
             this.getItemTable(),
-            this.getMonsterTypeTable(),
             this.getMonstersTable(),
             this.getPlayerLevelsTable(),
             this.getSkillsTable()
         ]);
     }
-
-
 
     /**
      * 获取物品表（惰性加载）
@@ -54,17 +49,6 @@ export class DataTableManager {
             this._itemTable.load(await this.loadJsonAsset('tables/Item'));
         }
         return this._itemTable;
-    }
-
-    /**
-     * 获取怪物类型表（惰性加载）
-     */
-    public async getMonsterTypeTable(): Promise<MonsterTypeTable> {
-        if (this._monsterTypeTable === null) {
-            this._monsterTypeTable = new MonsterTypeTable();
-            this._monsterTypeTable.load(await this.loadJsonAsset('tables/MonsterType'));
-        }
-        return this._monsterTypeTable;
     }
 
     /**

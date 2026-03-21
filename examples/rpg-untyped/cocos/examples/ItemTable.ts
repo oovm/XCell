@@ -7,7 +7,7 @@ export interface Item {
     /**
      * 物品ID
      */
-    id: string;
+    id: number;
     /**
      * 物品名称
      */
@@ -19,15 +19,15 @@ export interface Item {
     /**
      * 物品等级
      */
-    level: string;
+    level: number;
     /**
      * 攻击力
      */
-    attack: string;
+    attack: number;
     /**
      * 防御力
      */
-    defense: string;
+    defense: number;
     /**
      * 物品描述
      */
@@ -47,7 +47,7 @@ export class ItemTable {
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.items = data;
+            this.items = data as Item[];
         }
     }
 
@@ -55,7 +55,7 @@ export class ItemTable {
      * 根据ID获取物品
      * @param id 物品ID
      */
-    public getItemById(id: string): Item | null {
+    public getItemById(id: number): Item | null {
         return this.items.find(item => item.id === id) || null;
     }
 
@@ -78,7 +78,7 @@ export class ItemTable {
      * 根据等级获取物品
      * @param level 物品等级
      */
-    public getItemsByLevel(level: string): Item[] {
+    public getItemsByLevel(level: number): Item[] {
         return this.items.filter(item => item.level === level);
     }
 }

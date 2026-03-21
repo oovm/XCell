@@ -7,7 +7,7 @@ export interface PlayerLevel {
     /**
      * 等级ID
      */
-    id: string;
+    id: number;
     /**
      * 等级名称
      */
@@ -15,23 +15,23 @@ export interface PlayerLevel {
     /**
      * 所需经验值
      */
-    required_exp: string;
+    required_exp: number;
     /**
      * 生命值
      */
-    health: string;
+    health: number;
     /**
      * 伤害值
      */
-    damage: string;
+    damage: number;
     /**
      * 防御力
      */
-    defense: string;
+    defense: number;
     /**
      * 解锁技能
      */
-    unlock_skills: string;
+    unlock_skills: number[];
 }
 
 /**
@@ -47,7 +47,7 @@ export class PlayerLevelsTable {
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.playerLevels = data;
+            this.playerLevels = data as PlayerLevel[];
         }
     }
 
@@ -55,7 +55,7 @@ export class PlayerLevelsTable {
      * 根据ID获取玩家等级
      * @param id 等级ID
      */
-    public getPlayerLevelById(id: string): PlayerLevel | null {
+    public getPlayerLevelById(id: number): PlayerLevel | null {
         return this.playerLevels.find(level => level.id === id) || null;
     }
 

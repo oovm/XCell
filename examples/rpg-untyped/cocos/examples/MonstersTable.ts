@@ -1,5 +1,7 @@
 
 
+import { MonsterType } from "./MonsterType";
+
 /**
  * 怪物表数据结构
  */
@@ -7,7 +9,7 @@ export interface Monster {
     /**
      * 怪物ID
      */
-    id: string;
+    id: number;
     /**
      * 怪物名称
      */
@@ -15,31 +17,31 @@ export interface Monster {
     /**
      * 怪物等级
      */
-    level: string;
+    level: number;
     /**
      * 怪物生命值
      */
-    health: string;
+    health: number;
     /**
      * 怪物伤害
      */
-    damage: string;
+    damage: number;
     /**
      * 怪物防御力
      */
-    defense: string;
+    defense: number;
     /**
      * 怪物类型
      */
-    type: string;
+    type: MonsterType;
     /**
      * 掉落物品
      */
-    drop_items: string;
+    drop_items: number[];
     /**
      * 怪物技能
      */
-    skills: string;
+    skills: number[];
 }
 
 /**
@@ -55,7 +57,7 @@ export class MonstersTable {
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.monsters = data;
+            this.monsters = data as Monster[];
         }
     }
 
@@ -63,7 +65,7 @@ export class MonstersTable {
      * 根据ID获取怪物
      * @param id 怪物ID
      */
-    public getMonsterById(id: string): Monster | null {
+    public getMonsterById(id: number): Monster | null {
         return this.monsters.find(monster => monster.id === id) || null;
     }
 
@@ -78,7 +80,7 @@ export class MonstersTable {
      * 根据类型获取怪物
      * @param type 怪物类型
      */
-    public getMonstersByType(type: string): Monster[] {
+    public getMonstersByType(type: MonsterType): Monster[] {
         return this.monsters.filter(monster => monster.type === type);
     }
 
@@ -86,7 +88,7 @@ export class MonstersTable {
      * 根据等级获取怪物
      * @param level 怪物等级
      */
-    public getMonstersByLevel(level: string): Monster[] {
+    public getMonstersByLevel(level: number): Monster[] {
         return this.monsters.filter(monster => monster.level === level);
     }
 }

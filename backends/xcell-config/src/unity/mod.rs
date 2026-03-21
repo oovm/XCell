@@ -119,12 +119,16 @@ impl UnityCodegen {
         config.join(project)
     }
 
-    /// 加载器的路径，默认同项目路径。
+    /// 加载器的路径，以项目路径为基准，**必须是**相对路径。
+    ///
+    /// 默认同项目路径。
     pub fn loader_path(&self, config: &Path) -> PathBuf {
         self.project_path(config).join(&self.output)
     }
 
-    /// 数据的路径, 默认同加载器路径。
+    /// 数据的路径，以项目路径为基准，**必须是**相对路径。
+    ///
+    /// 默认同加载器路径。
     pub fn data_path(&self, config: &Path) -> PathBuf {
         if self.output.is_empty() {
             return self.loader_path(config);
@@ -132,7 +136,9 @@ impl UnityCodegen {
         self.project_path(config).join(&self.output)
     }
 
-    /// 数据的路径, 默认同加载器路径。
+    /// 数据的路径，以项目路径为基准，**必须是**相对路径。
+    ///
+    /// 默认同加载器路径。
     pub fn debug_data_path(&self, config: &Path) -> PathBuf {
         self.project_path(config).join(&self.output)
     }

@@ -26,7 +26,7 @@ impl<'de> Deserialize<'de> for CocosStorage {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
 struct CocosLoaderHelper {
     enable: Option<bool>,
     project: Option<String>,

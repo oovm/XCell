@@ -33,10 +33,8 @@ impl<'de> Deserialize<'de> for UnityStorage {
     }
 }
 
-#[derive(Deserialize)]
-struct UnityCodegenHelper {
-    storage: Option<UnityStorage>,
-    development: Option<UnityStorage>,
+#[derive(Deserialize, Default)]
+struct UnityLoaderHelper {
     enable: Option<bool>,
     project: Option<String>,
     output: Option<String>,
@@ -50,27 +48,37 @@ struct UnityCodegenHelper {
     xlua: Option<UnityXluaConfig>,
 }
 
+#[derive(Deserialize)]
+struct UnityCodegenHelper {
+    storage: Option<UnityStorage>,
+    development: Option<UnityStorage>,
+    loader: Option<UnityLoaderHelper>,
+}
+
 impl<'de> Deserialize<'de> for UnityCodegen {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
         let helper = UnityCodegenHelper::deserialize(deserializer)?;
+        
+        // 从 loader 子表中读取配置
+        let loader = helper.loader.unwrap_or_default();
 
         Ok(UnityCodegen {
-            enable: helper.enable.unwrap_or(true),
+            enable: loader.enable.unwrap_or(true),
             storage: helper.storage.unwrap_or_default(),
             storage_debug: helper.development,
-            project: helper.project.unwrap_or("../".to_string()),
-            output: helper.output.unwrap_or("Assets/Scripts/DataTable/Generated".to_string()),
-            namespace: helper.namespace.unwrap_or("DataTable".to_string()),
-            manager: helper.manager.unwrap_or("DataTableManager".to_string()),
-            suffix_table: helper.suffix_table.unwrap_or("Table".to_string()),
-            suffix_element: helper.suffix_element.unwrap_or("".to_string()),
-            support_clone: helper.support_clone.unwrap_or(false),
-            legacy_using: helper.legacy_using.unwrap_or(false),
-            legacy_null_null: helper.legacy_null_null.unwrap_or(false),
-            xlua: helper.xlua.unwrap_or_default(),
+            project: loader.project.unwrap_or("../".to_string()),
+            output: loader.output.unwrap_or("Assets/Scripts/DataTable/Generated".to_string()),
+            namespace: loader.namespace.unwrap_or("DataTable".to_string()),
+            manager: loader.manager.unwrap_or("DataTableManager".to_string()),
+            suffix_table: loader.suffix_table.unwrap_or("Table".to_string()),
+            suffix_element: loader.suffix_element.unwrap_or("".to_string()),
+            support_clone: loader.support_clone.unwrap_or(false),
+            legacy_using: loader.legacy_using.unwrap_or(false),
+            legacy_null_null: loader.legacy_null_null.unwrap_or(false),
+            xlua: loader.xlua.unwrap_or_default(),
         })
     }
 }

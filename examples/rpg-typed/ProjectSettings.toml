@@ -9,18 +9,13 @@ line.comment = 3
 line.data = 4
 
 [[generators]]
-type = "Cocos"
-
-[generators.cocos.loader]
+type = "cocos"
 enable = true
 project = "."
 output = "cocos"
-namespace = "DataTable"
 
 [[generators]]
 type = "Unity"
-
-[generators.unity.loader]
 enable = true
 project = "."
 output = "unity"

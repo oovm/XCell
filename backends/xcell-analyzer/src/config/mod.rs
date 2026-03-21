@@ -167,9 +167,11 @@ impl WorkspaceManager {
         }
 
         let result = if let Ok(s) = XListTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+            println!("XListTable::confirm succeeded, calling perform");
             for error in s.perform(self) {
                 tracing::error!("{}", error.with_path(file));
             }
+            println!("XListTable::perform completed, lists count = {}", self.defines.list.len());
             Ok(())
         }
         else if let Ok(s) = XDictTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {

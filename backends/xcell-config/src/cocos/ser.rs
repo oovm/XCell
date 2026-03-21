@@ -38,7 +38,7 @@ impl Serialize for CocosCodegen {
     {
         let helper = CocosCodegenHelper {
             storage: self.storage.clone(),
-            development: self.development.clone(),
+            development: self.storage_debug.clone(),
             enable: self.enable,
             project: self.project.clone(),
             output: self.output.clone(),

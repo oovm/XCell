@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
+use std::path::{Path, PathBuf};
 
-use xcell_types::{XError, XResult};
+use xcell_types::XResult;
 
 use super::*;
 
@@ -29,13 +30,11 @@ impl Default for UnityStorage {
 /// Unity 代码生成配置
 #[derive(Debug, Clone, Default)]
 pub struct UnityCodegen {
-    /// 存储格式配置
-    pub storage: UnityStorage,
-    /// 开发时用的储存格式
-    pub development: Option<UnityStorage>,
     /// C# 加载器配置
     pub enable: bool,
+    /// cocos 的工作目录, 相对于配置文件
     pub project: String,
+    /// loader 输出目录，以 `project` 为根目录
     pub output: String,
     pub namespace: String,
     pub manager: String,
@@ -46,6 +45,10 @@ pub struct UnityCodegen {
     pub legacy_null_null: bool,
     /// XLua 加载器配置
     pub xlua: UnityXluaConfig,
+    /// 存储格式配置
+    pub storage: UnityStorage,
+    /// 开发时用的储存格式
+    pub storage_debug: Option<UnityStorage>,
 }
 
 /// Unity XLua 配置
@@ -72,6 +75,7 @@ pub struct UnityJsonConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct UnityProtobufConfig {
     pub enable: bool,
+    pub output: String,
 }
 
 /// Unity 代码生成配置
@@ -96,19 +100,28 @@ pub struct UnityBinaryConfig {
 impl UnityCodegen {
     /// 获取开发时存储配置
     pub fn get_development_storage(&self) -> &UnityStorage {
-        self.development.as_ref().unwrap_or(&self.storage)
+        self.storage_debug.as_ref().unwrap_or(&self.storage)
+    }
+    pub fn project_path(&self, config: &Path) -> PathBuf {
+        let project = Path::new(&self.project);
+        if project.is_absolute() {
+            return project.to_path_buf();
+        }
+        config.join(project)
     }
 
-    /// 获取编译期存储配置
-    pub fn get_compile_storage(&self) -> &UnityStorage {
-        &self.storage
+    pub fn loader_path(&self, config: &Path) -> PathBuf {
+        self.project_path(config).join(&self.output)
     }
 
-    /// 获取运行期存储配置
-    pub fn get_runtime_storage(&self) -> &UnityStorage {
-        &self.storage
+    pub fn production_data_path(&self, config: &Path) -> PathBuf {
+        self.project_path(config).join(&self.output)
     }
 
+    pub fn development_data_path(&self, config: &Path) -> PathBuf {
+        self.project_path(config).join(&self.output)
+    }
+    
     /// 写入二进制数据
     pub fn write_binary(&self) -> XResult<()> {
         Ok(())
@@ -118,7 +131,7 @@ impl UnityCodegen {
     pub fn write_csharp(&self) -> XResult<()> {
         Ok(())
     }
-    
+
     /// 写入管理器
     pub fn write_manager(&self, data: &dyn std::any::Any, root: &std::path::Path, version: &str) -> XResult<()> {
         Ok(())

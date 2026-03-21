@@ -27,15 +27,11 @@ impl Default for CocosStorage {
 /// 用于配置 Cocos 平台的代码生成
 #[derive(Debug, Clone, Default)]
 pub struct CocosCodegen {
-    /// 存储格式配置
-    pub storage: CocosStorage,
-    /// 开发时用的储存格式
-    pub development: Option<CocosStorage>,
     /// 是否要生成 cocos 代码
     pub enable: bool,
     /// cocos 的工作目录, 建议使用相对路径
     pub project: String,
-    /// 输出目录
+    /// loader 的输出目录，以为 `project` 为根目录
     pub output: String,
     /// 生成的管理器的名称
     pub manager_name: String,
@@ -43,6 +39,10 @@ pub struct CocosCodegen {
     pub suffix_table: String,
     /// 生成的实例名称
     pub instance_name: String,
+    /// 存储格式配置
+    pub storage: CocosStorage,
+    /// 开发时用的储存格式
+    pub storage_debug: Option<CocosStorage>,
 }
 
 /// Cocos JSON 配置
@@ -52,14 +52,14 @@ pub struct CocosCodegen {
 pub struct CocosJsonConfig {
     /// 是否启用 JSON 生成
     pub enable: bool,
-    /// 生成的 JSON 文件的目录
+    /// data 的输出目录，以为 `project` 为根目录
     pub output: String,
 }
 
 impl CocosCodegen {
     /// 获取开发时存储配置
     pub fn get_development_storage(&self) -> &CocosStorage {
-        self.development.as_ref().unwrap_or(&self.storage)
+        self.storage_debug.as_ref().unwrap_or(&self.storage)
     }
 
     /// Cocos 项目文件夹

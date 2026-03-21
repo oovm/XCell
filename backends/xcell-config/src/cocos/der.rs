@@ -47,7 +47,7 @@ impl<'de> Deserialize<'de> for CocosCodegen {
 
         Ok(CocosCodegen {
             storage: helper.storage,
-            development: helper.development,
+            storage_debug: helper.development,
             enable: helper.enable.unwrap_or(true),
             project: helper.project,
             output: helper.output,

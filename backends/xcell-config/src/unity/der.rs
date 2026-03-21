@@ -60,7 +60,7 @@ impl<'de> Deserialize<'de> for UnityCodegen {
         Ok(UnityCodegen {
             enable: helper.enable.unwrap_or(true),
             storage: helper.storage,
-            development: helper.development,
+            storage_debug: helper.development,
             project: helper.project,
             output: helper.output,
             namespace: helper.namespace,

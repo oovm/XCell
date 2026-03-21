@@ -607,6 +607,12 @@ impl super::Codegen for CocosCodegen {
         // 从上下文中获取工作区管理器
         if let Some(workspace) = &context.workspace {
             println!("Workspace root: {:?}", workspace.config.root);
+            
+            // 直接使用当前实例的配置，确保所有设置都被正确应用
+            println!("Cocos codegen enable: {}", self.enable);
+            println!("Cocos project: {}", self.project);
+            println!("Cocos output: {}", self.output);
+            
             // 写入 TypeScript 代码
             println!("Calling write_typescript");
             self.write_typescript(workspace)?;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace DataTable.Generated
+namespace DataTable
 {
     /// <summary>
     /// 数据表管理器

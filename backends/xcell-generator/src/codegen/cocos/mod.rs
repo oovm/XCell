@@ -108,14 +108,7 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回 Cocos 项目的绝对路径，成功时返回 Ok(PathBuf)，失败时返回 XError。
     pub fn cocos_path(&self, root: &Path) -> XResult<PathBuf> {
-        // 优先使用 cocos 子目录
-        let cocos_subdir = root.join("cocos");
-        if cocos_subdir.exists() {
-            println!("Using cocos subdirectory: {:?}", cocos_subdir);
-            return Ok(cocos_subdir);
-        }
-        
-        // 如果 cocos 子目录不存在，使用配置中的 project 路径
+        // 使用配置中的 project 路径
         let project = PathBuf::from(&self.project);
         let project = match project.is_absolute() {
             true => project,

@@ -78,6 +78,18 @@ pub struct UnityProtobufConfig {
     pub output: String,
 }
 
+impl UnityStorage {
+    pub fn output_path(&self, project_path: &Path) -> PathBuf {
+        let path: &str = match self {
+            UnityStorage::Binary(x) => x.output.as_ref(),
+            UnityStorage::Json(x) => x.output.as_ref(),
+            UnityStorage::Xml(x) => x.output.as_ref(),
+            UnityStorage::Protobuf(x) => x.output.as_ref(),
+        };
+        project_path.join(path)
+    }
+}
+
 /// Unity 代码生成配置
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct UnityCodegenConfig {
@@ -98,10 +110,7 @@ pub struct UnityBinaryConfig {
 }
 
 impl UnityCodegen {
-    /// 获取开发时存储配置
-    pub fn get_development_storage(&self) -> &UnityStorage {
-        self.storage_debug.as_ref().unwrap_or(&self.storage)
-    }
+    /// 项目路径，建议使用相对路径。
     pub fn project_path(&self, config: &Path) -> PathBuf {
         let project = Path::new(&self.project);
         if project.is_absolute() {
@@ -110,18 +119,24 @@ impl UnityCodegen {
         config.join(project)
     }
 
+    /// 加载器的路径，默认同项目路径。
     pub fn loader_path(&self, config: &Path) -> PathBuf {
         self.project_path(config).join(&self.output)
     }
 
-    pub fn production_data_path(&self, config: &Path) -> PathBuf {
+    /// 数据的路径, 默认同加载器路径。
+    pub fn data_path(&self, config: &Path) -> PathBuf {
+        if self.output.is_empty() {
+            return self.loader_path(config);
+        }
         self.project_path(config).join(&self.output)
     }
 
-    pub fn development_data_path(&self, config: &Path) -> PathBuf {
+    /// 数据的路径, 默认同加载器路径。
+    pub fn debug_data_path(&self, config: &Path) -> PathBuf {
         self.project_path(config).join(&self.output)
     }
-    
+
     /// 写入二进制数据
     pub fn write_binary(&self) -> XResult<()> {
         Ok(())

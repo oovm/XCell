@@ -94,8 +94,10 @@ pub struct ProjectConfig {
     /// 排除的 excel 模式, 优先级低于 include
     pub exclude: String,
     /// 行列排序模式
+    #[serde(default)]
     pub line: TableLineMode,
     /// 类型解析模式
+    #[serde(default)]
     pub typing: TypeMetaInfo,
     /// 合表模式
     #[serde(default)]

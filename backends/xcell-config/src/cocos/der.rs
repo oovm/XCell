@@ -27,15 +27,21 @@ impl<'de> Deserialize<'de> for CocosStorage {
 }
 
 #[derive(Deserialize)]
-struct CocosCodegenHelper {
-    storage: CocosStorage,
-    development: Option<CocosStorage>,
+struct CocosLoaderHelper {
     enable: Option<bool>,
-    project: String,
-    output: String,
-    manager_name: String,
-    suffix_table: String,
-    instance_name: String,
+    project: Option<String>,
+    output: Option<String>,
+    namespace: Option<String>,
+    manager_name: Option<String>,
+    suffix_table: Option<String>,
+    instance_name: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct CocosCodegenHelper {
+    storage: Option<CocosStorage>,
+    development: Option<CocosStorage>,
+    loader: Option<CocosLoaderHelper>,
 }
 
 impl<'de> Deserialize<'de> for CocosCodegen {
@@ -44,16 +50,19 @@ impl<'de> Deserialize<'de> for CocosCodegen {
         D: Deserializer<'de>,
     {
         let helper = CocosCodegenHelper::deserialize(deserializer)?;
+        
+        // 从 loader 子表中读取配置
+        let loader = helper.loader.unwrap_or_default();
 
         Ok(CocosCodegen {
-            storage: helper.storage,
+            storage: helper.storage.unwrap_or_default(),
             storage_debug: helper.development,
-            enable: helper.enable.unwrap_or(true),
-            project: helper.project,
-            output: helper.output,
-            manager_name: helper.manager_name,
-            suffix_table: helper.suffix_table,
-            instance_name: helper.instance_name,
+            enable: loader.enable.unwrap_or(true),
+            project: loader.project.unwrap_or("../".to_string()),
+            output: loader.output.unwrap_or("assets/scripts/dataTable/generated".to_string()),
+            manager_name: loader.manager_name.unwrap_or("DataTableManager".to_string()),
+            suffix_table: loader.suffix_table.unwrap_or("Table".to_string()),
+            instance_name: loader.instance_name.unwrap_or("DataTable".to_string()),
         })
     }
 }

@@ -19,7 +19,7 @@ pub struct CocosStorage {
 /// Cocos 代码生成配置
 ///
 /// 用于配置 Cocos 平台的代码生成
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize)]
 pub struct CocosCodegen {
     /// 存储格式配置
     #[serde(default)]

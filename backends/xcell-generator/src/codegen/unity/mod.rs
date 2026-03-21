@@ -82,7 +82,7 @@ impl UnityCodegen {
     pub fn write_manager(&self, ws: &WorkspaceManager, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
         let root = &ws.config.root;
         
-        let output_dir = PathBuf::from(&unity_config.loader.output);
+        let output_dir = PathBuf::from(&unity_config.output);
         let output_dir = match output_dir.is_absolute() {
             true => output_dir,
             false => root.join(output_dir),
@@ -103,7 +103,7 @@ impl UnityCodegen {
         writeln!(file, "using System.IO;")?;
         writeln!(file, "using UnityEngine;")?;
         writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity_config.loader.namespace)?;
+        writeln!(file, "namespace {}", unity_config.namespace)?;
         writeln!(file, "{{")?;
         writeln!(file, "    /// <summary>")?;
         writeln!(file, "    /// 数据表管理器")?;
@@ -137,7 +137,7 @@ impl UnityCodegen {
         
         // 为每个表生成加载代码
         for table in ws.classes() {
-            let table_name = format!("{}{}", table.name, unity_config.loader.suffix_table);
+            let table_name = format!("{}{}", table.name, unity_config.suffix_table);
             writeln!(file, "            {}.Load();", table_name)?;
         }
         
@@ -178,9 +178,9 @@ impl UnityCodegen {
     pub fn write_class(&self, ws: &WorkspaceManager, table: &xcell_analyzer::XClassData, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
         let root = &ws.config.root;
         
-        let table_name = format!("{}{}", table.name, unity_config.loader.suffix_table);
+        let table_name = format!("{}{}", table.name, unity_config.suffix_table);
         
-        let output_dir = PathBuf::from(&unity_config.loader.output);
+        let output_dir = PathBuf::from(&unity_config.output);
         let output_dir = match output_dir.is_absolute() {
             true => output_dir,
             false => root.join(output_dir),
@@ -201,7 +201,7 @@ impl UnityCodegen {
         writeln!(file, "using System.IO;")?;
         writeln!(file, "using UnityEngine;")?;
         writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity_config.loader.namespace)?;
+        writeln!(file, "namespace {}", unity_config.namespace)?;
         writeln!(file, "{{")?;
         
         // 生成数据结构
@@ -295,12 +295,12 @@ impl super::Codegen for UnityCodegen {
             
             // 从 generators 列表中获取 Unity 配置
             for generator in &workspace.config.generators {
-                if let xcell_config::project::GeneratorType::Unity = generator.r#type {
-                    println!("Unity loader output: {:?}", generator.unity.loader.output);
+                if let xcell_config::project::Generator::Unity(unity_config) = generator {
+                    println!("Unity output: {:?}", unity_config.output);
                     
                     // 写入 C# 代码
                     println!("Calling write_csharp");
-                    self.write_csharp(workspace, &context.output_dir, &generator.unity)?;
+                    self.write_csharp(workspace, &context.output_dir, unity_config)?;
                     println!("write_csharp completed");
                     
                     // 写入二进制数据

@@ -33,22 +33,16 @@ pub struct ExportCondition {
 #[serde(tag = "type")]
 pub enum Generator {
     /// Unity 生成器
-    #[serde(flatten)]
     Unity(UnityCodegen),
     /// Cocos 生成器
-    #[serde(flatten)]
     Cocos(CocosCodegen),
     /// XLua 生成器
-    #[serde(flatten)]
     Xlua(XluaCodegen),
     /// SQL 生成器
-    #[serde(flatten)]
     Sql(SqlCodegen),
     /// JSON 生成器
-    #[serde(flatten)]
     Json(JsonCodegen),
     /// TypeScript 生成器
-    #[serde(flatten)]
     TypeScript(TypeScriptCodegen),
 }
 

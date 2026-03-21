@@ -12,62 +12,40 @@ impl<'de> Deserialize<'de> for UnityCodegen {
             #[serde(default)]
             storage: UnityStorage,
             #[serde(default)]
-            loader: UnityLoader,
-            // 旧格式字段
-            enable: Option<bool>,
-            project: Option<String>,
-            output: Option<String>,
-            namespace: Option<String>,
-            manager: Option<String>,
-            suffix_table: Option<String>,
-            suffix_element: Option<String>,
-            support_clone: Option<bool>,
-            legacy_using: Option<bool>,
-            legacy_null_null: Option<bool>,
+            compile_storage: Option<UnityStorage>,
             #[serde(default)]
-            binary: UnityBinaryConfig,
+            runtime_storage: Option<UnityStorage>,
+            enable: bool,
+            project: String,
+            output: String,
+            namespace: String,
+            manager: String,
+            suffix_table: String,
+            suffix_element: String,
+            support_clone: bool,
+            legacy_using: bool,
+            legacy_null_null: bool,
             #[serde(default)]
             xlua: UnityXluaConfig,
-            #[serde(default)]
-            xml: UnityXmlConfig,
-            #[serde(default)]
-            json: UnityJsonConfig,
-            #[serde(default)]
-            protobuf: UnityProtobufConfig,
         }
 
         let helper = UnityCodegenHelper::deserialize(deserializer)?;
         
-        // 检查是否使用旧格式
-        if helper.enable.is_some() || helper.project.is_some() || helper.output.is_some() {
-            // 旧格式
-            Ok(UnityCodegen {
-                storage: UnityStorage {
-                    binary: helper.binary,
-                    json: helper.json,
-                    xml: helper.xml,
-                    protobuf: helper.protobuf,
-                },
-                loader: UnityLoader {
-                    enable: helper.enable.unwrap_or(false),
-                    project: helper.project.unwrap_or_default(),
-                    output: helper.output.unwrap_or_default(),
-                    namespace: helper.namespace.unwrap_or_default(),
-                    manager: helper.manager.unwrap_or_default(),
-                    suffix_table: helper.suffix_table.unwrap_or_default(),
-                    suffix_element: helper.suffix_element.unwrap_or_default(),
-                    support_clone: helper.support_clone.unwrap_or(false),
-                    legacy_using: helper.legacy_using.unwrap_or(false),
-                    legacy_null_null: helper.legacy_null_null.unwrap_or(false),
-                    xlua: helper.xlua,
-                },
-            })
-        } else {
-            // 新格式
-            Ok(UnityCodegen {
-                storage: helper.storage,
-                loader: helper.loader,
-            })
-        }
+        Ok(UnityCodegen {
+            storage: helper.storage,
+            compile_storage: helper.compile_storage,
+            runtime_storage: helper.runtime_storage,
+            enable: helper.enable,
+            project: helper.project,
+            output: helper.output,
+            namespace: helper.namespace,
+            manager: helper.manager,
+            suffix_table: helper.suffix_table,
+            suffix_element: helper.suffix_element,
+            support_clone: helper.support_clone,
+            legacy_using: helper.legacy_using,
+            legacy_null_null: helper.legacy_null_null,
+            xlua: helper.xlua,
+        })
     }
 }

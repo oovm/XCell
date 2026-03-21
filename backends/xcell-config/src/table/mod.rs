@@ -27,7 +27,6 @@ pub struct FieldConfig {
 pub struct TableConfig {
     pub line: TableLineMode,
     pub typing: TypeMetaInfo,
-    pub unity: UnityCodegen,
     /// 字段配置信息列表
     pub fields: Vec<FieldConfig>,
 }
@@ -64,6 +63,6 @@ impl TableConfig {
 
 impl From<&ProjectConfig> for TableConfig {
     fn from(project: &ProjectConfig) -> Self {
-        TableConfig { line: project.line, typing: project.typing.clone(), unity: project.unity.clone(), fields: Vec::new() }
+        TableConfig { line: project.line, typing: project.typing.clone(), fields: Vec::new() }
     }
 }

@@ -1,6 +1,7 @@
 use clap::Parser;
 use xcell::{SubArgs, TomlSubArgs, XCellArgs, logger, pause};
 use xcell_analyzer::{WorkspaceManager, XResult, XError};
+use xcell_config::project::Generator;
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -136,8 +137,15 @@ async fn main() -> XResult<()> {
         _ => {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
             println!("Workspace root: {:?}", ws.config.root);
-            println!("Unity loader enable: {:?}", ws.config.unity.loader.enable);
-            println!("Unity loader output: {:?}", ws.config.unity.loader.output);
+            
+            // 从 generators 列表中查找 Unity 配置
+            for generator in &ws.config.generators {
+                if let Generator::Unity(unity) = generator {
+                    println!("Unity loader enable: {:?}", unity.enable);
+                    println!("Unity loader output: {:?}", unity.output);
+                }
+            }
+            
             println!("Generators count: {:?}", ws.config.generators.len());
             
             // 先进行首次遍历，加载表数据

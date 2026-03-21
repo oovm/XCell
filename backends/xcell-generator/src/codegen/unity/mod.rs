@@ -36,58 +36,30 @@ impl UnityCodegen {
 
     /// 写入 C# 代码
     pub fn write_csharp(&self, ws: &WorkspaceManager, output_dir: &std::path::Path, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
-        use std::fs::File;
-        use std::io::Write;
-        use std::path::PathBuf;
-        
         let root = &ws.config.root;
         
-        // 解析输出目录路径，确保在 unity 子目录下
-        let output_dir = if output_dir.is_absolute() {
-            output_dir.to_path_buf()
-        } else {
-            // 检查 output_dir 是否已经包含 unity 目录
-            if output_dir.starts_with("unity") {
-                root.join(output_dir)
-            } else {
-                // 尝试在 unity 子目录下查找
-                let unity_output_dir = root.join("unity").join(output_dir);
-                if unity_output_dir.exists() {
-                    unity_output_dir
-                } else {
-                    // 如果 unity 子目录不存在，使用原路径
-                    root.join(output_dir)
-                }
-            }
-        };
+        // 使用现有的路径解析方法计算加载器路径
+        let loader_path = unity_config.loader_path(root);
         
-        println!("Unity output directory: {:?}", output_dir);
+        println!("Unity loader path: {:?}", loader_path);
         
         // 确保输出目录存在
-        std::fs::create_dir_all(&output_dir)?;
-        println!("Created output directory: {:?}", output_dir);
+        std::fs::create_dir_all(&loader_path)?;
+        println!("Created output directory: {:?}", loader_path);
         
         // 生成 DataTableManager
-        self.write_manager(ws, unity_config)?;
+        self.write_manager(ws, loader_path.clone(), unity_config)?;
         
         // 生成各个表的类型定义和加载器
         for table in ws.classes() {
-            self.write_class(ws, table, unity_config)?;
+            self.write_class(ws, table, loader_path.clone(), unity_config)?;
         }
         
         Ok(())
     }
     
     /// 写入 DataTableManager
-    pub fn write_manager(&self, ws: &WorkspaceManager, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
-        let root = &ws.config.root;
-        
-        let output_dir = PathBuf::from(&unity_config.output);
-        let output_dir = match output_dir.is_absolute() {
-            true => output_dir,
-            false => root.join(output_dir),
-        };
-        
+    pub fn write_manager(&self, ws: &WorkspaceManager, output_dir: PathBuf, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
         if let Some(parent) = output_dir.parent() {
             std::fs::create_dir_all(parent)?;
         }
@@ -175,16 +147,10 @@ impl UnityCodegen {
     }
     
     /// 写入表的类型定义和加载器
-    pub fn write_class(&self, ws: &WorkspaceManager, table: &xcell_analyzer::XClassData, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
+    pub fn write_class(&self, ws: &WorkspaceManager, table: &xcell_analyzer::XClassData, output_dir: PathBuf, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
         let root = &ws.config.root;
         
         let table_name = format!("{}{}", table.name, unity_config.suffix_table);
-        
-        let output_dir = PathBuf::from(&unity_config.output);
-        let output_dir = match output_dir.is_absolute() {
-            true => output_dir,
-            false => root.join(output_dir),
-        };
         
         if let Some(parent) = output_dir.parent() {
             std::fs::create_dir_all(parent)?;

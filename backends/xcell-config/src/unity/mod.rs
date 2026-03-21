@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
-use xcell_types::XResult;
-
 use super::*;
 
 mod der;
@@ -79,14 +77,13 @@ pub struct UnityProtobufConfig {
 }
 
 impl UnityStorage {
-    pub fn output_path(&self, project_path: &Path) -> PathBuf {
-        let path: &str = match self {
+    pub fn output_path(&self) -> &str {
+        match self {
             UnityStorage::Binary(x) => x.output.as_ref(),
             UnityStorage::Json(x) => x.output.as_ref(),
             UnityStorage::Xml(x) => x.output.as_ref(),
             UnityStorage::Protobuf(x) => x.output.as_ref(),
-        };
-        project_path.join(path)
+        }
     }
 }
 
@@ -130,31 +127,23 @@ impl UnityCodegen {
     ///
     /// 默认同加载器路径。
     pub fn data_path(&self, config: &Path) -> PathBuf {
-        if self.output.is_empty() {
+        let data_path = self.storage.output_path();
+        if data_path.is_empty() {
             return self.loader_path(config);
         }
-        self.project_path(config).join(&self.output)
+        self.project_path(config).join(data_path)
     }
-
     /// 数据的路径，以项目路径为基准，**必须是**相对路径。
     ///
-    /// 默认同加载器路径。
+    /// 默认同数据路径。
     pub fn debug_data_path(&self, config: &Path) -> PathBuf {
-        self.project_path(config).join(&self.output)
-    }
-
-    /// 写入二进制数据
-    pub fn write_binary(&self) -> XResult<()> {
-        Ok(())
-    }
-
-    /// 写入 C# 代码
-    pub fn write_csharp(&self) -> XResult<()> {
-        Ok(())
-    }
-
-    /// 写入管理器
-    pub fn write_manager(&self, data: &dyn std::any::Any, root: &std::path::Path, version: &str) -> XResult<()> {
-        Ok(())
+        let debug_path = match self.storage_debug.as_ref() {
+            None => "",
+            Some(s) => s.output_path(),
+        };
+        if debug_path.is_empty() {
+            return self.data_path(config);
+        }
+        self.project_path(config).join(debug_path)
     }
 }

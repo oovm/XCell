@@ -69,7 +69,7 @@ impl<'de> Deserialize<'de> for UnityCodegen {
             enable: loader.enable.unwrap_or(true),
             storage: helper.storage.unwrap_or_default(),
             storage_debug: helper.development,
-            project: loader.project.unwrap_or("../".to_string()),
+            project: loader.project.unwrap_or(".".to_string()),
             output: loader.output.unwrap_or("Assets/Scripts/DataTable/Generated".to_string()),
             namespace: loader.namespace.unwrap_or("DataTable".to_string()),
             manager: loader.manager.unwrap_or("DataTableManager".to_string()),

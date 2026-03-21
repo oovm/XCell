@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use toml;
 
 use xcell_types::TypeMetaInfo;
@@ -29,8 +30,7 @@ pub struct ExportCondition {
 }
 
 /// 生成器配置枚举
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[derive(Debug, Clone, Serialize)]
 pub enum Generator {
     /// Unity 生成器
     Unity(UnityCodegen),

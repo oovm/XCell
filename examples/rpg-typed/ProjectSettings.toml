@@ -15,7 +15,7 @@ project = "."
 output = "cocos"
 
 [[generators]]
-type = "Unity"
+type = "unity"
 enable = true
 project = "."
 output = "unity"

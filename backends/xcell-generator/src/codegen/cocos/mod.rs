@@ -108,24 +108,11 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回 Cocos 项目的绝对路径，成功时返回 Ok(PathBuf)，失败时返回 XError。
     pub fn cocos_path(&self, root: &Path) -> XResult<PathBuf> {
-        // 使用配置中的 project 路径
-        let project = PathBuf::from(&self.project);
-        let project = match project.is_absolute() {
-            true => project,
-            false => root.join(project),
-        };
-        
-        // 尝试规范化路径，如果失败则返回原始路径
-        match project.canonicalize() {
-            Ok(canonical_path) => {
-                println!("Cocos project canonical path: {:?}", canonical_path);
-                Ok(canonical_path)
-            },
-            Err(e) => {
-                println!("Failed to canonicalize Cocos project path: {:?}, using original path: {:?}", e, project);
-                Ok(project)
-            }
-        }
+        // 使用 xcell-config 中定义的路径解析方法
+        let cocos_config = self.to_xcell_config();
+        let path = cocos_config.cocos_path(root)?;
+        println!("Cocos project path: {:?}", path);
+        Ok(path)
     }
 
     /// 获取 TypeScript 代码输出路径
@@ -137,17 +124,10 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回 TypeScript 文件的输出路径，成功时返回 Ok(PathBuf)，失败时返回 XError。
     pub fn cocos_typescript_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
-        let cocos_path = self.cocos_path(root)?;
-        
-        // 处理空的 output 字段
-        let output_path = if self.output.is_empty() {
-            // 默认输出到 assets/scripts/dataTable/generated 目录
-            cocos_path.join("assets").join("scripts").join("dataTable").join("generated")
-        } else {
-            cocos_path.join(&self.output)
-        };
-        
-        let path = output_path.join(file_name).with_extension("ts");
+        // 使用 xcell-config 中定义的路径解析方法
+        let cocos_config = self.to_xcell_config();
+        let path = cocos_config.cocos_typescript_path(root, file_name)?;
+        println!("Cocos TypeScript path: {:?}", path);
         Ok(path)
     }
 
@@ -160,9 +140,31 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回 JSON 文件的输出路径，成功时返回 Ok(PathBuf)，失败时返回 XError。
     pub fn cocos_json_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
-        let dir = self.cocos_path(root)?.join(&self.storage.json.output);
-        let path = dir.join(file_name).with_extension("json");
+        // 使用 xcell-config 中定义的路径解析方法
+        let cocos_config = self.to_xcell_config();
+        let path = cocos_config.cocos_json_path(root, file_name)?;
+        println!("Cocos JSON path: {:?}", path);
         Ok(path)
+    }
+
+    /// 转换为 xcell-config 中的 CocosCodegen 类型
+    ///
+    /// # 返回值
+    /// 返回 xcell-config 中的 CocosCodegen 实例
+    fn to_xcell_config(&self) -> xcell_config::cocos::CocosCodegen {
+        xcell_config::cocos::CocosCodegen {
+            enable: self.enable,
+            project: self.project.clone(),
+            output: self.output.clone(),
+            manager_name: self.manager_name.clone(),
+            suffix_table: self.suffix_table.clone(),
+            instance_name: self.instance_name.clone(),
+            storage: xcell_config::cocos::CocosStorage::Json(xcell_config::cocos::CocosJsonConfig {
+                enable: self.storage.json.enable,
+                output: self.storage.json.output.clone(),
+            }),
+            storage_debug: None,
+        }
     }
 
     /// 获取管理器路径

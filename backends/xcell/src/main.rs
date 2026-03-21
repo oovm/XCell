@@ -140,7 +140,10 @@ async fn main() -> XResult<()> {
             println!("Unity loader output: {:?}", ws.config.unity.loader.output);
             println!("Generators count: {:?}", ws.config.generators.len());
             
-            // 先使用 xcell-generator 模块进行代码生成
+            // 先进行首次遍历，加载表数据
+            ws.first_walk()?;
+            
+            // 然后使用 xcell-generator 模块进行代码生成
             let config = xcell_generator::config::GeneratorConfig::from_project_config(&ws.config);
             println!("Generated products count: {:?}", config.products.len());
             
@@ -154,9 +157,6 @@ async fn main() -> XResult<()> {
             println!("Calling generator.generate()");
             generator.generate(&ws)?;
             println!("generator.generate() completed");
-            
-            // 然后再进行首次遍历
-            ws.first_walk()?;
             
             if args.watch {
                 ws.watcher().await?;

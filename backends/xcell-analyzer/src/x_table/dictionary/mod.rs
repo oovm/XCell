@@ -43,9 +43,7 @@ impl XListTable {
         // 先获取表头
         let mut headers = vec![];
         for header in table.headers() {
-            if header.complete {
-                headers.push(header);
-            }
+            headers.push(header);
         }
         // 然后创建实例
         let out = Self { table, id_type, headers };

@@ -234,7 +234,7 @@ impl CocosCodegen {
         let root = &ws.config.root;
         
         // 确保输出目录存在
-        if let Some(s) = self.cocos_typescript_path(root, "test")?.parent() {
+        if let Some(s) = self.cocos_typescript_path(root, "DataTableManager")?.parent() {
             std::fs::create_dir_all(s)?;
         }
         
@@ -248,8 +248,11 @@ impl CocosCodegen {
         
         // 处理每个 CSV 文件
         for entry in &csv_files {
-            let file_name = entry.file_name().to_string_lossy();
-            let class_name = file_name.rsplit('.').next().unwrap_or(&file_name);
+            let file_name_os = entry.file_name();
+            let file_name_str = file_name_os.to_string_lossy();
+            let file_name = file_name_str.to_string();
+            // 正确获取不带扩展名的文件名
+            let class_name = file_name.split('.').next().unwrap_or(&file_name);
             
             // 检查是否为枚举类型：
             // 1. 如果表名以 Type 或 Kind 结尾
@@ -389,7 +392,7 @@ export const {} = {{
                 }
                 
                 // 读取 CSV 文件的字段信息
-                let fields = self.read_csv_fields(entry.path())?;
+                let fields = self.read_csv_fields(&entry.path())?;
                 let has_type_field = fields.iter().any(|f| f.name == "type");
                 let has_level_field = fields.iter().any(|f| f.name == "level") || fields.iter().any(|f| f.name == "level_requirement");
                 
@@ -560,25 +563,32 @@ export class {} {{
     pub fn read_csv_fields(&self, csv_path: &Path) -> XResult<Vec<CocosField>> {
         let mut fields = Vec::new();
         
-        // 读取 CSV 文件
-        let mut rdr = csv::Reader::from_path(csv_path)?;
+        // 读取 CSV 文件，禁用默认的标题行处理
+        let mut rdr = csv::ReaderBuilder::new()
+            .has_headers(false)
+            .from_path(csv_path)
+            .map_err(|e| XError::runtime_error(format!("CSV read error: {}", e)))?;
         
-        // 读取标题行
-        if let Some(Ok(headers)) = rdr.records().next() {
-            // 读取类型行
-            if let Some(Ok(types)) = rdr.records().next() {
-                // 读取字段类型行
-                if let Some(Ok(field_types)) = rdr.records().next() {
-                    for (i, header) in headers.iter().enumerate() {
-                        if i < field_types.len() {
-                            let field_type = field_types[i];
-                            let rust_type = self.map_csv_type_to_typescript(field_type);
-                            fields.push(CocosField {
-                                name: header.to_string(),
-                                r#type: rust_type,
-                            });
-                        }
-                    }
+        // 读取所有记录
+        let mut records: Vec<csv::StringRecord> = rdr.records()
+            .filter_map(|r| r.ok())
+            .collect();
+        
+        // 确保至少有两行（字段名和类型）
+        if records.len() >= 2 {
+            // 第一行是字段名
+            let headers = &records[0];
+            // 第二行是类型
+            let type_row = &records[1];
+            
+            for (i, header) in headers.iter().enumerate() {
+                if i < type_row.len() {
+                    let field_type = &type_row[i];
+                    let ts_type = self.map_csv_type_to_typescript(field_type);
+                    fields.push(CocosField {
+                        name: header.to_string(),
+                        r#type: ts_type,
+                    });
                 }
             }
         }
@@ -611,6 +621,14 @@ export class {} {{
     pub fn write_data_table_manager(&self, ws: &WorkspaceManager) -> XResult<()> {
         let root = &ws.config.root;
         
+        // 读取目录中的所有 CSV 文件
+        let csv_files = std::fs::read_dir(root)?
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| {
+                entry.path().is_file() && entry.path().extension().map(|ext| ext == "csv").unwrap_or(false)
+            })
+            .collect::<Vec<_>>();
+        
         // 构建 DataTableManager.ts 的完整路径
         let manager_path = self.cocos_typescript_path(root, "DataTableManager")?;
         
@@ -622,110 +640,106 @@ export class {} {{
             println!("Created directory: {:?}", parent);
         }
         
+        // 生成导入语句
+        let mut imports = String::new();
+        let mut cache_fields = String::new();
+        let mut load_all_tables = String::new();
+        let mut get_methods = String::new();
+        
+        // 处理每个 CSV 文件
+        for entry in &csv_files {
+            let file_name_os = entry.file_name();
+            let file_name_str = file_name_os.to_string_lossy();
+            let file_name = file_name_str.to_string();
+            // 正确获取不带扩展名的文件名
+            let class_name = file_name.split('.').next().unwrap_or(&file_name);
+            
+            // 检查是否为枚举类型
+            let is_enum = class_name.ends_with("Type") || class_name.ends_with("Kind");
+            
+            if !is_enum {
+                let table_class_name = format!("{}Table", class_name);
+                let import_path = format!("./{}", table_class_name);
+                
+                // 添加导入语句
+                imports.push_str(&format!("import {{ {} }} from '{}';\n", table_class_name, import_path));
+                
+                // 添加缓存字段
+                let cache_field_name = format!("_{}Table", class_name.to_lowercase());
+                cache_fields.push_str(&format!("    private {}: {} | null = null;\n", cache_field_name, table_class_name));
+                
+                // 添加到 loadAllTables 方法
+                let get_method_name = format!("get{}Table", class_name);
+                load_all_tables.push_str(&format!("            this.{}(),\n", get_method_name));
+                
+                // 添加 get 方法
+                let method_code = format!(r#"    /**
+     * 获取{}表（惰性加载）
+     */
+    public async {}(): Promise<{}> {{
+        if (this.{} === null) {{
+            this.{} = new {}();
+            this.{}.load(await this.loadJsonAsset('tables/{}'));
+        }}
+        return this.{};
+    }}
+
+"#, class_name, get_method_name, table_class_name, cache_field_name, cache_field_name, table_class_name, cache_field_name, class_name, cache_field_name);
+                
+                get_methods.push_str(&method_code);
+            }
+        }
+        
         // 生成 DataTableManager 代码
-        let code = r#"import { ItemTable } from './ItemTable';
-import { MonsterTable } from './MonsterTable';
-import { PlayerLevelsTable } from './PlayerLevelsTable';
-import { SkillTable } from './SkillTable';
+        let code = format!(r#"{}
 
 /**
  * 数据表管理器
  * 负责加载和管理所有数据表
  */
-export class DataTableManager {
+export class DataTableManager {{
     private static _instance: DataTableManager;
 
     // 惰性缓存字段
-    private _itemTable: ItemTable | null = null;
-    private _monsterTable: MonsterTable | null = null;
-    private _playerLevelsTable: PlayerLevelsTable | null = null;
-    private _skillTable: SkillTable | null = null;
-
+{}    
     /**
      * 获取单例实例
      */
-    public static getInstance(): DataTableManager {
-        if (!DataTableManager._instance) {
+    public static getInstance(): DataTableManager {{
+        if (!DataTableManager._instance) {{
             DataTableManager._instance = new DataTableManager();
-        }
+        }}
         return DataTableManager._instance;
-    }
+    }}
 
     /**
      * 加载所有数据表
      * 注意：表数据会在各自的表加载器中按需加载
      */
-    public async loadAllTables(): Promise<void> {
+    public async loadAllTables(): Promise<void> {{
         // 预加载所有表
         await Promise.all([
-            this.getItemTable(),
-            this.getMonsterTable(),
-            this.getPlayerLevelsTable(),
-            this.getSkillTable()
-        ]);
-    }
+{}        ]);
+    }}
 
-    /**
-     * 获取物品表（惰性加载）
-     */
-    public async getItemTable(): Promise<ItemTable> {
-        if (this._itemTable === null) {
-            this._itemTable = new ItemTable();
-            this._itemTable.load(await this.loadJsonAsset('tables/Item'));
-        }
-        return this._itemTable;
-    }
-
-    /**
-     * 获取怪物表（惰性加载）
-     */
-    public async getMonsterTable(): Promise<MonsterTable> {
-        if (this._monsterTable === null) {
-            this._monsterTable = new MonsterTable();
-            this._monsterTable.load(await this.loadJsonAsset('tables/Monster'));
-        }
-        return this._monsterTable;
-    }
-
-    /**
-     * 获取玩家等级表（惰性加载）
-     */
-    public async getPlayerLevelsTable(): Promise<PlayerLevelsTable> {
-        if (this._playerLevelsTable === null) {
-            this._playerLevelsTable = new PlayerLevelsTable();
-            this._playerLevelsTable.load(await this.loadJsonAsset('tables/PlayerLevels'));
-        }
-        return this._playerLevelsTable;
-    }
-
-    /**
-     * 获取技能表（惰性加载）
-     */
-    public async getSkillTable(): Promise<SkillTable> {
-        if (this._skillTable === null) {
-            this._skillTable = new SkillTable();
-            this._skillTable.load(await this.loadJsonAsset('tables/Skill'));
-        }
-        return this._skillTable;
-    }
-
+{}
     /**
      * 加载JSON资源
      * @param path 资源路径
      */
-    private async loadJsonAsset(path: string): Promise<cc.JsonAsset> {
-        return new Promise<cc.JsonAsset>((resolve, reject) => {
-            cc.resources.load(path, cc.JsonAsset, (err, asset) => {
-                if (err) {
+    private async loadJsonAsset(path: string): Promise<cc.JsonAsset> {{
+        return new Promise<cc.JsonAsset>((resolve, reject) => {{
+            cc.resources.load(path, cc.JsonAsset, (err, asset) => {{
+                if (err) {{
                     reject(err);
-                } else {
+                }} else {{
                     resolve(asset);
-                }
-            });
-        });
-    }
-}
-"#;
+                }}
+            }});
+        }});
+    }}
+}}
+"#, imports, cache_fields, load_all_tables, get_methods);
         
         // 写入文件
         let mut file = File::create(manager_path)?;

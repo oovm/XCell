@@ -270,8 +270,25 @@ impl CsvTable {
     /// - 失败时返回错误
     pub fn load(path: &Path) -> XResult<Self> {
         let path = path.canonicalize().map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
+        let mut headers = Vec::new();
+        
+        // 读取 CSV 文件的第一行作为表头
+        if let Ok(mut reader) = csv::Reader::from_path(&path) {
+            if let Ok(header_row) = reader.headers() {
+                for (i, field_name) in header_row.iter().enumerate() {
+                    headers.push(XCellHeader {
+                        column: i,
+                        access: XCellAccess::Public,
+                        field_name: field_name.to_string(),
+                        typing: XCellTyped::default(),
+                        document: XDocument,
+                        complete: true,
+                    });
+                }
+            }
+        }
 
-        Ok(Self { path, label: String::new(), headers: Vec::new() })
+        Ok(Self { path, label: String::new(), headers })
     }
 
     /// 创建 CSV 读取器
@@ -348,7 +365,11 @@ impl TableReader for CsvTable {
     }
 
     fn is_list(&self) -> bool {
-        false
+        if let Some(first_header) = self.headers.first() {
+            first_header.field_name.eq_ignore_ascii_case("id")
+        } else {
+            false
+        }
     }
 
     fn is_dict(&self) -> bool {
@@ -363,8 +384,8 @@ impl TableReader for CsvTable {
         false
     }
 
-    fn is_numeric_key(&self, _name: &str) -> bool {
-        false
+    fn is_numeric_key(&self, name: &str) -> bool {
+        name.eq_ignore_ascii_case("id")
     }
 
     fn is_document(&self, _name: &str) -> bool {
@@ -531,7 +552,11 @@ impl TableReader for TsvTable {
     }
 
     fn is_list(&self) -> bool {
-        false
+        if let Some(first_header) = self.headers.first() {
+            first_header.field_name.eq_ignore_ascii_case("id")
+        } else {
+            false
+        }
     }
 
     fn is_dict(&self) -> bool {
@@ -546,8 +571,8 @@ impl TableReader for TsvTable {
         false
     }
 
-    fn is_numeric_key(&self, _name: &str) -> bool {
-        false
+    fn is_numeric_key(&self, name: &str) -> bool {
+        name.eq_ignore_ascii_case("id")
     }
 
     fn is_document(&self, _name: &str) -> bool {
@@ -719,7 +744,11 @@ impl TableReader for ExcelTable {
     }
 
     fn is_list(&self) -> bool {
-        false
+        if let Some(first_header) = self.headers.first() {
+            first_header.field_name.eq_ignore_ascii_case("id")
+        } else {
+            false
+        }
     }
 
     fn is_dict(&self) -> bool {
@@ -734,8 +763,8 @@ impl TableReader for ExcelTable {
         false
     }
 
-    fn is_numeric_key(&self, _name: &str) -> bool {
-        false
+    fn is_numeric_key(&self, name: &str) -> bool {
+        name.eq_ignore_ascii_case("id")
     }
 
     fn is_document(&self, _name: &str) -> bool {

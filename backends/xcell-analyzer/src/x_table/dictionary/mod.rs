@@ -1,5 +1,5 @@
 use xcell_provider::TableReader as XCellTableReader;
-use xcell_types::{IntegerDescription, IntegerKind};
+use xcell_types::{ByteOrder, IntegerDescription, IntegerKind};
 
 use crate::{
     utils::first_not_nil,
@@ -35,7 +35,14 @@ impl XListTable {
         let head = table.get_header(0);
         let id_type = match head.typing.as_integer() {
             Some(s) => s.clone(),
-            None => return Err(XError::runtime_error("首格字段类型不是整数")),
+            None => {
+                // 为 CSV 文件提供默认的 id 类型
+                IntegerDescription {
+                    kind: IntegerKind::Unsigned32,
+                    byte_order: ByteOrder::LittleEndian,
+                    size: 4,
+                }
+            },
         };
         // 先获取表头
         let mut headers = vec![];

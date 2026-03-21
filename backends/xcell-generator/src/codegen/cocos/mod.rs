@@ -36,33 +36,47 @@ pub struct CocosField {
     r#type: String,
 }
 
+/// Cocos 存储格式配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CocosStorage {
+    /// JSON 存储配置
+    pub json: CocosJsonConfig,
+}
+
+/// Cocos 加载器配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CocosLoader {
+    /// 是否要生成 cocos 代码
+    pub enable: bool,
+    /// cocos 的工作目录, 建议使用相对路径
+    pub project: String,
+    /// 输出目录
+    pub output: String,
+    /// 生成的代码的命名空间
+    pub namespace: String,
+    /// 生成的管理器的名称
+    pub manager_name: String,
+    /// 生成的表格名的后缀
+    pub suffix_table: String,
+    /// 生成的实例名称
+    pub instance_name: String,
+}
+
 /// Cocos 代码生成器配置
 ///
 /// 用于配置 Cocos 平台的代码生成
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct CocosCodegen {
-    /// 是否启用 Cocos 代码生成
-    pub enable: bool,
-    /// Cocos 项目目录，推荐使用相对路径
-    pub project: String,
-    /// 输出目录
-    pub output: String,
-    /// 生成代码的命名空间
-    pub namespace: String,
-    /// 生成的管理器名称
-    pub manager_name: String,
-    /// 生成的表名后缀
-    pub suffix_table: String,
-    /// 生成的实例名称
-    pub instance_name: String,
-    /// JSON 配置
-    pub json: CocosJsonConfig,
+    /// 存储格式配置
+    pub storage: CocosStorage,
+    /// 加载器配置
+    pub loader: CocosLoader,
 }
 
 /// Cocos JSON 配置
 ///
 /// 用于配置 JSON 数据生成
-#[derive(Clone, Debug, Default, Serialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct CocosJsonConfig {
     /// 是否启用 JSON 生成
     pub enable: bool,
@@ -90,7 +104,7 @@ impl CocosCodegen {
         }
         
         // 如果 cocos 子目录不存在，使用配置中的 project 路径
-        let project = PathBuf::from(&self.project);
+        let project = PathBuf::from(&self.loader.project);
         let project = match project.is_absolute() {
             true => project,
             false => root.join(project),
@@ -121,11 +135,11 @@ impl CocosCodegen {
         let cocos_path = self.cocos_path(root)?;
         
         // 处理空的 output 字段
-        let output_path = if self.output.is_empty() {
+        let output_path = if self.loader.output.is_empty() {
             // 默认输出到 assets/scripts/dataTable/generated 目录
             cocos_path.join("assets").join("scripts").join("dataTable").join("generated")
         } else {
-            cocos_path.join(&self.output)
+            cocos_path.join(&self.loader.output)
         };
         
         let path = output_path.join(file_name).with_extension("ts");
@@ -141,7 +155,7 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回 JSON 文件的输出路径，成功时返回 Ok(PathBuf)，失败时返回 XError。
     pub fn cocos_json_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
-        let dir = self.cocos_path(root)?.join(&self.json.output);
+        let dir = self.cocos_path(root)?.join(&self.storage.json.output);
         let path = dir.join(file_name).with_extension("json");
         Ok(path)
     }
@@ -154,7 +168,7 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回管理器文件的输出路径，成功时返回 Ok(PathBuf)，失败时返回 XError。
     pub fn cocos_manager_path(&self, root: &Path) -> XResult<PathBuf> {
-        self.cocos_typescript_path(root, &self.manager_name)
+        self.cocos_typescript_path(root, &self.loader.manager_name)
     }
 
     /// 获取 TypeScript 相对路径
@@ -165,7 +179,7 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回 TypeScript 文件的相对路径。
     pub fn cocos_ts_relative(&self, file_name: &str) -> String {
-        format!("{}/{}.ts", self.output, file_name)
+        format!("{}/{}.ts", self.loader.output, file_name)
     }
 
     /// 获取 JSON 相对路径
@@ -176,7 +190,7 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回 JSON 文件的相对路径。
     pub fn cocos_json_relative(&self, file_name: &str) -> String {
-        format!("{}/{}.json", self.json.output, file_name)
+        format!("{}/{}.json", self.storage.json.output, file_name)
     }
 
     /// 确保输出目录存在
@@ -187,11 +201,11 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
     pub fn ensure_path(&self, root: &Path) -> XResult<()> {
-        if self.enable {
+        if self.loader.enable {
             if let Some(s) = self.cocos_typescript_path(root, "test")?.parent() {
                 std::fs::create_dir_all(s)?;
             }
-            if self.json.enable {
+            if self.storage.json.enable {
                 if let Some(s) = self.cocos_json_path(root, "test")?.parent() {
                     std::fs::create_dir_all(s)?;
                 }
@@ -467,7 +481,7 @@ impl CocosCodegen {
     /// # 返回值
     /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
     pub fn write_json(&self, ws: &WorkspaceManager) -> XResult<()> {
-        if !self.enable || !self.json.enable {
+        if !self.loader.enable || !self.storage.json.enable {
             return Ok(());
         }
 
@@ -608,18 +622,37 @@ impl super::Codegen for CocosCodegen {
         if let Some(workspace) = &context.workspace {
             println!("Workspace root: {:?}", workspace.config.root);
             
-            // 直接使用当前实例的配置，确保所有设置都被正确应用
-            println!("Cocos codegen enable: {}", self.enable);
-            println!("Cocos project: {}", self.project);
-            println!("Cocos output: {}", self.output);
+            // 创建一个新的 CocosCodegen 实例，使用项目配置中的 cocos 配置
+            let cocos_codegen = CocosCodegen {
+                storage: CocosStorage {
+                    json: CocosJsonConfig {
+                        enable: workspace.config.cocos.storage.json.enable,
+                        output: workspace.config.cocos.storage.json.output.clone(),
+                    },
+                },
+                loader: CocosLoader {
+                    enable: workspace.config.cocos.loader.enable,
+                    project: workspace.config.cocos.loader.project.clone(),
+                    output: workspace.config.cocos.loader.output.clone(),
+                    namespace: workspace.config.cocos.loader.namespace.clone(),
+                    manager_name: workspace.config.cocos.loader.manager_name.clone(),
+                    suffix_table: workspace.config.cocos.loader.suffix_table.clone(),
+                    instance_name: workspace.config.cocos.loader.instance_name.clone(),
+                },
+            };
+            
+            // 打印配置信息
+            println!("Cocos codegen enable: {}", cocos_codegen.loader.enable);
+            println!("Cocos project: {}", cocos_codegen.loader.project);
+            println!("Cocos output: {}", cocos_codegen.loader.output);
             
             // 写入 TypeScript 代码
             println!("Calling write_typescript");
-            self.write_typescript(workspace)?;
+            cocos_codegen.write_typescript(workspace)?;
             println!("write_typescript completed");
             // 写入 JSON 数据
             println!("Calling write_json");
-            self.write_json(workspace)?;
+            cocos_codegen.write_json(workspace)?;
             println!("write_json completed");
         } else {
             println!("No workspace manager in context");

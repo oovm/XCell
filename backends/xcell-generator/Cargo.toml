@@ -9,7 +9,6 @@ edition = { workspace = true }
 
 [dependencies]
 xcell-types = { workspace = true }
-xcell-analyzer = { workspace = true }
 xcell-provider = { workspace = true }
 
 # 通用依赖

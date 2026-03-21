@@ -62,6 +62,13 @@ impl CocosCodegen {
         self.cocos_typescript_path(root, &self.manager_name)
     }
 
+    /// 生成 JSON 文件路径
+    pub fn cocos_json_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
+        let dir = self.cocos_path(root)?.join(&self.json.output);
+        let path = dir.join(file_name).with_extension("json");
+        Ok(path)
+    }
+
     /// 生成 TypeScript 相对路径
     pub fn cocos_ts_relative(&self, file_name: &str) -> String {
         format!("{}/{}.ts", self.output, file_name)
@@ -71,4 +78,6 @@ impl CocosCodegen {
     pub fn cocos_json_relative(&self, file_name: &str) -> String {
         format!("{}/{}.json", self.json.output, file_name)
     }
+    
+
 }

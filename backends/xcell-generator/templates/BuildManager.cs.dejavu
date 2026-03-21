@@ -34,51 +34,51 @@ namespace {{ config.namespace }}
 
         private static readonly Lazy<{{ config.manager_name }}> singleton = new(() => new {{ config.manager_name }}());
         public static {{ config.manager_name }} {{ config.instance_name }} => singleton.Value;
-<$ for table in tables $>
+<% for table in tables %>
         private {{ table.typing }}? {{ table.private_name }};
         /// <inheritdoc cref="{{config.namespace}}.{{ table.typing }}"/>
         public {{ table.typing }} {{ table.public_name }}
         {
-<$- if config.legacy_null_null $>
+<%- if config.legacy_null_null %>
             get { return {{ table.private_name }} != null ? {{ table.private_name }} : new {{ table.typing }}(); }
-<$- else $>
+<%- else %>
             get => {{ table.private_name }} ??= new {{ table.typing }}();
-<$- endif $>
+<%- endif %>
             set => {{ table.private_name }} = value;
         }
-<$ endfor $>
+<% endfor %>
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("Tools/XCell/LoadAll")]
 #endif
         public static void Reload()
         {
-<$- for table in tables $>
+<%- for table in tables %>
             {{ config.instance_name }}.{{ table.private_name }} = new {{ table.typing }}();
-<$- endfor $>
+<%- endfor %>
         }
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("Tools/XCell/ClearAll")]
 #endif
         public static void Clear()
         {
-<$- for table in tables $>
+<%- for table in tables %>
             {{ config.instance_name }}.{{ table.private_name }} = null;
-<$- endfor $>
+<%- endfor %>
         }
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("Tools/XCell/ExportXML")]
         public static void ExportXML()
         {
-<$- for table in tables $>
+<%- for table in tables %>
             SerializerXML("Assets/Data/Table/Binary/{{ table.typing }}.xml", {{ config.instance_name }}.{{ table.private_name }});
-<$- endfor $>
+<%- endfor %>
         }
         [UnityEditor.MenuItem("Tools/XCell/ExportJSON")]
         public static void ExportJSON()
         {
-<$- for table in tables $>
+<%- for table in tables %>
             SerializerJSON("Assets/Data/Table/Readable/{{ table.typing }}.json", {{ config.instance_name }}.{{ table.private_name }});
-<$- endfor $>
+<%- endfor %>
         }
 
         private static void SerializerXML<T>(string path, T table)

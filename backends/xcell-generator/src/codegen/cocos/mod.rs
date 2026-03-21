@@ -201,7 +201,113 @@ impl CocosCodegen {
 
         self.ensure_path(&ws.config.root)?;
 
-        // TODO: Implement JSON data generation
+        // 为每个类表生成 JSON 数据
+        for table in ws.classes() {
+            if let Err(e) = self.write_class_json(ws, table) {
+                tracing::error!("生成Cocos类JSON失败: {}", e);
+            }
+        }
+
+        // 为每个字典表生成 JSON 数据
+        for table in ws.dicts() {
+            if let Err(e) = self.write_dict_json(ws, table) {
+                tracing::error!("生成Cocos字典JSON失败: {}", e);
+            }
+        }
+
+        // 为每个列表表生成 JSON 数据
+        for table in ws.lists() {
+            if let Err(e) = self.write_list_json(ws, table) {
+                tracing::error!("生成Cocos列表JSON失败: {}", e);
+            }
+        }
+
+        Ok(())
+    }
+
+    /// 写入类表 JSON 数据
+    ///
+    /// # 参数
+    /// * `ws` - 工作区管理器
+    /// * `table` - 类数据表
+    ///
+    /// # 返回值
+    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
+    fn write_class_json(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
+        use serde_json::json;
+
+        let mut file = self.log_json(ws, &table.name)?;
+        let mut items = vec![];
+
+        for item in &table.items {
+            let mut item_data = serde_json::Map::new();
+            item_data.insert("id".to_string(), json!(item.id));
+            item_data.insert("key".to_string(), json!(item.key));
+
+            for field in &item.fields {
+                item_data.insert(field.name.clone(), json!(field.value));
+            }
+
+            items.push(item_data);
+        }
+
+        let json_data = json!(items);
+        file.write_all(serde_json::to_string_pretty(&json_data)?.as_bytes())?;
+        Ok(())
+    }
+
+    /// 写入字典表 JSON 数据
+    ///
+    /// # 参数
+    /// * `ws` - 工作区管理器
+    /// * `table` - 字典数据表
+    ///
+    /// # 返回值
+    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
+    fn write_dict_json(&self, ws: &WorkspaceManager, table: &XDictData) -> XResult<()> {
+        use serde_json::json;
+
+        let mut file = self.log_json(ws, &table.name)?;
+        let mut items = vec![];
+
+        for item in &table.items {
+            let mut item_data = serde_json::Map::new();
+            item_data.insert("id".to_string(), json!(item.id));
+            item_data.insert("key".to_string(), json!(item.key));
+            item_data.insert("value".to_string(), json!(item.value));
+
+            items.push(item_data);
+        }
+
+        let json_data = json!(items);
+        file.write_all(serde_json::to_string_pretty(&json_data)?.as_bytes())?;
+        Ok(())
+    }
+
+    /// 写入列表表 JSON 数据
+    ///
+    /// # 参数
+    /// * `ws` - 工作区管理器
+    /// * `table` - 列表数据表
+    ///
+    /// # 返回值
+    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
+    fn write_list_json(&self, ws: &WorkspaceManager, table: &XListData) -> XResult<()> {
+        use serde_json::json;
+
+        let mut file = self.log_json(ws, &table.name)?;
+        let mut items = vec![];
+
+        for item in &table.items {
+            let mut item_data = serde_json::Map::new();
+            item_data.insert("id".to_string(), json!(item.id));
+            item_data.insert("value".to_string(), json!(item.value));
+
+            items.push(item_data);
+        }
+
+        let json_data = json!(items);
+        file.write_all(serde_json::to_string_pretty(&json_data)?.as_bytes())?;
         Ok(())
     }
 

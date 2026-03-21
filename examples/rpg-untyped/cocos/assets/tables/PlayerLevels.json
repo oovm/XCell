@@ -1,0 +1,83 @@
+[
+  {
+    "id": "2",
+    "name": "2级",
+    "required_exp": "1000",
+    "health": "120",
+    "damage": "15",
+    "defense": "8",
+    "unlock_skills": "\"1"
+  },
+  {
+    "id": "3",
+    "name": "3级",
+    "required_exp": "3000",
+    "health": "150",
+    "damage": "20",
+    "defense": "12",
+    "unlock_skills": "\"1"
+  },
+  {
+    "id": "4",
+    "name": "4级",
+    "required_exp": "6000",
+    "health": "180",
+    "damage": "25",
+    "defense": "16",
+    "unlock_skills": "\"1"
+  },
+  {
+    "id": "5",
+    "name": "5级",
+    "required_exp": "10000",
+    "health": "200",
+    "damage": "30",
+    "defense": "20",
+    "unlock_skills": "\"1"
+  },
+  {
+    "id": "6",
+    "name": "6级",
+    "required_exp": "15000",
+    "health": "230",
+    "damage": "35",
+    "defense": "24",
+    "unlock_skills": "\"1"
+  },
+  {
+    "id": "7",
+    "name": "7级",
+    "required_exp": "21000",
+    "health": "260",
+    "damage": "40",
+    "defense": "28",
+    "unlock_skills": "\"1"
+  },
+  {
+    "id": "8",
+    "name": "8级",
+    "required_exp": "28000",
+    "health": "290",
+    "damage": "45",
+    "defense": "32",
+    "unlock_skills": "\"1"
+  },
+  {
+    "id": "9",
+    "name": "9级",
+    "required_exp": "36000",
+    "health": "320",
+    "damage": "50",
+    "defense": "36",
+    "unlock_skills": "\"1"
+  },
+  {
+    "id": "10",
+    "name": "10级",
+    "required_exp": "45000",
+    "health": "350",
+    "damage": "55",
+    "defense": "40",
+    "unlock_skills": "\"1"
+  }
+]

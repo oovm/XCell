@@ -23,6 +23,9 @@ toml = { workspace = true }
 [dependencies.xcell-analyzer]
 workspace = true
 
+[dependencies.xcell-generator]
+workspace = true
+
 [dev-dependencies]
 
 [target.'cfg(windows)'.build-dependencies]

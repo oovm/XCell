@@ -1,35 +1,35 @@
 // Test template for dejavu engine
 // This template includes variables, loops, conditionals, and nested structures
 
-Hello, <$ name $>!
+Hello, <% name %>!
 
 // Basic loop
-<$ loop item in items $>
-- <$ item $>
-<$ end loop $>
+<% loop item in items %>
+- <% item %>
+<% end loop %>
 
 // Conditional statement
-<$ if show_extra $>
+<% if show_extra %>
 This is extra content!
-<$ end if $>
+<% end if %>
 
 // Nested loop
-<$ if has_nested $>
+<% if has_nested %>
 Nested items:
-<$ loop category in categories $>
-  <$ category.name $>:
-  <$ loop subitem in category.items $>
-    - <$ subitem $>
-  <$ end loop $>
-<$ end loop $>
-<$ end if $>
+<% loop category in categories %>
+  <% category.name %>:
+  <% loop subitem in category.items %>
+    - <% subitem %>
+  <% end loop %>
+<% end loop %>
+<% end if %>
 
 // Complex expression
-The total count is: <$ items.len() + 1 $>
+The total count is: <% items.len() + 1 %>
 
 // Optional chaining
-<$ if user?.name $>
-User name: <$ user.name $>
-<$ else $>
+<% if user?.name %>
+User name: <% user.name %>
+<% else %>
 No user found
-<$ end if $>
+<% end if %>

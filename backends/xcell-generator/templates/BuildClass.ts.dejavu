@@ -1,25 +1,25 @@
 // 代码生成, 修改无效! (XCell {{ compiler_version }})
 
-<$ if config.namespace $>
+<% if config.namespace %>
 export namespace {{ config.namespace }} {
-<$ endif $>
+<% endif %>
 
-<$- for line in class_document $>
+<%- for line in class_document %>
 /** {{ line }} */
-<$- endfor $>
+<%- endfor %>
 export class {{ class_name }} {
-<$- for field in class_fields $>
-    <$- for line in field.document $>
+<%- for field in class_fields %>
+    <%- for line in field.document %>
     /** {{ line }} */
-    <$- endfor $>
-    <$- if field.has_default $>
+    <%- endfor %>
+    <%- if field.has_default %>
     {{ field.name }}: {{ field.typing }} = {{ field.default }};
-    <$- else $>
+    <%- else %>
     {{ field.name }}!: {{ field.typing }};
-    <$- endif $>
-<$- endfor $>
+    <%- endif %>
+<%- endfor %>
 }
 
-<$ if config.namespace $>
+<% if config.namespace %>
 }
-<$ endif $>
+<% endif %>

@@ -82,4 +82,9 @@ impl UnityCodegen {
     pub fn write_csharp(&self) -> XResult<()> {
         Ok(())
     }
+    
+    /// 写入管理器
+    pub fn write_manager(&self, data: &dyn std::any::Any, root: &std::path::Path, version: &str) -> XResult<()> {
+        Ok(())
+    }
 }

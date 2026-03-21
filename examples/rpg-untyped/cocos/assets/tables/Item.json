@@ -1,0 +1,83 @@
+[
+  {
+    "id": "2",
+    "name": "木盾",
+    "type": "armor",
+    "level": "1",
+    "attack": "0",
+    "defense": "5",
+    "description": "一个简单的木盾"
+  },
+  {
+    "id": "3",
+    "name": "生命药水",
+    "type": "consumable",
+    "level": "1",
+    "attack": "0",
+    "defense": "0",
+    "description": "恢复50点生命值"
+  },
+  {
+    "id": "4",
+    "name": "锁子甲",
+    "type": "armor",
+    "level": "2",
+    "attack": "0",
+    "defense": "10",
+    "description": "一件锁子甲"
+  },
+  {
+    "id": "5",
+    "name": "火魔杖",
+    "type": "weapon",
+    "level": "2",
+    "attack": "15",
+    "defense": "0",
+    "description": "一把发射火焰的魔杖"
+  },
+  {
+    "id": "6",
+    "name": "魔法药水",
+    "type": "consumable",
+    "level": "2",
+    "attack": "0",
+    "defense": "0",
+    "description": "恢复30点法力值"
+  },
+  {
+    "id": "7",
+    "name": "钢剑",
+    "type": "weapon",
+    "level": "3",
+    "attack": "20",
+    "defense": "0",
+    "description": "一把锋利的钢剑"
+  },
+  {
+    "id": "8",
+    "name": "板甲",
+    "type": "armor",
+    "level": "3",
+    "attack": "0",
+    "defense": "15",
+    "description": "重型板甲"
+  },
+  {
+    "id": "9",
+    "name": "高级生命药水",
+    "type": "consumable",
+    "level": "3",
+    "attack": "0",
+    "defense": "0",
+    "description": "恢复100点生命值"
+  },
+  {
+    "id": "10",
+    "name": "闪电法杖",
+    "type": "weapon",
+    "level": "4",
+    "attack": "25",
+    "defense": "0",
+    "description": "一把发射闪电的法杖"
+  }
+]

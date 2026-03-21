@@ -1,8 +1,8 @@
 // 代码生成, 修改无效! (XCell {{ compiler_version }})
 
-<$ if config.namespace $>
+<% if config.namespace %>
 export namespace {{ config.namespace }} {
-<$ endif $>
+<% endif %>
 
 /**
  * 配置表管理器
@@ -29,7 +29,7 @@ export class {{ config.manager_name }} {
         return {{ config.manager_name }}._instance;
     }
 
-<$ for table in tables $>
+<% for table in tables %>
     private _{{ table.private_name }}: {{ table.typing }} | null = null;
     /** {{ table.typing }} 表 */
     get {{ table.public_name }}(): {{ table.typing }} {
@@ -41,23 +41,23 @@ export class {{ config.manager_name }} {
     set {{ table.public_name }}(value: {{ table.typing }}) {
         this._{{ table.private_name }} = value;
     }
-<$ endfor $>
+<% endfor %>
 
     /** 重新加载所有表 */
     static reload(): void {
-<$- for table in tables $>
+<%- for table in tables %>
         {{ config.manager_name }}.{{ config.instance_name }}._{{ table.private_name }} = null;
-<$- endfor $>
+<%- endfor %>
     }
 
     /** 清除所有表 */
     static clear(): void {
-<$- for table in tables $>
+<%- for table in tables %>
         {{ config.manager_name }}.{{ config.instance_name }}._{{ table.private_name }} = null;
-<$- endfor $>
+<%- endfor %>
     }
 }
 
-<$ if config.namespace $>
+<% if config.namespace %>
 }
-<$ endif $>
+<% endif %>

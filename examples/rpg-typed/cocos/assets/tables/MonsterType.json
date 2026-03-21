@@ -1,0 +1,44 @@
+[
+  {
+    "variant": "Normal",
+    "id": "1",
+    "name": "普通",
+    "description": "普通怪物"
+  },
+  {
+    "variant": "Undead",
+    "id": "2",
+    "name": "undead",
+    "description": "undead 怪物"
+  },
+  {
+    "variant": "Beast",
+    "id": "3",
+    "name": "野兽",
+    "description": "野兽"
+  },
+  {
+    "variant": "Humanoid",
+    "id": "4",
+    "name": "人形",
+    "description": "人形生物"
+  },
+  {
+    "variant": "Giant",
+    "id": "5",
+    "name": "巨型",
+    "description": "巨型生物"
+  },
+  {
+    "variant": "Dragon",
+    "id": "6",
+    "name": "龙",
+    "description": "龙"
+  },
+  {
+    "variant": "Elemental",
+    "id": "7",
+    "name": "元素",
+    "description": "元素生物"
+  }
+]

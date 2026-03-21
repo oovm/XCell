@@ -1,0 +1,112 @@
+[
+  {
+    "id": "1",
+    "name": "哥布林",
+    "level": "1",
+    "health": "50",
+    "damage": "5",
+    "defense": "2",
+    "type": "normal",
+    "drop_items": "\"1",
+    "skills": "2\""
+  },
+  {
+    "id": "2",
+    "name": "兽人",
+    "level": "2",
+    "health": "80",
+    "damage": "8",
+    "defense": "4",
+    "type": "normal",
+    "drop_items": "\"3",
+    "skills": "4\""
+  },
+  {
+    "id": "3",
+    "name": "骷髅",
+    "level": "2",
+    "health": "60",
+    "damage": "6",
+    "defense": "3",
+    "type": "undead",
+    "drop_items": "\"2",
+    "skills": "5\""
+  },
+  {
+    "id": "4",
+    "name": "巨型蜘蛛",
+    "level": "3",
+    "health": "100",
+    "damage": "10",
+    "defense": "5",
+    "type": "beast",
+    "drop_items": "\"4",
+    "skills": "6\""
+  },
+  {
+    "id": "5",
+    "name": "僵尸",
+    "level": "3",
+    "health": "90",
+    "damage": "7",
+    "defense": "4",
+    "type": "undead",
+    "drop_items": "\"2",
+    "skills": "5"
+  },
+  {
+    "id": "6",
+    "name": "精灵弓箭手",
+    "level": "4",
+    "health": "70",
+    "damage": "12",
+    "defense": "3",
+    "type": "humanoid",
+    "drop_items": "\"3",
+    "skills": "6"
+  },
+  {
+    "id": "7",
+    "name": "食人魔",
+    "level": "4",
+    "health": "150",
+    "damage": "15",
+    "defense": "8",
+    "type": "giant",
+    "drop_items": "\"4",
+    "skills": "7"
+  },
+  {
+    "id": "8",
+    "name": "幼龙",
+    "level": "5",
+    "health": "200",
+    "damage": "20",
+    "defense": "10",
+    "type": "dragon",
+    "drop_items": "\"5",
+    "skills": "8"
+  },
+  {
+    "id": "9",
+    "name": "吸血鬼",
+    "level": "5",
+    "health": "120",
+    "damage": "18",
+    "defense": "6",
+    "type": "undead",
+    "drop_items": "\"6",
+    "skills": "9"
+  },
+  {
+    "id": "10",
+    "name": "火元素",
+    "level": "6",
+    "health": "180",
+    "damage": "25",
+    "defense": "8",
+    "type": "elemental",
+    "drop_items": "\"7",
+    "skills": "10"
+  }
+]

@@ -16,19 +16,19 @@ namespace {{ config.namespace }}
     [DataContract, Serializable]
     public partial class {{ class_name }}
     {
-<$- for field in class_fields $>
-    <$- for line in field.document $>
+<%- for field in class_fields %>
+    <%- for line in field.document %>
         /// {{ line }}
-    <$- endfor $>
+    <%- endfor %>
         [DataMember]
-    <$- if field.has_default $>
+    <%- if field.has_default %>
         public {{field.typing}} {{field.name}} = {{field.default}};
-    <$ else $>
+    <% else %>
         public {{field.typing}} {{field.name}};
-    <$- endif $>
-<$- endfor $>
+    <%- endif %>
+<%- endfor %>
     }
-<$ if config.binary.enable $>
+<% if config.binary.enable %>
     public partial class {{ class_name }} : IBinarySupport
     {
         public {{class_name}}()
@@ -55,46 +55,46 @@ namespace {{ config.namespace }}
         /// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
-<$- for field in class_fields $>
-    <$- if field.reader.is_vector $>
+<%- for field in class_fields %>
+    <%- if field.reader.is_vector %>
             var {{ field.reader.field }}Count = r.ReadUInt32();
             {{ field.reader.field }} = new((int) {{ field.reader.field }}Count);
             for (var i = 0; i < {{ field.reader.field }}Count; i++)
             {
                 {{ field.reader.field }}.Add({{ field.reader.function }});
             }
-    <$- else $>
+    <%- else %>
             {{ field.reader.field }} = {{ field.reader.function }};
-    <$- endif $>
-<$- endfor $>
+    <%- endif %>
+<%- endfor %>
         }
 
         /// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
-<$- for field in class_fields $>
-    <$- if field.writer.is_vector $>
+<%- for field in class_fields %>
+    <%- if field.writer.is_vector %>
             w.Write((uint) {{ field.writer.field }}.Count);
             foreach (var {{ field.writer.field }}Item in {{ field.writer.field }})
             {
-        <$- for property in field.writer.properties $>
+        <%- for property in field.writer.properties %>
                 w.Write({{ field.writer.field }}Item{{ property }});
-        <$- endfor $>
+        <%- endfor %>
             }
-    <$- else $>
-        <$- for property in field.writer.properties $>
+    <%- else %>
+        <%- for property in field.writer.properties %>
             w.Write({{ field.writer.cast }}{{ field.writer.field }}{{ property }});
-        <$- endfor $>
-    <$- endif $>
-<$- endfor $>
+        <%- endfor %>
+    <%- endif %>
+<%- endfor %>
         }
-<$ if config.support_clone $>
+<% if config.support_clone %>
         /// <inheritdoc cref="ICloneable.Clone"/>
         public {{ class_name }} Clone()
         {
             return ({{ class_name }}) MemberwiseClone();
         }
-<$- endif $>
+<%- endif %>
     }
-<$- endif $>
+<%- endif %>
 }

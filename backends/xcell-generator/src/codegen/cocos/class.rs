@@ -1,4 +1,5 @@
 use super::*;
+use convert_case::Case;
 use xcell_types::codegen::TypeScriptWriter;
 
 #[derive(Template)]

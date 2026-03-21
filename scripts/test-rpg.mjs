@@ -9,16 +9,12 @@ async function main() {
     const __filename = fileURLToPath(import.meta.url);
     const scriptDir = path.dirname(__filename);
     const projectRoot = path.resolve(scriptDir, '..');
-    const rpgDir = path.resolve(projectRoot, 'examples', 'rpg');
+    const rpgDirectories = [
+        path.resolve(projectRoot, 'examples', 'rpg-untyped'),
+        path.resolve(projectRoot, 'examples', 'rpg-typed')
+    ];
     
     console.log('Finding xcell executable...');
-    
-    // 检查 RPG 示例目录是否存在
-    if (!fs.existsSync(rpgDir)) {
-        console.error(`RPG example directory not found at: ${rpgDir}`);
-        console.error('Please make sure the RPG example project exists.');
-        return;
-    }
     
     // 找到 debug 版本的 xcell 可执行文件
     const xcellPath = path.resolve(projectRoot, 'target', 'debug', 'xcell.exe');
@@ -31,25 +27,46 @@ async function main() {
     
     console.log(`Found xcell.exe at: ${xcellPath}`);
     
-    // 执行 xcell generate 命令
-    console.log('Running xcell generate...');
-    
-    try {
-        execSync(`"${xcellPath}"`, { cwd: rpgDir, stdio: 'inherit' });
-        console.log('xcell generate completed successfully!');
+    // 处理每个 RPG 目录
+    for (const rpgDir of rpgDirectories) {
+        console.log(`\nProcessing directory: ${rpgDir}`);
         
-        // 验证生成结果
-        console.log('Verifying generated files...');
-        const generatedDir = path.resolve(rpgDir, 'src', 'generated');
-        
-        if (fs.existsSync(generatedDir)) {
-            console.log(`Generated files found at: ${generatedDir}`);
-        } else {
-            console.warn('Generated files directory not found. Please check the generation process.');
+        // 检查 RPG 示例目录是否存在
+        if (!fs.existsSync(rpgDir)) {
+            console.error(`RPG example directory not found at: ${rpgDir}`);
+            console.error('Please make sure the RPG example project exists.');
+            continue;
         }
-    } catch (error) {
-        console.error('xcell generate failed:', error.message);
-        return;
+        
+        // 执行 xcell generate 命令
+        console.log('Running xcell generate...');
+        
+        try {
+            execSync(`"${xcellPath}"`, { cwd: rpgDir, stdio: 'inherit' });
+            console.log('xcell generate completed successfully!');
+            
+            // 验证生成结果
+            console.log('Verifying generated files...');
+            
+            // 检查 Unity 生成文件
+            const unityGeneratedDir = path.resolve(rpgDir, 'unity', 'Assets', 'Scripts', 'DataTable', 'Generated');
+            if (fs.existsSync(unityGeneratedDir)) {
+                console.log(`Unity generated files found at: ${unityGeneratedDir}`);
+            } else {
+                console.warn('Unity generated files directory not found. Please check the generation process.');
+            }
+            
+            // 检查 Cocos 生成文件
+            const cocosGeneratedDir = path.resolve(rpgDir, 'cocos', 'assets', 'scripts', 'dataTable', 'generated');
+            if (fs.existsSync(cocosGeneratedDir)) {
+                console.log(`Cocos generated files found at: ${cocosGeneratedDir}`);
+            } else {
+                console.warn('Cocos generated files directory not found. Please check the generation process.');
+            }
+        } catch (error) {
+            console.error('xcell generate failed:', error.message);
+            continue;
+        }
     }
     
     console.log('\nAll tasks completed successfully!');

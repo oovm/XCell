@@ -53,7 +53,7 @@ output = "Assets/Tables/Readable"
 enable = false
 
 [cocos]
-enable = false
+enable = true
 project = "../"
 output = "assets/scripts/dataTable/generated"
 namespace = "DataTable.Generated"

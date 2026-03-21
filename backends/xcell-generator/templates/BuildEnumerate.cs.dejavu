@@ -13,30 +13,30 @@ namespace {{ config.namespace }}
     [DataContract, Serializable]
     public enum {{ class_name }}: {{ id_type }}
     {
-<$- for field in enumerate_ids $>
-    <$- for line in field.document $>
+<%- for field in enumerate_ids %>
+    <%- for line in field.document %>
         /// {{ line }}
-    <$- endfor $>
+    <%- endfor %>
         [EnumMember] {{ field.key }} = {{ field.value }},
-<$- endfor $>
+<%- endfor %>
     }
 
     public static class {{ class_name }}Extension
     {
-<$- for field in enumerate_fields $>
-    <$- for line in field.document $>
+<%- for field in enumerate_fields %>
+    <%- for line in field.document %>
         /// {{ line }}
-    <$- endfor $>
+    <%- endfor %>
         public static {{ field.typing }} {{ field.getter }}(this {{ class_name }} self)
         {
             return self switch
             {
-            <$- for line in field.switch $>
+            <%- for line in field.switch %>
                 {{ class_name }}.{{ line.key }} => {{ line.value }},
-            <$- endfor $>
+            <%- endfor %>
                 _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
             };
         }
-<$ endfor $>
+<% endfor %>
     }
 }

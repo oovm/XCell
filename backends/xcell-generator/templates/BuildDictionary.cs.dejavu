@@ -12,9 +12,9 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using UnityEngine;
-<$- if config.addressable $>
+<%- if config.addressable %>
 using UnityEngine.AddressableAssets;
-<$ endif $>
+<% endif %>
 
 namespace {{ config.namespace }}
 {
@@ -55,28 +55,28 @@ namespace {{ config.namespace }}
     [DataContract, Serializable]
     public partial class {{ class_name }}Element
     {
-<$- for field in class_fields $>
-    <$- for line in field.document $>
+<%- for field in class_fields %>
+    <%- for line in field.document %>
         /// {{line}}
-    <$- endfor $>
+    <%- endfor %>
         [DataMember, SerializeField]
-    <$- if field.has_default $>
+    <%- if field.has_default %>
         {{field.access}}{{field.typing}} {{field.name}} = {{field.default}};
-    <$ else $>
+    <% else %>
         {{field.access}}{{field.typing}} {{field.name}};
-    <$- endif $>
-<$- endfor $>
+    <%- endif %>
+<%- endfor %>
     }
-<$ if config.binary.enable $>
+<% if config.binary.enable %>
     public partial class {{ table_name }} : IBinarySupport
     {
         public {{ table_name }}()
         {
-    <$- if config.addressable $>
+    <%- if config.addressable %>
             BinaryRead("{{ config.binary.addressable }}/{{ table_name }}.bytes");
-    <$- else $>
+    <%- else %>
             BinaryRead("{{ config.binary.output }}/{{ table_name }}.bytes");
-    <$- endif $>
+    <%- endif %>
         }
         /// <summary>
         /// 从二进制文件中读取静态数据
@@ -128,39 +128,39 @@ namespace {{ config.namespace }}
         /// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
-<$- for field in class_fields $>
-    <$- if field.reader.is_vector $>
+<%- for field in class_fields %>
+    <%- if field.reader.is_vector %>
             var {{ field.reader.field }}Count = r.ReadUInt32();
             {{ field.reader.field }} = new((int) {{ field.reader.field }}Count);
             for (var i = 0; i < {{ field.reader.field }}Count; i++)
             {
                 {{ field.reader.field }}.Add({{ field.reader.function }});
             }
-    <$- else $>
+    <%- else %>
             {{ field.reader.field }} = {{ field.reader.function }};
-    <$- endif $>
-<$- endfor $>
+    <%- endif %>
+<%- endfor %>
         }
 
         /// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
-<$- for field in class_fields $>
-    <$- if field.writer.is_vector $>
+<%- for field in class_fields %>
+    <%- if field.writer.is_vector %>
             w.Write((uint) {{ field.writer.field }}.Count);
             foreach (var {{ field.writer.field }}Item in {{ field.writer.field }})
             {
-        <$- for property in field.writer.properties $>
+        <%- for property in field.writer.properties %>
                 w.Write({{ field.writer.field }}Item{{ property }});
-        <$- endfor $>
+        <%- endfor %>
             }
-    <$- else $>
-        <$- for property in field.writer.properties $>
+    <%- else %>
+        <%- for property in field.writer.properties %>
             w.Write({{ field.writer.cast }}{{ field.writer.field }}{{ property }});
-        <$- endfor $>
-    <$- endif $>
-<$- endfor $>
+        <%- endfor %>
+    <%- endif %>
+<%- endfor %>
         }
     }
-<$- endif $>
+<%- endif %>
 }

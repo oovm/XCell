@@ -6,7 +6,6 @@ members = [
 ]
 default-members = [
     "backends/*",
-    "frontends/xcell-desktop",
 ]
 exclude = [
     "projects/.DS_Store",
@@ -66,6 +65,7 @@ once_cell = "1.19.0"
 
 dejavu-types = { path = "../dejavu-engine/backends/dejavu-types" }
 dejavu-macros = { path = "../dejavu-engine/backends/dejavu-macros" }
+dejavu-engine = { path = "../dejavu-engine/backends/dejavu-engine" }
 
 xcell-types = { path = "backends/xcell-types" }
 xcell-analyzer = { path = "backends/xcell-analyzer" }
@@ -75,7 +75,7 @@ xcell-generator = { path = "backends/xcell-generator" }
 xcell-plugin = { path = "backends/xcell-plugin" }
 xcell-config = { path = "backends/xcell-config" }
 
-dejavu-engine = { path = "../dejavu-engine/backends/dejavu-engine" }
+
 tempfile = "3.10.1"
 
 [profile.release]

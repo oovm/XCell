@@ -57,11 +57,11 @@ generator.generate(&context).expect("Failed to generate code");
 
 ## Dejavu 模板语法
 
-Dejavu 模板使用 `<$` 和 `$>` 作为分隔符：
+Dejavu 模板使用 `<%` 和 `%>` 作为分隔符：
 
 ```
-Hello, <$ name $>!
-You are <$ age $> years old.
+Hello, <% name %>!
+You are <% age %> years old.
 ```
 
 ## 配置选项

@@ -627,16 +627,18 @@ impl super::Codegen for CocosCodegen {
                 if let xcell_config::project::Generator::Cocos(cocos_config) = generator {
                     // 创建一个新的 CocosCodegen 实例，使用生成器中的 cocos 配置
                     let cocos_codegen = CocosCodegen {
-                        storage: CocosStorage {
-                            json: CocosJsonConfig {
-                                enable: cocos_config.storage.json.enable,
-                                output: cocos_config.storage.json.output.clone(),
+                        storage: match &cocos_config.storage {
+                            xcell_config::cocos::CocosStorage::Json(config) => CocosStorage {
+                                json: CocosJsonConfig {
+                                    enable: config.enable,
+                                    output: config.output.clone(),
+                                },
                             },
                         },
                         enable: cocos_config.enable,
                         project: cocos_config.project.clone(),
                         output: cocos_config.output.clone(),
-                        namespace: cocos_config.namespace.clone(),
+                        namespace: String::new(), // 提供默认值
                         manager_name: cocos_config.manager_name.clone(),
                         suffix_table: cocos_config.suffix_table.clone(),
                         instance_name: cocos_config.instance_name.clone(),

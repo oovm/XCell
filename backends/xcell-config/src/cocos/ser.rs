@@ -1,7 +1,6 @@
 // 序列化实现
 use super::*;
-use serde::{Serializer, Serialize};
-use serde::ser::SerializeStruct;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 
 impl Serialize for CocosStorage {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -15,9 +14,21 @@ impl Serialize for CocosStorage {
                 state.serialize_field("enable", &config.enable)?;
                 state.serialize_field("output", &config.output)?;
                 state.end()
-            },
+            }
         }
     }
+}
+
+#[derive(Serialize)]
+struct CocosCodegenHelper {
+    storage: CocosStorage,
+    development: Option<CocosStorage>,
+    enable: bool,
+    project: String,
+    output: String,
+    manager_name: String,
+    suffix_table: String,
+    instance_name: String,
 }
 
 impl Serialize for CocosCodegen {
@@ -25,18 +36,6 @@ impl Serialize for CocosCodegen {
     where
         S: Serializer,
     {
-        #[derive(Serialize)]
-        struct CocosCodegenHelper {
-            storage: CocosStorage,
-            development: Option<CocosStorage>,
-            enable: bool,
-            project: String,
-            output: String,
-            manager_name: String,
-            suffix_table: String,
-            instance_name: String,
-        }
-
         let helper = CocosCodegenHelper {
             storage: self.storage.clone(),
             development: self.development.clone(),

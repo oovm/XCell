@@ -15,8 +15,8 @@ impl<'de> Deserialize<'de> for CocosStorage {
         D: Deserializer<'de>,
     {
         let helper = CocosStorageHelper::deserialize(deserializer)?;
-        
-        match helper.r#type.as_str() {
+
+        match helper.r#type.to_ascii_lowercase().as_str() {
             "json" => Ok(CocosStorage::Json(CocosJsonConfig {
                 enable: helper.enable.unwrap_or(true),
                 output: helper.output.unwrap_or_default(),
@@ -26,29 +26,29 @@ impl<'de> Deserialize<'de> for CocosStorage {
     }
 }
 
+#[derive(Deserialize)]
+struct CocosCodegenHelper {
+    storage: CocosStorage,
+    development: Option<CocosStorage>,
+    enable: Option<bool>,
+    project: String,
+    output: String,
+    manager_name: String,
+    suffix_table: String,
+    instance_name: String,
+}
+
 impl<'de> Deserialize<'de> for CocosCodegen {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        #[derive(Deserialize)]
-        struct CocosCodegenHelper {
-            storage: CocosStorage,
-            development: Option<CocosStorage>,
-            enable: bool,
-            project: String,
-            output: String,
-            manager_name: String,
-            suffix_table: String,
-            instance_name: String,
-        }
-
         let helper = CocosCodegenHelper::deserialize(deserializer)?;
-        
+
         Ok(CocosCodegen {
             storage: helper.storage,
             development: helper.development,
-            enable: helper.enable,
+            enable: helper.enable.unwrap_or(true),
             project: helper.project,
             output: helper.output,
             manager_name: helper.manager_name,

@@ -166,7 +166,6 @@ impl GeneratorConfig {
                 xcell_config::project::Generator::Cocos(cocos) => {
                     if cocos.enable {
                         let mut options = std::collections::HashMap::new();
-                        options.insert("namespace".to_string(), cocos.namespace.clone());
                         options.insert("output".to_string(), cocos.output.clone());
                         
                         products.push(ProductConfig {

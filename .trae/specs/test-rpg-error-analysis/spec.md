@@ -45,4 +45,23 @@
 ### AC-1: Script Execution
 - **Given**: xcell.exe exists in target/debug directory
 - **When**: test-rpg.mjs script is executed
-- **Then**: Script runs without errors
+- **Then**: Script runs without errors and executes xcell generate command
+- **Verification**: `programmatic`
+
+### AC-2: Configuration Reading
+- **Given**: ProjectSetting.toml exists in rpg-typed directory with cocos and unity generators configured
+- **When**: xcell generate is executed
+- **Then**: xcell reads the configuration and attempts to generate output for both targets
+- **Verification**: `programmatic`
+
+### AC-3: Output Generation
+- **Given**: xcell generate command completes successfully
+- **When**: Checking output directories
+- **Then**: Both cocos and unity directories contain generated files
+- **Verification**: `programmatic`
+
+## Open Questions
+- [ ] Is xcell.exe properly built and accessible?
+- [ ] Does xcell generate command require specific arguments?
+- [ ] Are there any error messages being suppressed by the script?
+- [ ] Is the working directory correctly set when executing xcell?

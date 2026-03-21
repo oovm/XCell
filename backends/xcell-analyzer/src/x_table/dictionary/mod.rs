@@ -17,7 +17,7 @@ pub mod manager;
 #[derive(Clone, Debug)]
 pub struct XListTable {
     table: ArcTableReader,
-    id_type: IntegerKind,
+    id_type: IntegerDescription,
     headers: Vec<XCellHeader>,
 }
 
@@ -45,7 +45,7 @@ impl XListTable {
             }
         }
         // 然后创建实例
-        let out = Self { table, id_type: id_type.kind, headers };
+        let out = Self { table, id_type, headers };
         Ok(out)
     }
     pub fn perform(&self, ws: &mut WorkspaceManager) -> Vec<XError> {
@@ -53,11 +53,11 @@ impl XListTable {
         let mut values = BTreeMap::default();
         // 实现 rows() 方法
         for (row, data) in self.table.rows() {
-            if !first_not_nil(data) {
+            if !first_not_nil(&data) {
                 // 首行是空的, 数据无效且不报错
                 continue;
             }
-            match XDataLine::parse_id_cell(data, row, &self.headers, &mut errors) {
+            match XDataLine::parse_id_cell(&data, row, &self.headers, &mut errors) {
                 Ok(o) => {
                     values.insert(o.id.clone(), o);
                 }

@@ -1,0 +1,27 @@
+version = "0.0.0"
+
+exclude = ""
+include = "*.csv"
+
+line.field = 1
+line.type = 2
+line.comment = 3
+line.data = 4
+
+[[generators]]
+type = "Cocos"
+
+[generators.cocos.loader]
+enable = true
+project = "."
+output = "cocos"
+namespace = "DataTable"
+
+[[generators]]
+type = "Unity"
+
+[generators.unity.loader]
+enable = true
+project = "."
+output = "unity"
+namespace = "DataTable"

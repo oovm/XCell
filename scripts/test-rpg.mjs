@@ -49,7 +49,7 @@ async function main() {
             console.log('Verifying generated files...');
             
             // 检查 Unity 生成文件
-            const unityGeneratedDir = path.resolve(rpgDir, 'unity', 'Assets', 'Scripts', 'DataTable', 'Generated');
+            const unityGeneratedDir = path.resolve(rpgDir, 'Assets', 'Scripts', 'DataTable', 'Generated');
             if (fs.existsSync(unityGeneratedDir)) {
                 console.log(`Unity generated files found at: ${unityGeneratedDir}`);
             } else {
@@ -57,7 +57,7 @@ async function main() {
             }
             
             // 检查 Cocos 生成文件
-            const cocosGeneratedDir = path.resolve(rpgDir, 'cocos', 'assets', 'scripts', 'dataTable', 'generated');
+            const cocosGeneratedDir = path.resolve(rpgDir, '..', 'assets', 'scripts', 'dataTable', 'generated');
             if (fs.existsSync(cocosGeneratedDir)) {
                 console.log(`Cocos generated files found at: ${cocosGeneratedDir}`);
             } else {

@@ -1,79 +1,82 @@
-# XCell RPG Code Generation Fix - Implementation Plan
+# XCell RPG 代码生成问题分析 - 实现计划
 
-## [ ] Task 1: Add xcell-generator dependency to xcell-analyzer
-- **Priority**: P0
-- **Depends On**: None
-- **Description**:
-  - Add xcell-generator as a dependency in xcell-analyzer's Cargo.toml
-  - Ensure the dependency is properly configured
-- **Acceptance Criteria Addressed**: AC-1, AC-2, AC-3, AC-4
-- **Test Requirements**:
-  - `programmatic` TR-1.1: xcell-analyzer compiles successfully with xcell-generator dependency
-  - `programmatic` TR-1.2: No compilation errors related to the new dependency
-- **Notes**: This is a prerequisite for integrating the code generation logic
+## [ ] 任务 1: 分析当前 ProjectSettings.toml 配置
+- **优先级**: P0
+- **依赖**: 无
+- **描述**: 分析 rpg-typed 目录下的 ProjectSettings.toml 配置文件，确认配置格式和内容是否正确
+- **验收标准**: AC-1
+- **测试要求**:
+  - `programmatic` TR-1.1: 验证 ProjectSettings.toml 文件存在且格式正确
+  - `programmatic` TR-1.2: 验证文件中包含 cocos 和 unity 生成器配置
+- **注意**: 重点检查生成器配置是否缺少必要的启用选项
 
-## [ ] Task 2: Update write_unity method to use xcell-generator
-- **Priority**: P0
-- **Depends On**: Task 1
-- **Description**:
-  - Modify the write_unity method in WorkspaceManager to use the actual code generation logic from xcell-generator
-  - Replace the placeholder implementation with a call to the appropriate Unity code generation method
-- **Acceptance Criteria Addressed**: AC-1, AC-3, AC-4
-- **Test Requirements**:
-  - `programmatic` TR-2.1: Unity code generation completes without errors
-  - `programmatic` TR-2.2: Actual C# files are generated instead of placeholder files
-- **Notes**: Need to ensure the Unity code generation module is properly enabled
+## [ ] 任务 2: 修复 ProjectSettings.toml 配置文件
+- **优先级**: P0
+- **依赖**: 任务 1
+- **描述**: 根据分析结果，修改 ProjectSettings.toml 配置文件，添加必要的启用选项和正确的输出路径配置
+- **验收标准**: AC-1, AC-2
+- **测试要求**:
+  - `programmatic` TR-2.1: 验证配置文件修改后格式正确
+  - `programmatic` TR-2.2: 验证生成器配置包含必要的启用选项
+- **注意**: 确保配置文件符合新格式的要求，包含完整的生成器配置
 
-## [ ] Task 3: Update write_cocos method to use xcell-generator
-- **Priority**: P0
-- **Depends On**: Task 1
-- **Description**:
-  - Modify the write_cocos method in WorkspaceManager to use the actual code generation logic from xcell-generator
-  - Replace the placeholder implementation with a call to the appropriate Cocos code generation method
-- **Acceptance Criteria Addressed**: AC-2, AC-3, AC-4
-- **Test Requirements**:
-  - `programmatic` TR-3.1: Cocos code generation completes without errors
-  - `programmatic` TR-3.2: Actual TypeScript files are generated instead of placeholder files
-- **Notes**: The Cocos code generation module appears to be more complete than Unity
+## [ ] 任务 3: 分析 xcell 命令的配置处理逻辑
+- **优先级**: P0
+- **依赖**: 任务 1
+- **描述**: 分析 xcell 命令的配置处理逻辑，特别是如何处理新格式的生成器配置
+- **验收标准**: AC-2
+- **测试要求**:
+  - `programmatic` TR-3.1: 验证 xcell 命令能正确读取 ProjectSettings.toml 文件
+  - `programmatic` TR-3.2: 验证生成器配置能正确解析为产物配置
+- **注意**: 重点检查生成器配置中的 path 字段是否被正确处理
 
-## [ ] Task 4: Test code generation with rpg-typed example
-- **Priority**: P1
-- **Depends On**: Task 2, Task 3
-- **Description**:
-  - Run xcell in the rpg-typed directory
-  - Verify that actual code files are generated for both Unity and Cocos platforms
-  - Check that no placeholder files are present
-- **Acceptance Criteria Addressed**: AC-1, AC-2, AC-4
-- **Test Requirements**:
-  - `programmatic` TR-4.1: Unity Generated directory contains actual C# files
-  - `programmatic` TR-4.2: Cocos generated directory contains actual TypeScript files
-  - `programmatic` TR-4.3: No Placeholder.ts or Placeholder.cs files exist
-- **Notes**: This tests the core functionality of the fix
+## [ ] 任务 4: 修复 xcell 命令的配置处理逻辑
+- **优先级**: P0
+- **依赖**: 任务 3
+- **描述**: 根据分析结果，修复 xcell 命令的配置处理逻辑，确保能正确处理新格式的生成器配置
+- **验收标准**: AC-2
+- **测试要求**:
+  - `programmatic` TR-4.1: 验证 xcell 命令能正确解析新格式的生成器配置
+  - `programmatic` TR-4.2: 验证生成器配置中的 path 字段被正确处理
+- **注意**: 确保修复后的逻辑保持向后兼容性
 
-## [ ] Task 5: Test code generation with rpg-untyped example
-- **Priority**: P1
-- **Depends On**: Task 2, Task 3
-- **Description**:
-  - Run xcell in the rpg-untyped directory
-  - Verify that actual code files are generated for both Unity and Cocos platforms
-  - Check that no placeholder files are present
-- **Acceptance Criteria Addressed**: AC-3, AC-4
-- **Test Requirements**:
-  - `programmatic` TR-5.1: Unity Generated directory contains actual C# files
-  - `programmatic` TR-5.2: Cocos generated directory contains actual TypeScript files
-  - `programmatic` TR-5.3: No Placeholder.ts or Placeholder.cs files exist
-- **Notes**: This ensures the fix works for both typed and untyped examples
+## [ ] 任务 5: 编译 xcell 可执行文件
+- **优先级**: P1
+- **依赖**: 任务 4
+- **描述**: 编译修复后的 xcell 可执行文件
+- **验收标准**: AC-3
+- **测试要求**:
+  - `programmatic` TR-5.1: 验证 xcell 可执行文件编译成功
+  - `programmatic` TR-5.2: 验证 xcell 可执行文件存在且可执行
+- **注意**: 确保使用正确的编译命令
 
-## [ ] Task 6: Run the test-rpg.mjs script
-- **Priority**: P1
-- **Depends On**: Task 4, Task 5
-- **Description**:
-  - Execute the test-rpg.mjs script to test the entire code generation process
-  - Verify that no errors are reported
-  - Confirm that all code generation tasks complete successfully
-- **Acceptance Criteria Addressed**: AC-4
-- **Test Requirements**:
-  - `programmatic` TR-6.1: The script runs without errors
-  - `programmatic` TR-6.2: All code generation tasks report success
-  - `programmatic` TR-6.3: No placeholder files are generated
-- **Notes**: This tests the end-to-end functionality as used by users
+## [ ] 任务 6: 测试代码生成功能
+- **优先级**: P1
+- **依赖**: 任务 2, 任务 5
+- **描述**: 在 rpg-typed 目录执行 xcell generate 命令，测试代码生成功能
+- **验收标准**: AC-3
+- **测试要求**:
+  - `programmatic` TR-6.1: 验证 xcell generate 命令执行成功
+  - `programmatic` TR-6.2: 验证 cocos 目录生成了相应的代码产物
+  - `programmatic` TR-6.3: 验证 unity 目录生成了相应的代码产物
+- **注意**: 检查生成的产物是否符合预期
+
+## [ ] 任务 7: 运行 test-rpg.mjs 脚本验证
+- **优先级**: P1
+- **依赖**: 任务 6
+- **描述**: 运行 test-rpg.mjs 脚本，验证代码生成功能是否正常
+- **验收标准**: AC-4
+- **测试要求**:
+  - `programmatic` TR-7.1: 验证 test-rpg.mjs 脚本执行成功
+  - `programmatic` TR-7.2: 验证脚本输出成功信息，确认产物存在
+- **注意**: 确保脚本能正确验证生成的产物
+
+## [ ] 任务 8: 验证修复效果
+- **优先级**: P2
+- **依赖**: 任务 7
+- **描述**: 验证修复后的功能是否正常工作，确保没有引入新的问题
+- **验收标准**: AC-1, AC-2, AC-3, AC-4
+- **测试要求**:
+  - `programmatic` TR-8.1: 验证多次执行 xcell generate 命令都能成功
+  - `programmatic` TR-8.2: 验证修改配置文件后能正确应用新的配置
+- **注意**: 确保修复方案的稳定性和可靠性

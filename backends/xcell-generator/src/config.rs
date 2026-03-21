@@ -148,30 +148,30 @@ impl GeneratorConfig {
 
         // 处理生成器列表
         for generator in &project_config.generators {
-            match generator.r#type {
-                GeneratorType::Unity => {
-                    if generator.unity.loader.enable {
+            match generator {
+                xcell_config::project::Generator::Unity(unity) => {
+                    if unity.loader.enable {
                         let mut options = std::collections::HashMap::new();
-                        options.insert("namespace".to_string(), generator.unity.loader.namespace.clone());
-                        options.insert("output".to_string(), generator.unity.loader.output.clone());
+                        options.insert("namespace".to_string(), unity.loader.namespace.clone());
+                        options.insert("output".to_string(), unity.loader.output.clone());
                         
                         products.push(ProductConfig {
                             product_type: ProductType::Unity,
-                            output_dir: generator.unity.loader.output.clone(),
+                            output_dir: unity.loader.output.clone(),
                             options,
                             enabled: true,
                         });
                     }
                 }
-                GeneratorType::Cocos => {
-                    if generator.cocos.loader.enable {
+                xcell_config::project::Generator::Cocos(cocos) => {
+                    if cocos.loader.enable {
                         let mut options = std::collections::HashMap::new();
-                        options.insert("namespace".to_string(), generator.cocos.loader.namespace.clone());
-                        options.insert("output".to_string(), generator.cocos.loader.output.clone());
+                        options.insert("namespace".to_string(), cocos.loader.namespace.clone());
+                        options.insert("output".to_string(), cocos.loader.output.clone());
                         
                         products.push(ProductConfig {
                             product_type: ProductType::Cocos,
-                            output_dir: generator.cocos.loader.output.clone(),
+                            output_dir: cocos.loader.output.clone(),
                             options,
                             enabled: true,
                         });

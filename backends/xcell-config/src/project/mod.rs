@@ -28,79 +28,38 @@ pub struct ExportCondition {
     pub target: String,
 }
 
-/// 生成器类型枚举
+/// 生成器配置枚举
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum GeneratorType {
+#[serde(tag = "type")]
+pub enum Generator {
     /// Unity 生成器
-    Unity,
+    Unity(UnityCodegen),
     /// Cocos 生成器
-    Cocos,
+    Cocos(CocosCodegen),
     /// XLua 生成器
-    Xlua,
+    Xlua(XluaCodegen),
     /// SQL 生成器
-    Sql,
+    Sql(SqlCodegen),
     /// JSON 生成器
-    Json,
+    Json(JsonCodegen),
     /// TypeScript 生成器
-    TypeScript,
-}
-
-/// 生成器配置结构体
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Generator {
-    /// 生成器类型
-    pub r#type: GeneratorType,
-    /// Unity 生成配置
-    #[serde(default)]
-    pub unity: UnityCodegen,
-    /// Cocos 生成配置
-    #[serde(default)]
-    pub cocos: CocosCodegen,
-    /// XLua 生成配置
-    #[serde(default)]
-    pub xlua: XluaCodegen,
-    /// SQL 生成配置
-    #[serde(default)]
-    pub sql: SqlCodegen,
-    /// JSON 生成配置
-    #[serde(default)]
-    pub json: JsonCodegen,
-    /// TypeScript 生成配置
-    #[serde(default)]
-    pub typescript: TypeScriptCodegen,
+    TypeScript(TypeScriptCodegen),
 }
 
 /// 项目配置结构，用于存储项目的全局配置信息。
 /// 
 /// # 配置格式
 /// 
-/// ## 旧格式（向后兼容）
-/// ```toml
-/// [unity]
-/// enable = true
-/// project = "../"
-/// output = "Assets/Scripts/DataTable/Generated"
-/// 
-/// [cocos]
-/// enable = true
-/// project = "../"
-/// output = "assets/scripts/dataTable/generated"
-/// ```
-/// 
 /// ## 新格式（推荐）
 /// ```toml
 /// [[generators]]
 /// type = "Unity"
-/// 
-/// [generators.unity]
 /// enable = true
 /// project = "../"
 /// output = "Assets/Scripts/DataTable/Generated"
 /// 
 /// [[generators]]
 /// type = "Cocos"
-/// 
-/// [generators.cocos]
 /// enable = true
 /// project = "../"
 /// output = "assets/scripts/dataTable/generated"
@@ -185,85 +144,18 @@ impl ProjectConfig {
                 if let Ok(config) = toml::from_str::<Self>(&content) {
                     // 处理向后兼容性：如果没有 generators 字段，则将旧格式的配置转换为 generators 列表
                     let mut config = Self { root: root.to_path_buf(), ..config };
-                    
-                    // 检查是否需要转换旧格式配置
-                    if config.generators.is_empty() {
-                        // 检查旧格式的配置是否启用
-                        // 处理旧格式的 Unity 配置
-                        if config.unity.loader.enable || config.unity.storage.binary.enable || config.unity.storage.json.enable || config.unity.storage.xml.enable || config.unity.storage.protobuf.enable {
-                            config.generators.push(Generator {
-                                r#type: GeneratorType::Unity,
-                                unity: config.unity.clone(),
-                                cocos: Default::default(),
-                                xlua: Default::default(),
-                                sql: Default::default(),
-                                json: Default::default(),
-                                typescript: Default::default(),
-                            });
+                        // 从 generators 列表中更新 unity 和 cocos 字段，保持向后兼容
+                        for generator in &config.generators {
+                            match generator {
+                                Generator::Unity(unity) => {
+                                    config.unity = unity.clone();
+                                }
+                                Generator::Cocos(cocos) => {
+                                    config.cocos = cocos.clone();
+                                }
+                                _ => {}
+                            }
                         }
-                        
-                        // 处理旧格式的 Cocos 配置
-                        if config.cocos.loader.enable || config.cocos.storage.json.enable {
-                            config.generators.push(Generator {
-                                r#type: GeneratorType::Cocos,
-                                unity: Default::default(),
-                                cocos: config.cocos.clone(),
-                                xlua: Default::default(),
-                                sql: Default::default(),
-                                json: Default::default(),
-                                typescript: Default::default(),
-                            });
-                        }
-                        
-                        if config.xlua.enable {
-                            config.generators.push(Generator {
-                                r#type: GeneratorType::Xlua,
-                                unity: Default::default(),
-                                cocos: Default::default(),
-                                xlua: config.xlua.clone(),
-                                sql: Default::default(),
-                                json: Default::default(),
-                                typescript: Default::default(),
-                            });
-                        }
-                        
-                        if config.sql.enable {
-                            config.generators.push(Generator {
-                                r#type: GeneratorType::Sql,
-                                unity: Default::default(),
-                                cocos: Default::default(),
-                                xlua: Default::default(),
-                                sql: config.sql.clone(),
-                                json: Default::default(),
-                                typescript: Default::default(),
-                            });
-                        }
-                        
-                        if config.json.enable {
-                            config.generators.push(Generator {
-                                r#type: GeneratorType::Json,
-                                unity: Default::default(),
-                                cocos: Default::default(),
-                                xlua: Default::default(),
-                                sql: Default::default(),
-                                json: config.json.clone(),
-                                typescript: Default::default(),
-                            });
-                        }
-                        
-                        if config.typescript.enable {
-                            config.generators.push(Generator {
-                                r#type: GeneratorType::TypeScript,
-                                unity: Default::default(),
-                                cocos: Default::default(),
-                                xlua: Default::default(),
-                                sql: Default::default(),
-                                json: Default::default(),
-                                typescript: config.typescript.clone(),
-                            });
-                        }
-                    }
-                    
                     return config;
                 }
             }

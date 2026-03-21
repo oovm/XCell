@@ -610,38 +610,43 @@ impl super::Codegen for CocosCodegen {
         if let Some(workspace) = &context.workspace {
             println!("Workspace root: {:?}", workspace.config.root);
             
-            // 创建一个新的 CocosCodegen 实例，使用项目配置中的 cocos 配置
-            let cocos_codegen = CocosCodegen {
-                storage: CocosStorage {
-                    json: CocosJsonConfig {
-                        enable: workspace.config.cocos.storage.json.enable,
-                        output: workspace.config.cocos.storage.json.output.clone(),
-                    },
-                },
-                loader: CocosLoader {
-                    enable: workspace.config.cocos.loader.enable,
-                    project: workspace.config.cocos.loader.project.clone(),
-                    output: workspace.config.cocos.loader.output.clone(),
-                    namespace: workspace.config.cocos.loader.namespace.clone(),
-                    manager_name: workspace.config.cocos.loader.manager_name.clone(),
-                    suffix_table: workspace.config.cocos.loader.suffix_table.clone(),
-                    instance_name: workspace.config.cocos.loader.instance_name.clone(),
-                },
-            };
-            
-            // 打印配置信息
-            println!("Cocos codegen enable: {}", cocos_codegen.loader.enable);
-            println!("Cocos project: {}", cocos_codegen.loader.project);
-            println!("Cocos output: {}", cocos_codegen.loader.output);
-            
-            // 写入 TypeScript 代码
-            println!("Calling write_typescript");
-            cocos_codegen.write_typescript(workspace)?;
-            println!("write_typescript completed");
-            // 写入 JSON 数据
-            println!("Calling write_json");
-            cocos_codegen.write_json(workspace)?;
-            println!("write_json completed");
+            // 从 generators 列表中获取 Cocos 配置
+            for generator in &workspace.config.generators {
+                if let xcell_config::project::GeneratorType::Cocos = generator.r#type {
+                    // 创建一个新的 CocosCodegen 实例，使用生成器中的 cocos 配置
+                    let cocos_codegen = CocosCodegen {
+                        storage: CocosStorage {
+                            json: CocosJsonConfig {
+                                enable: generator.cocos.storage.json.enable,
+                                output: generator.cocos.storage.json.output.clone(),
+                            },
+                        },
+                        loader: CocosLoader {
+                            enable: generator.cocos.loader.enable,
+                            project: generator.cocos.loader.project.clone(),
+                            output: generator.cocos.loader.output.clone(),
+                            namespace: generator.cocos.loader.namespace.clone(),
+                            manager_name: generator.cocos.loader.manager_name.clone(),
+                            suffix_table: generator.cocos.loader.suffix_table.clone(),
+                            instance_name: generator.cocos.loader.instance_name.clone(),
+                        },
+                    };
+                    
+                    // 打印配置信息
+                    println!("Cocos codegen enable: {}", cocos_codegen.loader.enable);
+                    println!("Cocos project: {}", cocos_codegen.loader.project);
+                    println!("Cocos output: {}", cocos_codegen.loader.output);
+                    
+                    // 写入 TypeScript 代码
+                    println!("Calling write_typescript");
+                    cocos_codegen.write_typescript(workspace)?;
+                    println!("write_typescript completed");
+                    // 写入 JSON 数据
+                    println!("Calling write_json");
+                    cocos_codegen.write_json(workspace)?;
+                    println!("write_json completed");
+                }
+            }
         } else {
             println!("No workspace manager in context");
         }

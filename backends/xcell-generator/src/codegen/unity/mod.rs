@@ -35,12 +35,11 @@ impl UnityCodegen {
     }
 
     /// 写入 C# 代码
-    pub fn write_csharp(&self, ws: &WorkspaceManager, output_dir: &std::path::Path) -> XResult<()> {
+    pub fn write_csharp(&self, ws: &WorkspaceManager, output_dir: &std::path::Path, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
         use std::fs::File;
         use std::io::Write;
         use std::path::PathBuf;
         
-        let unity = &ws.config.unity;
         let root = &ws.config.root;
         
         // 解析输出目录路径，确保在 unity 子目录下
@@ -69,22 +68,21 @@ impl UnityCodegen {
         println!("Created output directory: {:?}", output_dir);
         
         // 生成 DataTableManager
-        self.write_manager(ws)?;
+        self.write_manager(ws, unity_config)?;
         
         // 生成各个表的类型定义和加载器
         for table in ws.classes() {
-            self.write_class(ws, table)?;
+            self.write_class(ws, table, unity_config)?;
         }
         
         Ok(())
     }
     
     /// 写入 DataTableManager
-    pub fn write_manager(&self, ws: &WorkspaceManager) -> XResult<()> {
-        let unity = &ws.config.unity;
+    pub fn write_manager(&self, ws: &WorkspaceManager, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
         let root = &ws.config.root;
         
-        let output_dir = PathBuf::from(&unity.loader.output);
+        let output_dir = PathBuf::from(&unity_config.loader.output);
         let output_dir = match output_dir.is_absolute() {
             true => output_dir,
             false => root.join(output_dir),
@@ -105,7 +103,7 @@ impl UnityCodegen {
         writeln!(file, "using System.IO;")?;
         writeln!(file, "using UnityEngine;")?;
         writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity.loader.namespace)?;
+        writeln!(file, "namespace {}", unity_config.loader.namespace)?;
         writeln!(file, "{{")?;
         writeln!(file, "    /// <summary>")?;
         writeln!(file, "    /// 数据表管理器")?;
@@ -139,7 +137,7 @@ impl UnityCodegen {
         
         // 为每个表生成加载代码
         for table in ws.classes() {
-            let table_name = format!("{}{}", table.name, unity.loader.suffix_table);
+            let table_name = format!("{}{}", table.name, unity_config.loader.suffix_table);
             writeln!(file, "            {}.Load();", table_name)?;
         }
         
@@ -177,13 +175,12 @@ impl UnityCodegen {
     }
     
     /// 写入表的类型定义和加载器
-    pub fn write_class(&self, ws: &WorkspaceManager, table: &xcell_analyzer::XClassData) -> XResult<()> {
-        let unity = &ws.config.unity;
+    pub fn write_class(&self, ws: &WorkspaceManager, table: &xcell_analyzer::XClassData, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
         let root = &ws.config.root;
         
-        let table_name = format!("{}{}", table.name, unity.loader.suffix_table);
+        let table_name = format!("{}{}", table.name, unity_config.loader.suffix_table);
         
-        let output_dir = PathBuf::from(&unity.loader.output);
+        let output_dir = PathBuf::from(&unity_config.loader.output);
         let output_dir = match output_dir.is_absolute() {
             true => output_dir,
             false => root.join(output_dir),
@@ -204,7 +201,7 @@ impl UnityCodegen {
         writeln!(file, "using System.IO;")?;
         writeln!(file, "using UnityEngine;")?;
         writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity.loader.namespace)?;
+        writeln!(file, "namespace {}", unity_config.loader.namespace)?;
         writeln!(file, "{{")?;
         
         // 生成数据结构
@@ -295,18 +292,24 @@ impl super::Codegen for UnityCodegen {
         // 从上下文中获取工作区管理器
         if let Some(workspace) = &context.workspace {
             println!("Workspace root: {:?}", workspace.config.root);
-            println!("Unity loader output: {:?}", workspace.config.unity.loader.output);
             
-            // 写入 C# 代码
-            println!("Calling write_csharp");
-            self.write_csharp(workspace, &context.output_dir)?;
-            println!("write_csharp completed");
-            
-            // 写入二进制数据
-            println!("Calling write_binary");
-            // 暂时跳过 binary 模块的调用，因为存在字段访问错误
-            // self.write_binary(workspace)?;
-            println!("write_binary completed");
+            // 从 generators 列表中获取 Unity 配置
+            for generator in &workspace.config.generators {
+                if let xcell_config::project::GeneratorType::Unity = generator.r#type {
+                    println!("Unity loader output: {:?}", generator.unity.loader.output);
+                    
+                    // 写入 C# 代码
+                    println!("Calling write_csharp");
+                    self.write_csharp(workspace, &context.output_dir, &generator.unity)?;
+                    println!("write_csharp completed");
+                    
+                    // 写入二进制数据
+                    println!("Calling write_binary");
+                    // 暂时跳过 binary 模块的调用，因为存在字段访问错误
+                    // self.write_binary(workspace)?;
+                    println!("write_binary completed");
+                }
+            }
         } else {
             println!("No workspace manager in context");
         }

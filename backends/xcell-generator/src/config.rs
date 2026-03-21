@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs::File, io::Read, path::Path};
+use xcell_config::project::GeneratorType;
 
 use crate::error::{GeneratorError, GeneratorErrorExt, GeneratorResult};
 
@@ -139,5 +140,113 @@ impl GeneratorConfig {
     /// 获取启用的产物
     pub fn enabled_products(&self) -> Vec<&ProductConfig> {
         self.products.iter().filter(|p| p.enabled).collect()
+    }
+
+    /// 从 ProjectConfig 创建 GeneratorConfig
+    pub fn from_project_config(project_config: &xcell_config::ProjectConfig) -> Self {
+        let mut products = Vec::new();
+
+        // 处理生成器列表
+        for generator in &project_config.generators {
+            match generator.r#type {
+                GeneratorType::Unity => {
+                    if generator.unity.loader.enable {
+                        let mut options = std::collections::HashMap::new();
+                        options.insert("namespace".to_string(), generator.unity.loader.namespace.clone());
+                        options.insert("output".to_string(), generator.unity.loader.output.clone());
+                        
+                        products.push(ProductConfig {
+                            product_type: ProductType::Unity,
+                            output_dir: generator.unity.loader.output.clone(),
+                            options,
+                            enabled: true,
+                        });
+                    }
+                }
+                GeneratorType::Cocos => {
+                    if generator.cocos.loader.enable {
+                        let mut options = std::collections::HashMap::new();
+                        options.insert("namespace".to_string(), generator.cocos.loader.namespace.clone());
+                        options.insert("output".to_string(), generator.cocos.loader.output.clone());
+                        
+                        products.push(ProductConfig {
+                            product_type: ProductType::Cocos,
+                            output_dir: generator.cocos.loader.output.clone(),
+                            options,
+                            enabled: true,
+                        });
+                    }
+                }
+                _ => {
+                    // 处理其他类型的生成器
+                }
+            }
+        }
+
+        // 处理旧格式的配置（向后兼容）
+        if products.is_empty() {
+            // 处理旧格式的 Unity 配置
+            if project_config.unity.loader.enable {
+                let mut options = std::collections::HashMap::new();
+                options.insert("namespace".to_string(), project_config.unity.loader.namespace.clone());
+                options.insert("output".to_string(), project_config.unity.loader.output.clone());
+                
+                products.push(ProductConfig {
+                    product_type: ProductType::Unity,
+                    output_dir: project_config.unity.loader.output.clone(),
+                    options,
+                    enabled: true,
+                });
+            }
+
+            // 处理旧格式的 Cocos 配置
+            if project_config.cocos.loader.enable {
+                let mut options = std::collections::HashMap::new();
+                options.insert("namespace".to_string(), project_config.cocos.loader.namespace.clone());
+                options.insert("output".to_string(), project_config.cocos.loader.output.clone());
+                
+                products.push(ProductConfig {
+                    product_type: ProductType::Cocos,
+                    output_dir: project_config.cocos.loader.output.clone(),
+                    options,
+                    enabled: true,
+                });
+            }
+        }
+
+        // 确保至少添加 Unity 和 Cocos 生成器（即使配置中没有）
+        let has_unity = products.iter().any(|p| p.product_type == ProductType::Unity);
+        let has_cocos = products.iter().any(|p| p.product_type == ProductType::Cocos);
+        
+        if !has_unity {
+            let mut options = std::collections::HashMap::new();
+            options.insert("namespace".to_string(), project_config.unity.loader.namespace.clone());
+            options.insert("output".to_string(), project_config.unity.loader.output.clone());
+            
+            products.push(ProductConfig {
+                product_type: ProductType::Unity,
+                output_dir: project_config.unity.loader.output.clone(),
+                options,
+                enabled: true,
+            });
+        }
+        
+        if !has_cocos {
+            let mut options = std::collections::HashMap::new();
+            options.insert("namespace".to_string(), project_config.cocos.loader.namespace.clone());
+            options.insert("output".to_string(), project_config.cocos.loader.output.clone());
+            
+            products.push(ProductConfig {
+                product_type: ProductType::Cocos,
+                output_dir: project_config.cocos.loader.output.clone(),
+                options,
+                enabled: true,
+            });
+        }
+
+        GeneratorConfig {
+            global: GlobalConfig::default(),
+            products,
+        }
     }
 }

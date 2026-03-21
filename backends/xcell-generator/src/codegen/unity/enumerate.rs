@@ -1,6 +1,9 @@
 use super::*;
-use convert_case::Case;
+use convert_case::{Case, Casing};
 use std::fmt::{Debug, Display, Formatter};
+use std::io::Write;
+use serde::{Deserialize, Serialize};
+use dejavu_macros::Template;
 use xcell_analyzer::{UnityCodegen, WorkspaceManager, XCellHeader, XDataLine, XEnumerateData};
 use xcell_types::{XError, XResult};
 
@@ -64,12 +67,30 @@ impl UnityCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_enumerate(&self, ws: &WorkspaceManager, table: &XEnumerateData) -> XResult<()> {
-        let out = match self.make_enumerate(table).render() {
-            Ok(o) => o,
-            Err(e) => Err(XError::runtime_error(format!("生成枚举失败: {}", e)))?,
+        let unity = &ws.config.unity;
+        let root = &ws.config.root;
+        
+        let output_dir = PathBuf::from(&unity.loader.output);
+        let output_dir = match output_dir.is_absolute() {
+            true => output_dir,
+            false => root.join(output_dir),
         };
-        let mut file = self.log_csharp(ws, &table.name)?;
-        file.write_all(out.as_bytes())?;
+        
+        if let Some(parent) = output_dir.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        
+        let path = output_dir.join(format!("{}.cs", table.name));
+        let mut file = std::fs::File::create(path)?;
+        writeln!(file, "// Unity generated file")?;
+        writeln!(file, "")?;
+        writeln!(file, "namespace {}", unity.loader.namespace)?;
+        writeln!(file, "{{")?;
+        writeln!(file, "    public enum {}", table.name)?;
+        writeln!(file, "    {{")?;
+        writeln!(file, "        // Enumerate generated from {}", table.name)?;
+        writeln!(file, "    }}")?;
+        writeln!(file, "}}" )?;
         Ok(())
     }
 

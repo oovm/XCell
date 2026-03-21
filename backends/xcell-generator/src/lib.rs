@@ -49,6 +49,9 @@ impl Generator {
         // 初始化各种代码生成器
         generators.insert("json".to_string(), Box::new(codegen::json::JsonCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("binary".to_string(), Box::new(codegen::binary::BinaryCodegen::default()) as Box<dyn codegen::Codegen>);
+        generators.insert("cocos".to_string(), Box::new(codegen::cocos::CocosCodegen::default()) as Box<dyn codegen::Codegen>);
+        generators.insert("unity".to_string(), Box::new(codegen::unity::UnityCodegen::default()) as Box<dyn codegen::Codegen>);
+        generators.insert("dejavu".to_string(), Box::new(codegen::dejavu::DejavuCodegen::new()) as Box<dyn codegen::Codegen>);
 
         info!("生成器实例创建完成，注册了 {} 个代码生成器", generators.len());
 
@@ -56,7 +59,7 @@ impl Generator {
     }
 
     /// 生成代码和数据
-    pub fn generate(&self) -> XResult<()> {
+    pub fn generate(&self, workspace: &WorkspaceManager) -> XResult<()> {
         // 验证配置
         self.config.validate()?;
 
@@ -70,11 +73,12 @@ impl Generator {
 
             if let Some(generator) = self.generators.get(&product_type_str) {
                 // 创建代码生成上下文
-                let context = CodegenContext {
-                    output_dir: std::path::PathBuf::from(&product.output_dir),
-                    options: product.options.clone(),
-                    global_options: self.config.global.options.clone(),
-                };
+                let context = CodegenContext::new_with_workspace(
+                    &product.output_dir,
+                    product.options.clone(),
+                    self.config.global.options.clone(),
+                    workspace
+                );
 
                 // 确保输出目录存在
                 if let Err(e) = context.ensure_output_dir() {

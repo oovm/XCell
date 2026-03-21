@@ -64,3 +64,58 @@ suffix_table = "Table"
 [cocos.json]
 enable = true
 output = "assets/tables"
+
+# 生成器列表示例（新格式）
+# 可以定义多个同一类型的生成器实例
+[[generators]]
+type = "Unity"
+
+[generators.unity.storage]
+
+[generators.unity.storage.binary]
+enable = true
+output = "Assets/Tables/Generated"
+
+[generators.unity.storage.json]
+enable = false
+output = "Assets/Tables/Readable"
+
+[generators.unity.storage.xml]
+enable = false
+output = "Assets/Tables/Readable"
+
+[generators.unity.storage.protobuf]
+enable = false
+
+[generators.unity.loader]
+enable = true
+project = "../"
+output = "Assets/Scripts/DataTable/Generated"
+namespace = "DataTable.Generated"
+manager = "DataTableManager"
+suffix_table = "Table"
+suffix_element = "Element"
+support_clone = true
+legacy_using = false
+legacy_null_null = false
+
+[generators.unity.loader.xlua]
+enable = false
+
+[[generators]]
+type = "Cocos"
+
+[generators.cocos.storage]
+
+[generators.cocos.storage.json]
+enable = true
+output = "assets/tables"
+
+[generators.cocos.loader]
+enable = true
+project = "../"
+output = "assets/scripts/dataTable/generated"
+namespace = "DataTable.Generated"
+manager_name = "DataTableManager"
+instance_name = "instance"
+suffix_table = "Table"

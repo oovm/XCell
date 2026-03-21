@@ -10,15 +10,18 @@ edition = { workspace = true }
 [dependencies]
 xcell-types = { workspace = true }
 xcell-provider = { workspace = true }
+xcell-analyzer = { workspace = true }
+xcell-config = { workspace = true }
 
 # 通用依赖
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
-serde = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 toml = { workspace = true }
 serde_json = { workspace = true }
 convert_case = { workspace = true }
 url = { workspace = true }
+csv = { workspace = true }
 
 # 代码生成依赖
 dejavu-engine = { workspace = true }

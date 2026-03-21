@@ -1,6 +1,7 @@
 use clap::Parser;
 use xcell::{SubArgs, TomlSubArgs, XCellArgs, logger, pause};
 use xcell_analyzer::{WorkspaceManager, XResult, XError};
+use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> XResult<()> {
@@ -134,8 +135,29 @@ async fn main() -> XResult<()> {
         },
         _ => {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
-            // 移除不存在的方法调用
+            println!("Workspace root: {:?}", ws.config.root);
+            println!("Unity loader enable: {:?}", ws.config.unity.loader.enable);
+            println!("Unity loader output: {:?}", ws.config.unity.loader.output);
+            println!("Generators count: {:?}", ws.config.generators.len());
+            
+            // 先使用 xcell-generator 模块进行代码生成
+            let config = xcell_generator::config::GeneratorConfig::from_project_config(&ws.config);
+            println!("Generated products count: {:?}", config.products.len());
+            
+            for product in &config.products {
+                println!("Product type: {:?}, output_dir: {:?}, enabled: {:?}", product.product_type, product.output_dir, product.enabled);
+            }
+            
+            let generator = xcell_generator::Generator::new(config);
+            println!("Generator created, generator count: {:?}", generator.generator_count());
+            
+            println!("Calling generator.generate()");
+            generator.generate(&ws)?;
+            println!("generator.generate() completed");
+            
+            // 然后再进行首次遍历
             ws.first_walk()?;
+            
             if args.watch {
                 ws.watcher().await?;
             }

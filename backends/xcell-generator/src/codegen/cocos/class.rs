@@ -1,5 +1,9 @@
 use super::*;
-use convert_case::Case;
+use convert_case::{Case, Casing};
+use serde::{Deserialize, Serialize};
+use dejavu_macros::Template;
+use dejavu::Template;
+use xcell_analyzer::XClassItem;
 use xcell_types::codegen::TypeScriptWriter;
 
 #[derive(Template)]

@@ -9,9 +9,16 @@ use super::*;
 mod der;
 mod ser;
 
-/// Cocos 代码生成配置
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CocosCodegen {
+/// Cocos 存储格式配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CocosStorage {
+    /// JSON 存储配置
+    pub json: CocosJsonConfig,
+}
+
+/// Cocos 加载器配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CocosLoader {
     /// 是否要生成 cocos 代码
     pub enable: bool,
     /// cocos 的工作目录, 建议使用相对路径
@@ -26,12 +33,25 @@ pub struct CocosCodegen {
     pub suffix_table: String,
     /// 生成的实例名称
     pub instance_name: String,
-    /// JSON 配置
-    pub json: CocosJsonConfig,
+}
+
+/// Cocos 代码生成配置
+///
+/// 用于配置 Cocos 平台的代码生成
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct CocosCodegen {
+    /// 存储格式配置
+    #[serde(default)]
+    pub storage: CocosStorage,
+    /// 加载器配置
+    #[serde(default)]
+    pub loader: CocosLoader,
 }
 
 /// Cocos JSON 配置
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// 用于配置 JSON 数据生成
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CocosJsonConfig {
     /// 是否启用 JSON 生成
     pub enable: bool,
@@ -42,7 +62,7 @@ pub struct CocosJsonConfig {
 impl CocosCodegen {
     /// Cocos 项目文件夹
     pub fn cocos_path(&self, root: &Path) -> XResult<PathBuf> {
-        let project = PathBuf::from(&self.project);
+        let project = PathBuf::from(&self.loader.project);
         let project = match project.is_absolute() {
             true => project,
             false => root.join(project),
@@ -52,31 +72,31 @@ impl CocosCodegen {
 
     /// 生成 TypeScript 代码的文件夹
     pub fn cocos_typescript_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
-        let dir = self.cocos_path(root)?.join(&self.output);
+        let dir = self.cocos_path(root)?.join(&self.loader.output);
         let path = dir.join(file_name).with_extension("ts");
         Ok(path)
     }
 
     /// 生成管理器路径
     pub fn cocos_manager_path(&self, root: &Path) -> XResult<PathBuf> {
-        self.cocos_typescript_path(root, &self.manager_name)
+        self.cocos_typescript_path(root, &self.loader.manager_name)
     }
 
     /// 生成 JSON 文件路径
     pub fn cocos_json_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
-        let dir = self.cocos_path(root)?.join(&self.json.output);
+        let dir = self.cocos_path(root)?.join(&self.storage.json.output);
         let path = dir.join(file_name).with_extension("json");
         Ok(path)
     }
 
     /// 生成 TypeScript 相对路径
     pub fn cocos_ts_relative(&self, file_name: &str) -> String {
-        format!("{}/{}.ts", self.output, file_name)
+        format!("{}/{}.ts", self.loader.output, file_name)
     }
 
     /// 生成 JSON 相对路径
     pub fn cocos_json_relative(&self, file_name: &str) -> String {
-        format!("{}/{}.json", self.json.output, file_name)
+        format!("{}/{}.json", self.storage.json.output, file_name)
     }
     
 

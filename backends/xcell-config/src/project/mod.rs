@@ -16,6 +16,8 @@ use crate::{
 
 mod der;
 mod ser;
+#[cfg(test)]
+mod test;
 
 /// 导出条件结构，用于控制表格的导出行为。
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,7 +28,102 @@ pub struct ExportCondition {
     pub target: String,
 }
 
+/// 生成器类型枚举
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum GeneratorType {
+    /// Unity 生成器
+    Unity,
+    /// Cocos 生成器
+    Cocos,
+    /// XLua 生成器
+    Xlua,
+    /// SQL 生成器
+    Sql,
+    /// JSON 生成器
+    Json,
+    /// TypeScript 生成器
+    TypeScript,
+}
+
+/// 生成器配置结构体
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Generator {
+    /// 生成器类型
+    pub r#type: GeneratorType,
+    /// Unity 生成配置
+    #[serde(default)]
+    pub unity: UnityCodegen,
+    /// Cocos 生成配置
+    #[serde(default)]
+    pub cocos: CocosCodegen,
+    /// XLua 生成配置
+    #[serde(default)]
+    pub xlua: XluaCodegen,
+    /// SQL 生成配置
+    #[serde(default)]
+    pub sql: SqlCodegen,
+    /// JSON 生成配置
+    #[serde(default)]
+    pub json: JsonCodegen,
+    /// TypeScript 生成配置
+    #[serde(default)]
+    pub typescript: TypeScriptCodegen,
+}
+
 /// 项目配置结构，用于存储项目的全局配置信息。
+/// 
+/// # 配置格式
+/// 
+/// ## 旧格式（向后兼容）
+/// ```toml
+/// [unity]
+/// enable = true
+/// project = "../"
+/// output = "Assets/Scripts/DataTable/Generated"
+/// 
+/// [cocos]
+/// enable = true
+/// project = "../"
+/// output = "assets/scripts/dataTable/generated"
+/// ```
+/// 
+/// ## 新格式（推荐）
+/// ```toml
+/// [[generators]]
+/// type = "Unity"
+/// 
+/// [generators.unity]
+/// enable = true
+/// project = "../"
+/// output = "Assets/Scripts/DataTable/Generated"
+/// 
+/// [[generators]]
+/// type = "Cocos"
+/// 
+/// [generators.cocos]
+/// enable = true
+/// project = "../"
+/// output = "assets/scripts/dataTable/generated"
+/// ```
+/// 
+/// 新格式支持定义多个同一类型的生成器实例，例如：
+/// ```toml
+/// [[generators]]
+/// type = "Unity"
+/// 
+/// [generators.unity]
+/// enable = true
+/// project = "../unity-project-1"
+/// output = "Assets/Scripts/DataTable/Generated"
+/// 
+/// [[generators]]
+/// type = "Unity"
+/// 
+/// [generators.unity]
+/// enable = true
+/// project = "../unity-project-2"
+/// output = "Assets/Scripts/DataTable/Generated"
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProjectConfig {
     #[serde(skip)]
@@ -44,22 +141,27 @@ pub struct ProjectConfig {
     /// 合表模式
     #[serde(default)]
     pub merge: MergeRules,
-    /// Unity 生成模式
+    /// Unity 生成模式（向后兼容）
+    #[serde(default)]
     pub unity: UnityCodegen,
-    /// Cocos 生成模式
+    /// Cocos 生成模式（向后兼容）
+    #[serde(default)]
     pub cocos: CocosCodegen,
-    /// XLua 生成模式
+    /// XLua 生成模式（向后兼容）
     #[serde(default)]
     pub xlua: XluaCodegen,
-    /// SQL 生成模式
+    /// SQL 生成模式（向后兼容）
     #[serde(default)]
     pub sql: SqlCodegen,
-    /// JSON 生成模式
+    /// JSON 生成模式（向后兼容）
     #[serde(default)]
     pub json: JsonCodegen,
-    /// TypeScript 生成模式
+    /// TypeScript 生成模式（向后兼容）
     #[serde(default)]
     pub typescript: TypeScriptCodegen,
+    /// 生成器列表（新格式）
+    #[serde(default)]
+    pub generators: Vec<Generator>,
     /// 导出条件
     #[serde(default)]
     pub export_conditions: Vec<ExportCondition>,
@@ -81,7 +183,88 @@ impl ProjectConfig {
             // 如果文件存在，从文件中加载配置
             if let Ok(content) = std::fs::read_to_string(&settings_path) {
                 if let Ok(config) = toml::from_str::<Self>(&content) {
-                    return Self { root: root.to_path_buf(), ..config };
+                    // 处理向后兼容性：如果没有 generators 字段，则将旧格式的配置转换为 generators 列表
+                    let mut config = Self { root: root.to_path_buf(), ..config };
+                    
+                    // 检查是否需要转换旧格式配置
+                    if config.generators.is_empty() {
+                        // 检查旧格式的配置是否启用
+                        // 处理旧格式的 Unity 配置
+                        if config.unity.loader.enable || config.unity.storage.binary.enable || config.unity.storage.json.enable || config.unity.storage.xml.enable || config.unity.storage.protobuf.enable {
+                            config.generators.push(Generator {
+                                r#type: GeneratorType::Unity,
+                                unity: config.unity.clone(),
+                                cocos: Default::default(),
+                                xlua: Default::default(),
+                                sql: Default::default(),
+                                json: Default::default(),
+                                typescript: Default::default(),
+                            });
+                        }
+                        
+                        // 处理旧格式的 Cocos 配置
+                        if config.cocos.loader.enable || config.cocos.storage.json.enable {
+                            config.generators.push(Generator {
+                                r#type: GeneratorType::Cocos,
+                                unity: Default::default(),
+                                cocos: config.cocos.clone(),
+                                xlua: Default::default(),
+                                sql: Default::default(),
+                                json: Default::default(),
+                                typescript: Default::default(),
+                            });
+                        }
+                        
+                        if config.xlua.enable {
+                            config.generators.push(Generator {
+                                r#type: GeneratorType::Xlua,
+                                unity: Default::default(),
+                                cocos: Default::default(),
+                                xlua: config.xlua.clone(),
+                                sql: Default::default(),
+                                json: Default::default(),
+                                typescript: Default::default(),
+                            });
+                        }
+                        
+                        if config.sql.enable {
+                            config.generators.push(Generator {
+                                r#type: GeneratorType::Sql,
+                                unity: Default::default(),
+                                cocos: Default::default(),
+                                xlua: Default::default(),
+                                sql: config.sql.clone(),
+                                json: Default::default(),
+                                typescript: Default::default(),
+                            });
+                        }
+                        
+                        if config.json.enable {
+                            config.generators.push(Generator {
+                                r#type: GeneratorType::Json,
+                                unity: Default::default(),
+                                cocos: Default::default(),
+                                xlua: Default::default(),
+                                sql: Default::default(),
+                                json: config.json.clone(),
+                                typescript: Default::default(),
+                            });
+                        }
+                        
+                        if config.typescript.enable {
+                            config.generators.push(Generator {
+                                r#type: GeneratorType::TypeScript,
+                                unity: Default::default(),
+                                cocos: Default::default(),
+                                xlua: Default::default(),
+                                sql: Default::default(),
+                                json: Default::default(),
+                                typescript: config.typescript.clone(),
+                            });
+                        }
+                    }
+                    
+                    return config;
                 }
             }
         } else {

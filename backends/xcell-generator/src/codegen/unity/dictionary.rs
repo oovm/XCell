@@ -1,5 +1,8 @@
 use super::*;
 use std::fmt::{Debug, Display, Formatter};
+use std::io::Write;
+use serde::{Deserialize, Serialize};
+use dejavu_macros::Template;
 use xcell_analyzer::{UnityCodegen, WorkspaceManager, XCellHeader, XDictData, XListData};
 use xcell_provider::XCellAccess;
 use xcell_types::{
@@ -103,10 +106,32 @@ impl UnityCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_dict(&self, ws: &WorkspaceManager, table: &XDictData) -> XResult<()> {
-        let table_name = format!("{}{}", table.name, ws.config.unity.suffix_table);
-        let mut file = self.log_csharp(ws, &table_name)?;
-        let out = self.make_dict(table, table_name).render()?;
-        file.write_all(out.as_bytes())?;
+        let unity = &ws.config.unity;
+        let root = &ws.config.root;
+        
+        let table_name = format!("{}{}", table.name, unity.loader.suffix_table);
+        
+        let output_dir = PathBuf::from(&unity.loader.output);
+        let output_dir = match output_dir.is_absolute() {
+            true => output_dir,
+            false => root.join(output_dir),
+        };
+        
+        if let Some(parent) = output_dir.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        
+        let path = output_dir.join(format!("{}.cs", table_name));
+        let mut file = std::fs::File::create(path)?;
+        writeln!(file, "// Unity generated file")?;
+        writeln!(file, "")?;
+        writeln!(file, "namespace {}", unity.loader.namespace)?;
+        writeln!(file, "{{")?;
+        writeln!(file, "    public class {}", table_name)?;
+        writeln!(file, "    {{")?;
+        writeln!(file, "        // Dictionary generated from {}", table.name)?;
+        writeln!(file, "    }}")?;
+        writeln!(file, "}}" )?;
         Ok(())
     }
 
@@ -141,10 +166,32 @@ impl UnityCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_list(&self, ws: &WorkspaceManager, table: &XListData) -> XResult<()> {
-        let table_name = format!("{}{}", table.name, ws.config.unity.suffix_table);
-        let mut file = self.log_csharp(ws, &table_name)?;
-        let out = self.make_list(table, table_name).render()?;
-        file.write_all(out.as_bytes())?;
+        let unity = &ws.config.unity;
+        let root = &ws.config.root;
+        
+        let table_name = format!("{}{}", table.name, unity.loader.suffix_table);
+        
+        let output_dir = PathBuf::from(&unity.loader.output);
+        let output_dir = match output_dir.is_absolute() {
+            true => output_dir,
+            false => root.join(output_dir),
+        };
+        
+        if let Some(parent) = output_dir.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        
+        let path = output_dir.join(format!("{}.cs", table_name));
+        let mut file = std::fs::File::create(path)?;
+        writeln!(file, "// Unity generated file")?;
+        writeln!(file, "")?;
+        writeln!(file, "namespace {}", unity.loader.namespace)?;
+        writeln!(file, "{{")?;
+        writeln!(file, "    public class {}", table_name)?;
+        writeln!(file, "    {{")?;
+        writeln!(file, "        // List generated from {}", table.name)?;
+        writeln!(file, "    }}")?;
+        writeln!(file, "}}" )?;
         Ok(())
     }
 

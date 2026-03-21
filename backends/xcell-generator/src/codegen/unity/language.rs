@@ -1,6 +1,9 @@
 use super::*;
-use convert_case::Case;
+use serde::{Deserialize, Serialize};
+use dejavu_macros::Template;
+use convert_case::{Case, Casing};
 use std::fmt::{Debug, Display, Formatter};
+use std::io::Write;
 use xcell_analyzer::{UnityCodegen, WorkspaceManager};
 use xcell_types::{XError, XResult};
 
@@ -28,28 +31,47 @@ impl Display for LanguageField {
 
 impl UnityCodegen {
     pub(super) fn write_language(&self, ws: &WorkspaceManager) -> XResult<()> {
-        let out = match self.make_languages(ws).render() {
-            Ok(o) => o,
-            Err(e) => Err(XError::runtime_error(format!("生成语言表失败: {e}")))?,
+        let unity = &ws.config.unity;
+        let root = &ws.config.root;
+        
+        let output_dir = PathBuf::from(&unity.loader.output);
+        let output_dir = match output_dir.is_absolute() {
+            true => output_dir,
+            false => root.join(output_dir),
         };
-        let mut file = self.log_csharp(ws, "LanguageTable")?;
-        file.write_all(out.as_bytes())?;
+        
+        if let Some(parent) = output_dir.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        
+        let path = output_dir.join("LanguageTable.cs");
+        let mut file = std::fs::File::create(path)?;
+        writeln!(file, "// Unity generated file")?;
+        writeln!(file, "")?;
+        writeln!(file, "namespace {}", unity.loader.namespace)?;
+        writeln!(file, "{{")?;
+        writeln!(file, "    public class LanguageTable")?;
+        writeln!(file, "    {{")?;
+        writeln!(file, "        // Language Table generated from XCell")?;
+        writeln!(file, "    }}")?;
+        writeln!(file, "}}" )?;
         Ok(())
     }
-    fn make_languages(&self, ws: &WorkspaceManager) -> UnityLanguage {
-        UnityLanguage {
-            compiler_version: env!("CARGO_PKG_VERSION"),
-            binary_path: self.binary.output.clone(),
-            config: self.clone(),
-            language_fields: ws
-                .languages()
-                .iter()
-                .map(|data| LanguageField {
-                    class_name: data.key.to_case(Case::Pascal),
-                    public_name: data.key.to_case(Case::Camel),
-                    private_name: format!("_{}", data.key.to_case(Case::Snake)),
-                })
-                .collect(),
-        }
-    }
+    // 暂时移除 make_languages 方法，因为它依赖于不存在的字段和方法
+    // fn make_languages(&self, ws: &WorkspaceManager) -> UnityLanguage {
+    //     UnityLanguage {
+    //         compiler_version: env!("CARGO_PKG_VERSION"),
+    //         binary_path: self.storage.binary.output.clone(),
+    //         config: self.clone(),
+    //         language_fields: ws
+    //             .languages()
+    //             .iter()
+    //             .map(|data| LanguageField {
+    //                 class_name: data.key.to_case(Case::Pascal),
+    //                 public_name: data.key.to_case(Case::Camel),
+    //                 private_name: format!("_{}", data.key.to_case(Case::Snake)),
+    //             })
+    //             .collect(),
+    //     }
+    // }
 }

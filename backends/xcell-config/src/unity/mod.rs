@@ -7,9 +7,27 @@ use super::*;
 mod der;
 mod ser;
 
-/// Unity 代码生成配置
+/// Unity 存储格式配置
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct UnityCodegen {
+pub struct UnityStorage {
+    /// 二进制存储配置
+    #[serde(default)]
+    pub binary: UnityBinaryConfig,
+    /// JSON 存储配置
+    #[serde(default)]
+    pub json: UnityJsonConfig,
+    /// XML 存储配置
+    #[serde(default)]
+    pub xml: UnityXmlConfig,
+    /// Protobuf 存储配置
+    #[serde(default)]
+    pub protobuf: UnityProtobufConfig,
+}
+
+/// Unity 加载器配置
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UnityLoader {
+    /// C# 加载器配置
     pub enable: bool,
     pub project: String,
     pub output: String,
@@ -20,11 +38,20 @@ pub struct UnityCodegen {
     pub support_clone: bool,
     pub legacy_using: bool,
     pub legacy_null_null: bool,
-    pub binary: UnityBinaryConfig,
+    /// XLua 加载器配置
+    #[serde(default)]
     pub xlua: UnityXluaConfig,
-    pub xml: UnityXmlConfig,
-    pub json: UnityJsonConfig,
-    pub protobuf: UnityProtobufConfig,
+}
+
+/// Unity 代码生成配置
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct UnityCodegen {
+    /// 存储格式配置
+    #[serde(default)]
+    pub storage: UnityStorage,
+    /// 加载器配置
+    #[serde(default)]
+    pub loader: UnityLoader,
 }
 
 /// Unity XLua 配置

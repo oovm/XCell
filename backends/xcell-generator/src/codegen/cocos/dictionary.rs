@@ -1,5 +1,10 @@
 use super::*;
-use crate::x_table::header::XCellAccess;
+use convert_case::{Case, Casing};
+use serde::{Deserialize, Serialize};
+use dejavu_macros::Template;
+use dejavu::Template;
+use xcell_analyzer::XCellHeader;
+use xcell_provider::XCellAccess;
 use xcell_types::codegen::TypeScriptWriter;
 
 #[derive(Template)]

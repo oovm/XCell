@@ -1,24 +1,9 @@
 [package]
 name = "xcell-config"
-version = { workspace = true }
-authors = { workspace = true }
-description = "XCell configuration library"
-repository = "https://github.com/oovm/XCell"
-documentation = "https://docs.rs/xcell-config"
-readme = "Readme.md"
-license = { workspace = true }
-edition = { workspace = true }
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+version = "0.2.1"
+edition = "2021"
 
 [dependencies]
-toml = { workspace = true }
-serde = { workspace = true }
-
-[dependencies.xcell-types]
-workspace = true
-features = ["csharp", "typescript"]
-
-[lib]
-name = "xcell_config"
-path = "src/lib.rs"
+serde = { version = "1.0.195", features = ["derive"] }
+toml = "0.8.10"
+xcell-types = { path = "../xcell-types" }

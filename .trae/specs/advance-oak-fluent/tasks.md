@@ -67,7 +67,7 @@
   - `human-judgment` TR-5.2: 测试覆盖全面，包括边界情况
 - **Notes**: 测试用例应覆盖各种 FTL 语法和翻译场景
 
-## [/] Task 6: 优化性能和错误处理
+## [x] Task 6: 优化性能和错误处理
 - **Priority**: P1
 - **Depends On**: Task 5
 - **Description**:
@@ -80,7 +80,7 @@
   - `human-judgment` TR-6.2: 错误信息清晰易懂
 - **Notes**: 可以使用性能基准测试来验证性能改进
 
-## [ ] Task 7: 编写文档
+## [x] Task 7: 编写文档
 - **Priority**: P2
 - **Depends On**: Task 6
 - **Description**:

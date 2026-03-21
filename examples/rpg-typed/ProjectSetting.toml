@@ -1,0 +1,18 @@
+version = "0.0.0"
+
+exclude = ""
+include = "*.csv"
+
+line.field = 1
+line.type = 2
+line.comment = 3
+line.data = 4
+
+[[generators]]
+type = "Cocos"
+path = "cocos"
+
+
+[[generators]]
+type = "Unity"
+path = "unity"

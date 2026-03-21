@@ -1,6 +1,6 @@
 # Oak Value and Literal Distinction - Implementation Plan
 
-## [/] Task 1: Implement JsonValue for oak-json
+## [x] Task 1: Implement JsonValue for oak-json
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -14,7 +14,7 @@
   - `human-judgment` TR-1.2: Verify that utility methods work as expected
 - **Notes**: Follow the pattern established in `TomlValue`
 
-## [ ] Task 2: Implement XmlValue for oak-xml
+## [x] Task 2: Implement XmlValue for oak-xml
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -28,7 +28,7 @@
   - `human-judgment` TR-2.2: Verify that utility methods work as expected
 - **Notes**: Follow the pattern established in `TomlValue`
 
-## [ ] Task 3: Implement YamlValue for oak-yaml
+## [x] Task 3: Implement YamlValue for oak-yaml
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -42,7 +42,7 @@
   - `human-judgment` TR-3.2: Verify that utility methods work as expected
 - **Notes**: Follow the pattern established in `TomlValue`
 
-## [ ] Task 4: Add conversion methods for oak-json
+## [x] Task 4: Add conversion methods for oak-json
 - **Priority**: P1
 - **Depends On**: Task 1
 - **Description**:
@@ -53,7 +53,7 @@
   - `human-judgment` TR-4.1: Verify that conversion methods work correctly
 - **Notes**: Ensure backward compatibility
 
-## [ ] Task 5: Add conversion methods for oak-xml
+## [x] Task 5: Add conversion methods for oak-xml
 - **Priority**: P1
 - **Depends On**: Task 2
 - **Description**:
@@ -64,7 +64,7 @@
   - `human-judgment` TR-5.1: Verify that conversion methods work correctly
 - **Notes**: Ensure backward compatibility
 
-## [ ] Task 6: Add conversion methods for oak-yaml
+## [x] Task 6: Add conversion methods for oak-yaml
 - **Priority**: P1
 - **Depends On**: Task 3
 - **Description**:
@@ -75,7 +75,7 @@
   - `human-judgment` TR-6.1: Verify that conversion methods work correctly
 - **Notes**: Ensure backward compatibility
 
-## [ ] Task 7: Update documentation for all libraries
+## [x] Task 7: Update documentation for all libraries
 - **Priority**: P2
 - **Depends On**: Tasks 1-6
 - **Description**:
@@ -86,7 +86,7 @@
   - `human-judgment` TR-7.1: Verify that all public items have documentation
 - **Notes**: Follow Rust documentation conventions
 
-## [ ] Task 8: Verify implementation consistency
+## [x] Task 8: Verify implementation consistency
 - **Priority**: P2
 - **Depends On**: Tasks 1-7
 - **Description**:

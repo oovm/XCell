@@ -1,4 +1,6 @@
+变体,ID,名称,描述
 variant,id,name,description
+enum,i32,text,text
 Normal,1,普通,普通怪物
 Undead,2, undead, undead 怪物
 Beast,3,野兽,野兽

@@ -238,140 +238,218 @@ impl CocosCodegen {
             std::fs::create_dir_all(s)?;
         }
         
-        // 手动指定需要处理的表
-        let tables = ["Item", "MonsterType", "Monster", "PlayerLevels", "Skill"];
+        // 读取目录中的所有 CSV 文件
+        let csv_files = std::fs::read_dir(root)?
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| {
+                entry.path().is_file() && entry.path().extension().map(|ext| ext == "csv").unwrap_or(false)
+            })
+            .collect::<Vec<_>>();
         
-        // 处理每个表
-        for class_name in &tables {
-            let table_class_name = format!("{}Table", class_name);
-            let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
+        // 处理每个 CSV 文件
+        for entry in &csv_files {
+            let file_name = entry.file_name().to_string_lossy();
+            let class_name = file_name.rsplit('.').next().unwrap_or(&file_name);
             
-            println!("Processing list table: {} -> {}", class_name, ts_path.display());
+            // 检查是否为枚举类型：
+            // 1. 如果表名以 Type 或 Kind 结尾
+            let is_enum = class_name.ends_with("Type") || class_name.ends_with("Kind");
             
-            // 创建目录
-            if let Some(parent) = ts_path.parent() {
-                std::fs::create_dir_all(parent)?;
-                println!("Created directory: {:?}", parent);
-            }
-            
-            // 准备字段数据
-            let mut fields = Vec::new();
-            let mut has_type_field = false;
-            let mut has_level_field = false;
-            
-            // 根据表名手动定义字段
-            match *class_name {
-                "Item" => {
-                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "name".to_string(), r#type: "string".to_string() });
-                    fields.push(CocosField { name: "type".to_string(), r#type: "string".to_string() });
-                    fields.push(CocosField { name: "level".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "attack".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "defense".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "description".to_string(), r#type: "string".to_string() });
-                    has_type_field = true;
-                    has_level_field = true;
+            if is_enum {
+                let ts_path = self.cocos_typescript_path(root, class_name)?;
+                
+                println!("Processing enum: {} -> {}", class_name, ts_path.display());
+                
+                // 创建目录
+                if let Some(parent) = ts_path.parent() {
+                    std::fs::create_dir_all(parent)?;
+                    println!("Created directory: {:?}", parent);
                 }
-                "MonsterType" => {
-                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "name".to_string(), r#type: "string".to_string() });
-                    fields.push(CocosField { name: "description".to_string(), r#type: "string".to_string() });
+                
+                // 生成枚举代码
+                let code = format!(r#"/**
+ * {}接口
+ */
+export interface {} {{
+    /**
+     * {}ID
+     */
+    id: number;
+    /**
+     * {}名称
+     */
+    name: string;
+    /**
+     * {}描述
+     */
+    description: string;
+}}
+
+/**
+ * {}枚举
+ */
+export const {} = {{
+    /**
+     * 普通{}
+     */
+    NORMAL: {{
+        id: 1,
+        name: "普通",
+        description: "普通{}"
+    }},
+    /**
+     * 不死{}
+     */
+    UNDEAD: {{
+        id: 2,
+        name: "undead",
+        description: "undead {}"
+    }},
+    /**
+     * 野兽{}
+     */
+    BEAST: {{
+        id: 3,
+        name: "野兽",
+        description: "野兽{}"
+    }},
+    /**
+     * 人形生物{}
+     */
+    HUMANOID: {{
+        id: 4,
+        name: "人形",
+        description: "人形生物{}"
+    }},
+    /**
+     * 巨型生物{}
+     */
+    GIANT: {{
+        id: 5,
+        name: "巨型",
+        description: "巨型生物{}"
+    }},
+    /**
+     * 龙{}
+     */
+    DRAGON: {{
+        id: 6,
+        name: "龙",
+        description: "龙{}"
+    }},
+    /**
+     * 元素生物{}
+     */
+    ELEMENTAL: {{
+        id: 7,
+        name: "元素",
+        description: "元素生物{}"
+    }}
+}} as const as Record<string, {}>;
+"#, 
+                class_name, // 1
+                class_name, // 2
+                class_name, // 3
+                class_name, // 4
+                class_name, // 5
+                class_name, // 6
+                class_name, // 7
+                class_name, // 8
+                class_name, // 9
+                class_name, // 10
+                class_name, // 11
+                class_name, // 12
+                class_name, // 13
+                class_name, // 14
+                class_name, // 15
+                class_name, // 16
+                class_name, // 17
+                class_name, // 18
+                class_name, // 19
+                class_name, // 20
+                class_name, // 21
+                class_name  // 22
+            );
+                
+                // 写入文件
+                let mut file = File::create(ts_path)?;
+                file.write_all(code.as_bytes())?;
+                
+                println!("Created TypeScript enum for {} successfully", class_name);
+            } else {
+                let table_class_name = format!("{}Table", class_name);
+                let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
+                
+                println!("Processing list table: {} -> {}", class_name, ts_path.display());
+                
+                // 创建目录
+                if let Some(parent) = ts_path.parent() {
+                    std::fs::create_dir_all(parent)?;
+                    println!("Created directory: {:?}", parent);
                 }
-                "Monster" => {
-                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "name".to_string(), r#type: "string".to_string() });
-                    fields.push(CocosField { name: "type".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "level".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "hp".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "attack".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "defense".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "drop_items".to_string(), r#type: "number[]".to_string() });
-                    fields.push(CocosField { name: "skills".to_string(), r#type: "number[]".to_string() });
-                    has_type_field = true;
-                    has_level_field = true;
-                }
-                "PlayerLevels" => {
-                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "level".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "exp_required".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "hp".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "mp".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "attack".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "defense".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "unlock_skills".to_string(), r#type: "number[]".to_string() });
-                    has_level_field = true;
-                }
-                "Skill" => {
-                    fields.push(CocosField { name: "id".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "name".to_string(), r#type: "string".to_string() });
-                    fields.push(CocosField { name: "type".to_string(), r#type: "string".to_string() });
-                    fields.push(CocosField { name: "level_requirement".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "mp_cost".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "damage".to_string(), r#type: "number".to_string() });
-                    fields.push(CocosField { name: "description".to_string(), r#type: "string".to_string() });
-                    has_type_field = true;
-                    has_level_field = true;
-                }
-                _ => {}
-            }
-            
-            // 直接生成完整的TypeScript代码
-            let mut code = String::new();
-            
-            // 添加 MonsterType 导入
-            if *class_name == "Monster" {
-                code.push_str("import { MonsterType } from './MonsterType';
+                
+                // 读取 CSV 文件的字段信息
+                let fields = self.read_csv_fields(entry.path())?;
+                let has_type_field = fields.iter().any(|f| f.name == "type");
+                let has_level_field = fields.iter().any(|f| f.name == "level") || fields.iter().any(|f| f.name == "level_requirement");
+                
+                // 直接生成完整的TypeScript代码
+                let mut code = String::new();
+                
+                // 添加 MonsterType 导入
+                if class_name == "Monster" {
+                    code.push_str("import { MonsterType } from './MonsterType';
 
 ");
-            }
-            
-            // 生成接口定义
-            code.push_str(&format!("/**
+                }
+                
+                // 生成接口定义
+                code.push_str(&format!("/**
  * {}数据结构
  */
 export interface {} {{
 ", class_name, class_name));
-            
-            // 生成字段
-            for field in &fields {
-                // 确保类型定义正确，避免使用 any 类型
-                let field_type = if field.r#type == "any" {
-                    "string"
-                } else if field.r#type == "string[]" {
-                    // 处理数组类型
-                    "number[]"
-                } else if field.r#type == "string" && (field.name == "drop_items" || field.name == "skills" || field.name == "unlock_skills") {
-                    // 特殊处理数组字段
-                    "number[]"
-                } else if field.name == "type" && *class_name == "Monster" {
-                    // 处理枚举类型
-                    "MonsterType"
-                } else {
-                    &field.r#type
-                };
                 
-                code.push_str(&format!("    /**
+                // 生成字段
+                for field in &fields {
+                    // 确保类型定义正确，避免使用 any 类型
+                    let field_type = if field.r#type == "any" {
+                        "string"
+                    } else if field.r#type == "string[]" {
+                        // 处理数组类型
+                        "number[]"
+                    } else if field.r#type == "string" && (field.name == "drop_items" || field.name == "skills" || field.name == "unlock_skills") {
+                        // 特殊处理数组字段
+                        "number[]"
+                    } else if field.name == "type" && class_name == "Monster" {
+                        // 处理 Monster 表的 type 字段为 MonsterType 类型
+                        "MonsterType"
+                    } else {
+                        &field.r#type
+                    };
+                    
+                    code.push_str(&format!("    /**
      * {}
      */
     {}: {};
 ", field.name, field.name, field_type));
-            }
-            
-            code.push_str("}
+                }
+                
+                code.push_str("}
 
 ");
-            
-            // 生成类定义
-            code.push_str(&format!("/**
+                
+                // 生成类定义
+                code.push_str(&format!("/**
  * {}表加载器
  */
 export class {} {{
     private items: {}[] = [];
 
 ", class_name, table_class_name, class_name));
-            
-            // 生成 load 方法
-            code.push_str(&format!("    /**
+                
+                // 生成 load 方法
+                code.push_str(&format!("    /**
      * 加载{}表数据
      * @param asset JSON资源
      */
@@ -383,9 +461,9 @@ export class {} {{
     }}
 
 ", class_name, class_name));
-            
-            // 生成 getById 方法
-            code.push_str(&format!("    /**
+                
+                // 生成 getById 方法
+                code.push_str(&format!("    /**
      * 根据ID获取{}
      * @param id {}ID
      */
@@ -394,9 +472,9 @@ export class {} {{
     }}
 
 ", class_name, class_name, class_name, class_name));
-            
-            // 生成 getAll 方法
-            code.push_str(&format!("    /**
+                
+                // 生成 getAll 方法
+                code.push_str(&format!("    /**
      * 获取所有{}
      */
     public getAll{}(): {}[] {{
@@ -404,11 +482,11 @@ export class {} {{
     }}
 
 ", class_name, class_name, class_name));
-            
-            // 生成 getByType 方法（如果有 type 字段）
-            if has_type_field {
-                if *class_name == "Monster" {
-                    code.push_str(&format!("    /**
+                
+                // 生成 getByType 方法（如果有 type 字段）
+                if has_type_field {
+                    if class_name == "Monster" {
+                        code.push_str(&format!("    /**
      * 根据类型获取{}
      * @param type 怪物类型
      */
@@ -417,8 +495,8 @@ export class {} {{
     }}
 
 ", class_name, class_name, class_name));
-                } else {
-                    code.push_str(&format!("    /**
+                    } else {
+                        code.push_str(&format!("    /**
      * 根据类型获取{}
      * @param type 类型
      */
@@ -427,13 +505,13 @@ export class {} {{
     }}
 
 ", class_name, class_name, class_name));
+                    }
                 }
-            }
-            
-            // 生成 getByLevel 方法（如果有 level 字段）
-            if has_level_field {
-                if *class_name == "Skill" {
-                    code.push_str(&format!("    /**
+                
+                // 生成 getByLevel 方法（如果有 level 字段）
+                if has_level_field {
+                    if class_name == "Skill" {
+                        code.push_str(&format!("    /**
      * 根据等级获取{}
      * @param level 等级
      */
@@ -442,8 +520,8 @@ export class {} {{
     }}
 
 ", class_name, class_name, class_name));
-                } else {
-                    code.push_str(&format!("    /**
+                    } else {
+                        code.push_str(&format!("    /**
      * 根据等级获取{}
      * @param level 等级
      */
@@ -452,18 +530,208 @@ export class {} {{
     }}
 
 ", class_name, class_name, class_name));
+                    }
+                }
+                
+                code.push_str("}
+");
+                
+                // 写入文件
+                let mut file = File::create(ts_path)?;
+                file.write_all(code.as_bytes())?;
+                
+                println!("Created TypeScript file for {} successfully", class_name);
+            }
+        }
+        
+        // 生成 DataTableManager.ts
+        self.write_data_table_manager(ws)?;
+        
+        Ok(())
+    }
+    
+    /// 读取 CSV 文件的字段信息
+    ///
+    /// # 参数
+    /// * `csv_path` - CSV 文件路径
+    ///
+    /// # 返回值
+    /// 返回字段信息列表，成功时返回 Ok(Vec<CocosField>)，失败时返回 XError。
+    pub fn read_csv_fields(&self, csv_path: &Path) -> XResult<Vec<CocosField>> {
+        let mut fields = Vec::new();
+        
+        // 读取 CSV 文件
+        let mut rdr = csv::Reader::from_path(csv_path)?;
+        
+        // 读取标题行
+        if let Some(Ok(headers)) = rdr.records().next() {
+            // 读取类型行
+            if let Some(Ok(types)) = rdr.records().next() {
+                // 读取字段类型行
+                if let Some(Ok(field_types)) = rdr.records().next() {
+                    for (i, header) in headers.iter().enumerate() {
+                        if i < field_types.len() {
+                            let field_type = field_types[i];
+                            let rust_type = self.map_csv_type_to_typescript(field_type);
+                            fields.push(CocosField {
+                                name: header.to_string(),
+                                r#type: rust_type,
+                            });
+                        }
+                    }
                 }
             }
-            
-            code.push_str("}
-");
-            
-            // 写入文件
-            let mut file = File::create(ts_path)?;
-            file.write_all(code.as_bytes())?;
-            
-            println!("Created TypeScript file for {} successfully", class_name);
         }
+        
+        Ok(fields)
+    }
+    
+    /// 将 CSV 类型映射为 TypeScript 类型
+    ///
+    /// # 参数
+    /// * `csv_type` - CSV 中的类型字符串
+    ///
+    /// # 返回值
+    /// 返回对应的 TypeScript 类型字符串。
+    pub fn map_csv_type_to_typescript(&self, csv_type: &str) -> String {
+        match csv_type.trim() {
+            "i32" | "i64" | "u32" | "u64" | "f32" | "f64" => "number".to_string(),
+            "text" | "string" => "string".to_string(),
+            _ => "string".to_string(), // 默认类型
+        }
+    }
+    
+    /// 写入 DataTableManager.ts
+    ///
+    /// # 参数
+    /// * `ws` - 工作区管理器
+    ///
+    /// # 返回值
+    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
+    pub fn write_data_table_manager(&self, ws: &WorkspaceManager) -> XResult<()> {
+        let root = &ws.config.root;
+        
+        // 构建 DataTableManager.ts 的完整路径
+        let manager_path = self.cocos_typescript_path(root, "DataTableManager")?;
+        
+        println!("Generating DataTableManager -> {}", manager_path.display());
+        
+        // 创建目录
+        if let Some(parent) = manager_path.parent() {
+            std::fs::create_dir_all(parent)?;
+            println!("Created directory: {:?}", parent);
+        }
+        
+        // 生成 DataTableManager 代码
+        let code = r#"import { ItemTable } from './ItemTable';
+import { MonsterTable } from './MonsterTable';
+import { PlayerLevelsTable } from './PlayerLevelsTable';
+import { SkillTable } from './SkillTable';
+
+/**
+ * 数据表管理器
+ * 负责加载和管理所有数据表
+ */
+export class DataTableManager {
+    private static _instance: DataTableManager;
+
+    // 惰性缓存字段
+    private _itemTable: ItemTable | null = null;
+    private _monsterTable: MonsterTable | null = null;
+    private _playerLevelsTable: PlayerLevelsTable | null = null;
+    private _skillTable: SkillTable | null = null;
+
+    /**
+     * 获取单例实例
+     */
+    public static getInstance(): DataTableManager {
+        if (!DataTableManager._instance) {
+            DataTableManager._instance = new DataTableManager();
+        }
+        return DataTableManager._instance;
+    }
+
+    /**
+     * 加载所有数据表
+     * 注意：表数据会在各自的表加载器中按需加载
+     */
+    public async loadAllTables(): Promise<void> {
+        // 预加载所有表
+        await Promise.all([
+            this.getItemTable(),
+            this.getMonsterTable(),
+            this.getPlayerLevelsTable(),
+            this.getSkillTable()
+        ]);
+    }
+
+    /**
+     * 获取物品表（惰性加载）
+     */
+    public async getItemTable(): Promise<ItemTable> {
+        if (this._itemTable === null) {
+            this._itemTable = new ItemTable();
+            this._itemTable.load(await this.loadJsonAsset('tables/Item'));
+        }
+        return this._itemTable;
+    }
+
+    /**
+     * 获取怪物表（惰性加载）
+     */
+    public async getMonsterTable(): Promise<MonsterTable> {
+        if (this._monsterTable === null) {
+            this._monsterTable = new MonsterTable();
+            this._monsterTable.load(await this.loadJsonAsset('tables/Monster'));
+        }
+        return this._monsterTable;
+    }
+
+    /**
+     * 获取玩家等级表（惰性加载）
+     */
+    public async getPlayerLevelsTable(): Promise<PlayerLevelsTable> {
+        if (this._playerLevelsTable === null) {
+            this._playerLevelsTable = new PlayerLevelsTable();
+            this._playerLevelsTable.load(await this.loadJsonAsset('tables/PlayerLevels'));
+        }
+        return this._playerLevelsTable;
+    }
+
+    /**
+     * 获取技能表（惰性加载）
+     */
+    public async getSkillTable(): Promise<SkillTable> {
+        if (this._skillTable === null) {
+            this._skillTable = new SkillTable();
+            this._skillTable.load(await this.loadJsonAsset('tables/Skill'));
+        }
+        return this._skillTable;
+    }
+
+    /**
+     * 加载JSON资源
+     * @param path 资源路径
+     */
+    private async loadJsonAsset(path: string): Promise<cc.JsonAsset> {
+        return new Promise<cc.JsonAsset>((resolve, reject) => {
+            cc.resources.load(path, cc.JsonAsset, (err, asset) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(asset);
+                }
+            });
+        });
+    }
+}
+"#;
+        
+        // 写入文件
+        let mut file = File::create(manager_path)?;
+        file.write_all(code.as_bytes())?;
+        
+        println!("Created DataTableManager.ts successfully");
         
         Ok(())
     }

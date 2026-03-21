@@ -11,7 +11,9 @@ async function main() {
     const projectRoot = path.resolve(scriptDir, '..');
     const rpgDirectories = [
         path.resolve(projectRoot, 'examples', 'rpg-untyped'),
-        path.resolve(projectRoot, 'examples', 'rpg-typed')
+        path.resolve(projectRoot, 'examples', 'rpg-typed'),
+        path.resolve(projectRoot, 'examples', 'galgame'),
+        path.resolve(projectRoot, 'examples', 'slg')
     ];
     
     console.log('Finding xcell executable...');

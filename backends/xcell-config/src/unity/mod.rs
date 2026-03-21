@@ -24,9 +24,12 @@ pub struct UnityStorage {
     pub protobuf: UnityProtobufConfig,
 }
 
-/// Unity 加载器配置
+/// Unity 代码生成配置
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct UnityLoader {
+pub struct UnityCodegen {
+    /// 存储格式配置
+    #[serde(default)]
+    pub storage: UnityStorage,
     /// C# 加载器配置
     pub enable: bool,
     pub project: String,
@@ -41,17 +44,6 @@ pub struct UnityLoader {
     /// XLua 加载器配置
     #[serde(default)]
     pub xlua: UnityXluaConfig,
-}
-
-/// Unity 代码生成配置
-#[derive(Debug, Clone, Default, Serialize)]
-pub struct UnityCodegen {
-    /// 存储格式配置
-    #[serde(default)]
-    pub storage: UnityStorage,
-    /// 加载器配置
-    #[serde(default)]
-    pub loader: UnityLoader,
 }
 
 /// Unity XLua 配置

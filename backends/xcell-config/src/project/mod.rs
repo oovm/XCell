@@ -33,16 +33,22 @@ pub struct ExportCondition {
 #[serde(tag = "type")]
 pub enum Generator {
     /// Unity 生成器
+    #[serde(flatten)]
     Unity(UnityCodegen),
     /// Cocos 生成器
+    #[serde(flatten)]
     Cocos(CocosCodegen),
     /// XLua 生成器
+    #[serde(flatten)]
     Xlua(XluaCodegen),
     /// SQL 生成器
+    #[serde(flatten)]
     Sql(SqlCodegen),
     /// JSON 生成器
+    #[serde(flatten)]
     Json(JsonCodegen),
     /// TypeScript 生成器
+    #[serde(flatten)]
     TypeScript(TypeScriptCodegen),
 }
 
@@ -100,24 +106,6 @@ pub struct ProjectConfig {
     /// 合表模式
     #[serde(default)]
     pub merge: MergeRules,
-    /// Unity 生成模式（向后兼容）
-    #[serde(default)]
-    pub unity: UnityCodegen,
-    /// Cocos 生成模式（向后兼容）
-    #[serde(default)]
-    pub cocos: CocosCodegen,
-    /// XLua 生成模式（向后兼容）
-    #[serde(default)]
-    pub xlua: XluaCodegen,
-    /// SQL 生成模式（向后兼容）
-    #[serde(default)]
-    pub sql: SqlCodegen,
-    /// JSON 生成模式（向后兼容）
-    #[serde(default)]
-    pub json: JsonCodegen,
-    /// TypeScript 生成模式（向后兼容）
-    #[serde(default)]
-    pub typescript: TypeScriptCodegen,
     /// 生成器列表（新格式）
     #[serde(default)]
     pub generators: Vec<Generator>,
@@ -142,20 +130,7 @@ impl ProjectConfig {
             // 如果文件存在，从文件中加载配置
             if let Ok(content) = std::fs::read_to_string(&settings_path) {
                 if let Ok(config) = toml::from_str::<Self>(&content) {
-                    // 处理向后兼容性：如果没有 generators 字段，则将旧格式的配置转换为 generators 列表
-                    let mut config = Self { root: root.to_path_buf(), ..config };
-                        // 从 generators 列表中更新 unity 和 cocos 字段，保持向后兼容
-                        for generator in &config.generators {
-                            match generator {
-                                Generator::Unity(unity) => {
-                                    config.unity = unity.clone();
-                                }
-                                Generator::Cocos(cocos) => {
-                                    config.cocos = cocos.clone();
-                                }
-                                _ => {}
-                            }
-                        }
+                    let config = Self { root: root.to_path_buf(), ..config };
                     return config;
                 }
             }

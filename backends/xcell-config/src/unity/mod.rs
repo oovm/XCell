@@ -9,15 +9,16 @@ mod ser;
 
 /// Unity 存储格式配置
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub enum UnityStorage {
     /// 二进制存储配置
-    Binary(UnityBinaryConfig),
+     #[serde(flatten)]   Binary(UnityBinaryConfig),
     /// JSON 存储配置
-    Json(UnityJsonConfig),
+     #[serde(flatten)]   Json(UnityJsonConfig),
     /// XML 存储配置
-    Xml(UnityXmlConfig),
+     #[serde(flatten)]   Xml(UnityXmlConfig),
     /// Protobuf 存储配置
-    Protobuf(UnityProtobufConfig),
+      #[serde(flatten)]  Protobuf(UnityProtobufConfig),
 }
 
 impl Default for UnityStorage {
@@ -27,7 +28,7 @@ impl Default for UnityStorage {
 }
 
 /// Unity 代码生成配置
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct UnityCodegen {
     /// 存储格式配置
     #[serde(default)]
@@ -35,6 +36,12 @@ pub struct UnityCodegen {
     /// 开发时用的储存格式
     #[serde(default)]
     pub development: Option<UnityStorage>,
+    /// 编译时存储格式
+    #[serde(default)]
+    pub compile_storage: Option<UnityStorage>,
+    /// 运行时存储格式
+    #[serde(default)]
+    pub runtime_storage: Option<UnityStorage>,
     /// C# 加载器配置
     pub enable: bool,
     pub project: String,
@@ -97,6 +104,11 @@ pub struct UnityBinaryConfig {
 }
 
 impl UnityCodegen {
+    /// 获取开发时存储配置
+    pub fn get_development_storage(&self) -> &UnityStorage {
+        self.development.as_ref().unwrap_or(&self.storage)
+    }
+
     /// 获取编译期存储配置
     pub fn get_compile_storage(&self) -> &UnityStorage {
         self.compile_storage.as_ref().unwrap_or(&self.storage)

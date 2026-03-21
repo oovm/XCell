@@ -6,32 +6,32 @@ use xcell_types::{XError, XResult};
 
 use super::*;
 
-mod der;
-mod ser;
-
 /// Cocos 存储格式配置
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct CocosStorage {
+#[serde(tag = "type")]
+pub enum CocosStorage {
     /// JSON 存储配置
-    pub json: CocosJsonConfig,
+    #[serde(flatten)]
+    Json(CocosJsonConfig),
 }
 
 /// Cocos 代码生成配置
 ///
 /// 用于配置 Cocos 平台的代码生成
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CocosCodegen {
     /// 存储格式配置
     #[serde(default)]
     pub storage: CocosStorage,
+    /// 开发时用的储存格式
+    #[serde(default)]
+    pub development: Option<CocosStorage>,
     /// 是否要生成 cocos 代码
     pub enable: bool,
     /// cocos 的工作目录, 建议使用相对路径
     pub project: String,
     /// 输出目录
     pub output: String,
-    /// 生成的代码的命名空间
-    pub namespace: String,
     /// 生成的管理器的名称
     pub manager_name: String,
     /// 生成的表格名的后缀
@@ -52,6 +52,11 @@ pub struct CocosJsonConfig {
 }
 
 impl CocosCodegen {
+    /// 获取开发时存储配置
+    pub fn get_development_storage(&self) -> &CocosStorage {
+        self.development.as_ref().unwrap_or(&self.storage)
+    }
+
     /// Cocos 项目文件夹
     pub fn cocos_path(&self, root: &Path) -> XResult<PathBuf> {
         let project = PathBuf::from(&self.project);
@@ -76,7 +81,10 @@ impl CocosCodegen {
 
     /// 生成 JSON 文件路径
     pub fn cocos_json_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
-        let dir = self.cocos_path(root)?.join(&self.storage.json.output);
+        let output = match &self.storage {
+            CocosStorage::Json(config) => &config.output,
+        };
+        let dir = self.cocos_path(root)?.join(output);
         let path = dir.join(file_name).with_extension("json");
         Ok(path)
     }
@@ -88,7 +96,10 @@ impl CocosCodegen {
 
     /// 生成 JSON 相对路径
     pub fn cocos_json_relative(&self, file_name: &str) -> String {
-        format!("{}/{}.json", self.storage.json.output, file_name)
+        let output = match &self.storage {
+            CocosStorage::Json(config) => &config.output,
+        };
+        format!("{}/{}.json", output, file_name)
     }
     
 

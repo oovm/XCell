@@ -10,7 +10,15 @@ fn test_old_format_config() {
     println!("Old format config parsed successfully!");
     println!("Generators count: {}", config.generators.len());
     for (i, generator) in config.generators.iter().enumerate() {
-        println!("Generator {} type: {:?}", i, generator.r#type);
+        let generator_type = match generator {
+            crate::project::Generator::Unity(_) => "Unity",
+            crate::project::Generator::Cocos(_) => "Cocos",
+            crate::project::Generator::Xlua(_) => "Xlua",
+            crate::project::Generator::Sql(_) => "Sql",
+            crate::project::Generator::Json(_) => "Json",
+            crate::project::Generator::TypeScript(_) => "TypeScript",
+        };
+        println!("Generator {} type: {}", i, generator_type);
     }
 }
 
@@ -23,6 +31,14 @@ fn test_new_format_config() {
     println!("New format config parsed successfully!");
     println!("Generators count: {}", config.generators.len());
     for (i, generator) in config.generators.iter().enumerate() {
-        println!("Generator {} type: {:?}", i, generator.r#type);
+        let generator_type = match generator {
+            crate::project::Generator::Unity(_) => "Unity",
+            crate::project::Generator::Cocos(_) => "Cocos",
+            crate::project::Generator::Xlua(_) => "Xlua",
+            crate::project::Generator::Sql(_) => "Sql",
+            crate::project::Generator::Json(_) => "Json",
+            crate::project::Generator::TypeScript(_) => "TypeScript",
+        };
+        println!("Generator {} type: {}", i, generator_type);
     }
 }

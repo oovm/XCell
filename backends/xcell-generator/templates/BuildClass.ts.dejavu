@@ -4,20 +4,20 @@
 export namespace <% config.namespace %> {
 <% end if %>
 
-<%- for line in class_document %>
+<% loop line in class_document %>
 /** <% line %> */
-<%- end for %>
+<% end loop %>
 export class <% class_name %> {
-<%- for field in class_fields %>
-    <%- for line in field.document %>
+<% loop field in class_fields %>
+    <% loop line in field.document %>
     /** <% line %> */
-    <%- end for %>
-    <%- if field.has_default %>
+    <% end loop %>
+    <% if field.has_default %>
     <% field.name %>: <% field.typing %> = <% field.default %>;
-    <%- else %>
+    <% else %>
     <% field.name %>!: <% field.typing %>;
-    <%- end if %>
-<%- end for %>
+    <% end if %>
+<% end loop %>
 }
 
 <% if config.namespace %>

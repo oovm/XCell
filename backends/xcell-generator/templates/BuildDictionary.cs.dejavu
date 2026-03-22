@@ -55,17 +55,17 @@ namespace <% config.namespace %>
     [DataContract, Serializable]
     public partial class <% class_name %>Element
     {
-<%- for field in class_fields %>
-    <%- for line in field.document %>
+<%- loop field in class_fields %>
+    <%- loop line in field.document %>
         /// <% line %>
-    <%- end for %>
+    <%- end loop %>
         [DataMember, SerializeField]
     <%- if field.has_default %>
         <% field.access %><% field.typing %> <% field.name %> = <% field.default %>;
     <% else %>
         <% field.access %><% field.typing %> <% field.name %>;
     <%- end if %>
-<%- end for %>
+<%- end loop %>
     }
 <% if config.binary.enable %>
     public partial class <% table_name %> : IBinarySupport
@@ -128,7 +128,7 @@ namespace <% config.namespace %>
         /// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
-<%- for field in class_fields %>
+<%- loop field in class_fields %>
     <%- if field.reader.is_vector %>
             var <% field.reader.field %>Count = r.ReadUInt32();
             <% field.reader.field %> = new((int) <% field.reader.field %>Count);
@@ -139,27 +139,27 @@ namespace <% config.namespace %>
     <%- else %>
             <% field.reader.field %> = <% field.reader.function %>;
     <%- end if %>
-<%- end for %>
+<%- end loop %>
         }
 
         /// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
-<%- for field in class_fields %>
+<%- loop field in class_fields %>
     <%- if field.writer.is_vector %>
             w.Write((uint) <% field.writer.field %>.Count);
             foreach (var <% field.writer.field %>Item in <% field.writer.field %>)
             {
-        <%- for property in field.writer.properties %>
+        <%- loop property in field.writer.properties %>
                 w.Write(<% field.writer.field %>Item<% property %>);
-        <%- end for %>
+        <%- end loop %>
             }
     <%- else %>
-        <%- for property in field.writer.properties %>
+        <%- loop property in field.writer.properties %>
             w.Write(<% field.writer.cast %><% field.writer.field %><% property %>);
-        <%- end for %>
+        <%- end loop %>
     <%- end if %>
-<%- end for %>
+<%- end loop %>
         }
     }
 <%- end if %>

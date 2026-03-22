@@ -4,35 +4,35 @@
 export namespace <% config.namespace %> {
 <% end if %>
 
-<%- for line in class_document %>
+<% loop line in class_document %>
 /** <% line %> */
-<%- end for %>
+<% end loop %>
 export class <% class_name %>Element {
-<%- for field in class_fields %>
-    <%- for line in field.document %>
+<% loop field in class_fields %>
+    <% loop line in field.document %>
     /** <% line %> */
-    <%- end for %>
-    <%- if field.has_default %>
+    <% end loop %>
+    <% if field.has_default %>
     <% field.name %>: <% field.typing %> = <% field.default %>;
-    <%- else %>
+    <% else %>
     <% field.name %>!: <% field.typing %>;
-    <%- end if %>
-<%- end for %>
+    <% end if %>
+<% end loop %>
 }
 
 export class <% table_name %> {
-    private _dict: Map<<% id_type %>, <% class_name %>Element> = new Map();
+    private _dict: Map< <% id_type %>, <% class_name %>Element > = new Map();
     elements: <% class_name %>Element[] = [];
 
     get size(): number {
         return this._dict.size;
     }
 
-    get keys(): IterableIterator<<% id_type %>> {
+    get keys(): IterableIterator< <% id_type %> > {
         return this._dict.keys();
     }
 
-    get values(): IterableIterator<<% class_name %>Element> {
+    get values(): IterableIterator< <% class_name %>Element > {
         return this._dict.values();
     }
 

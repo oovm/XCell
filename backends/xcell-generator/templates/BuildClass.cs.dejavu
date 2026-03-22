@@ -16,17 +16,17 @@ namespace <% config.namespace %>
     [DataContract, Serializable]
     public partial class <% class_name %>
     {
-<%- for field in class_fields %>
-    <%- for line in field.document %>
+<% loop field in class_fields %>
+    <% loop line in field.document %>
         /// <% line %>
-    <%- end for %>
+    <% end loop %>
         [DataMember]
-    <%- if field.has_default %>
+    <% if field.has_default %>
         public <%field.typing%> <%field.name%> = <%field.default%>;
     <% else %>
         public <%field.typing%> <%field.name%>;
-    <%- end if %>
-<%- end for %>
+    <% end if %>
+<% end loop %>
     }
 <% if config.support_clone %>
     public partial class <% class_name %> : ICloneable

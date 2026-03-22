@@ -21,6 +21,8 @@ pub struct CocosClass {
     config: CocosCodegen,
     /// Key name
     key_name: String,
+    /// Class documentation
+    class_document: Vec<String>,
     /// Class fields
     class_fields: Vec<ClassField>,
 }
@@ -76,6 +78,7 @@ impl CocosCodegen {
             class_name: table.name.clone(),
             key_name: "key".to_string(),
             id_type: "string",
+            class_document: vec![],
             class_fields: table.items.iter().map(|s| s.as_dict()).collect(),
         }
     }

@@ -29,7 +29,7 @@ export class <% config.manager_name %> {
         return <% config.manager_name %>._instance;
     }
 
-<% for table in tables %>
+<% loop table in tables %>
     private _<% table.private_name %>: <% table.typing %> | null = null;
     /** <% table.typing %> 表 */
     get <% table.public_name %>(): <% table.typing %> {
@@ -41,20 +41,20 @@ export class <% config.manager_name %> {
     set <% table.public_name %>(value: <% table.typing %>) {
         this._<% table.private_name %> = value;
     }
-<% end for %>
+<% end loop %>
 
     /** 重新加载所有表 */
     static reload(): void {
-<%- for table in tables %>
+<% loop table in tables %>
         <% config.manager_name %>.<% config.instance_name %>._<% table.private_name %> = null;
-<%- end for %>
+<% end loop %>
     }
 
     /** 清除所有表 */
     static clear(): void {
-<%- for table in tables %>
+<% loop table in tables %>
         <% config.manager_name %>.<% config.instance_name %>._<% table.private_name %> = null;
-<%- end for %>
+<% end loop %>
     }
 }
 

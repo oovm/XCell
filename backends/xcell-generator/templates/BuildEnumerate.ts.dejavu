@@ -5,12 +5,12 @@ export namespace <% config.namespace %> {
 <% end if %>
 
 export enum <% class_name %> {
-<%- for field in enumerate_ids %>
-    <%- for line in field.document %>
+<% loop field in enumerate_ids %>
+    <% loop line in field.document %>
     /** <% line %> */
-    <%- end for %>
+    <% end loop %>
     <% field.key %> = <% field.value %>,
-<%- end for %>
+<% end loop %>
 }
 
 <% if config.namespace %>

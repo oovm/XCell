@@ -34,51 +34,51 @@ namespace <% config.namespace %>
 
         private static readonly Lazy<<% config.manager %>> singleton = new(() => new <% config.manager %>());
         public static <% config.manager %> Instance => singleton.Value;
-<% for table in tables %>
+<% loop table in tables %>
         private <% table.typing %>? <% table.private_name %>;
         /// <inheritdoc cref="<% config.namespace %>.<% table.typing %>" />
         public <% table.typing %> <% table.public_name %>
         {
-<%- if config.legacy_null_null %>
+<% if config.legacy_null_null %>
             get { return <% table.private_name %> != null ? <% table.private_name %> : new <% table.typing %>(); }
-<%- else %>
+<% else %>
             get => <% table.private_name %> ??= new <% table.typing %>();
-<%- end if %>
+<% end if %>
             set => <% table.private_name %> = value;
         }
-<% end for %>
+<% end loop %>
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("Tools/XCell/LoadAll")]
 #endif
         public static void Reload()
         {
-<%- for table in tables %>
+<% loop table in tables %>
             Instance.<% table.private_name %> = new <% table.typing %>();
-<%- end for %>
+<% end loop %>
         }
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("Tools/XCell/ClearAll")]
 #endif
         public static void Clear()
         {
-<%- for table in tables %>
+<% loop table in tables %>
             Instance.<% table.private_name %> = null;
-<%- end for %>
+<% end loop %>
         }
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("Tools/XCell/ExportXML")]
         public static void ExportXML()
         {
-<%- for table in tables %>
+<% loop table in tables %>
             SerializerXML("Assets/Data/Table/Binary/<% table.typing %>.xml", Instance.<% table.private_name %>);
-<%- end for %>
+<% end loop %>
         }
         [UnityEditor.MenuItem("Tools/XCell/ExportJSON")]
         public static void ExportJSON()
         {
-<%- for table in tables %>
+<% loop table in tables %>
             SerializerJSON("Assets/Data/Table/Readable/<% table.typing %>.json", Instance.<% table.private_name %>);
-<%- end for %>
+<% end loop %>
         }
 
         private static void SerializerXML<T>(string path, T table)

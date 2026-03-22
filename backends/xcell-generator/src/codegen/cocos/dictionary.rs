@@ -22,6 +22,8 @@ pub struct CocosDictionaryTemplate {
     config: CocosCodegen,
     /// Key name
     key_name: String,
+    /// Class documentation
+    class_document: Vec<String>,
     /// Dictionary fields
     class_fields: Vec<DictField>,
 }
@@ -71,14 +73,15 @@ impl CocosCodegen {
     ///
     /// # Returns
     /// Cocos dictionary template data
-    fn make_dict(&self, table: &XDictData, table_name: String) -> CocosDictionary {
-        CocosDictionary {
+    fn make_dict(&self, table: &XDictData, table_name: String) -> CocosDictionaryTemplate {
+        CocosDictionaryTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             table_name,
             class_name: table.name.clone(),
             key_name: "key".to_string(),
             id_type: "string",
+            class_document: vec![],
             class_fields: table.headers.iter().map(|s| s.as_dict()).collect(),
         }
     }
@@ -107,14 +110,15 @@ impl CocosCodegen {
     ///
     /// # Returns
     /// Cocos dictionary template data (used for lists)
-    fn make_list(&self, table: &XListData, table_name: String) -> CocosDictionary {
-        CocosDictionary {
+    fn make_list(&self, table: &XListData, table_name: String) -> CocosDictionaryTemplate {
+        CocosDictionaryTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             table_name,
             class_name: table.name.clone(),
             key_name: "id".to_string(),
             id_type: table.id_type.as_typescript_type(),
+            class_document: vec![],
             class_fields: table.headers.iter().map(|s| s.as_dict()).collect(),
         }
     }

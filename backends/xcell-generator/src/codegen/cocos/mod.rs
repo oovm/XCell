@@ -9,7 +9,7 @@ use xcell_core::{XError, XResult, XCellValue, for_3rd::ToPrimitive};
 use xcell_analyzer::{XClassData, XListData, XDictData};
 use url::Url;
 use dejavu_macros::Template;
-use dejavu_types::values::Context;
+use dejavu::Template;
 
 mod config;
 
@@ -73,6 +73,8 @@ pub struct CocosEnumerateTemplate {
     config: CocosCodegen,
     /// 枚举 ID 列表
     enumerate_ids: Vec<EnumeratePair>,
+    /// 类文档
+    class_document: Vec<String>,
 }
 
 /// Cocos 类模板
@@ -91,6 +93,8 @@ pub struct CocosClassTemplate {
     config: CocosCodegen,
     /// 键名
     key_name: String,
+    /// 类文档
+    class_document: Vec<String>,
     /// 类字段
     class_fields: Vec<ClassFieldTemplate>,
 }
@@ -154,8 +158,9 @@ fn render_enumerate_template(config: &CocosCodegen, class_name: &str, items: &[C
         id_type: "number".to_string(),
         config: config.clone(),
         enumerate_ids,
+        class_document: vec![],
     };
-    template.render(&Context::new()).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 fn render_class_template(config: &CocosCodegen, class_name: &str, table_name: &str, fields: &[CocosField]) -> XResult<String> {
@@ -173,9 +178,10 @@ fn render_class_template(config: &CocosCodegen, class_name: &str, table_name: &s
         id_type: "number".to_string(),
         config: config.clone(),
         key_name: "id".to_string(),
+        class_document: vec![],
         class_fields,
     };
-    template.render(&Context::new()).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 fn render_manager_template(config: &CocosCodegen, tables: &[CocosDataTableItem]) -> XResult<String> {
@@ -193,7 +199,7 @@ fn render_manager_template(config: &CocosCodegen, tables: &[CocosDataTableItem])
         edit_time: chrono::Utc::now().to_rfc3339(),
         tables: table_items,
     };
-    template.render(&Context::new()).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 /// Cocos 存储格式配置

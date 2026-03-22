@@ -2,6 +2,7 @@ use super::*;
 use serde::{Deserialize, Serialize};
 use dejavu_macros::Template;
 use dejavu::Template;
+use chrono;
 
 #[derive(Template)]
 #[template(path = "BuildManager.ts.dejavu", escape = "none")]
@@ -14,14 +15,12 @@ pub struct CocosManagerTemplate {
     instance_name: String,
     /// Cocos codegen configuration
     config: CocosCodegen,
-    /// Class tables
-    class_tables: Vec<String>,
-    /// Enumerate tables
-    enum_tables: Vec<String>,
-    /// Dictionary tables
-    dict_tables: Vec<String>,
-    /// List tables
-    list_tables: Vec<String>,
+    /// Data version
+    data_version: String,
+    /// Edit time
+    edit_time: String,
+    /// Tables
+    tables: Vec<TableItem>,
 }
 
 impl CocosCodegen {
@@ -46,16 +45,53 @@ impl CocosCodegen {
     ///
     /// # Returns
     /// Cocos manager template data
-    fn make_manager(&self, ws: &WorkspaceManager) -> CocosManager {
-        CocosManager {
+    fn make_manager(&self, ws: &WorkspaceManager) -> CocosManagerTemplate {
+        let mut tables = Vec::new();
+        
+        // Add class tables
+        for table in ws.classes() {
+            let table_name = format!("{}{}", table.name, self.suffix_table);
+            let private_name = format!("{}Table", table.name.to_lowercase());
+            let public_name = format!("get{}Table", table.name);
+            tables.push(TableItem {
+                private_name,
+                public_name,
+                typing: table_name,
+            });
+        }
+        
+        // Add dict tables
+        for table in ws.dicts() {
+            let table_name = format!("{}{}", table.name, self.suffix_table);
+            let private_name = format!("{}Table", table.name.to_lowercase());
+            let public_name = format!("get{}Table", table.name);
+            tables.push(TableItem {
+                private_name,
+                public_name,
+                typing: table_name,
+            });
+        }
+        
+        // Add list tables
+        for table in ws.lists() {
+            let table_name = format!("{}{}", table.name, self.suffix_table);
+            let private_name = format!("{}Table", table.name.to_lowercase());
+            let public_name = format!("get{}Table", table.name);
+            tables.push(TableItem {
+                private_name,
+                public_name,
+                typing: table_name,
+            });
+        }
+        
+        CocosManagerTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             class_name: self.manager_name.clone(),
             instance_name: self.instance_name.clone(),
-            class_tables: ws.classes().map(|t| format!("{}{}", t.name, self.suffix_table)).collect(),
-            enum_tables: ws.enumerates().map(|t| t.name.clone()).collect(),
-            dict_tables: ws.dicts().map(|t| format!("{}{}", t.name, self.suffix_table)).collect(),
-            list_tables: ws.lists().map(|t| format!("{}{}", t.name, self.suffix_table)).collect(),
+            data_version: "1.0.0".to_string(),
+            edit_time: chrono::Utc::now().to_rfc3339(),
+            tables,
         }
     }
 }

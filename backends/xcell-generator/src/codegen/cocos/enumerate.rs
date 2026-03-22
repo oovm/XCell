@@ -18,8 +18,8 @@ pub struct CocosEnumerateTemplate {
     config: CocosCodegen,
     /// Enumerate IDs
     enumerate_ids: Vec<EnumeratePair>,
-    /// Enumerate fields
-    enumerate_fields: Vec<EnumerateField>,
+    /// Class document
+    class_document: Vec<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -72,14 +72,14 @@ impl CocosCodegen {
     ///
     /// # Returns
     /// Cocos enumerate template data
-    fn make_enumerate(&self, table: &XEnumerateData) -> CocosEnumerate {
-        CocosEnumerate {
+    fn make_enumerate(&self, table: &XEnumerateData) -> CocosEnumerateTemplate {
+        CocosEnumerateTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             class_name: table.name.clone(),
             id_type: table.typing.kind.as_typescript_type(),
             enumerate_ids: table.lines.iter().map(|data| data.as_enumerate()).collect(),
-            enumerate_fields: table.headers.iter().enumerate().map(|(id, data)| data.as_enumerate(&table.lines, id)).collect(),
+            class_document: vec![],
         }
     }
 }

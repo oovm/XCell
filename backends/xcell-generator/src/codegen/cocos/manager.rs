@@ -13,8 +13,10 @@ pub struct CocosManagerTemplate {
     class_name: String,
     /// Instance name
     instance_name: String,
-    /// Cocos codegen configuration
-    config: CocosCodegen,
+    /// Namespace
+    namespace: String,
+    /// Manager name
+    manager_name: String,
     /// Data version
     data_version: String,
     /// Edit time
@@ -86,9 +88,10 @@ impl CocosCodegen {
         
         CocosManagerTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
-            config: self.clone(),
+            namespace: self.namespace.clone(),
             class_name: self.manager_name.clone(),
             instance_name: self.instance_name.clone(),
+            manager_name: self.manager_name.clone(),
             data_version: "1.0.0".to_string(),
             edit_time: chrono::Utc::now().to_rfc3339(),
             tables,

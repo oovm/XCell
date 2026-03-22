@@ -68,8 +68,8 @@ pub struct CocosEnumerateTemplate {
     class_name: String,
     /// ID 类型
     id_type: String,
-    /// Cocos 代码生成配置
-    config: CocosCodegen,
+    /// 命名空间
+    namespace: String,
     /// 枚举 ID 列表
     enumerate_ids: Vec<EnumeratePair>,
     /// 类文档
@@ -88,8 +88,8 @@ pub struct CocosClassTemplate {
     table_name: String,
     /// ID 类型
     id_type: String,
-    /// Cocos 代码生成配置
-    config: CocosCodegen,
+    /// 命名空间
+    namespace: String,
     /// 键名
     key_name: String,
     /// 类文档
@@ -123,8 +123,10 @@ pub struct CocosManagerTemplate {
     class_name: String,
     /// 实例名称
     instance_name: String,
-    /// Cocos 代码生成配置
-    config: CocosCodegen,
+    /// 命名空间
+    namespace: String,
+    /// 管理器名称
+    manager_name: String,
     /// 数据版本
     data_version: String,
     /// 编辑时间
@@ -155,7 +157,7 @@ fn render_enumerate_template(config: &CocosCodegen, class_name: &str, items: &[C
         compiler_version: env!("CARGO_PKG_VERSION"),
         class_name: class_name.to_string(),
         id_type: "number".to_string(),
-        config: config.clone(),
+        namespace: config.namespace.clone(),
         enumerate_ids,
         class_document: vec![],
     };
@@ -175,7 +177,7 @@ fn render_class_template(config: &CocosCodegen, class_name: &str, table_name: &s
         class_name: class_name.to_string(),
         table_name: table_name.to_string(),
         id_type: "number".to_string(),
-        config: config.clone(),
+        namespace: config.namespace.clone(),
         key_name: "id".to_string(),
         class_document: vec![],
         class_fields,
@@ -193,7 +195,8 @@ fn render_manager_template(config: &CocosCodegen, tables: &[CocosDataTableItem])
         compiler_version: env!("CARGO_PKG_VERSION"),
         class_name: config.manager_name.clone(),
         instance_name: config.instance_name.clone(),
-        config: config.clone(),
+        namespace: config.namespace.clone(),
+        manager_name: config.manager_name.clone(),
         data_version: "1.0.0".to_string(),
         edit_time: chrono::Utc::now().to_rfc3339(),
         tables: table_items,

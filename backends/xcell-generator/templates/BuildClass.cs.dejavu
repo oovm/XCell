@@ -37,5 +37,5 @@ namespace <% config.namespace %>
             return (<% class_name %>) MemberwiseClone();
         }
     }
-<%- end if %>
+<% end if %>
 }

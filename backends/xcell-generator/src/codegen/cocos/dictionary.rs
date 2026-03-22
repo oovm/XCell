@@ -18,8 +18,8 @@ pub struct CocosDictionaryTemplate {
     table_name: String,
     /// ID type
     id_type: &'static str,
-    /// Cocos codegen configuration
-    config: CocosCodegen,
+    /// Namespace
+    namespace: String,
     /// Key name
     key_name: String,
     /// Class documentation
@@ -76,7 +76,7 @@ impl CocosCodegen {
     fn make_dict(&self, table: &XDictData, table_name: String) -> CocosDictionaryTemplate {
         CocosDictionaryTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
-            config: self.clone(),
+            namespace: self.namespace.clone(),
             table_name,
             class_name: table.name.clone(),
             key_name: "key".to_string(),
@@ -113,7 +113,7 @@ impl CocosCodegen {
     fn make_list(&self, table: &XListData, table_name: String) -> CocosDictionaryTemplate {
         CocosDictionaryTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
-            config: self.clone(),
+            namespace: self.namespace.clone(),
             table_name,
             class_name: table.name.clone(),
             key_name: "id".to_string(),

@@ -12,7 +12,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using UnityEngine;
-<%- if config.addressable %>
+<% if config.addressable %>
 using UnityEngine.AddressableAssets;
 <% end if %>
 
@@ -55,28 +55,28 @@ namespace <% config.namespace %>
     [DataContract, Serializable]
     public partial class <% class_name %>Element
     {
-<%- loop field in class_fields %>
-    <%- loop line in field.document %>
+<% loop field in class_fields %>
+    <% loop line in field.document %>
         /// <% line %>
-    <%- end loop %>
+    <% end loop %>
         [DataMember, SerializeField]
-    <%- if field.has_default %>
+    <% if field.has_default %>
         <% field.access %><% field.typing %> <% field.name %> = <% field.default %>;
     <% else %>
         <% field.access %><% field.typing %> <% field.name %>;
-    <%- end if %>
-<%- end loop %>
+    <% end if %>
+<% end loop %>
     }
 <% if config.binary.enable %>
     public partial class <% table_name %> : IBinarySupport
     {
         public <% table_name %>()
         {
-    <%- if config.addressable %>
+    <% if config.addressable %>
             BinaryRead("<% config.binary.addressable %>/<% table_name %>.bytes");
-    <%- else %>
+    <% else %>
             BinaryRead("<% config.binary.output %>/<% table_name %>.bytes");
-    <%- end if %>
+    <% end if %>
         }
         /// <summary>
         /// 从二进制文件中读取静态数据
@@ -128,39 +128,39 @@ namespace <% config.namespace %>
         /// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
-<%- loop field in class_fields %>
-    <%- if field.reader.is_vector %>
+<% loop field in class_fields %>
+    <% if field.reader.is_vector %>
             var <% field.reader.field %>Count = r.ReadUInt32();
             <% field.reader.field %> = new((int) <% field.reader.field %>Count);
             for (var i = 0; i < <% field.reader.field %>Count; i++)
             {
                 <% field.reader.field %>.Add(<% field.reader.function %>);
             }
-    <%- else %>
+    <% else %>
             <% field.reader.field %> = <% field.reader.function %>;
-    <%- end if %>
-<%- end loop %>
+    <% end if %>
+<% end loop %>
         }
 
         /// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
         public void BinaryWrite(BinaryWriter w)
         {
-<%- loop field in class_fields %>
-    <%- if field.writer.is_vector %>
+<% loop field in class_fields %>
+    <% if field.writer.is_vector %>
             w.Write((uint) <% field.writer.field %>.Count);
             foreach (var <% field.writer.field %>Item in <% field.writer.field %>)
             {
-        <%- loop property in field.writer.properties %>
+        <% loop property in field.writer.properties %>
                 w.Write(<% field.writer.field %>Item<% property %>);
-        <%- end loop %>
+        <% end loop %>
             }
-    <%- else %>
-        <%- loop property in field.writer.properties %>
+    <% else %>
+        <% loop property in field.writer.properties %>
             w.Write(<% field.writer.cast %><% field.writer.field %><% property %>);
-        <%- end loop %>
-    <%- end if %>
-<%- end loop %>
+        <% end loop %>
+    <% end if %>
+<% end loop %>
         }
     }
-<%- end if %>
+<% end if %>
 }

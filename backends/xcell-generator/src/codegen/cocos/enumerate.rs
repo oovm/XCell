@@ -14,8 +14,8 @@ pub struct CocosEnumerateTemplate {
     class_name: String,
     /// ID type
     id_type: &'static str,
-    /// Cocos codegen configuration
-    config: CocosCodegen,
+    /// Namespace
+    namespace: String,
     /// Enumerate IDs
     enumerate_ids: Vec<EnumeratePair>,
     /// Class document
@@ -75,7 +75,7 @@ impl CocosCodegen {
     fn make_enumerate(&self, table: &XEnumerateData) -> CocosEnumerateTemplate {
         CocosEnumerateTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
-            config: self.clone(),
+            namespace: self.namespace.clone(),
             class_name: table.name.clone(),
             id_type: table.typing.kind.as_typescript_type(),
             enumerate_ids: table.lines.iter().map(|data| data.as_enumerate()).collect(),

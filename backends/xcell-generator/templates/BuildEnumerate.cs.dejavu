@@ -13,27 +13,27 @@ namespace <% config.namespace %>
     [DataContract, Serializable]
     public enum <% class_name %>: <% id_type %>
     {
-<%- loop field in enumerate_ids %>
-    <%- loop line in field.document %>
+<% loop field in enumerate_ids %>
+    <% loop line in field.document %>
         /// <% line %>
-    <%- end loop %>
+    <% end loop %>
         [EnumMember] <% field.key %> = <% field.value %>,
-<%- end loop %>
+<% end loop %>
     }
 
     public static class <% class_name %>Extension
     {
-<%- loop field in enumerate_fields %>
-    <%- loop line in field.document %>
+<% loop field in enumerate_fields %>
+    <% loop line in field.document %>
         /// <% line %>
-    <%- end loop %>
+    <% end loop %>
         public static <% field.typing %> <% field.getter %>(this <% class_name %> self)
         {
             return self switch
             {
-            <%- loop line in field.switch %>
+            <% loop line in field.switch %>
                 <% class_name %>.<% line.key %> => <% line.value %>,
-            <%- end loop %>
+            <% end loop %>
                 _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
             };
         }

@@ -1,7 +1,7 @@
 // 代码生成, 修改无效! (XCell <% compiler_version %>)
 
-<% if config.namespace %>
-export namespace <% config.namespace %> {
+<% if namespace %>
+export namespace <% namespace %> {
 <% end if %>
 
 /**
@@ -10,7 +10,7 @@ export namespace <% config.namespace %> {
  * 热更新资源直接 set 即可
  * 释放资源直接将表设为 null 即可
  */
-export class <% config.manager_name %> {
+export class <% class_name %> {
     /**
      * 配置表的版本号
      */
@@ -21,12 +21,12 @@ export class <% config.manager_name %> {
      */
     static readonly TableEditTime = new Date("<% edit_time %>");
 
-    private static _instance: <% config.manager_name %> | null = null;
-    static get <% config.instance_name %>(): <% config.manager_name %> {
-        if (!<% config.manager_name %>._instance) {
-            <% config.manager_name %>._instance = new <% config.manager_name %>();
+    private static _instance: <% class_name %> | null = null;
+    static get <% instance_name %>(): <% class_name %> {
+        if (!<% class_name %>._instance) {
+            <% class_name %>._instance = new <% class_name %>();
         }
-        return <% config.manager_name %>._instance;
+        return <% class_name %>._instance;
     }
 
 <% loop table in tables %>
@@ -46,18 +46,18 @@ export class <% config.manager_name %> {
     /** 重新加载所有表 */
     static reload(): void {
 <% loop table in tables %>
-        <% config.manager_name %>.<% config.instance_name %>._<% table.private_name %> = null;
+        <% class_name %>.<% instance_name %>._<% table.private_name %> = null;
 <% end loop %>
     }
 
     /** 清除所有表 */
     static clear(): void {
 <% loop table in tables %>
-        <% config.manager_name %>.<% config.instance_name %>._<% table.private_name %> = null;
+        <% class_name %>.<% instance_name %>._<% table.private_name %> = null;
 <% end loop %>
     }
 }
 
-<% if config.namespace %>
+<% if namespace %>
 }
 <% end if %>

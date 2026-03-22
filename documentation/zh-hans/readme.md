@@ -1,59 +1,223 @@
-# XCell 配置表管理工具文档
 
-欢迎阅读 XCell 配置表管理工具的完整中文文档！
+# 快速开始
 
-## 文档结构
+本教程将指导您从零开始使用 XCell 配置表管理工具。
 
-### 概述 (overview/)
-- [index.md](overview/index.md) - XCell 概述文档，包含项目介绍、核心功能和技术亮点
+## 环境准备
 
-### 核心概念 (concepts/)
-- [index.md](concepts/index.md) - 核心概念索引
-- [class.md](concepts/class.md) - Class 表格类型
-- [dictionary.md](concepts/dictionary.md) - Dictionary 表格类型
-- [enumerate.md](concepts/enumerate.md) - Enumerate 表格类型
-- [language.md](concepts/language.md) - Language 表格类型
-- [config.md](concepts/config.md) - 配置文件说明
-- [merge.md](concepts/merge.md) - 合表规则
+### 系统要求
 
-### 教程 (tutorials/)
-- [index.md](tutorials/index.md) - 教程索引
-- [getting-started.md](tutorials/getting-started.md) - 快速开始教程
-- [use-cases/index.md](tutorials/use-cases/index.md) - 使用场景索引
-- [use-cases/unity-integration.md](tutorials/use-cases/unity-integration.md) - Unity 集成场景
+- Windows 操作系统
+- Rust 开发环境（如需从源码编译）
 
-### 进阶主题 (advanced/)
-- [index.md](advanced/index.md) - 进阶主题索引
-- [extensibility.md](advanced/extensibility.md) - 扩展性指南
-- [advanced-features.md](advanced/advanced-features.md) - 高级功能
+### 安装方式
 
-### 维护者文档 (maintainer/)
-- [architecture/index.md](maintainer/architecture/index.md) - 架构设计文档
+#### 方式一：使用预编译版本
 
-## 快速开始
+1. 从项目发布页面下载最新的 `xcell.exe`
+2. 将 `xcell.exe` 放置到您的项目目录中
 
-1. 从 [概述](overview/index.md) 开始，了解 XCell 的核心功能和特性
-2. 阅读 [核心概念](concepts/index.md) 了解基本概念
-3. 跟随 [快速开始教程](tutorials/getting-started.md) 上手使用
-4. 查看 [使用场景](tutorials/use-cases/index.md) 获取灵感
+#### 方式二：从源码编译
 
-## 关于 XCell
+1. 确保已安装 Rust 开发环境
+2. 克隆或下载项目源码
+3. 在项目根目录运行：
 
-XCell 是一个强大的配置表管理工具，专为游戏开发和需要复杂数据管理的项目设计。它使用 Rust 编程语言开发，提供高性能、类型安全的数据管理解决方案。
+```bash
+cargo build --release
+```
 
-### 支持的游戏引擎和编程语言
+4. 编译完成后，可执行文件位于 `target/release/xcell.exe`
 
-XCell 支持多种游戏引擎和编程语言，包括但不限于：
-- **Unity** (C#) - 完整内置支持
-- **Cocos Creator** (TypeScript/JavaScript/Lua)
-- **Godot** (GDScript/C#)
-- **Unreal Engine** (C++)
-- **自定义引擎** (任何语言)
+## 项目初始化
 
-### 支持的编程语言
+### 创建项目结构
 
-- C#、C++、Rust
-- Python、Lua、JavaScript/TypeScript
-- 以及更多...
+在您的工作目录中创建以下结构：
 
-无论你使用什么游戏引擎或编程语言，XCell 都能为你提供出色的配置表管理解决方案！
+```
+MyProject/
+├── xcell.exe
+├── ProjectConfig.toml
+└── Tables/
+    └── Hero.xlsx
+```
+
+### 创建配置文件
+
+在项目根目录创建 `ProjectConfig.toml` 文件：
+
+```toml
+version = "0.1.0"
+
+exclude = ""
+include = "*.xlsx"
+
+line.field = 1
+line.type = 2
+line.comment = 3
+line.data = 4
+
+[type.bool]
+accept = ["true", "√"]
+reject = ["false", "x"]
+
+[type.string]
+
+[unity]
+enable = true
+project = "./"
+output = "Assets/Scripts/DataTable/Generated"
+namespace = "DataTable.Generated"
+manager = "DataTableManager"
+suffix_table = "Table"
+suffix_element = "Element"
+support_clone = true
+legacy_using = false
+legacy_null_null = false
+
+[unity.binary]
+enable = true
+output = "Assets/Tables/Generated"
+
+[unity.xlua]
+enable = false
+
+[unity.xml]
+enable = false
+output = "Assets/Tables/Readable"
+
+[unity.json]
+enable = false
+output = "Assets/Tables/Readable"
+
+[unity.protobuf]
+enable = false
+```
+
+## 创建第一个配置表
+
+### Excel 表格结构
+
+XCell 使用特定的 Excel 表格结构，前 3 行为表头，从第 4 行开始是数据：
+
+| 行号 | 用途 | 说明 |
+|------|------|------|
+| 1 | 字段名 | 配置表的字段名称 |
+| 2 | 数据类型 | 字段的数据类型 |
+| 3 | 注释 | 字段的说明文字 |
+| 4+ | 数据行 | 实际的配置数据 |
+
+### 示例表格
+
+创建 `Tables/Hero.xlsx` 表格：
+
+| id | name | hp | attack | is_boss |
+|----|------|----|--------|---------|
+| int | string | int | int | bool |
+| 英雄ID | 英雄名称 | 生命值 | 攻击力 | 是否Boss |
+| 1 | 骑士 | 1000 | 100 | false |
+| 2 | 法师 | 800 | 150 | false |
+| 3 | 巨龙 | 5000 | 500 | true |
+
+## 运行 XCell
+
+### 基本命令
+
+在项目根目录打开命令行，运行：
+
+```bash
+xcell.exe
+```
+
+XCell 会自动：
+1. 扫描当前目录下的所有 Excel 表格
+2. 验证表格数据
+3. 生成对应的 C# 代码和二进制数据文件
+
+### 命令行选项
+
+```bash
+xcell.exe [OPTIONS] [COMMAND]
+```
+
+#### 命令
+
+- `check`: 检查配置表，但不导出任何文件
+- `clear`: 清除数据库与缓存
+
+#### 选项
+
+- `--workspace <WORKSPACE>`: 手动设置工作目录，不输入表示当前目录
+- `-w, --watch`: 启用监听模式，当有文件修改时只更新对应文件
+- `--disable-xml`: 强制关闭 xml 生成
+- `--disable-json`: 强制关闭 json 生成
+- `-h, --help`: 显示帮助
+- `-V, --version`: 显示版本
+
+### 使用示例
+
+#### 检查配置表
+
+```bash
+xcell.exe check
+```
+
+#### 启用监听模式
+
+```bash
+xcell.exe --watch
+```
+
+#### 清除缓存
+
+```bash
+xcell.exe clear
+```
+
+## 查看生成结果
+
+运行成功后，您将看到以下生成的文件：
+
+```
+MyProject/
+├── Assets/
+│   ├── Scripts/DataTable/Generated/
+│   │   ├── HeroTable.cs
+│   │   └── DataTableManager.cs
+│   └── Tables/Generated/
+│       └── HeroTable.bytes
+```
+
+### 生成的 C# 代码示例
+
+`HeroTable.cs` 将包含类似以下内容：
+
+```csharp
+namespace DataTable.Generated
+{
+    public partial class HeroTable
+    {
+        public readonly Dictionary<int, HeroElement> dict = new();
+
+        public HeroElement GetElement(int id)
+        {
+            return dict.TryGetValue(id, out var item) ? item : null;
+        }
+    }
+
+    public partial class HeroElement
+    {
+        public int id;
+        public string name;
+        public int hp;
+        public int attack;
+        public bool is_boss;
+    }
+}
+```
+
+## 下一步
+
+- 查看 [使用场景索引](use-cases/index.md) 了解更多具体应用
+- Unity 用户可以参考 [Unity 集成](use-cases/unity-integration.md) 文档

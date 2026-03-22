@@ -1,6 +1,6 @@
 
 use serde::Serialize;
-use xcell_types::XResult;
+use xcell_core::XResult;
 
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct BinaryCodegen {

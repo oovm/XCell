@@ -1,5 +1,5 @@
 use std::{collections::HashMap, path::PathBuf};
-use xcell_types::XResult;
+use xcell_core::XResult;
 
 /// 代码生成模块
 ///

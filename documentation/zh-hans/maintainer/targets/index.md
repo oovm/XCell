@@ -8,8 +8,8 @@ XCell 支持多种目标平台，包括前端和后端。本章节详细介绍�
 
 ### 游戏引擎
 
-- [Unity](unity.md) - Unity 引擎集成
-- [Cocos](cocos.md) - Cocos 引擎集成
+- [Unity](unity.md) - Unity 引擎集成 ⚠️ (当前禁用)
+- [Cocos](cocos.md) - Cocos 引擎集成 ✅
 - [Unreal Engine](unreal.md) - Unreal Engine 集成
 - [Godot](godot.md) - Godot 引擎集成
 - [XLua](xlua.md) - XLua 脚本集成
@@ -18,32 +18,30 @@ XCell 支持多种目标平台，包括前端和后端。本章节详细介绍�
 
 - [React](react.md) - React 框架集成
 - [Vue](vue.md) - Vue 框架集成
-- [Angular](angular.md) - Angular 框架集成
-- [TypeScript/JavaScript](typescript.md) - TypeScript/JavaScript 集成
+- [TypeScript/JavaScript](typescript.md) - TypeScript/JavaScript 集成 ✅
 
 ## 后端平台
 
 后端平台主要面向服务器端和数据存储，提供数据持久化和服务端集成。
 
-### 数据库
-
-- [MySQL](mysql.md) - MySQL 数据库集成
-- [PostgreSQL](postgresql.md) - PostgreSQL 数据库集成
-- [SQLite](sqlite.md) - SQLite 数据库集成
-- [SQL](sql.md) - 通用 SQL 数据库集成
-
-### 服务端框架
-
-- [Node.js](nodejs.md) - Node.js 集成
-- [Python](python.md) - Python 集成
-- [Java](java.md) - Java 集成
-- [Go](go.md) - Go 语言集成
-
 ### 数据格式
 
-- [JSON](json.md) - JSON 数据格式
-- [XML](xml.md) - XML 数据格式
-- [Protobuf](protobuf.md) - Protobuf 数据格式
+- [JSON](json.md) - JSON 数据格式 ✅
+- [SQL](sql.md) - SQL 数据库集成
+
+## 代码生成器状态说明
+
+| 生成器 | 状态 | 说明 |
+|--------|------|------|
+| `json` | ✅ 可用 | JSON 数据生成 |
+| `binary` | ✅ 可用 | 二进制数据生成 |
+| `cocos` | ✅ 可用 | Cocos 平台代码生成 |
+| `typescript` | ✅ 可用 | TypeScript 代码生成 |
+| `dejavu` | ✅ 可用 | 模板引擎代码生成 |
+| `unity` | ⚠️ 禁用 | Unity 平台代码生成（正在重构中） |
+| `xlua` | 开发中 | XLua 脚本代码生成 |
+| `sql` | 开发中 | SQL 数据库代码生成 |
+| `xml` | 开发中 | XML 数据生成 |
 
 ## 跨平台支持
 

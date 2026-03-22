@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use tracing::{error, info};
 use xcell_analyzer::{WorkspaceManager, XClassData, XDictData, XEnumerateData, XListData};
-use xcell_types::XResult;
+use xcell_core::XResult;
 
 /// 错误处理模块
 pub mod error;

@@ -1,7 +1,7 @@
 use super::{Codegen, CodegenContext};
 use std::{fs, path::PathBuf};
 use tracing::{debug as tracing_debug, error, info};
-use xcell_types::{XError, XErrorKind, XResult};
+use xcell_core::{XError, XErrorKind, XResult};
 
 /// Dejavu 静态生成器
 ///

@@ -1,14 +1,32 @@
 # Unity 集成
 
+> ⚠️ **注意**：Unity 代码生成器当前处于禁用状态，正在重构中。以下文档仅供参考，功能可能不可用。
+
 XCell 提供了与 Unity 引擎的深度集成，支持生成 C# 代码、二进制数据文件等多种格式。
 
-## 配置选项
+## 当前状态
 
-在 `XCell.toml` 文件中，Unity 集成配置位于 `[unity]` 部分：
+Unity 代码生成器 (`unity`) 当前处于禁用状态，原因如下：
+
+1. 正在进行架构重构
+2. 类型映射系统需要更新
+3. 代码生成模板需要优化
+
+### 替代方案
+
+在 Unity 代码生成器重新启用之前，您可以考虑以下替代方案：
+
+1. **使用 JSON 数据格式**：通过 [JSON](json.md) 生成器导出数据，在 Unity 中使用 `JsonUtility` 或 `Newtonsoft.Json` 解析
+2. **使用 TypeScript 生成器**：通过 [TypeScript](typescript.md) 生成类型定义，手动编写 C# 类
+3. **使用 Dejavu 模板**：通过 [Dejavu 模板引擎](../architecture/index.md#代码生成) 自定义代码生成
+
+## 配置选项（参考）
+
+在 `ProjectSettings.toml` 文件中，Unity 集成配置位于 `[unity]` 部分：
 
 ```toml
 [unity]
-enable = true
+enable = false  # 当前禁用
 project = "../"
 output = "Assets/Scripts/DataTable/Generated"
 namespace = "DataTable.Generated"
@@ -33,12 +51,9 @@ output = "Assets/Tables/Readable"
 [unity.json]
 enable = false
 output = "Assets/Tables/Readable"
-
-[unity.protobuf]
-enable = false
 ```
 
-## 生成的代码结构
+## 预期生成的代码结构
 
 ### 表类结构
 
@@ -76,21 +91,6 @@ namespace DataTable.Generated
 }
 ```
 
-## 二进制数据加载
-
-### 加载二进制数据：
-
-```csharp
-var manager = new DataTableManager();
-manager.LoadAll();
-```
-
-### 支持的功能：
-- 异步加载
-- 增量加载
-- 内存管理
-- 热更新支持
-
 ## 类型映射
 
 XCell 类型到 C# 类型映射：
@@ -115,77 +115,15 @@ XCell 类型到 C# 类型映射：
 | vec4 | UnityEngine.Vector4 |
 | quaternion | UnityEngine.Quaternion |
 
-## XLua 集成
-
-启用 XLua 支持：
-
-```toml
-[unity.xlua]
-enable = true
-```
-
-XLua 集成提供：
-- Lua 绑定代码生成
-- 高性能 Lua 访问接口
-- 类型安全的 Lua API
-
-## 性能优化
-
-### 大表处理优化
-
-1. **合理拆分大表**
-   - 将大表按功能或模块拆分
-   - 使用行合并规则在构建时合并
-   - 保持开发时的可维护性和运行时的性能
-
-2. **使用二进制格式**
-   - 二进制格式加载速度最快
-   - 生产环境推荐使用二进制格式
-   - 开发环境可以使用 XML/JSON 便于调试
-
-### 增量更新优化
-
-1. **监听模式**
-   使用监听模式：
-   ```bash
-   xcell.exe --watch
-   ```
-   监听模式特点：
-   - 只重新生成变更的文件
-   - 大幅提升开发效率
-   - 支持实时预览
-
-2. **合理配置监听**
-   配置合理的 include/exclude 模式，减少监听文件数量。
-
-### 内存优化
-
-1. **只加载需要的表**
-   ```csharp
-   // 只加载特定的表
-   manager.BuffTable.Load();
-   manager.ItemTable.Load();
-   ```
-
-2. **及时卸载**
-   ```csharp
-   // 卸载不需要的表
-   manager.BuffTable.Unload();
-   ```
-
 ## 常见问题
 
-### 生成的代码编译错误
+### 为什么 Unity 生成器被禁用？
 
-- 检查 Unity 项目路径是否正确
-- 检查命名空间是否与项目结构匹配
-- 确保所有依赖项已正确安装
+Unity 代码生成器正在进行重构，以支持更好的类型系统和代码生成架构。预计将在未来版本中重新启用。
 
-### 数据加载失败
+### 如何获取最新状态？
 
-- 检查二进制文件是否已生成
-- 检查文件路径是否正确
-- 确保表结构与数据类型匹配
+请关注项目更新日志或查看 `backends/xcell-generator/src/codegen/unity/` 目录下的代码变更。
 
 ## 最佳实践
 
@@ -193,14 +131,3 @@ XLua 集成提供：
 2. **合理使用合表规则**：对于大型项目，使用合表规则管理复杂表格
 3. **优化数据结构**：根据实际使用场景选择合适的数据类型和结构
 4. **定期清理**：定期清理不需要的配置表和数据，保持项目整洁
-
-## 示例项目
-
-XCell 提供了 Unity 示例项目，展示了如何在实际项目中使用 XCell：
-
-- 基本配置表使用
-- 复杂数据结构
-- 多语言支持
-- 热更新集成
-
-通过示例项目，您可以快速了解 XCell 在 Unity 中的最佳实践。

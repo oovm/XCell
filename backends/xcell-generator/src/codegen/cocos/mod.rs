@@ -350,7 +350,7 @@ impl CocosCodegen {
     pub fn cocos_path(&self, root: &Path) -> XResult<PathBuf> {
         let cocos_config = self.to_xcell_config();
         let path = cocos_config.cocos_path(root)?;
-        tracing::info!("cocos_project_path", path = ?path);
+        tracing::info!("cocos_project_path: {:?}", path);
         Ok(path)
     }
 
@@ -365,7 +365,7 @@ impl CocosCodegen {
     pub fn cocos_typescript_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
         let cocos_config = self.to_xcell_config();
         let path = cocos_config.cocos_typescript_path(root, file_name)?;
-        tracing::debug!("cocos_typescript_path", file_name = file_name, path = ?path);
+        tracing::debug!("cocos_typescript_path: file_name={}, path={:?}", file_name, path);
         Ok(path)
     }
 
@@ -380,7 +380,7 @@ impl CocosCodegen {
     pub fn cocos_json_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
         let cocos_config = self.to_xcell_config();
         let path = cocos_config.cocos_json_path(root, file_name)?;
-        tracing::debug!("cocos_json_path", file_name = file_name, path = ?path);
+        tracing::debug!("cocos_json_path: file_name={}, path={:?}", file_name, path);
         Ok(path)
     }
 
@@ -537,11 +537,11 @@ impl CocosCodegen {
         let root = &ws.config.root;
         let ts_path = self.cocos_typescript_path(root, class_name)?;
         
-        tracing::info!("processing_enum", class_name = class_name, output_path = ?ts_path);
+        tracing::info!("processing_enum: class_name={}, output_path={:?}", class_name, ts_path);
         
         if let Some(parent) = ts_path.parent() {
             std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory", path = ?parent);
+            tracing::debug!("created_directory: path={:?}", parent);
         }
         
         let enum_data = self.read_enum_data(path)?;
@@ -563,7 +563,7 @@ impl CocosCodegen {
         let mut file = File::create(ts_path)?;
         file.write_all(content.as_bytes())?;
         
-        tracing::info!("created_typescript_enum", class_name = class_name);
+        tracing::info!("created_typescript_enum: class_name={}", class_name);
         Ok(())
     }
     
@@ -581,11 +581,11 @@ impl CocosCodegen {
         let table_class_name = format!("{}Table", class_name);
         let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
         
-        tracing::info!("processing_table", class_name = class_name, table_class_name = &table_class_name, output_path = ?ts_path);
+        tracing::info!("processing_table: class_name={}, table_class_name={}, output_path={:?}", class_name, &table_class_name, ts_path);
         
         if let Some(parent) = ts_path.parent() {
             std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory", path = ?parent);
+            tracing::debug!("created_directory: path={:?}", parent);
         }
         
         let fields = self.read_csv_fields(path, class_name)?;
@@ -595,7 +595,7 @@ impl CocosCodegen {
         let mut file = File::create(ts_path)?;
         file.write_all(content.as_bytes())?;
         
-        tracing::info!("created_typescript_file", class_name = class_name);
+        tracing::info!("created_typescript_file: class_name={}", class_name);
         Ok(())
     }
     
@@ -777,11 +777,11 @@ impl CocosCodegen {
         
         let manager_path = self.cocos_typescript_path(root, "DataTableManager")?;
         
-        tracing::info!("generating_data_table_manager", output_path = ?manager_path);
+        tracing::info!("generating_data_table_manager: output_path={:?}", manager_path);
         
         if let Some(parent) = manager_path.parent() {
             std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory", path = ?parent);
+            tracing::debug!("created_directory: path={:?}", parent);
         }
         
         let table_data_path = if self.table_data_path.is_empty() {
@@ -864,11 +864,11 @@ impl CocosCodegen {
     fn process_class_json(&self, root: &Path, table: &XClassData) -> XResult<()> {
         let json_path = self.cocos_json_path(root, &table.name)?;
         
-        tracing::info!("generating_json", table_name = &table.name, output_path = ?json_path);
+        tracing::info!("generating_json: table_name={}, output_path={:?}", &table.name, json_path);
         
         if let Some(parent) = json_path.parent() {
             std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory", path = ?parent);
+            tracing::debug!("created_directory: path={:?}", parent);
         }
         
         let json_data = self.convert_class_data_to_json(table)?;
@@ -877,7 +877,7 @@ impl CocosCodegen {
         let mut file = std::fs::File::create(json_path)?;
         file.write_all(json_string.as_bytes())?;
         
-        tracing::info!("created_json_file", table_name = &table.name);
+        tracing::info!("created_json_file: table_name={}", &table.name);
         Ok(())
     }
     
@@ -885,11 +885,11 @@ impl CocosCodegen {
     fn process_list_json(&self, root: &Path, table: &XListData) -> XResult<()> {
         let json_path = self.cocos_json_path(root, &table.name)?;
         
-        tracing::info!("generating_json", table_name = &table.name, output_path = ?json_path);
+        tracing::info!("generating_json: table_name={}, output_path={:?}", &table.name, json_path);
         
         if let Some(parent) = json_path.parent() {
             std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory", path = ?parent);
+            tracing::debug!("created_directory: path={:?}", parent);
         }
         
         let json_data = self.convert_list_data_to_json(table)?;
@@ -898,7 +898,7 @@ impl CocosCodegen {
         let mut file = std::fs::File::create(json_path)?;
         file.write_all(json_string.as_bytes())?;
         
-        tracing::info!("created_json_file", table_name = &table.name);
+        tracing::info!("created_json_file: table_name={}", &table.name);
         Ok(())
     }
     
@@ -906,11 +906,11 @@ impl CocosCodegen {
     fn process_dict_json(&self, root: &Path, table: &XDictData) -> XResult<()> {
         let json_path = self.cocos_json_path(root, &table.name)?;
         
-        tracing::info!("generating_json", table_name = &table.name, output_path = ?json_path);
+        tracing::info!("generating_json: table_name={}, output_path={:?}", &table.name, json_path);
         
         if let Some(parent) = json_path.parent() {
             std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory", path = ?parent);
+            tracing::debug!("created_directory: path={:?}", parent);
         }
         
         let json_data = self.convert_dict_data_to_json(table)?;
@@ -919,7 +919,7 @@ impl CocosCodegen {
         let mut file = std::fs::File::create(json_path)?;
         file.write_all(json_string.as_bytes())?;
         
-        tracing::info!("created_json_file", table_name = &table.name);
+        tracing::info!("created_json_file: table_name={}", &table.name);
         Ok(())
     }
     
@@ -1097,7 +1097,7 @@ impl CocosCodegen {
     }
     
     /// 将 Color 转换为 JSON
-    fn convert_color_to_json(&self, value: &xcell_types::value::Color) -> serde_json::Value {
+    fn convert_color_to_json(&self, value: &xcell_core::for_3rd::Color) -> serde_json::Value {
         serde_json::Value::Object(serde_json::Map::from_iter(vec![
             ("r".to_string(), self.convert_float_to_json(value.r as f64)),
             ("g".to_string(), self.convert_float_to_json(value.g as f64)),

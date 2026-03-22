@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use url::Url;
-use xcell_types::XCellValue;
+use xcell_core::XCellValue;
 
 /// JSON 代码生成器配置
 #[derive(Clone, Debug, Serialize)]
@@ -120,11 +120,11 @@ impl JsonCodegen {
         }
 
         let json_string = if self.pretty {
-            oak_json::to_string_pretty(data)
-                .map_err(|e| xcell_types::XError::runtime_error(format!("JSON序列化失败: {:?}", e)))?
+            serde_json::to_string_pretty(data)
+                .map_err(|e| xcell_core::XError::runtime_error(format!("JSON序列化失败: {:?}", e)))?
         } else {
-            oak_json::to_string(data)
-                .map_err(|e| xcell_types::XError::runtime_error(format!("JSON序列化失败: {:?}", e)))?
+            serde_json::to_string(data)
+                .map_err(|e| xcell_core::XError::runtime_error(format!("JSON序列化失败: {:?}", e)))?
         };
 
         let mut file = File::create(&path)?;

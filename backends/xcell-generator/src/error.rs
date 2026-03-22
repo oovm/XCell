@@ -1,4 +1,4 @@
-use xcell_types::{XError, XErrorKind};
+use xcell_core::{XError, XErrorKind};
 
 /// 代码生成错误类型扩展
 pub enum GeneratorErrorKind {

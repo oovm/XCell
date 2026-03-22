@@ -1,28 +1,32 @@
 # Cocos 集成
 
+> ✅ **可用**：Cocos 代码生成器当前可用，支持生成 TypeScript 代码和 JSON 数据文件。
+
 XCell 提供了与 Cocos 引擎的深度集成，支持生成 TypeScript 代码、JSON 数据文件等多种格式。
 
 ## 配置选项
 
-在 `XCell.toml` 文件中，Cocos 集成配置位于 `[cocos]` 部分：
+在 `ProjectSettings.toml` 文件中，Cocos 集成配置位于 `[cocos]` 部分：
 
 ```toml
 [cocos]
 enable = true
-project = "../"
-output = "assets/scripts/DataTable/Generated"
-namespace = "DataTable.Generated"
-manager = "DataTableManager"
-suffix_table = "Table"
-suffix_element = "Element"
+project = "../"                    # Cocos 项目目录
+output = "assets/scripts/DataTable/Generated"  # TypeScript 代码输出目录
+manager_name = "DataTableManager"  # 管理器类名
+suffix_table = "Table"             # 表类后缀
+instance_name = "dataTable"        # 实例名称
+table_data_path = "assets/tables"  # 表数据路径前缀
 
-[cocos.json]
+# JSON 存储配置
+[cocos.storage.Json]
 enable = true
-output = "assets/tables/Generated"
+output = "assets/tables/Generated" # JSON 数据输出目录
 
-[cocos.binary]
-enable = false
-output = "assets/tables/Binary"
+# 开发环境存储配置（可选）
+[cocos.storage_debug.Json]
+enable = true
+output = "assets/tables/Debug"
 ```
 
 ## 生成的代码结构
@@ -125,6 +129,20 @@ XCell 类型到 TypeScript 类型映射：
 | vec3 | { x: number, y: number, z: number } |
 | vec4 | { x: number, y: number, z: number, w: number } |
 
+## 配置字段说明
+
+| 字段 | 类型 | 默认值 | 描述 |
+|------|------|--------|------|
+| `enable` | `bool` | `false` | 是否启用 Cocos 代码生成 |
+| `project` | `string` | `"../"` | Cocos 项目目录 |
+| `output` | `string` | `""` | TypeScript 代码输出目录 |
+| `manager_name` | `string` | `""` | 管理器类名 |
+| `suffix_table` | `string` | `""` | 表类后缀 |
+| `instance_name` | `string` | `""` | 实例名称 |
+| `table_data_path` | `string` | `""` | 表数据路径前缀 |
+| `storage` | `CocosStorage` | `Json` | 存储格式配置 |
+| `storage_debug` | `Option<CocosStorage>` | `None` | 开发环境存储配置 |
+
 ## 性能优化
 
 ### 大表处理优化
@@ -188,14 +206,3 @@ XCell 类型到 TypeScript 类型映射：
 2. **合理使用合表规则**：对于大型项目，使用合表规则管理复杂表格
 3. **优化数据结构**：根据实际使用场景选择合适的数据类型和结构
 4. **定期清理**：定期清理不需要的配置表和数据，保持项目整洁
-
-## 示例项目
-
-XCell 提供了 Cocos 示例项目，展示了如何在实际项目中使用 XCell：
-
-- 基本配置表使用
-- 复杂数据结构
-- 多语言支持
-- 热更新集成
-
-通过示例项目，您可以快速了解 XCell 在 Cocos 中的最佳实践。

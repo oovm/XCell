@@ -54,74 +54,47 @@ function getDocTitle(path: string, metadata: DocMetadata): string {
 	const filename = path.split("/").pop()?.replace(".md", "") || "";
 
 	const titleMap: Record<string, string> = {
-		index: "首页",
-		introduction: "介绍",
-		"quick-start": "快速开始",
-		features: "功能特性",
-		agent: "智能体",
-		capabilities: "能力",
-		chat: "对话",
-		memory: "记忆",
-		scheduler: "调度器",
-		skills: "技能",
-		tool: "工具",
-		workspace: "工作区",
+		readme: "快速开始",
+		dict: "dict 表",
+		language: "language 表",
+		list: "list 表",
+		enum: "enum 表",
+		class: "class 表",
+		merge: "合表",
+		"unity-integration": "Unity 集成",
+		"type-system": "类型系统",
+		"key-field": "字段约束",
+		"ref-type": "引用类型",
+		"meta-data": "元属性",
+		config: "配置",
 		extensibility: "可扩展性",
-		performance: "性能",
-		security: "安全性",
-		"agent-core": "智能体核心",
-		architecture: "架构",
-		"core-layer": "核心层",
-		decentralization: "去中心化",
-		"ecosystem-overview": "生态系统概览",
-		infrastructure: "基础设施",
-		"master-plan": "总体规划",
-		"protocol-layer": "协议层",
-		"data-models": "数据模型",
-		"technology-choices": "技术选择",
-		skynet: "天网",
-		messages: "消息",
-		profile: "配置",
-		resources: "资源",
-		subnets: "子网",
-		"threat-model": "威胁模型",
-		uri: "URI",
-		"add-skills": "添加技能",
-		"configure-agent": "配置智能体",
-		"getting-started": "开始使用",
-		"use-tools": "使用工具",
-		"best-practices": "最佳实践",
-		"development-helper": "开发助手",
-		"knowledge-base": "知识库",
-		"personal-assistant": "个人助手",
-		"task-automation": "任务自动化",
 	};
 
 	return titleMap[filename] || filename;
+}
+
+function shouldExclude(path: string): boolean {
+	return path.includes("/maintainer/");
 }
 
 function buildDocTree(docs: DocNode[]): DocNode[] {
 	const tree: DocNode[] = [];
 	const nodeMap: Record<string, DocNode> = {};
 
-	// 首先创建所有节点，并标记目录节点
 	docs.forEach((doc) => {
 		const isDirectory = doc.path.endsWith("/index.md");
 		nodeMap[doc.id] = { ...doc, isDirectory, children: [] };
 	});
 
-	// 构建树结构
 	docs.forEach((doc) => {
 		const node = nodeMap[doc.id];
 		const pathParts = doc.path.split("/");
 
 		if (pathParts.length <= 3) {
-			// 根级节点
 			if (!tree.some((n) => n.id === node.id)) {
 				tree.push(node);
 			}
 		} else {
-			// 查找父节点
 			const parentPathParts = pathParts.slice(0, -1);
 			let currentParent: DocNode | undefined;
 
@@ -138,7 +111,6 @@ function buildDocTree(docs: DocNode[]): DocNode[] {
 			}
 
 			if (currentParent && currentParent.children) {
-				// 确保不会重复添加
 				if (!currentParent.children.some((n) => n.id === node.id)) {
 					currentParent.children.push(node);
 				}
@@ -165,6 +137,10 @@ export async function loadDocs(): Promise<DocNode[]> {
 	const docs: DocNode[] = [];
 
 	for (const path in docsModules) {
+		if (shouldExclude(path)) {
+			continue;
+		}
+
 		const content = docsModules[path] as string;
 		const metadata = parseDocMetadata(content);
 		const id = generateId(path);

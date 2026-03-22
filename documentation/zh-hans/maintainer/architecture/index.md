@@ -9,9 +9,10 @@ XCell 是一个配置表管理工具，采用 Rust 编写，采用模块化设�
   - `xcell-analyzer` - 工作空间管理和表格分析
   - `xcell-generator` - 代码生成器
   - `xcell-provider` - 表格读取抽象
-  - `xcell-types` - 类型系统
+  - `xcell-core` - 类型系统和核心功能
   - `xcell-config` - 配置管理
   - `xcell-macros` - 宏定义
+  - `xcell-parser` - 类型解析器
   - `xcell-plugin` - 插件系统
   - `xcell-wasi` - WebAssembly 支持
 
@@ -93,11 +94,15 @@ XCell 是一个配置表管理工具，采用 Rust 编写，采用模块化设�
 - `backends/xcell-generator/src/config.rs` - 生成器配置
 
 **支持的代码生成器**：
-- `json` - JSON 数据生成
-- `binary` - 二进制数据生成
-- `cocos` - Cocos 平台代码生成
-- `unity` - Unity 平台代码生成
-- `dejavu` - 模板引擎代码生成
+- `json` - JSON 数据生成 ✅
+- `binary` - 二进制数据生成 ✅
+- `cocos` - Cocos 平台代码生成 ✅
+- `typescript` - TypeScript 代码生成 ✅
+- `dejavu` - 模板引擎代码生成 ✅
+- `unity` - Unity 平台代码生成 ⚠️ (当前禁用)
+- `xlua` - XLua 脚本代码生成
+- `sql` - SQL 数据库代码生成
+- `xml` - XML 数据生成
 
 ### 2.4 xcell-provider - 表格读取抽象
 
@@ -120,18 +125,19 @@ XCell 是一个配置表管理工具，采用 Rust 编写，采用模块化设�
 - `FileFormatDetector` - 文件格式检测器
 - `load_table` - 统一表格加载函数
 
-### 2.5 xcell-types - 类型系统
+### 2.5 xcell-core - 类型系统和核心功能
 
 **职责**：
 - 定义所有数据类型
 - 提供类型转换和解析
 - 支持各种平台的类型映射
 - 提供值处理和转换
+- 提供字节序读写接口
 
 **核心文件**：
-- `backends/xcell-types/src/lib.rs` - 模块导出
-- `backends/xcell-types/src/typing/mod.rs` - 类型定义
-- `backends/xcell-types/src/value/mod.rs` - 值处理
+- `backends/xcell-core/src/lib.rs` - 模块导出
+- `backends/xcell-core/src/typing/mod.rs` - 类型定义
+- `backends/xcell-core/src/value/mod.rs` - 值处理
 
 **支持的类型**：
 - 整数类型 (Integer)
@@ -163,6 +169,19 @@ XCell 是一个配置表管理工具，采用 Rust 编写，采用模块化设�
 - `CocosCodegen` - Cocos 代码生成配置
 - `UnityCodegen` - Unity 代码生成配置
 - `MergeRules` - 合表规则
+
+### 2.7 xcell-parser - 类型解析器
+
+**职责**：
+- 解析类型表达式
+- 解析字段定义
+- 解析元数据
+
+**核心文件**：
+- `backends/xcell-parser/src/lib.rs` - 模块导出
+- `backends/xcell-parser/src/lexer.rs` - 词法分析器
+- `backends/xcell-parser/src/parser.rs` - 语法分析器
+- `backends/xcell-parser/src/ast.rs` - 抽象语法树
 
 ## 3. 数据流说明
 
@@ -257,13 +276,13 @@ XCell 是一个配置表管理工具，采用 Rust 编写，采用模块化设�
 - `Generator` - `backends/xcell-generator/src/lib.rs` - 生成器主入口
 - `Codegen` - `backends/xcell-generator/src/codegen/mod.rs` - 代码生成器 trait
 - `CocosCodegen` - `backends/xcell-generator/src/codegen/cocos/mod.rs` - Cocos 代码生成
-- `UnityCodegen` - `backends/xcell-generator/src/codegen/unity/mod.rs` - Unity 代码生成
+- `UnityCodegen` - `backends/xcell-generator/src/codegen/unity/mod.rs` - Unity 代码生成 (当前禁用)
 - `JsonCodegen` - `backends/xcell-generator/src/codegen/json/mod.rs` - JSON 数据生成
 
 ### 类型系统
-- `TypeDescription` - `backends/xcell-types/src/typing/mod.rs` - 类型描述
-- `XCellValue` - `backends/xcell-types/src/value/mod.rs` - 单元格值
-- `CSharpReader`/`CSharpWriter` - `backends/xcell-types/src/codegen/csharp_ffi/mod.rs` - C# 类型映射
+- `TypeDescription` - `backends/xcell-core/src/typing/mod.rs` - 类型描述
+- `XCellValue` - `backends/xcell-core/src/value/mod.rs` - 单元格值
+- `CSharpReader`/`CSharpWriter` - `backends/xcell-core/src/codegen/csharp_ffi/mod.rs` - C# 类型映射
 
 ### 配置管理
 - `ProjectConfig` - `backends/xcell-config/src/project/mod.rs` - 项目配置
@@ -291,7 +310,7 @@ XCell 采用多层抽象设计，确保各模块职责清晰，避免抽象泄�
    - 不直接与表格文件交互
    - 通过 `Codegen` trait 支持多种代码生成器
 
-4. **类型系统层** (`xcell-types`)：
+4. **类型系统层** (`xcell-core`)：
    - 定义统一的数据类型
    - 提供类型转换和解析
    - 支持多平台类型映射
@@ -315,9 +334,9 @@ XCell 采用多层抽象设计，确保各模块职责清晰，避免抽象泄�
 
 ### 添加新的数据类型
 
-1. 在 `backends/xcell-types/src/` 下创建新模块
+1. 在 `backends/xcell-core/src/` 下创建新模块
 2. 实现类型解析和转换逻辑
-3. 在 `backends/xcell-types/src/lib.rs` 中导出
+3. 在 `backends/xcell-core/src/lib.rs` 中导出
 4. 添加相应平台的类型映射支持
 
 ### 添加新的代码生成器

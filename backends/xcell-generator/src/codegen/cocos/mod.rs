@@ -9,7 +9,6 @@ use xcell_core::{XError, XResult, XCellValue, for_3rd::ToPrimitive};
 use xcell_analyzer::{XClassData, XListData, XDictData};
 use url::Url;
 use dejavu_macros::Template;
-use dejavu::Template;
 
 mod config;
 
@@ -61,7 +60,7 @@ pub struct EnumeratePair {
 
 /// Cocos 枚举模板
 #[derive(Template)]
-#[template(path = "BuildEnumerate.ts.dejavu", escape = "none")]
+#[template(path = "BuildEnumerate.ts.dejavu")]
 pub struct CocosEnumerateTemplate {
     /// 编译器版本
     compiler_version: &'static str,
@@ -160,7 +159,7 @@ fn render_enumerate_template(config: &CocosCodegen, class_name: &str, items: &[C
         enumerate_ids,
         class_document: vec![],
     };
-    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+    template.render(&dejavu_types::values::Context::new()).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 fn render_class_template(config: &CocosCodegen, class_name: &str, table_name: &str, fields: &[CocosField]) -> XResult<String> {
@@ -181,7 +180,7 @@ fn render_class_template(config: &CocosCodegen, class_name: &str, table_name: &s
         class_document: vec![],
         class_fields,
     };
-    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+    template.render(&dejavu_types::values::Context::new()).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 fn render_manager_template(config: &CocosCodegen, tables: &[CocosDataTableItem]) -> XResult<String> {
@@ -199,7 +198,7 @@ fn render_manager_template(config: &CocosCodegen, tables: &[CocosDataTableItem])
         edit_time: chrono::Utc::now().to_rfc3339(),
         tables: table_items,
     };
-    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+    template.render(&dejavu_types::values::Context::new()).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 /// Cocos 存储格式配置

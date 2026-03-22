@@ -5,7 +5,7 @@ use dejavu::Template;
 use chrono;
 
 #[derive(Template)]
-#[template(path = "BuildManager.ts.dejavu", escape = "none")]
+#[template(path = "BuildManager.ts.dejavu")]
 pub struct CocosManagerTemplate {
     /// Compiler version
     compiler_version: &'static str,
@@ -33,7 +33,7 @@ impl CocosCodegen {
     /// Result of the operation
     pub(super) fn write_manager(&self, ws: &WorkspaceManager) -> XResult<()> {
         let mut file = self.log_typescript(ws, &self.manager_name)?;
-        let out = self.make_manager(ws).render()?;
+        let out = self.make_manager(ws).render(&dejavu_types::values::Context::new())?;
         file.write_all(out.as_bytes())?;
         Ok(())
     }

@@ -78,7 +78,7 @@ pub struct CocosEnumerateTemplate {
 
 /// Cocos 类模板
 #[derive(Template)]
-#[template(path = "BuildClass.ts.dejavu", escape = "none")]
+#[template(path = "BuildClass.ts.dejavu")]
 pub struct CocosClassTemplate {
     /// 编译器版本
     compiler_version: &'static str,
@@ -115,7 +115,7 @@ pub struct ClassFieldTemplate {
 
 /// Cocos 管理器模板
 #[derive(Template)]
-#[template(path = "BuildManager.ts.dejavu", escape = "none")]
+#[template(path = "BuildManager.ts.dejavu")]
 pub struct CocosManagerTemplate {
     /// 编译器版本
     compiler_version: &'static str,

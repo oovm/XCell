@@ -6,7 +6,7 @@ use dejavu::Template;
 use xcell_analyzer::{XCellHeader, XDataLine};
 
 #[derive(Template)]
-#[template(path = "BuildEnumerate.ts.dejavu", escape = "none")]
+#[template(path = "BuildEnumerate.ts.dejavu")]
 pub struct CocosEnumerateTemplate {
     /// Compiler version
     compiler_version: &'static str,
@@ -56,7 +56,7 @@ impl CocosCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_enumerate(&self, ws: &WorkspaceManager, table: &XEnumerateData) -> XResult<()> {
-        let out = match self.make_enumerate(table).render() {
+        let out = match self.make_enumerate(table).render(&dejavu_types::values::Context::new()) {
             Ok(o) => o,
             Err(e) => Err(XError::runtime_error(format!("生成Cocos枚举失败: {}", e)))?,
         };

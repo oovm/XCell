@@ -7,7 +7,7 @@ use xcell_analyzer::XClassItem;
 use xcell_types::codegen::TypeScriptWriter;
 
 #[derive(Template)]
-#[template(path = "BuildClass.ts.dejavu", escape = "none")]
+#[template(path = "BuildClass.ts.dejavu")]
 pub struct CocosClass {
     /// Compiler version
     compiler_version: &'static str,
@@ -57,7 +57,7 @@ impl CocosCodegen {
     pub(super) fn write_class(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
         let table_name = format!("{}{}", table.name, self.suffix_table);
         let mut file = self.log_typescript(ws, &table_name)?;
-        let out = self.make_class(table, table_name).render()?;
+        let out = self.make_class(table, table_name).render(&dejavu_types::values::Context::new())?;
         file.write_all(out.as_bytes())?;
         Ok(())
     }

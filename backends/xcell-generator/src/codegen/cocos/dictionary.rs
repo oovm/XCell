@@ -8,7 +8,7 @@ use xcell_provider::XCellAccess;
 use xcell_types::codegen::TypeScriptWriter;
 
 #[derive(Template)]
-#[template(path = "BuildDictionary.ts.dejavu", escape = "none")]
+#[template(path = "BuildDictionary.ts.dejavu")]
 pub struct CocosDictionaryTemplate {
     /// Compiler version
     compiler_version: &'static str,
@@ -60,7 +60,7 @@ impl CocosCodegen {
     pub(super) fn write_dict(&self, ws: &WorkspaceManager, table: &XDictData) -> XResult<()> {
         let table_name = format!("{}{}", table.name, self.suffix_table);
         let mut file = self.log_typescript(ws, &table_name)?;
-        let out = self.make_dict(table, table_name).render()?;
+        let out = self.make_dict(table, table_name).render(&dejavu_types::values::Context::new())?;
         file.write_all(out.as_bytes())?;
         Ok(())
     }
@@ -97,7 +97,7 @@ impl CocosCodegen {
     pub(super) fn write_list(&self, ws: &WorkspaceManager, table: &XListData) -> XResult<()> {
         let table_name = format!("{}{}", table.name, self.suffix_table);
         let mut file = self.log_typescript(ws, &table_name)?;
-        let out = self.make_list(table, table_name).render()?;
+        let out = self.make_list(table, table_name).render(&dejavu_types::values::Context::new())?;
         file.write_all(out.as_bytes())?;
         Ok(())
     }

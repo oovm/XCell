@@ -1,7 +1,7 @@
-// 代码生成, 修改无效! (XCell {{ compiler_version }})
+// 代码生成, 修改无效! (XCell <% compiler_version %>)
 
 <% if config.namespace %>
-export namespace {{ config.namespace }} {
+export namespace <% config.namespace %> {
 <% endif %>
 
 /**
@@ -10,50 +10,50 @@ export namespace {{ config.namespace }} {
  * 热更新资源直接 set 即可
  * 释放资源直接将表设为 null 即可
  */
-export class {{ config.manager_name }} {
+export class <% config.manager_name %> {
     /**
      * 配置表的版本号
      */
-    static readonly TableVersion = "{{ data_version }}";
+    static readonly TableVersion = "<% data_version %>";
 
     /**
      * 配置表的最后修改时间 (UTC)
      */
-    static readonly TableEditTime = new Date("{{ edit_time }}");
+    static readonly TableEditTime = new Date("<% edit_time %>");
 
-    private static _instance: {{ config.manager_name }} | null = null;
-    static get {{ config.instance_name }}(): {{ config.manager_name }} {
-        if (!{{ config.manager_name }}._instance) {
-            {{ config.manager_name }}._instance = new {{ config.manager_name }}();
+    private static _instance: <% config.manager_name %> | null = null;
+    static get <% config.instance_name %>(): <% config.manager_name %> {
+        if (!<% config.manager_name %>._instance) {
+            <% config.manager_name %>._instance = new <% config.manager_name %>();
         }
-        return {{ config.manager_name }}._instance;
+        return <% config.manager_name %>._instance;
     }
 
 <% for table in tables %>
-    private _{{ table.private_name }}: {{ table.typing }} | null = null;
-    /** {{ table.typing }} 表 */
-    get {{ table.public_name }}(): {{ table.typing }} {
-        if (!this._{{ table.private_name }}) {
-            this._{{ table.private_name }} = new {{ table.typing }}();
+    private _<% table.private_name %>: <% table.typing %> | null = null;
+    /** <% table.typing %> 表 */
+    get <% table.public_name %>(): <% table.typing %> {
+        if (!this._<% table.private_name %>) {
+            this._<% table.private_name %> = new <% table.typing %>();
         }
-        return this._{{ table.private_name }};
+        return this._<% table.private_name %>;
     }
-    set {{ table.public_name }}(value: {{ table.typing }}) {
-        this._{{ table.private_name }} = value;
+    set <% table.public_name %>(value: <% table.typing %>) {
+        this._<% table.private_name %> = value;
     }
 <% endfor %>
 
     /** 重新加载所有表 */
     static reload(): void {
 <%- for table in tables %>
-        {{ config.manager_name }}.{{ config.instance_name }}._{{ table.private_name }} = null;
+        <% config.manager_name %>.<% config.instance_name %>._<% table.private_name %> = null;
 <%- endfor %>
     }
 
     /** 清除所有表 */
     static clear(): void {
 <%- for table in tables %>
-        {{ config.manager_name }}.{{ config.instance_name }}._{{ table.private_name }} = null;
+        <% config.manager_name %>.<% config.instance_name %>._<% table.private_name %> = null;
 <%- endfor %>
     }
 }

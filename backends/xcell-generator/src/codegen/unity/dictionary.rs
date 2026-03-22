@@ -12,8 +12,8 @@ use xcell_types::{
 
 /// Unity dictionary code generation template
 #[derive(Template)]
-#[template(path = "BuildDictionary.cs", ext = "txt", escape = "none")]
-pub struct UnityDictionary {
+#[template(path = "BuildDictionary.cs", escape = "none")]
+pub struct UnityDictionaryTemplate {
     /// Compiler version
     compiler_version: &'static str,
     /// Class name

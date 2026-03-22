@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace {{ namespace }}
+namespace <% namespace %>
 {
     /// <summary>
     /// 数据表管理器
@@ -37,7 +37,7 @@ namespace {{ namespace }}
         public void LoadAllTables()
         {
 {% for table in tables %}
-            {{ table.table_name }}.Load();
+            <% table.table_name %>.Load();
 {% endfor %}
         }
 

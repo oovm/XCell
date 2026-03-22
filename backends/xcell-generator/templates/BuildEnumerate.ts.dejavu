@@ -1,15 +1,15 @@
-// 代码生成, 修改无效! (XCell {{ compiler_version }})
+// 代码生成, 修改无效! (XCell <% compiler_version %>)
 
 <% if config.namespace %>
-export namespace {{ config.namespace }} {
+export namespace <% config.namespace %> {
 <% endif %>
 
-export enum {{ class_name }} {
+export enum <% class_name %> {
 <%- for field in enumerate_ids %>
     <%- for line in field.document %>
-    /** {{ line }} */
+    /** <% line %> */
     <%- endfor %>
-    {{ field.key }} = {{ field.value }},
+    <% field.key %> = <% field.value %>,
 <%- endfor %>
 }
 

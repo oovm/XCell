@@ -9,8 +9,8 @@ use xcell_types::{XError, XResult};
 
 /// Unity enumerate code generation template
 #[derive(Template)]
-#[template(path = "BuildEnumerate.cs", ext = "txt", escape = "none")]
-pub struct UnityEnumerate {
+#[template(path = "BuildEnumerate.cs", escape = "none")]
+pub struct UnityEnumerateTemplate {
     /// Compiler version
     compiler_version: &'static str,
     /// Class name

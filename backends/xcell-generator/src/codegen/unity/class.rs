@@ -11,8 +11,8 @@ use xcell_types::{
 
 /// Unity class code generation template
 #[derive(Template)]
-#[template(path = "BuildClass.cs", ext = "txt", escape = "none")]
-pub struct UnityClass {
+#[template(path = "BuildClass.cs", escape = "none")]
+pub struct UnityClassTemplate {
     /// Compiler version
     compiler_version: &'static str,
     /// Class name

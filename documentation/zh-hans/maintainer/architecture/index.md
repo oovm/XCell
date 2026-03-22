@@ -4,92 +4,134 @@
 
 XCell 是一个配置表管理工具，采用 Rust 编写，采用模块化设计，各模块职责清晰，耦合度低。项目整体分为以下几个主要部分：
 
-- 核心库 (`xcell-core`)：负责核心业务逻辑
-- 命令行工具 (`xcell-cli`)：提供命令行交互接口
-- 图形界面 (`xcell-gui`)：提供图形用户界面（基于 Tauri）
-- 类型系统 (`xcell-types`)：定义数据类型和转换
-- 错误处理 (`xcell-errors`)：统一错误处理机制
-- 流式 IO (`stream-io`)：提供二进制数据读写功能
+- **后端模块**：位于 `backends/` 目录，包含核心业务逻辑
+  - `xcell` - 命令行工具和主入口
+  - `xcell-analyzer` - 工作空间管理和表格分析
+  - `xcell-generator` - 代码生成器
+  - `xcell-provider` - 表格读取抽象
+  - `xcell-types` - 类型系统
+  - `xcell-config` - 配置管理
+  - `xcell-macros` - 宏定义
+  - `xcell-plugin` - 插件系统
+  - `xcell-wasi` - WebAssembly 支持
+
+- **前端模块**：位于 `frontends/` 目录，包含用户界面
+  - `homepage` - 项目官网
+  - `xcell` - 前端 SDK
+  - `xcell-desktop` - 桌面应用
+  - `xcell-h5` - 网页应用
+
+- **文档**：位于 `documentation/` 目录，包含项目文档
+
+- **示例**：位于 `examples/` 目录，包含使用示例
 
 ### 技术栈
 
 - **后端**：Rust
-- **GUI**：Tauri + Vue.js
-- **Excel 读取**：calamine
-- **模板引擎**：askama
+- **前端**：Vue.js, TypeScript, Tauri
+- **表格读取**：calamine (Excel), csv (CSV/TSV)
+- **模板引擎**：dejavu
 - **异步运行时**：tokio
+- **错误处理**：anyhow
+- **日志**：tracing
 
 ## 2. 模块划分与职责说明
 
-### 2.1 xcell-core - 核心业务模块
-
-**职责**：
-- 管理工作空间和配置
-- Excel 表格读取与解析
-- 配置表数据处理
-- 代码生成（C#、二进制、XML）
-- 合表规则处理
-- 文件监控
-
-**核心文件**：
-- `projects/xcell-core/src/lib.rs` - 模块导出和公共 API
-- `projects/xcell-core/src/config/mod.rs` - 配置管理与工作空间管理器
-- `projects/xcell-core/src/x_table/mod.rs` - 表格数据结构定义
-- `projects/xcell-core/src/codegen/mod.rs` - 代码生成器
-
-**核心组件**：
-- `WorkspaceManager` - 工作空间管理器，负责协调整个工作流程
-- `CalamineTable` - Excel 表格读取器
-- `XClassTable` - 类表类型
-- `XDictTable` - 字典表类型
-- `XEnumerateTable` - 枚举表类型
-- `XLanguageTable` - 语言表类型
-
-### 2.2 xcell-cli - 命令行工具
+### 2.1 xcell - 命令行工具
 
 **职责**：
 - 提供命令行接口
 - 解析命令行参数
-- 调用 xcell-core 执行任务
+- 协调整个工作流程
+- 调用其他后端模块执行任务
 
 **核心文件**：
-- `projects/xcell-cli/src/main.rs` - 程序入口点
-- `projects/xcell-cli/src/lib.rs` - 命令行参数定义
+- `backends/xcell/src/main.rs` - 程序入口点
+- `backends/xcell/src/workspace.rs` - 工作空间管理
+- `backends/xcell/src/commands/toml.rs` - TOML 配置处理
 
 **主要功能**：
-- 检查配置 (`check`)
-- 清理输出 (`clear`)
-- 启用/禁用 XML 输出
-- 启用/禁用 JSON 输出
-- 文件监控模式 (`watch`)
+- 生成代码和数据文件
+- 检查配置
+- 清理输出
+- 文件监控模式
 
-### 2.3 xcell-gui - 图形用户界面
+### 2.2 xcell-analyzer - 工作空间管理和表格分析
 
 **职责**：
-- 提供友好的图形用户界面
-- 与 Tauri 后端集成
-- 调用 xcell-core 功能
+- 管理工作空间和配置
+- 扫描和识别表格文件
+- 解析表格数据
+- 识别表格类型
+- 处理表格数据
+- 链接枚举定义
 
 **核心文件**：
-- `projects/xcell-gui/src-tauri/src/main.rs` - Tauri 应用入口
-- `projects/xcell-gui/src/App.vue` - Vue 应用组件
+- `backends/xcell-analyzer/src/lib.rs` - 模块导出
+- `backends/xcell-analyzer/src/config/mod.rs` - 工作空间管理器
+- `backends/xcell-analyzer/src/x_table/mod.rs` - 表格数据结构
 
-**技术框架**：
-- Tauri 作为桌面应用框架
-- Vue.js 作为前端框架
-- Tailwind CSS 用于样式
+**核心组件**：
+- `WorkspaceManager` - 工作空间管理器，负责协调整个工作流程
+- `XClassTable` - 类表类型
+- `XDictTable` - 字典表类型
+- `XEnumerateTable` - 枚举表类型
+- `XLanguageTable` - 语言表类型
+- `DefineManager` - 枚举定义管理器
+- `LanguageManager` - 语言表管理器
 
-### 2.4 xcell-types - 类型系统
+### 2.3 xcell-generator - 代码生成器
+
+**职责**：
+- 生成各种格式的代码和数据文件
+- 支持多种目标平台
+- 提供插件化的代码生成架构
+
+**核心文件**：
+- `backends/xcell-generator/src/lib.rs` - 模块导出
+- `backends/xcell-generator/src/codegen/mod.rs` - 代码生成器接口
+- `backends/xcell-generator/src/config.rs` - 生成器配置
+
+**支持的代码生成器**：
+- `json` - JSON 数据生成
+- `binary` - 二进制数据生成
+- `cocos` - Cocos 平台代码生成
+- `unity` - Unity 平台代码生成
+- `dejavu` - 模板引擎代码生成
+
+### 2.4 xcell-provider - 表格读取抽象
+
+**职责**：
+- 提供统一的表格读取接口
+- 支持多种表格格式（Excel、CSV、TSV）
+- 屏蔽不同表格格式的差异
+- 提供表格头部解析
+
+**核心文件**：
+- `backends/xcell-provider/src/lib.rs` - 模块导出
+- `backends/xcell-provider/src/table/mod.rs` - 表格读取接口
+- `backends/xcell-provider/src/standard/mod.rs` - 标准流实现
+
+**核心组件**：
+- `TableReader` - 表格读取器 trait
+- `ExcelTable` - Excel 表格读取实现
+- `CsvTable` - CSV 表格读取实现
+- `TsvTable` - TSV 表格读取实现
+- `FileFormatDetector` - 文件格式检测器
+- `load_table` - 统一表格加载函数
+
+### 2.5 xcell-types - 类型系统
 
 **职责**：
 - 定义所有数据类型
 - 提供类型转换和解析
-- 支持 C# 代码生成的类型映射
+- 支持各种平台的类型映射
+- 提供值处理和转换
 
 **核心文件**：
-- `projects/xcell-types/src/lib.rs` - 模块导出
-- `projects/xcell-types/src/typing/mod.rs` - 类型定义
-- `projects/xcell-types/src/value/mod.rs` - 值处理
+- `backends/xcell-types/src/lib.rs` - 模块导出
+- `backends/xcell-types/src/typing/mod.rs` - 类型定义
+- `backends/xcell-types/src/value/mod.rs` - 值处理
 
 **支持的类型**：
 - 整数类型 (Integer)
@@ -103,72 +145,58 @@ XCell 是一个配置表管理工具，采用 Rust 编写，采用模块化设�
 - 颜色类型 (Color)
 - 时间类型 (Time)
 
-### 2.5 xcell-errors - 错误处理
+### 2.6 xcell-config - 配置管理
 
 **职责**：
-- 统一错误类型定义
-- 错误转换和包装
-- 第三方库错误适配
+- 定义项目配置结构
+- 提供配置解析和验证
+- 支持不同平台的配置选项
 
 **核心文件**：
-- `projects/xcell-errors/src/lib.rs` - 模块导出
-- `projects/xcell-errors/src/errors/mod.rs` - 错误定义
+- `backends/xcell-config/src/lib.rs` - 模块导出
+- `backends/xcell-config/src/project/mod.rs` - 项目配置
+- `backends/xcell-config/src/cocos/mod.rs` - Cocos 平台配置
+- `backends/xcell-config/src/unity/mod.rs` - Unity 平台配置
 
-**主要功能**：
-- `XError` - 统一错误类型
-- `XResult<T>` - 统一结果类型
-- `Validation<T>` - 验证结果类型
-- 第三方库错误适配器 (for_3rd)
-
-### 2.6 stream-io - 流式 IO
-
-**职责**：
-- 提供二进制数据流读写功能
-- 支持大端序和小端序
-- 高效的二进制操作
-
-**核心文件**：
-- `projects/stream-io/src/lib.rs` - 模块导出
-- `projects/stream-io/src/standard/mod.rs` - 标准流实现
-
-**主要功能**：
-- `StreamReader` - 二进制流读取器
-- `StreamWriter` - 二进制流写入器
-- `ByteOrder` - 字节序枚举（BigEndian/LittleEndian）
+**核心组件**：
+- `ProjectConfig` - 项目配置
+- `CocosCodegen` - Cocos 代码生成配置
+- `UnityCodegen` - Unity 代码生成配置
+- `MergeRules` - 合表规则
 
 ## 3. 数据流说明
 
 ### 3.1 整体流程
 
-从 Excel 表格读取到代码导出的完整流程如下：
+从表格文件读取到代码导出的完整流程如下：
 
 ```
-Excel 文件 → 读取解析 → 表格识别 → 数据处理 → 代码生成 → 输出文件
+表格文件 (Excel/CSV/TSV) → 读取解析 → 表格识别 → 数据处理 → 代码生成 → 输出文件
 ```
 
 ### 3.2 详细步骤
 
 #### 步骤 1: 初始化工作空间
 
-1. 解析命令行参数 (`projects/xcell-cli/src/main.rs:8`)
-2. 创建 `WorkspaceManager` 实例 (`projects/xcell-core/src/config/mod.rs:64`)
+1. 解析命令行参数或配置文件
+2. 创建 `WorkspaceManager` 实例
 3. 加载项目配置 (`ProjectConfig`)
 
 #### 步骤 2: 扫描文件
 
-1. 首次扫描工作目录 (`projects/xcell-core/src/config/mod.rs:78`)
+1. 扫描工作目录
 2. 使用 `WalkDir` 遍历目录
 3. 根据配置的 `include` 模式过滤文件
 
-#### 步骤 3: 读取 Excel 文件
+#### 步骤 3: 读取表格文件
 
-1. 使用 `CalamineTable::load()` 读取 Excel 文件 (`projects/xcell-core/src/config/mod.rs:122`)
+1. 使用 `load_table()` 函数读取表格文件（自动检测格式）
 2. 解析表格头部 (`XCellHeader`)
 3. 读取所有数据行
 
 #### 步骤 4: 识别表格类型
 
-依次尝试识别以下表格类型 (`projects/xcell-core/src/config/mod.rs:123-155`)：
+依次尝试识别以下表格类型：
 
 1. `XListTable` - 列表表
 2. `XDictTable` - 字典表
@@ -191,74 +219,117 @@ Excel 文件 → 读取解析 → 表格识别 → 数据处理 → 代码生成
 
 #### 步骤 7: 代码生成
 
-调用 `write_unity()` 方法 (`projects/xcell-core/src/config/mod.rs:158`)：
-
-1. 生成二进制文件 (`projects/xcell-core/src/codegen/unity/binary.rs`)
-2. 生成 C# 代码 (`projects/xcell-core/src/codegen/unity/class.rs` 等)
-3. 生成 XML 配置 (`projects/xcell-core/src/codegen/xml/mod.rs`)
+1. 创建 `Generator` 实例
+2. 配置启用的代码生成器
+3. 遍历所有启用的产物
+4. 为每个产物调用相应的代码生成器
+5. 生成对应格式的代码和数据文件
 
 #### 步骤 8: 文件监控（可选）
 
-如果启用了 `--watch` 参数：
-1. 启动文件监控器 (`projects/xcell-core/src/config/mod.rs:99`)
+如果启用了文件监控：
+1. 启动文件监控器
 2. 监听文件变更
 3. 自动重新处理变更的文件
 
 ## 4. 核心代码位置引用
 
 ### 工作空间管理
-- `WorkspaceManager::new()` - `projects/xcell-core/src/config/mod.rs:64`
-- `WorkspaceManager::first_walk()` - `projects/xcell-core/src/config/mod.rs:78`
-- `WorkspaceManager::load_file()` - `projects/xcell-core/src/config/mod.rs:116`
-- `WorkspaceManager::write_unity()` - `projects/xcell-core/src/config/mod.rs:158`
+- `WorkspaceManager` - `backends/xcell-analyzer/src/config/mod.rs`
+- `WorkspaceManager::new()` - 创建工作空间管理器
+- `WorkspaceManager::classes()` - 获取类表数据
+- `WorkspaceManager::lists()` - 获取列表表数据
+- `WorkspaceManager::dicts()` - 获取字典表数据
+- `WorkspaceManager::enumerates()` - 获取枚举表数据
 
 ### 表格读取
-- `CalamineTable::load()` - `projects/xcell-core/src/x_table/table/mod.rs`
-- `XCellHeader` - `projects/xcell-core/src/x_table/header/mod.rs`
+- `load_table()` - `backends/xcell-provider/src/table/mod.rs` - 统一表格加载函数
+- `TableReader` - `backends/xcell-provider/src/table/mod.rs` - 表格读取器 trait
+- `XCellHeader` - `backends/xcell-provider/src/table/mod.rs` - 表格头部
 
 ### 表格类型
-- `XClassTable` - `projects/xcell-core/src/x_table/class/mod.rs`
-- `XDictTable` - `projects/xcell-core/src/x_table/dictionary/mod.rs`
-- `XEnumerateTable` - `projects/xcell-core/src/x_table/enumerate/mod.rs`
-- `XLanguageTable` - `projects/xcell-core/src/x_table/language/mod.rs`
+- `XClassTable` - `backends/xcell-analyzer/src/x_table/class/mod.rs` - 类表类型
+- `XDictTable` - `backends/xcell-analyzer/src/x_table/dictionary/mod.rs` - 字典表类型
+- `XEnumerateTable` - `backends/xcell-analyzer/src/x_table/enumerate/mod.rs` - 枚举表类型
+- `XLanguageTable` - `backends/xcell-analyzer/src/x_table/language/mod.rs` - 语言表类型
 
 ### 代码生成
-- `UnityCodegen` - `projects/xcell-core/src/config/unity/mod.rs`
-- C# 类生成 - `projects/xcell-core/src/codegen/unity/class.rs`
-- 二进制生成 - `projects/xcell-core/src/codegen/unity/binary.rs`
-- XML 生成 - `projects/xcell-core/src/codegen/xml/mod.rs`
+- `Generator` - `backends/xcell-generator/src/lib.rs` - 生成器主入口
+- `Codegen` - `backends/xcell-generator/src/codegen/mod.rs` - 代码生成器 trait
+- `CocosCodegen` - `backends/xcell-generator/src/codegen/cocos/mod.rs` - Cocos 代码生成
+- `UnityCodegen` - `backends/xcell-generator/src/codegen/unity/mod.rs` - Unity 代码生成
+- `JsonCodegen` - `backends/xcell-generator/src/codegen/json/mod.rs` - JSON 数据生成
 
 ### 类型系统
-- `TypeDescription` - `projects/xcell-types/src/typing/mod.rs`
-- `XCellValue` - `projects/xcell-types/src/value/mod.rs`
-- `CSharpReader`/`CSharpWriter` - `projects/xcell-types/src/codegen/csharp_ffi/mod.rs`
+- `TypeDescription` - `backends/xcell-types/src/typing/mod.rs` - 类型描述
+- `XCellValue` - `backends/xcell-types/src/value/mod.rs` - 单元格值
+- `CSharpReader`/`CSharpWriter` - `backends/xcell-types/src/codegen/csharp_ffi/mod.rs` - C# 类型映射
 
-### 错误处理
-- `XError` - `projects/xcell-errors/src/errors/mod.rs`
-- `XResult` - `projects/xcell-errors/src/lib.rs:8`
+### 配置管理
+- `ProjectConfig` - `backends/xcell-config/src/project/mod.rs` - 项目配置
+- `CocosCodegen` - `backends/xcell-config/src/cocos/mod.rs` - Cocos 代码生成配置
+- `UnityCodegen` - `backends/xcell-config/src/unity/mod.rs` - Unity 代码生成配置
 
-### 流式 IO
-- `StreamReader` - `projects/stream-io/src/standard/reader/mod.rs`
-- `StreamWriter` - `projects/stream-io/src/standard/writer/mod.rs`
+## 5. 抽象隔离设计
 
-## 5. 扩展开发指南
+### 5.1 核心抽象层次
 
-### 添加新的表格类型
+XCell 采用多层抽象设计，确保各模块职责清晰，避免抽象泄露：
 
-1. 在 `projects/xcell-core/src/x_table/` 下创建新模块
-2. 实现 `confirm()` 方法用于识别表格
-3. 实现 `perform()` 方法用于处理表格数据
-4. 在 `WorkspaceManager::try_perform_file()` 中添加识别逻辑
+1. **表格读取层** (`xcell-provider`)：
+   - 提供统一的 `TableReader` trait
+   - 屏蔽不同表格格式（Excel、CSV、TSV）的差异
+   - 上层模块无需关心具体的表格格式
+
+2. **表格分析层** (`xcell-analyzer`)：
+   - 基于 `TableReader` 读取表格数据
+   - 识别表格类型并进行相应处理
+   - 提供 `WorkspaceManager` 统一管理所有表格数据
+
+3. **代码生成层** (`xcell-generator`)：
+   - 基于 `WorkspaceManager` 获取表格数据
+   - 不直接与表格文件交互
+   - 通过 `Codegen` trait 支持多种代码生成器
+
+4. **类型系统层** (`xcell-types`)：
+   - 定义统一的数据类型
+   - 提供类型转换和解析
+   - 支持多平台类型映射
+
+### 5.2 抽象隔离原则
+
+- **单一职责**：每个模块只负责一个特定的功能
+- **依赖倒置**：高层模块依赖抽象，不依赖具体实现
+- **接口隔离**：使用 trait 定义最小化接口
+- **里氏替换**：实现可以被其子类替换
+- **开闭原则**：对扩展开放，对修改关闭
+
+## 6. 扩展开发指南
+
+### 添加新的表格格式
+
+1. 在 `backends/xcell-provider/src/table/` 下创建新的表格读取实现
+2. 实现 `TableReader` trait
+3. 在 `FileFormatDetector` 中添加格式检测逻辑
+4. 在 `load_table` 函数中添加新格式的支持
 
 ### 添加新的数据类型
 
-1. 在 `projects/xcell-types/src/` 下创建新模块
+1. 在 `backends/xcell-types/src/` 下创建新模块
 2. 实现类型解析和转换逻辑
-3. 在 `projects/xcell-types/src/lib.rs` 中导出
-4. 添加 C# 代码生成支持
+3. 在 `backends/xcell-types/src/lib.rs` 中导出
+4. 添加相应平台的类型映射支持
 
 ### 添加新的代码生成器
 
-1. 在 `projects/xcell-core/src/codegen/` 下创建新模块
-2. 实现代码生成逻辑
-3. 在 `WorkspaceManager::write_unity()` 中调用
+1. 在 `backends/xcell-generator/src/codegen/` 下创建新模块
+2. 实现 `Codegen` trait
+3. 在 `Generator::new()` 中注册新的生成器
+4. 添加相应的配置选项
+
+### 添加新的平台支持
+
+1. 在 `backends/xcell-config/src/` 下创建新的平台配置模块
+2. 在 `backends/xcell-generator/src/codegen/` 下创建新的平台代码生成器
+3. 实现平台特定的代码生成逻辑
+4. 更新文档和示例

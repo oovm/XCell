@@ -1,21 +1,21 @@
-// 代码生成, 修改无效! (XCell {{ compiler_version }})
+// 代码生成, 修改无效! (XCell <% compiler_version %>)
 
 <% if config.namespace %>
-export namespace {{ config.namespace }} {
+export namespace <% config.namespace %> {
 <% endif %>
 
 <%- for line in class_document %>
-/** {{ line }} */
+/** <% line %> */
 <%- endfor %>
-export class {{ class_name }} {
+export class <% class_name %> {
 <%- for field in class_fields %>
     <%- for line in field.document %>
-    /** {{ line }} */
+    /** <% line %> */
     <%- endfor %>
     <%- if field.has_default %>
-    {{ field.name }}: {{ field.typing }} = {{ field.default }};
+    <% field.name %>: <% field.typing %> = <% field.default %>;
     <%- else %>
-    {{ field.name }}!: {{ field.typing }};
+    <% field.name %>!: <% field.typing %>;
     <%- endif %>
 <%- endfor %>
 }

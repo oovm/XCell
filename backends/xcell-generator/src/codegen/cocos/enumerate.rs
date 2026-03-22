@@ -6,8 +6,8 @@ use dejavu::Template;
 use xcell_analyzer::{XCellHeader, XDataLine};
 
 #[derive(Template)]
-#[template(path = "BuildEnumerate.ts", ext = "txt", escape = "none")]
-pub struct CocosEnumerate {
+#[template(path = "BuildEnumerate.ts", escape = "none")]
+pub struct CocosEnumerateTemplate {
     /// Compiler version
     compiler_version: &'static str,
     /// Class name

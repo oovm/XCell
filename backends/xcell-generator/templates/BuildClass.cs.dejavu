@@ -1,4 +1,4 @@
-// 代码生成, 修改无效! (XCell {{ compiler_version }})
+// 代码生成, 修改无效! (XCell <% compiler_version %>)
 // ReSharper disable RedundantDefaultMemberInitializer, RedundantUsingDirective
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident, ArrangeObjectCreationWhenTypeNotEvident
 // ReSharper disable EnumUnderlyingTypeIsInt
@@ -11,29 +11,29 @@ using System.Runtime.Serialization;
 using System.Text;
 using UnityEngine;
 
-namespace {{ config.namespace }}
+namespace <% config.namespace %>
 {
     [DataContract, Serializable]
-    public partial class {{ class_name }}
+    public partial class <% class_name %>
     {
 <%- for field in class_fields %>
     <%- for line in field.document %>
-        /// {{ line }}
+        /// <% line %>
     <%- endfor %>
         [DataMember]
     <%- if field.has_default %>
-        public {{field.typing}} {{field.name}} = {{field.default}};
+        public <%field.typing%> <%field.name%> = <%field.default%>;
     <% else %>
-        public {{field.typing}} {{field.name}};
+        public <%field.typing%> <%field.name%>;
     <%- endif %>
 <%- endfor %>
     }
 <% if config.binary.enable %>
-    public partial class {{ class_name }} : IBinarySupport
+    public partial class <% class_name %> : IBinarySupport
     {
-        public {{class_name}}()
+        public <%class_name%>()
         {
-            BinaryRead("{{ config.binary.output }}/{{ table_name }}.binary");
+            BinaryRead("<% config.binary.output %>/<% table_name %>.binary");
         }
         /// <summary>
         /// 从二进制文件中读取静态数据
@@ -57,14 +57,14 @@ namespace {{ config.namespace }}
         {
 <%- for field in class_fields %>
     <%- if field.reader.is_vector %>
-            var {{ field.reader.field }}Count = r.ReadUInt32();
-            {{ field.reader.field }} = new((int) {{ field.reader.field }}Count);
-            for (var i = 0; i < {{ field.reader.field }}Count; i++)
+            var <% field.reader.field %>Count = r.ReadUInt32();
+            <% field.reader.field %> = new((int) <% field.reader.field %>Count);
+            for (var i = 0; i < <% field.reader.field %>Count; i++)
             {
-                {{ field.reader.field }}.Add({{ field.reader.function }});
+                <% field.reader.field %>.Add(<% field.reader.function %>);
             }
     <%- else %>
-            {{ field.reader.field }} = {{ field.reader.function }};
+            <% field.reader.field %> = <% field.reader.function %>;
     <%- endif %>
 <%- endfor %>
         }
@@ -74,25 +74,25 @@ namespace {{ config.namespace }}
         {
 <%- for field in class_fields %>
     <%- if field.writer.is_vector %>
-            w.Write((uint) {{ field.writer.field }}.Count);
-            foreach (var {{ field.writer.field }}Item in {{ field.writer.field }})
+            w.Write((uint) <% field.writer.field %>.Count);
+            foreach (var <% field.writer.field %>Item in <% field.writer.field %>)
             {
         <%- for property in field.writer.properties %>
-                w.Write({{ field.writer.field }}Item{{ property }});
+                w.Write(<% field.writer.field %>Item<% property %>);
         <%- endfor %>
             }
     <%- else %>
         <%- for property in field.writer.properties %>
-            w.Write({{ field.writer.cast }}{{ field.writer.field }}{{ property }});
+            w.Write(<% field.writer.cast %><% field.writer.field %><% property %>);
         <%- endfor %>
     <%- endif %>
 <%- endfor %>
         }
 <% if config.support_clone %>
         /// <inheritdoc cref="ICloneable.Clone"/>
-        public {{ class_name }} Clone()
+        public <% class_name %> Clone()
         {
-            return ({{ class_name }}) MemberwiseClone();
+            return (<% class_name %>) MemberwiseClone();
         }
 <%- endif %>
     }

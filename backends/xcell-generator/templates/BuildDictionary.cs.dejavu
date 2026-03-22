@@ -1,4 +1,4 @@
-// 代码生成, 修改无效! (XCell {{ compiler_version }})
+// 代码生成, 修改无效! (XCell <% compiler_version %>)
 // ReSharper disable RedundantUsingDirective, RedundantNullableDirective
 // ReSharper disable ArrangeObjectCreationWhenTypeEvident, ArrangeObjectCreationWhenTypeNotEvident
 // ReSharper disable EnumUnderlyingTypeIsInt
@@ -16,66 +16,66 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 <% endif %>
 
-namespace {{ config.namespace }}
+namespace <% config.namespace %>
 {
     [DataContract, Serializable]
-    public partial class {{ table_name }}: IReadOnlyDictionary<{{ id_type }}, {{ class_name }}Element>
+    public partial class <% table_name %>: IReadOnlyDictionary<<% id_type %>, <% class_name %>Element>
     {
         [NonSerialized]
-        private readonly Dictionary<{{ id_type }}, {{ class_name }}Element> _dict = new();
+        private readonly Dictionary<<% id_type %>, <% class_name %>Element> _dict = new();
         [DataMember]
-        public readonly List<{{ class_name }}Element> elements = new();
+        public readonly List<<% class_name %>Element> elements = new();
         public int Count => _dict.Count;
-        public IEnumerable<{{ id_type }}> Keys => _dict.Keys;
-        public IEnumerable<{{ class_name }}Element> Values => _dict.Values;
-        public {{ class_name }}Element this[{{ id_type }} key] => _dict[key];
+        public IEnumerable<<% id_type %>> Keys => _dict.Keys;
+        public IEnumerable<<% class_name %>Element> Values => _dict.Values;
+        public <% class_name %>Element this[<% id_type %> key] => _dict[key];
 
         IEnumerator IEnumerable.GetEnumerator()
         {
             return _dict.GetEnumerator();
         }
-        public IEnumerator<KeyValuePair<{{ id_type }}, {{ class_name }}Element>> GetEnumerator()
+        public IEnumerator<KeyValuePair<<% id_type %>, <% class_name %>Element>> GetEnumerator()
         {
             return _dict.GetEnumerator();
         }
-        public bool ContainsKey({{ id_type }} key)
+        public bool ContainsKey(<% id_type %> key)
         {
             return _dict.ContainsKey(key);
         }
-        public bool TryGetValue({{ id_type }} key, out {{ class_name }}Element value)
+        public bool TryGetValue(<% id_type %> key, out <% class_name %>Element value)
         {
             return _dict.TryGetValue(key, out value);
         }
-        public {{ class_name }}Element? GetValue({{ id_type }}? key)
+        public <% class_name %>Element? GetValue(<% id_type %>? key)
         {
             return key != null ? _dict.GetValueOrDefault(key.Value) : null;
         }
     }
 
     [DataContract, Serializable]
-    public partial class {{ class_name }}Element
+    public partial class <% class_name %>Element
     {
 <%- for field in class_fields %>
     <%- for line in field.document %>
-        /// {{line}}
+        /// <% line %>
     <%- endfor %>
         [DataMember, SerializeField]
     <%- if field.has_default %>
-        {{field.access}}{{field.typing}} {{field.name}} = {{field.default}};
+        <% field.access %><% field.typing %> <% field.name %> = <% field.default %>;
     <% else %>
-        {{field.access}}{{field.typing}} {{field.name}};
+        <% field.access %><% field.typing %> <% field.name %>;
     <%- endif %>
 <%- endfor %>
     }
 <% if config.binary.enable %>
-    public partial class {{ table_name }} : IBinarySupport
+    public partial class <% table_name %> : IBinarySupport
     {
-        public {{ table_name }}()
+        public <% table_name %>()
         {
     <%- if config.addressable %>
-            BinaryRead("{{ config.binary.addressable }}/{{ table_name }}.bytes");
+            BinaryRead("<% config.binary.addressable %>/<% table_name %>.bytes");
     <%- else %>
-            BinaryRead("{{ config.binary.output }}/{{ table_name }}.bytes");
+            BinaryRead("<% config.binary.output %>/<% table_name %>.bytes");
     <%- endif %>
         }
         /// <summary>
@@ -105,10 +105,10 @@ namespace {{ config.namespace }}
             var count = r.ReadUInt32();
             for (var i = 0; i < count; i++)
             {
-                var item = new {{ class_name }}Element();
+                var item = new <% class_name %>Element();
                 item.BinaryRead(r);
                 elements.Add(item);
-                _dict[item.{{ key_name }}] = item;
+                _dict[item.<% key_name %>] = item;
             }
         }
 
@@ -123,21 +123,21 @@ namespace {{ config.namespace }}
         }
     }
 
-    public partial class {{ class_name }}Element : IBinarySupport
+    public partial class <% class_name %>Element : IBinarySupport
     {
         /// <inheritdoc cref="IBinarySupport.BinaryRead"/>
         public void BinaryRead(BinaryReader r)
         {
 <%- for field in class_fields %>
     <%- if field.reader.is_vector %>
-            var {{ field.reader.field }}Count = r.ReadUInt32();
-            {{ field.reader.field }} = new((int) {{ field.reader.field }}Count);
-            for (var i = 0; i < {{ field.reader.field }}Count; i++)
+            var <% field.reader.field %>Count = r.ReadUInt32();
+            <% field.reader.field %> = new((int) <% field.reader.field %>Count);
+            for (var i = 0; i < <% field.reader.field %>Count; i++)
             {
-                {{ field.reader.field }}.Add({{ field.reader.function }});
+                <% field.reader.field %>.Add(<% field.reader.function %>);
             }
     <%- else %>
-            {{ field.reader.field }} = {{ field.reader.function }};
+            <% field.reader.field %> = <% field.reader.function %>;
     <%- endif %>
 <%- endfor %>
         }
@@ -147,16 +147,16 @@ namespace {{ config.namespace }}
         {
 <%- for field in class_fields %>
     <%- if field.writer.is_vector %>
-            w.Write((uint) {{ field.writer.field }}.Count);
-            foreach (var {{ field.writer.field }}Item in {{ field.writer.field }})
+            w.Write((uint) <% field.writer.field %>.Count);
+            foreach (var <% field.writer.field %>Item in <% field.writer.field %>)
             {
         <%- for property in field.writer.properties %>
-                w.Write({{ field.writer.field }}Item{{ property }});
+                w.Write(<% field.writer.field %>Item<% property %>);
         <%- endfor %>
             }
     <%- else %>
         <%- for property in field.writer.properties %>
-            w.Write({{ field.writer.cast }}{{ field.writer.field }}{{ property }});
+            w.Write(<% field.writer.cast %><% field.writer.field %><% property %>);
         <%- endfor %>
     <%- endif %>
 <%- endfor %>

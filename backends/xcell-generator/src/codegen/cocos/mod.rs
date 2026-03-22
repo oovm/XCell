@@ -67,10 +67,6 @@ pub struct CocosClassTemplate {
     table_name: String,
     /// 字段
     fields: Vec<CocosField>,
-    /// 是否有类型字段
-    has_type_field: bool,
-    /// 是否是怪物
-    is_monster: bool,
 }
 
 /// Cocos 管理器模板
@@ -92,13 +88,11 @@ fn render_enumerate_template(class_name: &str, items: &[CocosEnumerateItem]) -> 
     template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
-fn render_class_template(class_name: &str, table_name: &str, fields: &[CocosField], has_type_field: bool, is_monster: bool) -> XResult<String> {
+fn render_class_template(class_name: &str, table_name: &str, fields: &[CocosField]) -> XResult<String> {
     let template = CocosClassTemplate {
         class_name: class_name.to_string(),
         table_name: table_name.to_string(),
         fields: fields.to_vec(),
-        has_type_field,
-        is_monster,
     };
     template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
@@ -139,6 +133,15 @@ pub struct CocosLoader {
     pub table_data_path: String,
 }
 
+/// 类型映射配置项
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TypeMapping {
+    /// Rust 类型
+    pub rust_type: String,
+    /// TypeScript 类型
+    pub ts_type: String,
+}
+
 /// Cocos 代码生成器配置
 ///
 /// 用于配置 Cocos 平台的代码生成
@@ -162,6 +165,17 @@ pub struct CocosCodegen {
     pub instance_name: String,
     /// 表数据路径前缀
     pub table_data_path: String,
+    /// 特殊字段名配置
+    pub special_fields: Option<Vec<String>>,
+    /// 特殊类名配置
+    pub special_classes: Option<Vec<String>>,
+    /// 枚举后缀配置
+    pub enum_suffixes: Option<Vec<String>>,
+    /// 类型映射配置
+    pub type_mappings: Option<Vec<TypeMapping>>,
+    /// CSV 文件缓存
+    #[serde(skip)]
+    pub(crate) cache: CsvCache,
 }
 
 /// Cocos JSON 配置
@@ -184,10 +198,81 @@ impl Default for CocosJsonConfig {
     }
 }
 
+impl Default for CocosCodegen {
+    fn default() -> Self {
+        Self {
+            storage: Default::default(),
+            enable: false,
+            project: String::new(),
+            output: String::new(),
+            namespace: String::new(),
+            manager_name: "DataTableManager".to_string(),
+            suffix_table: "Table".to_string(),
+            instance_name: "dataTableManager".to_string(),
+            table_data_path: "tables".to_string(),
+            special_fields: Some(vec!["type".to_string(), "level".to_string(), "level_requirement".to_string(), "drop_items".to_string(), "skills".to_string(), "unlock_skills".to_string()]),
+            special_classes: Some(vec!["Monster".to_string(), "Skill".to_string()]),
+            enum_suffixes: Some(vec!["Type".to_string(), "Kind".to_string()]),
+            type_mappings: Some(vec![
+                TypeMapping { rust_type: "i32".to_string(), ts_type: "number".to_string() },
+                TypeMapping { rust_type: "i64".to_string(), ts_type: "number".to_string() },
+                TypeMapping { rust_type: "u32".to_string(), ts_type: "number".to_string() },
+                TypeMapping { rust_type: "u64".to_string(), ts_type: "number".to_string() },
+                TypeMapping { rust_type: "f32".to_string(), ts_type: "number".to_string() },
+                TypeMapping { rust_type: "f64".to_string(), ts_type: "number".to_string() },
+                TypeMapping { rust_type: "text".to_string(), ts_type: "string".to_string() },
+                TypeMapping { rust_type: "string".to_string(), ts_type: "string".to_string() },
+                TypeMapping { rust_type: "any".to_string(), ts_type: "string".to_string() },
+            ]),
+            cache: Default::default(),
+        }
+    }
+}
+
+/// CSV 文件缓存结构
+#[derive(Debug, Clone)]
+pub struct CsvCache {
+    /// 字段信息缓存
+    pub fields_cache: std::collections::HashMap<PathBuf, Vec<CocosField>>,
+    /// 枚举数据缓存
+    pub enum_cache: std::collections::HashMap<PathBuf, Vec<(u32, String, String)>>,
+    /// CSV 文件列表缓存
+    pub files_cache: Option<Vec<std::fs::DirEntry>>,
+}
+
+impl Default for CsvCache {
+    fn default() -> Self {
+        Self {
+            fields_cache: std::collections::HashMap::new(),
+            enum_cache: std::collections::HashMap::new(),
+            files_cache: None,
+        }
+    }
+}
+
 /// Cocos 代码生成器
 ///
 /// 负责生成 Cocos 平台的代码和数据文件
 impl CocosCodegen {
+    /// 内部缓存
+    pub(crate) cache: CsvCache,
+    
+    /// 创建新的 CocosCodegen 实例
+    pub fn new() -> Self {
+        Self {
+            storage: Default::default(),
+            enable: false,
+            project: String::new(),
+            output: String::new(),
+            namespace: String::new(),
+            manager_name: "DataTableManager".to_string(),
+            suffix_table: "Table".to_string(),
+            instance_name: "dataTableManager".to_string(),
+            table_data_path: "tables/".to_string(),
+            cache: Default::default(),
+        }
+    }
+    
     /// 获取 Cocos 项目路径
     ///
     /// # 参数
@@ -198,7 +283,7 @@ impl CocosCodegen {
     pub fn cocos_path(&self, root: &Path) -> XResult<PathBuf> {
         let cocos_config = self.to_xcell_config();
         let path = cocos_config.cocos_path(root)?;
-        println!("Cocos project path: {:?}", path);
+        tracing::info!("cocos_project_path", path = ?path);
         Ok(path)
     }
 
@@ -213,7 +298,7 @@ impl CocosCodegen {
     pub fn cocos_typescript_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
         let cocos_config = self.to_xcell_config();
         let path = cocos_config.cocos_typescript_path(root, file_name)?;
-        println!("Cocos TypeScript path: {:?}", path);
+        tracing::debug!("cocos_typescript_path", file_name = file_name, path = ?path);
         Ok(path)
     }
 
@@ -228,7 +313,7 @@ impl CocosCodegen {
     pub fn cocos_json_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
         let cocos_config = self.to_xcell_config();
         let path = cocos_config.cocos_json_path(root, file_name)?;
-        println!("Cocos JSON path: {:?}", path);
+        tracing::debug!("cocos_json_path", file_name = file_name, path = ?path);
         Ok(path)
     }
 
@@ -307,6 +392,33 @@ impl CocosCodegen {
         Ok(())
     }
 
+    /// 检查是否是枚举类型
+    fn is_enum(&self, class_name: &str) -> bool {
+        if let Some(suffixes) = &self.enum_suffixes {
+            suffixes.iter().any(|suffix| class_name.ends_with(suffix))
+        } else {
+            class_name.ends_with("Type") || class_name.ends_with("Kind")
+        }
+    }
+    
+    /// 检查是否是特殊字段
+    fn is_special_field(&self, field_name: &str) -> bool {
+        if let Some(fields) = &self.special_fields {
+            fields.contains(&field_name.to_string())
+        } else {
+            config::is_special_field(field_name)
+        }
+    }
+    
+    /// 检查是否是特殊类名
+    fn is_special_class(&self, class_name: &str) -> bool {
+        if let Some(classes) = &self.special_classes {
+            classes.contains(&class_name.to_string())
+        } else {
+            config::is_special_class(class_name)
+        }
+    }
+    
     /// 写入 TypeScript 代码
     ///
     /// # 参数
@@ -314,13 +426,123 @@ impl CocosCodegen {
     ///
     /// # 返回值
     /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    pub fn write_typescript(&self, ws: &WorkspaceManager) -> XResult<()> {
-        println!("CocosCodegen::write_typescript called");
+    pub fn write_typescript(&mut self, ws: &WorkspaceManager) -> XResult<()> {
+        tracing::info!("CocosCodegen::write_typescript called");
         
         let root = &ws.config.root;
         
         if let Some(s) = self.cocos_typescript_path(root, "DataTableManager")?.parent() {
             std::fs::create_dir_all(s)?;
+        }
+        
+        let csv_files = self.get_csv_files(root)?;
+        
+        for entry in &csv_files {
+            let file_name_os = entry.file_name();
+            let file_name_str = file_name_os.to_string_lossy();
+            let file_name = file_name_str.to_string();
+            let class_name = file_name.split('.').next().unwrap_or(&file_name);
+            
+            let is_enum = self.is_enum(class_name);
+            
+            if is_enum {
+                self.process_enum_file(ws, entry, class_name)?;
+            } else {
+                self.process_table_file(ws, entry, class_name)?;
+            }
+        }
+        
+        self.write_data_table_manager(ws)?;
+        
+        Ok(())
+    }
+    
+    /// 处理枚举文件
+    ///
+    /// # 参数
+    /// * `ws` - 工作区管理器
+    /// * `entry` - 文件入口
+    /// * `class_name` - 类名
+    ///
+    /// # 返回值
+    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
+    fn process_enum_file(&mut self, ws: &WorkspaceManager, entry: &std::fs::DirEntry, class_name: &str) -> XResult<()> {
+        let root = &ws.config.root;
+        let ts_path = self.cocos_typescript_path(root, class_name)?;
+        
+        tracing::info!("processing_enum", class_name = class_name, output_path = ?ts_path);
+        
+        if let Some(parent) = ts_path.parent() {
+            std::fs::create_dir_all(parent)?;
+            tracing::debug!("created_directory", path = ?parent);
+        }
+        
+        let enum_data = self.read_enum_data(&entry.path())?;
+        
+        let items = enum_data.into_iter()
+            .map(|(id, name, description)| {
+                let key = name.to_uppercase().replace(" ", "_");
+                CocosEnumerateItem {
+                    key,
+                    id,
+                    name,
+                    description,
+                }
+            })
+            .collect::<Vec<_>>();
+        
+        let content = render_enumerate_template(class_name, &items)?;
+        
+        let mut file = File::create(ts_path)?;
+        file.write_all(content.as_bytes())?;
+        
+        tracing::info!("created_typescript_enum", class_name = class_name);
+        Ok(())
+    }
+    
+    /// 处理表格文件
+    ///
+    /// # 参数
+    /// * `ws` - 工作区管理器
+    /// * `entry` - 文件入口
+    /// * `class_name` - 类名
+    ///
+    /// # 返回值
+    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
+    fn process_table_file(&mut self, ws: &WorkspaceManager, entry: &std::fs::DirEntry, class_name: &str) -> XResult<()> {
+        let root = &ws.config.root;
+        let table_class_name = format!("{}Table", class_name);
+        let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
+        
+        tracing::info!("processing_table", class_name = class_name, table_class_name = &table_class_name, output_path = ?ts_path);
+        
+        if let Some(parent) = ts_path.parent() {
+            std::fs::create_dir_all(parent)?;
+            tracing::debug!("created_directory", path = ?parent);
+        }
+        
+        let fields = self.read_csv_fields(&entry.path(), class_name)?;
+        
+        let content = render_class_template(class_name, &table_class_name, &fields)?;
+        
+        let mut file = File::create(ts_path)?;
+        file.write_all(content.as_bytes())?;
+        
+        tracing::info!("created_typescript_file", class_name = class_name);
+        Ok(())
+    }
+    
+    /// 获取 CSV 文件列表
+    ///
+    /// # 参数
+    /// * `root` - 根目录路径
+    ///
+    /// # 返回值
+    /// 返回 CSV 文件列表，成功时返回 Ok(Vec<std::fs::DirEntry>)，失败时返回 XError。
+    pub fn get_csv_files(&mut self, root: &Path) -> XResult<Vec<std::fs::DirEntry>> {
+        if let Some(cache) = &self.cache.files_cache {
+            tracing::debug!("Using cached CSV files list");
+            return Ok(cache.clone());
         }
         
         let csv_files = std::fs::read_dir(root)?
@@ -330,73 +552,11 @@ impl CocosCodegen {
             })
             .collect::<Vec<_>>();
         
-        for entry in &csv_files {
-            let file_name_os = entry.file_name();
-            let file_name_str = file_name_os.to_string_lossy();
-            let file_name = file_name_str.to_string();
-            let class_name = file_name.split('.').next().unwrap_or(&file_name);
-            
-            let is_enum = class_name.ends_with("Type") || class_name.ends_with("Kind");
-            
-            if is_enum {
-                let ts_path = self.cocos_typescript_path(root, class_name)?;
-                
-                println!("Processing enum: {} -> {}", class_name, ts_path.display());
-                
-                if let Some(parent) = ts_path.parent() {
-                    std::fs::create_dir_all(parent)?;
-                    println!("Created directory: {:?}", parent);
-                }
-                
-                let enum_data = self.read_enum_data(&entry.path())?;
-                
-                let items = enum_data.into_iter()
-                    .map(|(id, name, description)| {
-                        let key = name.to_uppercase().replace(" ", "_");
-                        CocosEnumerateItem {
-                            key,
-                            id,
-                            name,
-                            description,
-                        }
-                    })
-                    .collect::<Vec<_>>();
-                
-                let content = render_enumerate_template(class_name, &items)?;
-                
-                let mut file = File::create(ts_path)?;
-                file.write_all(content.as_bytes())?;
-                
-                println!("Created TypeScript enum for {} successfully", class_name);
-            } else {
-                let table_class_name = format!("{}Table", class_name);
-                let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
-                
-                println!("Processing list table: {} -> {}", class_name, ts_path.display());
-                
-                if let Some(parent) = ts_path.parent() {
-                    std::fs::create_dir_all(parent)?;
-                    println!("Created directory: {:?}", parent);
-                }
-                
-                let fields = self.read_csv_fields(&entry.path(), class_name)?;
-                let has_type_field = fields.iter().any(|f| f.name == "type");
-                
-                let content = render_class_template(class_name, &table_class_name, &fields, has_type_field, class_name == "Monster")?;
-                
-                let mut file = File::create(ts_path)?;
-                file.write_all(content.as_bytes())?;
-                
-                println!("Created TypeScript file for {} successfully", class_name);
-            }
-        }
-        
-        self.write_data_table_manager(ws)?;
-        
-        Ok(())
+        self.cache.files_cache = Some(csv_files.clone());
+        Ok(csv_files)
     }
     
-    /// 读取 CSV 文件的字段信息
+    /// 读取 CSV 文件的字段信息（带缓存）
     ///
     /// # 参数
     /// * `csv_path` - CSV 文件路径
@@ -404,7 +564,12 @@ impl CocosCodegen {
     ///
     /// # 返回值
     /// 返回字段信息列表，成功时返回 Ok(Vec<CocosField>)，失败时返回 XError。
-    pub fn read_csv_fields(&self, csv_path: &Path, class_name: &str) -> XResult<Vec<CocosField>> {
+    pub fn read_csv_fields(&mut self, csv_path: &Path, class_name: &str) -> XResult<Vec<CocosField>> {
+        if let Some(cached) = self.cache.fields_cache.get(csv_path) {
+            tracing::debug!("Using cached fields for {:?}", csv_path);
+            return Ok(cached.clone());
+        }
+        
         let mut fields = Vec::new();
         
         let mut rdr = csv::ReaderBuilder::new()
@@ -432,17 +597,23 @@ impl CocosCodegen {
             }
         }
         
+        self.cache.fields_cache.insert(csv_path.to_path_buf(), fields.clone());
         Ok(fields)
     }
     
-    /// 读取枚举类型的 CSV 文件数据
+    /// 读取枚举类型的 CSV 文件数据（带缓存）
     ///
     /// # 参数
     /// * `csv_path` - CSV 文件路径
     ///
     /// # 返回值
     /// 返回枚举数据列表，每个元素包含 id、name 和 description，成功时返回 Ok(Vec<(u32, String, String)>)，失败时返回 XError。
-    pub fn read_enum_data(&self, csv_path: &Path) -> XResult<Vec<(u32, String, String)>> {
+    pub fn read_enum_data(&mut self, csv_path: &Path) -> XResult<Vec<(u32, String, String)>> {
+        if let Some(cached) = self.cache.enum_cache.get(csv_path) {
+            tracing::debug!("Using cached enum data for {:?}", csv_path);
+            return Ok(cached.clone());
+        }
+        
         let mut enum_data = Vec::new();
         
         let mut rdr = csv::ReaderBuilder::new()
@@ -474,7 +645,20 @@ impl CocosCodegen {
             }
         }
         
+        self.cache.enum_cache.insert(csv_path.to_path_buf(), enum_data.clone());
         Ok(enum_data)
+    }
+    
+    /// 获取类型映射
+    fn get_type_mapping(&self, rust_type: &str) -> String {
+        if let Some(mappings) = &self.type_mappings {
+            for mapping in mappings {
+                if mapping.rust_type == rust_type {
+                    return mapping.ts_type.clone();
+                }
+            }
+        }
+        config::get_type_mapping(rust_type).to_string()
     }
     
     /// 将 CSV 类型映射为 TypeScript 类型
@@ -488,21 +672,27 @@ impl CocosCodegen {
     /// 返回对应的 TypeScript 类型字符串。
     pub fn map_csv_type_to_typescript(&self, csv_type: &str, field_name: &str, class_name: &str) -> String {
         let trimmed_type = csv_type.trim();
-        match trimmed_type {
-            "i32" | "i64" | "u32" | "u64" | "f32" | "f64" => "number".to_string(),
-            "text" | "string" => {
-                if field_name == "drop_items" || field_name == "skills" || field_name == "unlock_skills" {
-                    "number[]".to_string()
-                } else if field_name == "type" && class_name == "Monster" {
-                    "MonsterType".to_string()
-                } else {
-                    "string".to_string()
-                }
-            }
-            "string[]" => "number[]".to_string(),
-            "any" => "string".to_string(),
-            _ => config::get_type_mapping(trimmed_type).to_string(),
+        
+        // 检查是否是数组类型
+        if trimmed_type == "string[]" {
+            return "number[]".to_string();
         }
+        
+        // 检查是否是需要特殊处理的字段
+        let special_array_fields = vec!["drop_items", "skills", "unlock_skills"];
+        if (trimmed_type == "text" || trimmed_type == "string") && special_array_fields.contains(&field_name) {
+            return "number[]".to_string();
+        }
+        
+        // 检查是否是类型字段且是特殊类
+        if trimmed_type == "text" || trimmed_type == "string" {
+            if field_name == "type" && self.is_special_class(class_name) {
+                return format!("{}Type", class_name).to_string();
+            }
+        }
+        
+        // 使用配置的类型映射
+        self.get_type_mapping(trimmed_type)
     }
     
     /// 写入 DataTableManager.ts
@@ -512,26 +702,27 @@ impl CocosCodegen {
     ///
     /// # 返回值
     /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    pub fn write_data_table_manager(&self, ws: &WorkspaceManager) -> XResult<()> {
+    pub fn write_data_table_manager(&mut self, ws: &WorkspaceManager) -> XResult<()> {
         let root = &ws.config.root;
         
-        let csv_files = std::fs::read_dir(root)?
-            .filter_map(|entry| entry.ok())
-            .filter(|entry| {
-                entry.path().is_file() && entry.path().extension().map(|ext| ext == "csv").unwrap_or(false)
-            })
-            .collect::<Vec<_>>();
+        let csv_files = self.get_csv_files(root)?;
         
         let manager_path = self.cocos_typescript_path(root, "DataTableManager")?;
         
-        println!("Generating DataTableManager -> {}", manager_path.display());
+        tracing::info!("generating_data_table_manager", output_path = ?manager_path);
         
         if let Some(parent) = manager_path.parent() {
             std::fs::create_dir_all(parent)?;
-            println!("Created directory: {:?}", parent);
+            tracing::debug!("created_directory", path = ?parent);
         }
         
-        let table_data_path = if self.table_data_path.is_empty() { "tables/" } else { &self.table_data_path };
+        let table_data_path = if self.table_data_path.is_empty() {
+            "tables/"
+        } else if self.table_data_path.ends_with('/') || self.table_data_path.ends_with('\\') {
+            &self.table_data_path
+        } else {
+            &format!("{}/", self.table_data_path)
+        };
         
         let mut tables = Vec::new();
         
@@ -541,7 +732,7 @@ impl CocosCodegen {
             let file_name = file_name_str.to_string();
             let class_name = file_name.split('.').next().unwrap_or(&file_name);
             
-            let is_enum = class_name.ends_with("Type") || class_name.ends_with("Kind");
+            let is_enum = self.is_enum(class_name);
             
             if !is_enum {
                 let table_class_name = format!("{}Table", class_name);
@@ -562,7 +753,7 @@ impl CocosCodegen {
         let mut file = File::create(manager_path)?;
         file.write_all(content.as_bytes())?;
         
-        println!("Created DataTableManager.ts successfully");
+        tracing::info!("created_data_table_manager");
         
         Ok(())
     }
@@ -585,64 +776,82 @@ impl CocosCodegen {
         
         // 处理类表
         for table in ws.classes() {
-            let json_path = self.cocos_json_path(root, &table.name)?;
-            
-            println!("Generating JSON for {} -> {}", table.name, json_path.display());
-            
-            if let Some(parent) = json_path.parent() {
-                std::fs::create_dir_all(parent)?;
-                println!("Created directory: {:?}", parent);
-            }
-            
-            let json_data = self.convert_class_data_to_json(table)?;
-            let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
-            
-            let mut file = std::fs::File::create(json_path)?;
-            file.write_all(json_string.as_bytes())?;
-            
-            println!("Created JSON file for {} successfully", table.name);
+            self.process_class_json(root, table)?;
         }
         
         // 处理列表
         for table in ws.lists() {
-            let json_path = self.cocos_json_path(root, &table.name)?;
-            
-            println!("Generating JSON for {} -> {}", table.name, json_path.display());
-            
-            if let Some(parent) = json_path.parent() {
-                std::fs::create_dir_all(parent)?;
-                println!("Created directory: {:?}", parent);
-            }
-            
-            let json_data = self.convert_list_data_to_json(table)?;
-            let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
-            
-            let mut file = std::fs::File::create(json_path)?;
-            file.write_all(json_string.as_bytes())?;
-            
-            println!("Created JSON file for {} successfully", table.name);
+            self.process_list_json(root, table)?;
         }
         
         // 处理字典
         for table in ws.dicts() {
-            let json_path = self.cocos_json_path(root, &table.name)?;
-            
-            println!("Generating JSON for {} -> {}", table.name, json_path.display());
-            
-            if let Some(parent) = json_path.parent() {
-                std::fs::create_dir_all(parent)?;
-                println!("Created directory: {:?}", parent);
-            }
-            
-            let json_data = self.convert_dict_data_to_json(table)?;
-            let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
-            
-            let mut file = std::fs::File::create(json_path)?;
-            file.write_all(json_string.as_bytes())?;
-            
-            println!("Created JSON file for {} successfully", table.name);
+            self.process_dict_json(root, table)?;
         }
 
+        Ok(())
+    }
+    
+    /// 处理类表 JSON 生成
+    fn process_class_json(&self, root: &Path, table: &XClassData) -> XResult<()> {
+        let json_path = self.cocos_json_path(root, &table.name)?;
+        
+        tracing::info!("generating_json", table_name = &table.name, output_path = ?json_path);
+        
+        if let Some(parent) = json_path.parent() {
+            std::fs::create_dir_all(parent)?;
+            tracing::debug!("created_directory", path = ?parent);
+        }
+        
+        let json_data = self.convert_class_data_to_json(table)?;
+        let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
+        
+        let mut file = std::fs::File::create(json_path)?;
+        file.write_all(json_string.as_bytes())?;
+        
+        tracing::info!("created_json_file", table_name = &table.name);
+        Ok(())
+    }
+    
+    /// 处理列表 JSON 生成
+    fn process_list_json(&self, root: &Path, table: &XListData) -> XResult<()> {
+        let json_path = self.cocos_json_path(root, &table.name)?;
+        
+        tracing::info!("generating_json", table_name = &table.name, output_path = ?json_path);
+        
+        if let Some(parent) = json_path.parent() {
+            std::fs::create_dir_all(parent)?;
+            tracing::debug!("created_directory", path = ?parent);
+        }
+        
+        let json_data = self.convert_list_data_to_json(table)?;
+        let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
+        
+        let mut file = std::fs::File::create(json_path)?;
+        file.write_all(json_string.as_bytes())?;
+        
+        tracing::info!("created_json_file", table_name = &table.name);
+        Ok(())
+    }
+    
+    /// 处理字典 JSON 生成
+    fn process_dict_json(&self, root: &Path, table: &XDictData) -> XResult<()> {
+        let json_path = self.cocos_json_path(root, &table.name)?;
+        
+        tracing::info!("generating_json", table_name = &table.name, output_path = ?json_path);
+        
+        if let Some(parent) = json_path.parent() {
+            std::fs::create_dir_all(parent)?;
+            tracing::debug!("created_directory", path = ?parent);
+        }
+        
+        let json_data = self.convert_dict_data_to_json(table)?;
+        let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
+        
+        let mut file = std::fs::File::create(json_path)?;
+        file.write_all(json_string.as_bytes())?;
+        
+        tracing::info!("created_json_file", table_name = &table.name);
         Ok(())
     }
     
@@ -734,51 +943,111 @@ impl CocosCodegen {
     /// 返回对应的 JSON 值
     fn convert_xcell_value_to_json(&self, value: &XCellValue) -> serde_json::Value {
         match value {
-            XCellValue::Boolean(b) => serde_json::Value::Bool(*b),
-            XCellValue::Integer8(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
-            XCellValue::Integer16(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
-            XCellValue::Integer32(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
-            XCellValue::Integer64(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
-            XCellValue::Unsigned8(u) => serde_json::Value::Number(serde_json::Number::from(*u)),
-            XCellValue::Unsigned16(u) => serde_json::Value::Number(serde_json::Number::from(*u)),
-            XCellValue::Unsigned32(u) => serde_json::Value::Number(serde_json::Number::from(*u)),
-            XCellValue::Unsigned64(u) => serde_json::Value::Number(serde_json::Number::from(*u)),
-            XCellValue::Float32(f) => serde_json::Value::Number(serde_json::Number::from_f64(*f as f64).unwrap()),
-            XCellValue::Float64(f) => serde_json::Value::Number(serde_json::Number::from_f64(*f).unwrap()),
-            XCellValue::String(s) => serde_json::Value::String(s.clone()),
-            XCellValue::Vector2(v) => serde_json::Value::Array(vec![
-                serde_json::Value::Number(serde_json::Number::from_f64(v[0] as f64).unwrap()),
-                serde_json::Value::Number(serde_json::Number::from_f64(v[1] as f64).unwrap())
-            ]),
-            XCellValue::Vector3(v) => serde_json::Value::Array(vec![
-                serde_json::Value::Number(serde_json::Number::from_f64(v[0] as f64).unwrap()),
-                serde_json::Value::Number(serde_json::Number::from_f64(v[1] as f64).unwrap()),
-                serde_json::Value::Number(serde_json::Number::from_f64(v[2] as f64).unwrap())
-            ]),
-            XCellValue::Vector4(v) => serde_json::Value::Array(vec![
-                serde_json::Value::Number(serde_json::Number::from_f64(v[0] as f64).unwrap()),
-                serde_json::Value::Number(serde_json::Number::from_f64(v[1] as f64).unwrap()),
-                serde_json::Value::Number(serde_json::Number::from_f64(v[2] as f64).unwrap()),
-                serde_json::Value::Number(serde_json::Number::from_f64(v[3] as f64).unwrap())
-            ]),
-            XCellValue::Quaternion4(v) => serde_json::Value::Array(vec![
-                serde_json::Value::Number(serde_json::Number::from_f64(v[0] as f64).unwrap()),
-                serde_json::Value::Number(serde_json::Number::from_f64(v[1] as f64).unwrap()),
-                serde_json::Value::Number(serde_json::Number::from_f64(v[2] as f64).unwrap()),
-                serde_json::Value::Number(serde_json::Number::from_f64(v[3] as f64).unwrap())
-            ]),
-            XCellValue::Color(c) => serde_json::Value::Object(serde_json::Map::from_iter(vec![
-                ("r".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(c.r as f64).unwrap())),
-                ("g".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(c.g as f64).unwrap())),
-                ("b".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(c.b as f64).unwrap())),
-                ("a".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(c.a as f64).unwrap()))
-            ])),
-            XCellValue::Vector(v) => serde_json::Value::Array(
-                v.iter().map(|item| self.convert_xcell_value_to_json(item)).collect()
-            ),
-            XCellValue::Enumerate(s) => serde_json::Value::String(s.clone()),
+            XCellValue::Boolean(b) => self.convert_boolean_to_json(*b),
+            XCellValue::Integer8(i) => self.convert_integer_to_json(*i),
+            XCellValue::Integer16(i) => self.convert_integer_to_json(*i),
+            XCellValue::Integer32(i) => self.convert_integer_to_json(*i),
+            XCellValue::Integer64(i) => self.convert_integer_to_json(*i),
+            XCellValue::Unsigned8(u) => self.convert_unsigned_to_json(*u),
+            XCellValue::Unsigned16(u) => self.convert_unsigned_to_json(*u),
+            XCellValue::Unsigned32(u) => self.convert_unsigned_to_json(*u),
+            XCellValue::Unsigned64(u) => self.convert_unsigned_to_json(*u),
+            XCellValue::Float32(f) => self.convert_float_to_json(*f as f64),
+            XCellValue::Float64(f) => self.convert_float_to_json(*f),
+            XCellValue::String(s) => self.convert_string_to_json(s),
+            XCellValue::Vector2(v) => self.convert_vector2_to_json(v),
+            XCellValue::Vector3(v) => self.convert_vector3_to_json(v),
+            XCellValue::Vector4(v) => self.convert_vector4_to_json(v),
+            XCellValue::Quaternion4(v) => self.convert_quaternion4_to_json(v),
+            XCellValue::Color(c) => self.convert_color_to_json(c),
+            XCellValue::Vector(v) => self.convert_vector_to_json(v),
+            XCellValue::Enumerate(s) => self.convert_enumerate_to_json(s),
             _ => serde_json::Value::Null,
         }
+    }
+    
+    /// 将布尔值转换为 JSON
+    fn convert_boolean_to_json(&self, value: bool) -> serde_json::Value {
+        serde_json::Value::Bool(value)
+    }
+    
+    /// 将整数转换为 JSON
+    fn convert_integer_to_json<T: Into<u64>>(&self, value: T) -> serde_json::Value {
+        serde_json::Value::Number(serde_json::Number::from(value.into()))
+    }
+    
+    /// 将无符号整数转换为 JSON
+    fn convert_unsigned_to_json<T: Into<u64>>(&self, value: T) -> serde_json::Value {
+        serde_json::Value::Number(serde_json::Number::from(value.into()))
+    }
+    
+    /// 将浮点数转换为 JSON
+    fn convert_float_to_json(&self, value: f64) -> serde_json::Value {
+        serde_json::Value::Number(serde_json::Number::from_f64(value).unwrap())
+    }
+    
+    /// 将字符串转换为 JSON
+    fn convert_string_to_json(&self, value: &str) -> serde_json::Value {
+        serde_json::Value::String(value.to_string())
+    }
+    
+    /// 将 Vector2 转换为 JSON
+    fn convert_vector2_to_json(&self, value: &[f32; 2]) -> serde_json::Value {
+        serde_json::Value::Array(vec![
+            self.convert_float_to_json(value[0] as f64),
+            self.convert_float_to_json(value[1] as f64)
+        ])
+    }
+    
+    /// 将 Vector3 转换为 JSON
+    fn convert_vector3_to_json(&self, value: &[f32; 3]) -> serde_json::Value {
+        serde_json::Value::Array(vec![
+            self.convert_float_to_json(value[0] as f64),
+            self.convert_float_to_json(value[1] as f64),
+            self.convert_float_to_json(value[2] as f64)
+        ])
+    }
+    
+    /// 将 Vector4 转换为 JSON
+    fn convert_vector4_to_json(&self, value: &[f32; 4]) -> serde_json::Value {
+        serde_json::Value::Array(vec![
+            self.convert_float_to_json(value[0] as f64),
+            self.convert_float_to_json(value[1] as f64),
+            self.convert_float_to_json(value[2] as f64),
+            self.convert_float_to_json(value[3] as f64)
+        ])
+    }
+    
+    /// 将 Quaternion4 转换为 JSON
+    fn convert_quaternion4_to_json(&self, value: &[f32; 4]) -> serde_json::Value {
+        serde_json::Value::Array(vec![
+            self.convert_float_to_json(value[0] as f64),
+            self.convert_float_to_json(value[1] as f64),
+            self.convert_float_to_json(value[2] as f64),
+            self.convert_float_to_json(value[3] as f64)
+        ])
+    }
+    
+    /// 将 Color 转换为 JSON
+    fn convert_color_to_json(&self, value: &xcell_types::value::Color) -> serde_json::Value {
+        serde_json::Value::Object(serde_json::Map::from_iter(vec![
+            ("r".to_string(), self.convert_float_to_json(value.r as f64)),
+            ("g".to_string(), self.convert_float_to_json(value.g as f64)),
+            ("b".to_string(), self.convert_float_to_json(value.b as f64)),
+            ("a".to_string(), self.convert_float_to_json(value.a as f64))
+        ]))
+    }
+    
+    /// 将 Vector 转换为 JSON
+    fn convert_vector_to_json(&self, value: &Vec<XCellValue>) -> serde_json::Value {
+        serde_json::Value::Array(
+            value.iter().map(|item| self.convert_xcell_value_to_json(item)).collect()
+        )
+    }
+    
+    /// 将 Enumerate 转换为 JSON
+    fn convert_enumerate_to_json(&self, value: &str) -> serde_json::Value {
+        serde_json::Value::String(value.to_string())
     }
     
 
@@ -814,15 +1083,15 @@ impl CocosCodegen {
 
 impl super::Codegen for CocosCodegen {
     fn generate(&self, context: &super::CodegenContext) -> XResult<()> {
-        println!("CocosCodegen::generate called");
-        println!("Output directory: {:?}", context.output_dir);
+        tracing::info!("CocosCodegen::generate called");
+        tracing::info!("Output directory: {:?}", context.output_dir);
         
         if let Some(workspace) = &context.workspace {
-            println!("Workspace root: {:?}", workspace.config.root);
+            tracing::info!("Workspace root: {:?}", workspace.config.root);
             
             for generator in &workspace.config.generators {
                 if let xcell_config::project::Generator::Cocos(cocos_config) = generator {
-                    let cocos_codegen = CocosCodegen {
+                    let mut cocos_codegen = CocosCodegen {
                         storage: match &cocos_config.storage {
                             xcell_config::cocos::CocosStorage::Json(config) => CocosStorage {
                                 json: CocosJsonConfig {
@@ -839,22 +1108,37 @@ impl super::Codegen for CocosCodegen {
                         suffix_table: cocos_config.suffix_table.clone(),
                         instance_name: cocos_config.instance_name.clone(),
                         table_data_path: cocos_config.table_data_path.clone(),
+                        special_fields: Some(vec!["type".to_string(), "level".to_string(), "level_requirement".to_string(), "drop_items".to_string(), "skills".to_string(), "unlock_skills".to_string()]),
+                        special_classes: Some(vec!["Monster".to_string(), "Skill".to_string()]),
+                        enum_suffixes: Some(vec!["Type".to_string(), "Kind".to_string()]),
+                        type_mappings: Some(vec![
+                            TypeMapping { rust_type: "i32".to_string(), ts_type: "number".to_string() },
+                            TypeMapping { rust_type: "i64".to_string(), ts_type: "number".to_string() },
+                            TypeMapping { rust_type: "u32".to_string(), ts_type: "number".to_string() },
+                            TypeMapping { rust_type: "u64".to_string(), ts_type: "number".to_string() },
+                            TypeMapping { rust_type: "f32".to_string(), ts_type: "number".to_string() },
+                            TypeMapping { rust_type: "f64".to_string(), ts_type: "number".to_string() },
+                            TypeMapping { rust_type: "text".to_string(), ts_type: "string".to_string() },
+                            TypeMapping { rust_type: "string".to_string(), ts_type: "string".to_string() },
+                            TypeMapping { rust_type: "any".to_string(), ts_type: "string".to_string() },
+                        ]),
+                        cache: Default::default(),
                     };
                     
-                    println!("Cocos codegen enable: {}", cocos_codegen.enable);
-                    println!("Cocos project: {}", cocos_codegen.project);
-                    println!("Cocos output: {}", cocos_codegen.output);
+                    tracing::info!("Cocos codegen enable: {}", cocos_codegen.enable);
+                    tracing::info!("Cocos project: {}", cocos_codegen.project);
+                    tracing::info!("Cocos output: {}", cocos_codegen.output);
                     
-                    println!("Calling write_typescript");
+                    tracing::info!("Calling write_typescript");
                     cocos_codegen.write_typescript(workspace)?;
-                    println!("write_typescript completed");
-                    println!("Calling write_json");
+                    tracing::info!("write_typescript completed");
+                    tracing::info!("Calling write_json");
                     cocos_codegen.write_json(workspace)?;
-                    println!("write_json completed");
+                    tracing::info!("write_json completed");
                 }
             }
         } else {
-            println!("No workspace manager in context");
+            tracing::warn!("No workspace manager in context");
         }
         Ok(())
     }

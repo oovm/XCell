@@ -4,8 +4,8 @@ use dejavu_macros::Template;
 use dejavu::Template;
 
 #[derive(Template)]
-#[template(path = "BuildManager.ts", ext = "txt", escape = "none")]
-pub struct CocosManager {
+#[template(path = "BuildManager.ts", escape = "none")]
+pub struct CocosManagerTemplate {
     /// Compiler version
     compiler_version: &'static str,
     /// Manager name

@@ -5,30 +5,30 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace {{ namespace }}
+namespace <% namespace %>
 {
     /// <summary>
-    /// {{ class_name }}表数据结构
+    /// <% class_name %>表数据结构
     /// </summary>
-    public class {{ class_name }}
+    public class <% class_name %>
     {
 {% for item in items %}
         /// <summary>
-        /// {{ item.field }}
+        /// <% item.field %>
         /// </summary>
-        public {{ item.type }} {{ item.field }} { get; set; }
+        public <% item.type %> <% item.field %> { get; set; }
 {% endfor %}
     }
 
     /// <summary>
-    /// {{ class_name }}表加载器
+    /// <% class_name %>表加载器
     /// </summary>
-    public static class {{ table_name }}
+    public static class <% table_name %>
     {
-        private static Dictionary<string, {{ class_name }}> items = new Dictionary<string, {{ class_name }}>();
+        private static Dictionary<string, <% class_name %>> items = new Dictionary<string, <% class_name %>>();
 
         /// <summary>
-        /// 加载{{ class_name }}表数据
+        /// 加载<% class_name %>表数据
         /// </summary>
         public static void Load()
         {
@@ -37,7 +37,7 @@ namespace {{ namespace }}
             LoadSampleData();
             
             // 存储到 DataTableManager
-            DataTableManager.Instance.SetTable("{{ class_name }}", items);
+            DataTableManager.Instance.SetTable("<% class_name %>", items);
         }
 
         /// <summary>
@@ -52,11 +52,11 @@ namespace {{ namespace }}
         }
 
         /// <summary>
-        /// 根据ID获取{{ class_name }}
+        /// 根据ID获取<% class_name %>
         /// </summary>
         /// <param name="id">ID</param>
         /// <returns>实例</returns>
-        public static {{ class_name }} Get{{ class_name }}ById(string id)
+        public static <% class_name %> Get<% class_name %>ById(string id)
         {
             if (items.TryGetValue(id, out var item))
             {
@@ -66,12 +66,12 @@ namespace {{ namespace }}
         }
 
         /// <summary>
-        /// 获取所有{{ class_name }}
+        /// 获取所有<% class_name %>
         /// </summary>
         /// <returns>列表</returns>
-        public static List<{{ class_name }}> GetAll{{ class_name }}()
+        public static List<<% class_name %>> GetAll<% class_name %>()
         {
-            return new List<{{ class_name }}>(items.Values);
+            return new List<<% class_name %>>(items.Values);
         }
     }
 }

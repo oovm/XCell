@@ -8,8 +8,8 @@ use xcell_analyzer::{UnityCodegen, WorkspaceManager};
 use xcell_types::{XCellValue, XError, XResult};
 
 #[derive(Template)]
-#[template(path = "BuildManager.cs", ext = "txt", escape = "none")]
-pub struct UnityManager {
+#[template(path = "BuildManager.cs", escape = "none")]
+pub struct UnityManagerTemplate {
     compiler_version: &'static str,
     data_version: String,
     edit_time: String,

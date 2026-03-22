@@ -1,4 +1,4 @@
-// 代码生成, 修改无效! (XCell {{ compiler_version }})
+// 代码生成, 修改无效! (XCell <% compiler_version %>)
 // ReSharper disable RedundantNullableDirective, RedundantUsingDirective
 // ReSharper disable EnumUnderlyingTypeIsInt
 // ReSharper disable CheckNamespace
@@ -8,31 +8,31 @@ using System;
 using System.Runtime.Serialization;
 using UnityEngine;
 
-namespace {{ config.namespace }}
+namespace <% config.namespace %>
 {
     [DataContract, Serializable]
-    public enum {{ class_name }}: {{ id_type }}
+    public enum <% class_name %>: <% id_type %>
     {
 <%- for field in enumerate_ids %>
     <%- for line in field.document %>
-        /// {{ line }}
+        /// <% line %>
     <%- endfor %>
-        [EnumMember] {{ field.key }} = {{ field.value }},
+        [EnumMember] <% field.key %> = <% field.value %>,
 <%- endfor %>
     }
 
-    public static class {{ class_name }}Extension
+    public static class <% class_name %>Extension
     {
 <%- for field in enumerate_fields %>
     <%- for line in field.document %>
-        /// {{ line }}
+        /// <% line %>
     <%- endfor %>
-        public static {{ field.typing }} {{ field.getter }}(this {{ class_name }} self)
+        public static <% field.typing %> <% field.getter %>(this <% class_name %> self)
         {
             return self switch
             {
             <%- for line in field.switch %>
-                {{ class_name }}.{{ line.key }} => {{ line.value }},
+                <% class_name %>.<% line.key %> => <% line.value %>,
             <%- endfor %>
                 _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
             };

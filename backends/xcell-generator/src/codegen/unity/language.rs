@@ -8,8 +8,8 @@ use xcell_analyzer::{UnityCodegen, WorkspaceManager};
 use xcell_types::{XError, XResult};
 
 #[derive(Template)]
-#[template(path = "BuildLanguage.cs", ext = "txt", escape = "none")]
-pub struct UnityLanguage {
+#[template(path = "BuildLanguage.cs", escape = "none")]
+pub struct UnityLanguageTemplate {
     compiler_version: &'static str,
     binary_path: String,
     config: UnityCodegen,

@@ -1,54 +1,223 @@
-# AI Company 文件
 
-歡迎閱讀 AI Company 專案文件！本目錄包含 AI Company 系統的完整中文文件。
+# 快速開始
 
-## 文件結構
+本教學屆指屭您從零開始使用 XCell 設定資料表管理工具。
 
-### 概述 (overview/)
-- [index.md](overview/index.md) - 概述文件索引
-- [super-individual.md](overview/super-individual.md) - 超級個體
-- [solo-company.md](overview/solo-company.md) - 一人公司（Solo Company，簡稱 OPC）
+## 環境准獎
 
-### 核心概念 (concepts/)
-- [index.md](concepts/index.md) - 核心概念文件索引
-- [organization.md](concepts/organization.md) - 組織：組織架構範本
-- [project.md](concepts/project.md) - 專案：專案範本
-- [agent-cluster.md](concepts/agent-cluster.md) - 團隊：Agent Groups
-- [agent.md](concepts/agent.md) - 員工：Agent Skills
-- [workers.md](concepts/workers.md) - 工作節點
-- [workspaces.md](concepts/workspaces.md) - 工作區
-- [workflows.md](concepts/workflows.md) - 工作流程
+### 系統要求
 
-### 維護者文件 (maintainer/)
-- [index.md](maintainer/index.md) - 維護者文件索引
-- [data-models.md](maintainer/data-models.md) - 資料模型與儲存
-- [agent-core.md](maintainer/agent-core.md) - 智慧體（Agent）核心定義
-- [technology-choices.md](maintainer/technology-choices.md) - 技術選型
+- Windows 作業系統
+- Rust 開發環境（如需從原始碼編譯）
 
-### 架構設計 (maintainer/architecture/)
-- [index.md](maintainer/architecture/index.md) - 架構設計文件索引
-- [decentralization.md](maintainer/architecture/decentralization.md) - 去中心化設計：系統的核心安全設計理念
+### 安装方式
 
-### Skynet 協定 (maintainer/skynet/)
-- [index.md](maintainer/skynet/index.md) - Skynet 協定文件索引
-- [skynet.md](maintainer/skynet/skynet.md) - Skynet 協定設計草案
-- [subnets.md](maintainer/skynet/subnets.md) - 子網模型
+#### 方式一：使用预編譯版本
 
-### 教程 (tutorials/)
-- [index.md](tutorials/index.md) - 教程文件索引
-- [use-cases/](tutorials/use-cases/index.md) - 具體使用場景
-- [user-workflow.md](tutorials/user-workflow.md) - 使用者工作流程
+1. 從專案發布页面下载最新的 `xcell.exe`
+2. 屆 `xcell.exe` 放置到您的專案目錄中
 
-### 進階主題 (advanced/)
-- [index.md](advanced/index.md) - 進階主題文件索引
-- [extensibility-ecosystem.md](advanced/extensibility-ecosystem.md) - 擴展性與生態
+#### 方式二：從原始碼編譯
 
-## 快速開始
+1. 确保已安装 Rust 開發環境
+2. 複製或下载專案原始碼
+3. 在專案根目錄執行：
 
-1. 從 [概述](overview/index.md) 開始，了解 AI Company 的核心理念
-2. 閱讀 [核心概念](concepts/index.md) 理解系統的基本概念
-3. 根據需要查看 [教程](tutorials/index.md) 或 [維護者文件](maintainer/index.md)
+```bash
+cargo build --release
+```
 
-## 關於 AI Company
+4. 編譯完成唕，可執行檔案位元於 `target/release/xcell.exe`
 
-AI Company 是一個智慧協作系統，讓使用者能夠像管理真實公司一樣管理 AI 智慧體，打造屬於自己的一人公司。
+## 專案初始化
+
+### 建立專案结构
+
+在您的工作目錄中建立以下结构：
+
+```
+MyProject/
+├── xcell.exe
+├── ProjectConfig.toml
+└── Tables/
+    └── Hero.xlsx
+```
+
+### 建立設定檔案
+
+在專案根目錄建立 `ProjectConfig.toml` 檔案：
+
+```toml
+version = "0.1.0"
+
+exclude = ""
+include = "*.xlsx"
+
+line.field = 1
+line.type = 2
+line.comment = 3
+line.data = 4
+
+[type.bool]
+accept = ["true", "√"]
+reject = ["false", "x"]
+
+[type.string]
+
+[unity]
+enable = true
+project = "./"
+output = "Assets/Scripts/DataTable/Generated"
+namespace = "DataTable.Generated"
+manager = "DataTableManager"
+suffix_table = "Table"
+suffix_element = "Element"
+support_clone = true
+legacy_using = false
+legacy_null_null = false
+
+[unity.binary]
+enable = true
+output = "Assets/Tables/Generated"
+
+[unity.xlua]
+enable = false
+
+[unity.xml]
+enable = false
+output = "Assets/Tables/Readable"
+
+[unity.json]
+enable = false
+output = "Assets/Tables/Readable"
+
+[unity.protobuf]
+enable = false
+```
+
+## 建立第一個設定資料表
+
+### Excel 資料表格结构
+
+XCell 使用特定的 Excel 資料表格结构，前 3 行為資料表婦，從第 4 行開始是資料：
+
+| 行後 | 用途 | 说明 |
+|------|------|------|
+| 1 | 欄位元名 | 設定資料表的欄位元名称 |
+| 2 | 資料類型 | 欄位元的資料類型 |
+| 3 | 註解 | 欄位元的说明文字 |
+| 4+ | 資料行 | 導际的設定資料 |
+
+### 範例資料表格
+
+建立 `Tables/Hero.xlsx` 資料表格：
+
+| id | name | hp | attack | is_boss |
+|----|------|----|--------|---------|
+| int | string | int | int | bool |
+| 英雄ID | 英雄名称 | 生命值 | 攻擊力 | 是否Boss |
+| 1 | 骑士 | 1000 | 100 | false |
+| 2 | 法幹 | 800 | 150 | false |
+| 3 | 巨龙 | 5000 | 500 | true |
+
+## 執行 XCell
+
+### 基本命令
+
+在專案根目錄打开命令列，執行：
+
+```bash
+xcell.exe
+```
+
+XCell 會自勁：
+1. 扫描当前目錄下的所有 Excel 資料表格
+2. 驗證資料表格資料
+3. 生成盡应的 C# 程式碼和二進位元資料檔案
+
+### 命令列選項
+
+```bash
+xcell.exe [OPTIONS] [COMMAND]
+```
+
+#### 命令
+
+- `check`: 檢查設定資料表，但不匯出任何檔案
+- `clear`: 清除資料程式庫與快取
+
+#### 選項
+
+- `--workspace <WORKSPACE>`: 手勁設定工作目錄，不輸入資料表示当前目錄
+- `-w, --watch`: 啟用監聽模式，当有檔案修改时只更新盡应檔案
+- `--disable-xml`: 强制關閉 xml 生成
+- `--disable-json`: 强制關閉 json 生成
+- `-h, --help`: 顯示說明
+- `-V, --version`: 顯示版本
+
+### 使用範例
+
+#### 檢查設定資料表
+
+```bash
+xcell.exe check
+```
+
+#### 啟用監聽模式
+
+```bash
+xcell.exe --watch
+```
+
+#### 清除快取
+
+```bash
+xcell.exe clear
+```
+
+## 查看生成结果
+
+執行成功唕，您屆看到以下生成的檔案：
+
+```
+MyProject/
+├── Assets/
+│   ├── Scripts/DataTable/Generated/
+│   │   ├── HeroTable.cs
+│   │   └── DataTableManager.cs
+│   └── Tables/Generated/
+│       └── HeroTable.bytes
+```
+
+### 生成的 C# 程式碼範例
+
+`HeroTable.cs` 屆套件含類別似以下冊容：
+
+```csharp
+namespace DataTable.Generated
+{
+    public partial class HeroTable
+    {
+        public readonly Dictionary<int, HeroElement> dict = new();
+
+        public HeroElement GetElement(int id)
+        {
+            return dict.TryGetValue(id, out var item) ? item : null;
+        }
+    }
+
+    public partial class HeroElement
+    {
+        public int id;
+        public string name;
+        public int hp;
+        public int attack;
+        public bool is_boss;
+    }
+}
+```
+
+## 下一步
+
+- 查看 [使用場景索引](use-cases/index.md) 了解更多具餘套用
+- Unity 使用者可以參考 [Unity 集成](use-cases/unity-integration.md) 文件

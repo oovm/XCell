@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using UnityEngine;
 
-namespace <% config.namespace %>
+namespace <% namespace %>
 {
     [DataContract, Serializable]
     public partial class <% class_name %>
@@ -28,7 +28,7 @@ namespace <% config.namespace %>
     <% end if %>
 <% end loop %>
     }
-<% if config.support_clone %>
+<% if support_clone %>
     public partial class <% class_name %> : ICloneable
     {
         /// <inheritdoc cref="ICloneable.Clone"/>

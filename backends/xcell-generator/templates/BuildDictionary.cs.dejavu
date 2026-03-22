@@ -12,11 +12,11 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using UnityEngine;
-<% if config.addressable %>
+<% if addressable %>
 using UnityEngine.AddressableAssets;
 <% end if %>
 
-namespace <% config.namespace %>
+namespace <% namespace %>
 {
     [DataContract, Serializable]
     public partial class <% table_name %>: IReadOnlyDictionary<<% id_type %>, <% class_name %>Element>
@@ -67,15 +67,15 @@ namespace <% config.namespace %>
     <% end if %>
 <% end loop %>
     }
-<% if config.binary.enable %>
+<% if binary_enable %>
     public partial class <% table_name %> : IBinarySupport
     {
         public <% table_name %>()
         {
-    <% if config.addressable %>
-            BinaryRead("<% config.binary.addressable %>/<% table_name %>.bytes");
+    <% if addressable %>
+            BinaryRead("<% binary_addressable %>/<% table_name %>.bytes");
     <% else %>
-            BinaryRead("<% config.binary.output %>/<% table_name %>.bytes");
+            BinaryRead("<% binary_output %>/<% table_name %>.bytes");
     <% end if %>
         }
         /// <summary>

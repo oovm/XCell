@@ -11,14 +11,14 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Xml;
 
-namespace <% config.namespace %>
+namespace <% namespace %>
 {
     /// <summary>
     /// 热更新资源直接 set 即可
     ///
     /// 释放资源直接将表设为 null 即可
     /// </summary>
-    public partial class <% config.manager %>
+    public partial class <% manager_name %>
     {
         /// <summary>
         /// 配置表的版本号
@@ -32,14 +32,14 @@ namespace <% config.namespace %>
         /// <remarks>自动生成</remarks>
         public DateTime TableEditTime = <% edit_time %>;
 
-        private static readonly Lazy<<% config.manager %>> singleton = new(() => new <% config.manager %>());
-        public static <% config.manager %> Instance => singleton.Value;
+        private static readonly Lazy<<% manager_name %>> singleton = new(() => new <% manager_name %>());
+        public static <% manager_name %> Instance => singleton.Value;
 <% loop table in tables %>
         private <% table.typing %>? <% table.private_name %>;
-        /// <inheritdoc cref="<% config.namespace %>.<% table.typing %>" />
+        /// <inheritdoc cref="<% namespace %>.<% table.typing %>" />
         public <% table.typing %> <% table.public_name %>
         {
-<% if config.legacy_null_null %>
+<% if legacy_null_null %>
             get { return <% table.private_name %> != null ? <% table.private_name %> : new <% table.typing %>(); }
 <% else %>
             get => <% table.private_name %> ??= new <% table.typing %>();

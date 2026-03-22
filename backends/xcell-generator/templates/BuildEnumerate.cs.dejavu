@@ -8,7 +8,7 @@ using System;
 using System.Runtime.Serialization;
 using UnityEngine;
 
-namespace <% config.namespace %>
+namespace <% namespace %>
 {
     [DataContract, Serializable]
     public enum <% class_name %>: <% id_type %>

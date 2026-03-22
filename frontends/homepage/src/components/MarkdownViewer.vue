@@ -10,50 +10,32 @@ import { marked } from "marked";
 import * as shiki from "shiki";
 
 interface Props {
-	content: string;
+  content: string;
 }
 
 const props = defineProps<Props>();
 const contentRef = ref<HTMLElement | null>(null);
 
-// 配置 marked 解析器
 const renderer = new marked.Renderer();
 
-// 生成唯一标识符
 let codeBlockId = 0;
 
-// 代码高亮函数
-async function highlightCode(code: string, language: string) {
-	try {
-		const highlighter = await shiki.getHighlighter({ theme: "github-dark" });
-		return highlighter.codeToHtml(code, { lang: language });
-	} catch (error) {
-		console.error("Error highlighting code:", error);
-		return `<pre><code class="language-${language}">${code}</code></pre>`;
-	}
-}
+renderer.code = function (data: { text: string; lang?: string; escaped?: boolean }) {
+  const { text, lang } = data;
+  if (!lang) {
+    return `<pre><code>${text}</code></pre>`;
+  }
 
-// 自定义代码块渲染
-renderer.code = function (code: string, language: string | undefined) {
-	if (!language) {
-		return `<pre><code>${code}</code></pre>`;
-	}
+  const parts = lang.split(":");
+  const language = parts[0];
+  const platform = parts[1] || "default";
 
-	// 解析平台信息，格式：language:platform
-	const parts = language.split(":");
-	const lang = parts[0];
-	const platform = parts[1] || "default";
+  const id = `code-block-${codeBlockId++}`;
 
-	// 生成唯一 ID
-	const id = `code-block-${codeBlockId++}`;
+  const codeString = typeof text === "string" ? text : String(text);
 
-	// 确保 code 是字符串
-	const codeString = typeof code === "string" ? code : String(code);
-
-	// 使用普通代码块，后续通过异步方式添加高亮
-	// 因为 renderer.code 是同步函数，无法直接使用异步的 shiki API
-	if (platform !== "default") {
-		return `
+  if (platform !== "default") {
+    return `
       <div class="code-platform-container" data-code-block-id="${id}">
         <div class="code-platform-switcher mb-4">
           <div class="flex flex-wrap gap-2">
@@ -73,139 +55,127 @@ renderer.code = function (code: string, language: string | undefined) {
             </button>
           </div>
         </div>
-        <pre><code class="language-${lang}" data-code="${codeString}" data-language="${lang}" data-code-block-id="${id}">${codeString}</code></pre>
+        <pre><code class="language-${language}" data-code="${codeString}" data-language="${language}" data-code-block-id="${id}">${codeString}</code></pre>
       </div>
     `;
-	}
+  }
 
-	return `<pre><code class="language-${lang}" data-code="${codeString}" data-language="${lang}">${codeString}</code></pre>`;
+  return `<pre><code class="language-${language}" data-code="${codeString}" data-language="${language}">${codeString}</code></pre>`;
 };
 
-// 自定义超链接渲染，修复超链接问题
-renderer.link = function (href: string, title: string | null, text: string) {
-	// 处理相对路径
-	let processedHref = href;
-	if (href && !href.startsWith("http://") && !href.startsWith("https://")) {
-		// 假设相对路径是指向文档的
-		processedHref = `/document${href}`;
-	}
+renderer.link = function (data: { href: string; title?: string | null; text: string }) {
+  const { href, title, text } = data;
+  let processedHref = href;
+  if (href && !href.startsWith("http://") && !href.startsWith("https://")) {
+    processedHref = `/document${href}`;
+  }
 
-	const titleAttr = title ? ` title="${title}"` : "";
-	return `<a href="${processedHref}"${titleAttr} class="text-primary-600 hover:text-primary-700 underline">${text}</a>`;
+  const titleAttr = title ? ` title="${title}"` : "";
+  return `<a href="${processedHref}"${titleAttr} class="text-primary-600 hover:text-primary-700 underline">${text}</a>`;
 };
 
 marked.use({
-	renderer,
+  renderer,
 });
 
 const renderedContent = computed(() => {
-	// 确保 content 是字符串
-	const contentString =
-		typeof props.content === "string" ? props.content : String(props.content);
-	const content = contentString.replace(/^---\n[\s\S]*?\n---/, "");
-	// 使用 marked.parse 的正确方法获取字符串
-	return marked.parse(content).toString();
+  const contentString =
+    typeof props.content === "string" ? props.content : String(props.content);
+  const content = contentString.replace(/^---\n[\s\S]*?\n---/, "");
+  return marked.parse(content).toString();
 });
 
-// 平台切换逻辑
 function setupPlatformSwitching() {
-	if (!contentRef.value) return;
+  if (!contentRef.value) return;
 
-	// 为所有平台切换按钮添加点击事件
-	const switchButtons = contentRef.value.querySelectorAll(
-		".code-platform-switcher button",
-	);
-	switchButtons.forEach((button) => {
-		button.addEventListener("click", (e) => {
-			const target = e.currentTarget as HTMLElement;
-			const platform = target.dataset.platform;
-			const codeBlockId = target.dataset.codeBlockId;
+  const switchButtons = contentRef.value.querySelectorAll(
+    ".code-platform-switcher button",
+  );
+  switchButtons.forEach((button) => {
+    button.addEventListener("click", (e) => {
+      const target = e.currentTarget as HTMLElement;
+      const platform = target.dataset.platform;
+      const codeBlockId = target.dataset.codeBlockId;
 
-			if (platform && codeBlockId) {
-				// 更新按钮状态
-				const container = contentRef.value?.querySelector(
-					`[data-code-block-id="${codeBlockId}"]`,
-				);
-				if (container) {
-					const buttons = container.querySelectorAll(
-						".code-platform-switcher button",
-					);
-					buttons.forEach((btn) => {
-						btn.classList.remove(
-							"active",
-							"bg-white/10",
-							"text-white",
-							"border",
-							"border-white/10",
-						);
-						btn.classList.add(
-							"text-slate-400",
-							"hover:text-white",
-							"hover:bg-white/5",
-							"border-transparent",
-						);
-					});
+      if (platform && codeBlockId) {
+        const container = contentRef.value?.querySelector(
+          `[data-code-block-id="${codeBlockId}"]`,
+        );
+        if (container) {
+          const buttons = container.querySelectorAll(
+            ".code-platform-switcher button",
+          );
+          buttons.forEach((btn) => {
+            btn.classList.remove(
+              "active",
+              "bg-white/10",
+              "text-white",
+              "border",
+              "border-white/10",
+            );
+            btn.classList.add(
+              "text-slate-400",
+              "hover:text-white",
+              "hover:bg-white/5",
+              "border-transparent",
+            );
+          });
 
-					target.classList.add(
-						"active",
-						"bg-white/10",
-						"text-white",
-						"border",
-						"border-white/10",
-					);
-					target.classList.remove(
-						"text-slate-400",
-						"hover:text-white",
-						"hover:bg-white/5",
-						"border-transparent",
-					);
+          target.classList.add(
+            "active",
+            "bg-white/10",
+            "text-white",
+            "border",
+            "border-white/10",
+          );
+          target.classList.remove(
+            "text-slate-400",
+            "hover:text-white",
+            "hover:bg-white/5",
+            "border-transparent",
+          );
 
-					// 这里可以添加代码切换逻辑
-					// 实际项目中，可能需要从服务器或本地存储获取不同平台的代码
-					console.log(`Switching to ${platform} for code block ${codeBlockId}`);
-				}
-			}
-		});
-	});
+          console.log(`Switching to ${platform} for code block ${codeBlockId}`);
+        }
+      }
+    });
+  });
 }
 
-// 代码高亮逻辑
 async function setupCodeHighlighting() {
-	if (!contentRef.value) return;
+  if (!contentRef.value) return;
 
-	try {
-		// 直接使用 shiki 的 codeToHtml 函数，这是更简单的方式
-		const codeBlocks = contentRef.value.querySelectorAll("pre code");
-		codeBlocks.forEach(async (codeElement) => {
-			// 优先使用 data-code 属性中的代码内容
-			const code = codeElement.dataset.code || codeElement.textContent || "";
-			const language =
-				codeElement.dataset.language ||
-				codeElement.className.replace("language-", "") ||
-				"text";
+  try {
+    const codeBlocks = contentRef.value.querySelectorAll("pre code");
+    for (const codeElement of codeBlocks) {
+      const htmlElement = codeElement as HTMLElement;
+      const code = htmlElement.dataset.code || htmlElement.textContent || "";
+      const language =
+        htmlElement.dataset.language ||
+        htmlElement.className.replace("language-", "") ||
+        "text";
 
-			try {
-				// 使用 shiki 的 codeToHtml 函数直接生成高亮代码
-				const highlightedCode = await shiki.codeToHtml(code, {
-					lang: language,
-					theme: "github-dark",
-				});
-				const preElement = codeElement.parentElement;
-				if (preElement) {
-					preElement.innerHTML = highlightedCode;
-				}
-			} catch (error) {
-				console.error("Error highlighting code:", error);
-			}
-		});
-	} catch (error) {
-		console.error("Error setting up code highlighting:", error);
-	}
+      try {
+        const highlightedCode = await shiki.codeToHtml(code, {
+          lang: language,
+          theme: "github-dark",
+        });
+        const preElement = htmlElement.parentElement;
+        if (preElement) {
+          preElement.innerHTML = highlightedCode;
+        }
+      } catch (error) {
+        console.error("Error highlighting code:", error);
+      }
+    }
+  } catch (error) {
+    console.error("Error setting up code highlighting:", error);
+  }
 }
 
 onMounted(async () => {
-	setupPlatformSwitching();
-	await setupCodeHighlighting();
+  setupPlatformSwitching();
+  await setupCodeHighlighting();
 });
 </script>
 
@@ -272,7 +242,6 @@ onMounted(async () => {
   @apply bg-gray-100 font-semibold text-gray-800;
 }
 
-/* 代码平台切换组件样式 */
 .markdown-viewer :deep(.code-platform-container) {
   @apply mb-6;
 }

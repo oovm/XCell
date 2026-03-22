@@ -320,24 +320,14 @@ impl Default for CocosCodegen {
 }
 
 /// CSV 文件缓存结构
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CsvCache {
     /// 字段信息缓存
     pub fields_cache: std::collections::HashMap<PathBuf, Vec<CocosField>>,
     /// 枚举数据缓存
     pub enum_cache: std::collections::HashMap<PathBuf, Vec<(u32, String, String)>>,
-    /// CSV 文件列表缓存
-    pub files_cache: Option<Vec<std::fs::DirEntry>>,
-}
-
-impl Default for CsvCache {
-    fn default() -> Self {
-        Self {
-            fields_cache: std::collections::HashMap::new(),
-            enum_cache: std::collections::HashMap::new(),
-            files_cache: None,
-        }
-    }
+    /// CSV 文件列表缓存（存储路径而非 DirEntry，因为 DirEntry 不实现 Clone）
+    pub files_cache: Option<Vec<PathBuf>>,
 }
 
 /// Cocos 代码生成器

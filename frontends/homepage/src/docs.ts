@@ -345,64 +345,6 @@ console.log(
 	languages.map((config) => config.code),
 );
 
-function buildDocTree(docs: DocNode[]): DocNode[] {
-	const nodeMap: Record<string, DocNode> = {};
-
-	// 定义一级节点 ID 列表
-	const rootNodeIds = ["overview", "concepts", "tutorials", "advanced"];
-
-	// 首先创建所有节点，并初始化 children 数组
-	docs.forEach((doc) => {
-		const node = { ...doc, children: [] };
-		nodeMap[doc.id] = node;
-	});
-
-	const root: DocNode[] = [];
-
-	// 构建树结构
-	docs.forEach((doc) => {
-		const node = nodeMap[doc.id];
-
-		// 检查是否是根节点：index 节点、一级节点或非目录节点
-		if (
-			node.id === "index" ||
-			rootNodeIds.includes(node.id) ||
-			!node.isDirectory
-		) {
-			// 根级节点，直接添加到根节点
-			if (!root.some((n) => n.id === node.id)) {
-				root.push(node);
-			}
-		} else {
-			// 子级节点，添加到对应目录节点
-			// 从 ID 中提取父目录 ID
-			const parentId = node.id.split("-")[0];
-			const parentNode = nodeMap[parentId];
-
-			if (parentNode && parentNode.children) {
-				// 确保不会重复添加
-				if (!parentNode.children.some((n) => n.id === node.id)) {
-					parentNode.children.push(node);
-				}
-			}
-		}
-	});
-
-	const sortNodes = (nodes: DocNode[]): DocNode[] => {
-		return nodes
-			.sort((a, b) => {
-				// 按顺序排序
-				return (a.order || 999) - (b.order || 999);
-			})
-			.map((node) => ({
-				...node,
-				children: node.children ? sortNodes(node.children) : undefined,
-			}));
-	};
-
-	return sortNodes(root);
-}
-
 export async function loadDocs(
 	language: string = "zh-hans",
 ): Promise<DocNode[]> {

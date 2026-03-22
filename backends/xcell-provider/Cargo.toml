@@ -15,6 +15,7 @@ concat-idents = { workspace = true }
 csv = { workspace = true }
 calamine = { workspace = true }
 xcell-core = { workspace = true }
+xcell-parser = { workspace = true }
 serde = { workspace = true }
 
 

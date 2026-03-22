@@ -6,6 +6,7 @@ use calamine::{Data, Reader};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use xcell_core::{IntegerKind, TypeMetaInfo, XCellTyped, XError, XErrorKind, XResult};
+pub use xcell_parser::FieldConstraint;
 
 /// 表格访问权限枚举
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -75,6 +76,8 @@ pub struct XCellHeader {
     pub document: XDocument,
     /// 是否完整
     pub complete: bool,
+    /// 字段约束
+    pub constraint: Option<FieldConstraint>,
 }
 
 /// 表格读取器 trait

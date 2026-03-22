@@ -43,6 +43,9 @@ workspace = true
 [dependencies.xcell-config]
 workspace = true
 
+[dependencies.xcell-parser]
+workspace = true
+
 [dev-dependencies]
 tracing-subscriber = { workspace = true }
 

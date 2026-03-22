@@ -2,17 +2,17 @@
 
 <% if config.namespace %>
 export namespace <% config.namespace %> {
-<% endif %>
+<% end if %>
 
 export enum <% class_name %> {
 <%- for field in enumerate_ids %>
     <%- for line in field.document %>
     /** <% line %> */
-    <%- endfor %>
+    <%- end for %>
     <% field.key %> = <% field.value %>,
-<%- endfor %>
+<%- end for %>
 }
 
 <% if config.namespace %>
 }
-<% endif %>
+<% end if %>

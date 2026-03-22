@@ -35,13 +35,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, onUnmounted, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { loadDocs, getDocContent, type DocNode } from "@/utils/docs";
 import MarkdownViewer from "@/components/MarkdownViewer.vue";
 import DocTreeNode from "@/components/DocTreeNode.vue";
 
 const router = useRouter();
+const route = useRoute();
 const docTree = ref<DocNode[]>([]);
 const currentDocPath = ref<string>("");
 const currentDoc = ref<DocNode | null>(null);
@@ -50,40 +51,50 @@ const currentLanguage = ref<string>(
 	localStorage.getItem("language") || "zh-hans",
 );
 const errorMessage = ref<string>("");
+const allDocs = ref<Map<string, DocNode>>(new Map());
+
+function buildDocMap(docs: DocNode[], map: Map<string, DocNode>) {
+	for (const doc of docs) {
+		map.set(doc.path, doc);
+		if (doc.children) {
+			buildDocMap(doc.children, map);
+		}
+	}
+}
+
+async function loadDocByPath(path: string) {
+	const doc = allDocs.value.get(path);
+	if (doc) {
+		await selectDoc(doc, false);
+	} else {
+		currentDoc.value = null;
+		currentDocContent.value = "";
+		errorMessage.value = `找不到文档: ${path}`;
+	}
+}
 
 async function init() {
 	try {
 		console.log("Initializing docs...");
 		console.log("Current language:", currentLanguage.value);
 
-		// 直接尝试加载 /document 路径的内容
-		console.log("Trying to load /document content directly...");
-		const directContent = await getDocContent(
-			"/document",
-			currentLanguage.value,
-		);
-		console.log("Direct content length:", directContent.length);
-		console.log("Direct content:", directContent);
-
-		// 尝试直接读取 readme.md 文件
-		const testFilePath = `./documentation/${currentLanguage.value}/readme.md`;
-		console.log(`Trying to read file directly: ${testFilePath}`);
-
 		docTree.value = await loadDocs(currentLanguage.value);
+		allDocs.value.clear();
+		buildDocMap(docTree.value, allDocs.value);
+
 		console.log("Loaded docTree:", docTree.value);
-		if (docTree.value.length > 0) {
-			console.log("First node:", docTree.value[0]);
+		console.log("All docs map size:", allDocs.value.size);
+
+		const urlPath = route.params.pathMatch as string | string[] | undefined;
+		const docPath = Array.isArray(urlPath) ? urlPath.join("/") : (urlPath || "");
+
+		if (docPath) {
+			await loadDocByPath(docPath);
+		} else if (docTree.value.length > 0) {
 			const firstDoc = findFirstDoc(docTree.value[0]);
-			console.log("First doc found:", firstDoc);
 			if (firstDoc) {
-				selectDoc(firstDoc);
-			} else {
-				console.log("No first doc found");
-				errorMessage.value = "No first doc found";
+				await selectDoc(firstDoc, true);
 			}
-		} else {
-			console.log("Doc tree is empty");
-			errorMessage.value = "Doc tree is empty";
 		}
 	} catch (error) {
 		console.error("Error initializing docs:", error);
@@ -101,24 +112,24 @@ function findFirstDoc(node: DocNode): DocNode | null {
 	return null;
 }
 
-async function selectDoc(node: DocNode) {
+async function selectDoc(node: DocNode, updateRoute: boolean = true) {
 	console.log("=== selectDoc called ===");
 	console.log(`Node:`, node);
 	currentDocPath.value = node.path;
 	currentDoc.value = node;
-	console.log(
-		`Calling getDocContent with path: ${node.path}, language: ${currentLanguage.value}`,
-	);
+	errorMessage.value = "";
+
 	currentDocContent.value = await getDocContent(
 		node.path,
 		currentLanguage.value,
 	);
 	console.log(`Got content length: ${currentDocContent.value.length}`);
-	// 更新路由
-	router.push(node.path);
+
+	if (updateRoute) {
+		router.push(`/document/${node.path}`);
+	}
 }
 
-// 监听 localStorage 中的语言变化
 function checkLanguageChange() {
 	const storedLanguage = localStorage.getItem("language") || "zh-hans";
 	if (storedLanguage !== currentLanguage.value) {
@@ -127,14 +138,22 @@ function checkLanguageChange() {
 	}
 }
 
-// 每秒钟检查一次语言变化
 const languageCheckInterval = setInterval(checkLanguageChange, 1000);
+
+watch(
+	() => route.params.pathMatch,
+	async (newPath) => {
+		const docPath = Array.isArray(newPath) ? newPath.join("/") : (newPath || "");
+		if (docPath && docPath !== currentDocPath.value) {
+			await loadDocByPath(docPath);
+		}
+	},
+);
 
 onMounted(() => {
 	init();
 });
 
-// 组件卸载时清除定时器
 onUnmounted(() => {
 	clearInterval(languageCheckInterval);
 });

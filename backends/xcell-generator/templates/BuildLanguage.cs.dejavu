@@ -22,7 +22,7 @@ namespace DataTable.Generated
 <%- for field in language_fields %>
         [DataMember]
         private Dictionary<string, string>? <% field.private_name %> = new();
-<%- endfor %>
+<%- end for %>
         public Language<% config.suffix_table %>()
         {
 #if UNITY_EDITOR
@@ -41,7 +41,7 @@ namespace DataTable.Generated
             {
 <%- for field in language_fields %>
                 LanguageID.<% field.class_name %> => <% field.private_name %>.GetValueOrDefault(key, missing),
-<%- endfor %>
+<%- end for %>
                 _ => throw new ArgumentOutOfRangeException(nameof(language), language, null)
             };
         }
@@ -85,7 +85,7 @@ namespace DataTable.Generated
             language_keys = await ReadKeys("<% config.binary.addressable %>/LanguageKeys.bytes");
 <%- for field in language_fields %>
             <% field.private_name %> = await ReadMaps("<% config.binary.addressable %>/Language<% field.class_name %>.bytes");
-<%- endfor %>
+<%- end for %>
         }
 
         public void DropAll()
@@ -93,7 +93,7 @@ namespace DataTable.Generated
             language_keys = null;
 <%- for field in language_fields %>
             <% field.private_name %> = null;
-<%- endfor %>
+<%- end for %>
         }
 
         public Language<% config.suffix_table %> Clone()

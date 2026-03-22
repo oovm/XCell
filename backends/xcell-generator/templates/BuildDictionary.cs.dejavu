@@ -14,7 +14,7 @@ using System.Text;
 using UnityEngine;
 <%- if config.addressable %>
 using UnityEngine.AddressableAssets;
-<% endif %>
+<% end if %>
 
 namespace <% config.namespace %>
 {
@@ -58,14 +58,14 @@ namespace <% config.namespace %>
 <%- for field in class_fields %>
     <%- for line in field.document %>
         /// <% line %>
-    <%- endfor %>
+    <%- end for %>
         [DataMember, SerializeField]
     <%- if field.has_default %>
         <% field.access %><% field.typing %> <% field.name %> = <% field.default %>;
     <% else %>
         <% field.access %><% field.typing %> <% field.name %>;
-    <%- endif %>
-<%- endfor %>
+    <%- end if %>
+<%- end for %>
     }
 <% if config.binary.enable %>
     public partial class <% table_name %> : IBinarySupport
@@ -76,7 +76,7 @@ namespace <% config.namespace %>
             BinaryRead("<% config.binary.addressable %>/<% table_name %>.bytes");
     <%- else %>
             BinaryRead("<% config.binary.output %>/<% table_name %>.bytes");
-    <%- endif %>
+    <%- end if %>
         }
         /// <summary>
         /// 从二进制文件中读取静态数据
@@ -138,8 +138,8 @@ namespace <% config.namespace %>
             }
     <%- else %>
             <% field.reader.field %> = <% field.reader.function %>;
-    <%- endif %>
-<%- endfor %>
+    <%- end if %>
+<%- end for %>
         }
 
         /// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
@@ -152,15 +152,15 @@ namespace <% config.namespace %>
             {
         <%- for property in field.writer.properties %>
                 w.Write(<% field.writer.field %>Item<% property %>);
-        <%- endfor %>
+        <%- end for %>
             }
     <%- else %>
         <%- for property in field.writer.properties %>
             w.Write(<% field.writer.cast %><% field.writer.field %><% property %>);
-        <%- endfor %>
-    <%- endif %>
-<%- endfor %>
+        <%- end for %>
+    <%- end if %>
+<%- end for %>
         }
     }
-<%- endif %>
+<%- end if %>
 }

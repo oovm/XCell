@@ -2,7 +2,7 @@
 
 <% if config.namespace %>
 export namespace <% config.namespace %> {
-<% endif %>
+<% end if %>
 
 /**
  * 配置表管理器
@@ -41,23 +41,23 @@ export class <% config.manager_name %> {
     set <% table.public_name %>(value: <% table.typing %>) {
         this._<% table.private_name %> = value;
     }
-<% endfor %>
+<% end for %>
 
     /** 重新加载所有表 */
     static reload(): void {
 <%- for table in tables %>
         <% config.manager_name %>.<% config.instance_name %>._<% table.private_name %> = null;
-<%- endfor %>
+<%- end for %>
     }
 
     /** 清除所有表 */
     static clear(): void {
 <%- for table in tables %>
         <% config.manager_name %>.<% config.instance_name %>._<% table.private_name %> = null;
-<%- endfor %>
+<%- end for %>
     }
 }
 
 <% if config.namespace %>
 }
-<% endif %>
+<% end if %>

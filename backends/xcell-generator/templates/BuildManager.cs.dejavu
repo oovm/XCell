@@ -43,10 +43,10 @@ namespace <% config.namespace %>
             get { return <% table.private_name %> != null ? <% table.private_name %> : new <% table.typing %>(); }
 <%- else %>
             get => <% table.private_name %> ??= new <% table.typing %>();
-<%- endif %>
+<%- end if %>
             set => <% table.private_name %> = value;
         }
-<% endfor %>
+<% end for %>
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("Tools/XCell/LoadAll")]
 #endif
@@ -54,7 +54,7 @@ namespace <% config.namespace %>
         {
 <%- for table in tables %>
             Instance.<% table.private_name %> = new <% table.typing %>();
-<%- endfor %>
+<%- end for %>
         }
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("Tools/XCell/ClearAll")]
@@ -63,7 +63,7 @@ namespace <% config.namespace %>
         {
 <%- for table in tables %>
             Instance.<% table.private_name %> = null;
-<%- endfor %>
+<%- end for %>
         }
 #if UNITY_EDITOR
         [UnityEditor.MenuItem("Tools/XCell/ExportXML")]
@@ -71,14 +71,14 @@ namespace <% config.namespace %>
         {
 <%- for table in tables %>
             SerializerXML("Assets/Data/Table/Binary/<% table.typing %>.xml", Instance.<% table.private_name %>);
-<%- endfor %>
+<%- end for %>
         }
         [UnityEditor.MenuItem("Tools/XCell/ExportJSON")]
         public static void ExportJSON()
         {
 <%- for table in tables %>
             SerializerJSON("Assets/Data/Table/Readable/<% table.typing %>.json", Instance.<% table.private_name %>);
-<%- endfor %>
+<%- end for %>
         }
 
         private static void SerializerXML<T>(string path, T table)

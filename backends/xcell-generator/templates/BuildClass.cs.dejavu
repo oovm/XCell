@@ -19,14 +19,14 @@ namespace <% config.namespace %>
 <%- for field in class_fields %>
     <%- for line in field.document %>
         /// <% line %>
-    <%- endfor %>
+    <%- end for %>
         [DataMember]
     <%- if field.has_default %>
         public <%field.typing%> <%field.name%> = <%field.default%>;
     <% else %>
         public <%field.typing%> <%field.name%>;
-    <%- endif %>
-<%- endfor %>
+    <%- end if %>
+<%- end for %>
     }
 <% if config.support_clone %>
     public partial class <% class_name %> : ICloneable
@@ -37,5 +37,5 @@ namespace <% config.namespace %>
             return (<% class_name %>) MemberwiseClone();
         }
     }
-<%- endif %>
+<%- end if %>
 }

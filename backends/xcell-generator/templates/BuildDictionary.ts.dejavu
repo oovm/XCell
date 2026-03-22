@@ -2,22 +2,22 @@
 
 <% if config.namespace %>
 export namespace <% config.namespace %> {
-<% endif %>
+<% end if %>
 
 <%- for line in class_document %>
 /** <% line %> */
-<%- endfor %>
+<%- end for %>
 export class <% class_name %>Element {
 <%- for field in class_fields %>
     <%- for line in field.document %>
     /** <% line %> */
-    <%- endfor %>
+    <%- end for %>
     <%- if field.has_default %>
     <% field.name %>: <% field.typing %> = <% field.default %>;
     <%- else %>
     <% field.name %>!: <% field.typing %>;
-    <%- endif %>
-<%- endfor %>
+    <%- end if %>
+<%- end for %>
 }
 
 export class <% table_name %> {
@@ -55,4 +55,4 @@ export class <% table_name %> {
 
 <% if config.namespace %>
 }
-<% endif %>
+<% end if %>

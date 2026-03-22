@@ -16,9 +16,9 @@ namespace <% config.namespace %>
 <%- for field in enumerate_ids %>
     <%- for line in field.document %>
         /// <% line %>
-    <%- endfor %>
+    <%- end for %>
         [EnumMember] <% field.key %> = <% field.value %>,
-<%- endfor %>
+<%- end for %>
     }
 
     public static class <% class_name %>Extension
@@ -26,17 +26,17 @@ namespace <% config.namespace %>
 <%- for field in enumerate_fields %>
     <%- for line in field.document %>
         /// <% line %>
-    <%- endfor %>
+    <%- end for %>
         public static <% field.typing %> <% field.getter %>(this <% class_name %> self)
         {
             return self switch
             {
             <%- for line in field.switch %>
                 <% class_name %>.<% line.key %> => <% line.value %>,
-            <%- endfor %>
+            <%- end for %>
                 _ => throw new ArgumentOutOfRangeException(nameof(self), self, null)
             };
         }
-<% endfor %>
+<% end for %>
     }
 }

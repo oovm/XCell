@@ -15,6 +15,7 @@ fn test_unity_code_generation() {
         output_dir: std::path::PathBuf::from(temp_path.to_str().unwrap()),
         options,
         global_options: HashMap::new(),
+        workspace: None,
     };
 
     // 创建 Unity 代码生成器
@@ -39,6 +40,8 @@ fn test_unity_code_generation() {
     assert!(true, "Unity test completed");
 }
 
+// ConfigManager 结构体暂时注释掉，因为测试中不需要使用它
+/*
 /// 单例模式管理配置表
 pub struct ConfigManager {
     configs: HashMap<String, serde_json::Value>,
@@ -74,3 +77,4 @@ impl ConfigManager {
         println!("Loading configs...");
     }
 }
+*/

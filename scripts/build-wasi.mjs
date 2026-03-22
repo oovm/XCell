@@ -8,14 +8,15 @@
 import { execSync } from "child_process";
 import { existsSync, mkdirSync, rmSync, statSync } from "fs";
 import { join } from "path";
+import { config } from './config.mjs';
 
 // 打印当前工作目录
 console.log("当前工作目录:", process.cwd());
 
 const ROOT_DIR = process.cwd();
-const WASI_DIR = join(ROOT_DIR, "projects", "xcell-wasi");
-const FRONTEND_DIR = join(ROOT_DIR, "frontends", "xcell");
-const FRONTEND_LIB_DIR = join(FRONTEND_DIR, "lib");
+const WASI_DIR = join(ROOT_DIR, config.paths.wasm.dir);
+const FRONTEND_DIR = join(ROOT_DIR, config.paths.frontend.xcell);
+const FRONTEND_LIB_DIR = join(FRONTEND_DIR, config.paths.frontend.lib);
 
 // 打印计算的路径
 console.log("ROOT_DIR:", ROOT_DIR);
@@ -107,7 +108,7 @@ function buildWasi() {
 
     // 4. 检查 WASI 组件是否存在
     console.log("\n4. 检查 WASI 组件...");
-    const wasmPath = join(ROOT_DIR, "target", "wasm32-wasip1", "release", "xcell_wasi.wasm");
+    const wasmPath = join(ROOT_DIR, config.paths.wasm.output);
     if (!existsSync(wasmPath)) {
         console.error(`❌ 错误: WASI 组件不存在: ${wasmPath}`);
         console.error(`   提示: 构建过程可能被中断，或产物路径配置错误`);
@@ -144,7 +145,7 @@ function buildWasi() {
 
     // 7. 检查 jco 生成产物
     console.log("\n7. 检查 jco 生成产物...");
-    const jsPath = join(FRONTEND_LIB_DIR, "xcell_wasi.js");
+    const jsPath = join(FRONTEND_LIB_DIR, config.paths.wasm.js);
     if (!existsSync(jsPath)) {
         console.error(`❌ 错误: jco 生成产物不存在: ${jsPath}`);
         console.error(`   提示: jco 可能未正确执行`);

@@ -11,10 +11,11 @@ fn test_unreal_code_generation() {
     let mut options = HashMap::new();
     options.insert("module_name".to_string(), "TestModule".to_string());
 
-    let context = CodegenContext {
+    let _context = CodegenContext {
         output_dir: std::path::PathBuf::from(temp_path.to_str().unwrap()),
         options,
         global_options: HashMap::new(),
+        workspace: None,
     };
 
     // 由于 Unreal 代码生成器还未实现，这里暂时跳过生成步骤
@@ -35,6 +36,8 @@ fn test_unreal_code_generation() {
     assert!(true, "Unreal test completed");
 }
 
+// ConfigManager 结构体暂时注释掉，因为测试中不需要使用它
+/*
 /// 单例模式管理配置表
 pub struct ConfigManager {
     configs: HashMap<String, serde_json::Value>,
@@ -70,3 +73,4 @@ impl ConfigManager {
         println!("Loading configs...");
     }
 }
+*/

@@ -1,99 +1,82 @@
 /**
- * Units数据结构
+ * {{ class_name }}数据结构
  */
-export interface Units {
+export interface {{ class_name }} {
+{% for field in fields %}
     /**
-     * id
+     * {{ field.name }}
      */
-    id: number;
-    /**
-     * name
-     */
-    name: string;
-    /**
-     * type
-     */
-    type: string;
-    /**
-     * level
-     */
-    level: number;
-    /**
-     * health
-     */
-    health: number;
-    /**
-     * attack
-     */
-    attack: number;
-    /**
-     * defense
-     */
-    defense: number;
-    /**
-     * movement
-     */
-    movement: number;
-    /**
-     * range
-     */
-    range: number;
-    /**
-     * cost
-     */
-    cost: number;
-    /**
-     * description
-     */
-    description: string;
+    {{ field.name }}: {{ field.type }};
+{% endfor %}
 }
 
 /**
- * Units表加载器
+ * {{ class_name }}表加载器
  */
-export class UnitsTable {
-    private items: Units[] = [];
+export class {{ table_name }} {
+    private items: {{ class_name }}[] = [];
 
     /**
-     * 加载Units表数据
+     * 加载{{ class_name }}表数据
      * @param asset JSON资源
      */
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.items = data as Units[];
+            this.items = data as {{ class_name }}[];
         }
     }
 
     /**
-     * 根据ID获取Units
-     * @param id UnitsID
+     * 根据ID获取{{ class_name }}
+     * @param id {{ class_name }}ID
      */
-    public getUnitsById(id: number): Units | null {
+    public get{{ class_name }}ById(id: number): {{ class_name }} | null {
         return this.items.find(item => item.id === id) || null;
     }
 
     /**
-     * 获取所有Units
+     * 获取所有{{ class_name }}
      */
-    public getAllUnits(): Units[] {
+    public getAll{{ class_name }}(): {{ class_name }}[] {
         return this.items;
     }
-
+{% if has_type_field %}
+{% if is_monster %}
     /**
-     * 根据类型获取Units
-     * @param type 类型
+     * 根据类型获取{{ class_name }}
+     * @param type 怪物类型
      */
-    public getUnitsByType(type: string): Units[] {
+    public get{{ class_name }}ByType(type: MonsterType): {{ class_name }}[] {
         return this.items.filter(item => item.type === type);
     }
-
+{% else %}
     /**
-     * 根据等级获取Units
+     * 根据类型获取{{ class_name }}
+     * @param type 类型
+     */
+    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
+        return this.items.filter(item => item.type === type);
+    }
+{% endif %}
+{% endif %}
+{% if has_level_field %}
+{% if is_skill %}
+    /**
+     * 根据等级获取{{ class_name }}
      * @param level 等级
      */
-    public getUnitsByLevel(level: number): Units[] {
+    public get{{ class_name }}ByLevel(level: number): {{ class_name }}[] {
+        return this.items.filter(item => item.level_requirement <= level);
+    }
+{% else %}
+    /**
+     * 根据等级获取{{ class_name }}
+     * @param level 等级
+     */
+    public get{{ class_name }}ByLevel(level: number): {{ class_name }}[] {
         return this.items.filter(item => item.level === level);
     }
-
+{% endif %}
+{% endif %}
 }

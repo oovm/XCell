@@ -35,6 +35,7 @@ struct CocosLoaderHelper {
     manager_name: Option<String>,
     suffix_table: Option<String>,
     instance_name: Option<String>,
+    table_data_path: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -63,6 +64,7 @@ impl<'de> Deserialize<'de> for CocosCodegen {
             manager_name: loader.manager_name.unwrap_or("DataTableManager".to_string()),
             suffix_table: loader.suffix_table.unwrap_or("Table".to_string()),
             instance_name: loader.instance_name.unwrap_or("DataTable".to_string()),
+            table_data_path: loader.table_data_path.unwrap_or("tables".to_string()),
         })
     }
 }

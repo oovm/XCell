@@ -1,7 +1,8 @@
 //! Tests for xcell-plugin
 
-use xcell_core::{WorkspaceManager, XResult};
+use xcell_analyzer::{WorkspaceManager, XResult};
 use xcell_plugin::{Plugin, PluginManager};
+use xcell_provider::TableReader;
 
 /// Test plugin implementation
 struct TestPlugin {
@@ -23,11 +24,11 @@ impl Plugin for TestPlugin {
         Ok(())
     }
 
-    fn on_table_load(&self, _table: &dyn xcell_core::x_table::table::TableReader) -> XResult<()> {
+    fn on_table_load(&self, _table: &dyn TableReader) -> XResult<()> {
         Ok(())
     }
 
-    fn on_table_loaded(&self, _table: &dyn xcell_core::x_table::table::TableReader) -> XResult<()> {
+    fn on_table_loaded(&self, _table: &dyn TableReader) -> XResult<()> {
         Ok(())
     }
 

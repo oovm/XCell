@@ -1,6 +1,6 @@
-import { BuildingsTable } from './BuildingsTable';
-import { TechnologiesTable } from './TechnologiesTable';
-import { UnitsTable } from './UnitsTable';
+{% for table in tables %}
+import { {{ table.table_name }} } from './{{ table.table_name }}';
+{% endfor %}
 
 
 /**
@@ -11,9 +11,9 @@ export class DataTableManager {
     private static _instance: DataTableManager;
 
     // 惰性缓存字段
-    private _buildingsTable: BuildingsTable | null = null;
-    private _technologiesTable: TechnologiesTable | null = null;
-    private _unitsTable: UnitsTable | null = null;
+{% for table in tables %}
+    private _{{ table.cache_name }}: {{ table.table_name }} | null = null;
+{% endfor %}
     
     /**
      * 获取单例实例
@@ -32,44 +32,24 @@ export class DataTableManager {
     public async loadAllTables(): Promise<void> {
         // 预加载所有表
         await Promise.all([
-            this.getBuildingsTable(),
-            this.getTechnologiesTable(),
-            this.getUnitsTable(),
+{% for table in tables %}
+            this.{{ table.get_method_name }}(),
+{% endfor %}
         ]);
     }
+{% for table in tables %}
 
     /**
-     * 获取Buildings表（惰性加载）
+     * 获取{{ table.class_name }}表（惰性加载）
      */
-    public async getBuildingsTable(): Promise<BuildingsTable> {
-        if (this._buildingsTable === null) {
-            this._buildingsTable = new BuildingsTable();
-            this._buildingsTable.load(await this.loadJsonAsset('tables/Buildings'));
+    public async {{ table.get_method_name }}(): Promise<{{ table.table_name }}> {
+        if (this._{{ table.cache_name }} === null) {
+            this._{{ table.cache_name }} = new {{ table.table_name }}();
+            this._{{ table.cache_name }}.load(await this.loadJsonAsset('{{ table_data_path }}{{ table.class_name }}'));
         }
-        return this._buildingsTable;
+        return this._{{ table.cache_name }};
     }
-
-    /**
-     * 获取Technologies表（惰性加载）
-     */
-    public async getTechnologiesTable(): Promise<TechnologiesTable> {
-        if (this._technologiesTable === null) {
-            this._technologiesTable = new TechnologiesTable();
-            this._technologiesTable.load(await this.loadJsonAsset('tables/Technologies'));
-        }
-        return this._technologiesTable;
-    }
-
-    /**
-     * 获取Units表（惰性加载）
-     */
-    public async getUnitsTable(): Promise<UnitsTable> {
-        if (this._unitsTable === null) {
-            this._unitsTable = new UnitsTable();
-            this._unitsTable.load(await this.loadJsonAsset('tables/Units'));
-        }
-        return this._unitsTable;
-    }
+{% endfor %}
 
 
     /**

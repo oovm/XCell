@@ -15,10 +15,11 @@ fn test_cocos_code_generation() {
         output_dir: std::path::PathBuf::from(temp_path.to_str().unwrap()),
         options,
         global_options: HashMap::new(),
+        workspace: None,
     };
 
     // 创建 Cocos 代码生成器
-    let generator = CocosCodegen::new();
+    let generator = CocosCodegen::default();
 
     // 生成代码
     let result = generator.generate(&context);

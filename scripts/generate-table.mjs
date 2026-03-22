@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import { config } from './config.mjs';
 
 // 主函数
 async function main() {
@@ -10,16 +11,16 @@ async function main() {
     const scriptDir = path.dirname(__filename);
     const projectRoot = path.resolve(scriptDir, '..');
     const rpgDirectories = [
-        path.resolve(projectRoot, 'examples', 'rpg-untyped'),
-        path.resolve(projectRoot, 'examples', 'rpg-typed'),
-        path.resolve(projectRoot, 'examples', 'galgame'),
-        path.resolve(projectRoot, 'examples', 'slg')
+        path.resolve(projectRoot, config.examples.rpgUntyped),
+        path.resolve(projectRoot, config.examples.rpgTyped),
+        path.resolve(projectRoot, config.examples.galgame),
+        path.resolve(projectRoot, config.examples.slg)
     ];
     
     console.log('Finding xcell executable...');
     
     // 找到 debug 版本的 xcell 可执行文件
-    const xcellPath = path.resolve(projectRoot, 'target', 'debug', 'xcell.exe');
+    const xcellPath = path.resolve(projectRoot, config.paths.xcell.debug);
     
     if (!fs.existsSync(xcellPath)) {
         console.error(`xcell.exe not found at: ${xcellPath}`);
@@ -44,14 +45,20 @@ async function main() {
         console.log('Running xcell generate...');
         
         try {
-            execSync(`"${xcellPath}"`, { cwd: rpgDir, stdio: 'inherit' });
+            // 安全检查：确保路径是安全的
+            const safeXcellPath = path.resolve(xcellPath);
+            if (!safeXcellPath.includes('xcell.exe')) {
+                console.error('Security warning: Invalid xcell executable path');
+                continue;
+            }
+            execSync(`"${safeXcellPath}"`, { cwd: rpgDir, stdio: 'inherit' });
             console.log('xcell generate completed successfully!');
             
             // 验证生成结果
             console.log('Verifying generated files...');
             
             // 检查 Unity 生成文件
-            const unityGeneratedDir = path.resolve(rpgDir, 'Assets', 'Scripts', 'DataTable', 'Generated');
+            const unityGeneratedDir = path.resolve(rpgDir, config.paths.generated.unity);
             if (fs.existsSync(unityGeneratedDir)) {
                 console.log(`Unity generated files found at: ${unityGeneratedDir}`);
             } else {
@@ -59,7 +66,7 @@ async function main() {
             }
             
             // 检查 Cocos 生成文件
-            const cocosGeneratedDir = path.resolve(rpgDir, '..', 'assets', 'scripts', 'dataTable', 'generated');
+            const cocosGeneratedDir = path.resolve(rpgDir, '..', config.paths.generated.cocos);
             if (fs.existsSync(cocosGeneratedDir)) {
                 console.log(`Cocos generated files found at: ${cocosGeneratedDir}`);
             } else {

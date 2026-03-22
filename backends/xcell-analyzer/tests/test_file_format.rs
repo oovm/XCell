@@ -1,7 +1,7 @@
 use std::{fs::File, io::Write, path::PathBuf};
 
-use xcell_analyser::x_table::table::{CsvTable, TableReader, TsvTable};
-use xcell_core::{PROJECT_CONFIG, ProjectConfig};
+use xcell_analyzer::x_table::table::{CsvTable, TableReader, TsvTable};
+use xcell_analyzer::{PROJECT_CONFIG, ProjectConfig};
 
 /// 测试 CSV 文件的正常处理
 #[test]

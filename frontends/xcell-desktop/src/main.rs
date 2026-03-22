@@ -10,7 +10,7 @@ fn main() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler!({
+        .invoke_handler(tauri::generate_handler!(
             xcell_gui::increment_counter,
             xcell_gui::decrement_counter,
             xcell_gui::read_table,

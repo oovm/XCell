@@ -21,6 +21,7 @@ workspace = true
 
 [dev-dependencies]
 tracing-subscriber = { workspace = true }
+xcell-analyzer = { workspace = true }
 
 [features]
 default = []

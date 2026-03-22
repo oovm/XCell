@@ -22,6 +22,14 @@ impl Default for CocosStorage {
     }
 }
 
+impl CocosStorage {
+    pub fn output_path(&self) -> &str {
+        match self {
+            CocosStorage::Json(config) => config.output.as_ref(),
+        }
+    }
+}
+
 /// Cocos 代码生成配置
 ///
 /// 用于配置 Cocos 平台的代码生成
@@ -106,6 +114,30 @@ impl CocosCodegen {
         };
         format!("{}/{}.json", output, file_name)
     }
-    
+
+    /// 数据的路径，以项目路径为基准，**必须是**相对路径。
+    ///
+    /// 默认同加载器路径。
+    pub fn data_path(&self, config: &Path) -> PathBuf {
+        let data_path = self.storage.output_path();
+        if data_path.is_empty() {
+            return self.cocos_path(config).unwrap().join(&self.output);
+        }
+        self.cocos_path(config).unwrap().join(data_path)
+    }
+
+    /// 数据的路径，以项目路径为基准，**必须是**相对路径。
+    ///
+    /// 默认同数据路径。
+    pub fn debug_data_path(&self, config: &Path) -> PathBuf {
+        let debug_path = match self.storage_debug.as_ref() {
+            None => "",
+            Some(s) => s.output_path(),
+        };
+        if debug_path.is_empty() {
+            return self.data_path(config);
+        }
+        self.cocos_path(config).unwrap().join(debug_path)
+    }
 
 }

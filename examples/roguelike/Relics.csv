@@ -1,6 +1,6 @@
 @list,名称,描述,稀有度,效果ID列表,图标,风味文字,出现池
 id,name,description,rarity,effect_ids,icon,flavor_text,pool
-i32,text,text,Rarity,"[ref<Effects>]",text,text,text
+i32,text,text,Rarity,"[&Effects]",text,text,text
 1,破碎的护身符,提供微弱的保护,Common,"[5]","relic_broken_amulet","这块护身符已经碎裂，但似乎还残留着些许魔力。",普通
 2,幸运硬币,增加金币获取,Common,"[13]","relic_lucky_coin","据说带来好运的硬币，也许是前人留下的。",普通
 3,铁匠手套,轻微提升攻击力,Common,"[8]","relic_blacksmith_glove","沾满煤灰的手套，散发着铁匠铺的气息。",普通

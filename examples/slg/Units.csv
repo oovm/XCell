@@ -1,5 +1,5 @@
 @list,name,type,level,health,attack,defense,movement,range,cost,description,train_building,upgrade_to
-id,text,text,u32,u32,u32,u32,u32,u32,u32,text,ref<Buildings>,ref<Units>
+id,text,text,u32,u32,u32,u32,u32,u32,u32,text,&Buildings,&Units
 1,步兵,ground,1,100,15,10,2,1,100,基础地面单位,2,3
 2,弓箭手,ranged,1,80,20,5,2,3,150,远程攻击单位,2,10
 3,骑兵,ground,2,120,25,15,3,1,250,高机动性地面单位,7,6

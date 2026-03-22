@@ -15,8 +15,8 @@
 
 ## 特性展示
 
-- `ref<TableName>` 外键引用
-- `[ref<TableName>]` 引用列表
+- `&TableName` 外键引用
+- `[&TableName]` 引用列表
 - Enum 枚举类型
 - Class 类型全局配置
 - 科技依赖树

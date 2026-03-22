@@ -1,5 +1,5 @@
 @list,name,description,role,primary_stat,skills,starting_hp,starting_mp
-id,text,text,text,text,[ref<Skills>],i32,i32
+id,text,text,text,text,[&Skills],i32,i32
 1,战士,勇猛的近战职业,擅长使用各种武器和重型护甲,在战场上冲锋陷阵,坦克,力量,"1,2,3,4",150,50
 2,法师,强大的魔法使用者,能够操控元素之力,造成毁灭性的魔法伤害,输出,智力,"5,6,7,8",80,150
 3,牧师,神圣的治疗者,拥有强大的治疗和辅助能力,是团队中不可或缺的角色,治疗,精神,"9,10,11,12",90,130

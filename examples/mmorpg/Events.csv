@@ -1,5 +1,5 @@
 @list,name,description,type,start_time,end_time,rewards,requirements
-id,text,text,text,datetime,datetime,[ref<Items>],text
+id,text,text,text,datetime,datetime,[&Items],text
 1,新春庆典,新年活动,获得双倍经验和金币,节日,2025-01-01 00:00:00,2025-01-07 23:59:59,"1,2,3",等级达到10级
 2,情人节活动,情人节特别活动,收集爱心兑换奖励,节日,2025-02-14 00:00:00,2025-02-14 23:59:59,"1,2",无
 3,复活节寻蛋,复活节彩蛋活动,寻找隐藏的彩蛋,节日,2025-04-18 00:00:00,2025-04-21 23:59:59,"1,2,3,4",等级达到5级

@@ -3,7 +3,8 @@ use std::fmt::{Debug, Display, Formatter};
 use std::io::Write;
 use serde::{Deserialize, Serialize};
 use dejavu_macros::Template;
-use xcell_analyzer::{UnityCodegen, WorkspaceManager, XCellHeader, XDictData, XListData};
+use xcell_analyzer::{WorkspaceManager, XCellHeader, XDictData, XListData};
+use xcell_config::UnityCodegen;
 use xcell_provider::XCellAccess;
 use xcell_types::{
     XResult,
@@ -12,7 +13,7 @@ use xcell_types::{
 
 /// Unity dictionary code generation template
 #[derive(Template)]
-#[template(path = "BuildDictionary.cs", escape = "none")]
+#[template(path = "BuildDictionary.cs.dejavu", escape = "none")]
 pub struct UnityDictionaryTemplate {
     /// Compiler version
     compiler_version: &'static str,
@@ -136,8 +137,8 @@ impl UnityCodegen {
     ///
     /// # Returns
     /// Unity dictionary template data
-    fn make_dict(&self, table: &XDictData, table_name: String) -> UnityDictionary {
-        UnityDictionary {
+    fn make_dict(&self, table: &XDictData, table_name: String) -> UnityDictionaryTemplate {
+        UnityDictionaryTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             table_name,
@@ -189,8 +190,8 @@ impl UnityCodegen {
     ///
     /// # Returns
     /// Unity dictionary template data (used for lists)
-    fn make_list(&self, table: &XListData, table_name: String) -> UnityDictionary {
-        UnityDictionary {
+    fn make_list(&self, table: &XListData, table_name: String) -> UnityDictionaryTemplate {
+        UnityDictionaryTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             table_name,

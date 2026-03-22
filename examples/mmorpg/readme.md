@@ -26,7 +26,7 @@
 - `datetime` 日期时间类型
 - `time` 时间类型
 - `color` 颜色类型
-- `ref<TableName>` 外键引用
-- `[ref<TableName>]` 引用列表
+- `&TableName` 外键引用
+- `[&TableName]` 引用列表
 - Class 类型全局配置
 - Enum 枚举类型

@@ -1,5 +1,5 @@
 @list,name,level,health,damage,defense,type,drop_items,skills
-id,text,i32,i32,i32,i32,ref<MonsterType>,[ref<DropTable>],[ref<Skills>]
+id,text,i32,i32,i32,i32,&MonsterType,[&DropTable],[&Skills]
 1,哥布林,1,50,5,2,Normal,"1,2","1"
 2,兽人,2,80,8,4,Normal,"3,4","1,2"
 3,骷髅,2,60,6,3,Undead,"2,5","1"

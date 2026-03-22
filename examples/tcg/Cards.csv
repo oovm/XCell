@@ -1,5 +1,5 @@
 @list,name,description,type,rarity,cost,attack,health,durability,class_id,effects,keywords,color,flavor_text,artist,collectible
-id,i32,text,text,Rarity,i32,i32,i32,i32,ref<Classes>,[ref<Effects>],[Keywords],color,text,text,bool
+id,i32,text,text,Rarity,i32,i32,i32,i32,&Classes,[&Effects],[Keywords],color,text,text,bool
 1,石牙野猪,冲锋,随从,Common,1,1,1,,,[Charge],#FFFFFF,野猪冲锋!,张三,true
 2,淡水鳄,普通的鳄鱼,随从,Common,2,2,3,,,#FFFFFF,它来自沼泽。,李四,true
 3,血沼迅猛龙,冲锋,随从,Common,2,3,1,,,[Charge],#FFFFFF,迅猛龙的速度无人能及。,王五,true

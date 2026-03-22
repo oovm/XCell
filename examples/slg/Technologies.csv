@@ -1,5 +1,5 @@
 @list,name,description,research_time,resource_cost,required_building,level_requirement,effect,prerequisites
-id,text,text,u32,u32,ref<Buildings>,u32,text,[ref<Technologies>]
+id,text,text,u32,u32,&Buildings,u32,text,[&Technologies]
 1,基础训练,提高步兵和弓箭手的攻击力,120,300,2,1,步兵和弓箭手攻击力+5,[]
 2,建筑效率,减少建筑建造时间,150,400,1,1,建筑建造时间-10%,[]
 3,资源采集,提高资源矿的产出,180,500,4,1,资源产出+20%,[]

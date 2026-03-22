@@ -1,5 +1,5 @@
 @list,name,description,tower_id,upgrade_type,attack_bonus,range_bonus,speed_bonus,cost,required_wave
-id,text,text,ref<Towers>,text,i32,f32,f32,i32,i32
+id,text,text,&Towers,text,i32,f32,f32,i32,i32
 1,锋利箭头,增加箭塔攻击力,1,attack,5,0.0,0.0,30,1
 2,精准射击,增加箭塔攻击速度,1,speed,0,0.0,0.2,35,2
 3,强化弓弦,大幅增加攻击力,2,attack,10,0.0,0.0,50,4

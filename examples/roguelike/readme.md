@@ -20,8 +20,8 @@ Roguelike 游戏示例，展示随机事件和遗物系统。
 ## 特性展示
 
 - `vec2<i32>` 2D 向量类型
-- `ref<TableName>` 外键引用
-- `[ref<TableName>]` 引用列表
+- `&TableName` 外键引用
+- `[&TableName]` 引用列表
 - Enum 枚举引用
 - Class 类型全局配置
 - 事件链系统

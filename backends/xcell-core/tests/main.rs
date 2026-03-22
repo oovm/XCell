@@ -36,11 +36,11 @@ fn test_reference_type_parsing() {
 
     let ref_type2 = XCellTyped::parse("ref<Monster>", &info);
     assert!(ref_type2.is_reference());
-    assert_eq!(ref_type2.as_reference().unwrap().target_table, "monster");
+    assert_eq!(ref_type2.as_reference().unwrap().target_table, "Monster");
 
     let ref_type3 = XCellTyped::parse("Ref<Weapon>", &info);
     assert!(ref_type3.is_reference());
-    assert_eq!(ref_type3.as_reference().unwrap().target_table, "weapon");
+    assert_eq!(ref_type3.as_reference().unwrap().target_table, "Weapon");
 }
 
 #[test]

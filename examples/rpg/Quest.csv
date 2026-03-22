@@ -1,5 +1,5 @@
 @list,name,description,type,prerequisite,reward_gold,reward_exp,reward_items
-id,text,text,text,[ref<Quest>],i32,i32,[ref<Item>]
+id,text,text,text,[&Quest],i32,i32,[&Item]
 1,新手训练,完成基础训练，学习战斗技巧,main,,100,50,"3"
 2,哥布林威胁,清除村庄附近的哥布林,hunt,,150,80,"3,6"
 3,收集材料,收集10个铁矿石,collect,"1",200,100,

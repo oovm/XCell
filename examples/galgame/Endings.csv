@@ -1,5 +1,5 @@
 @list,name,description,character_id,required_affection_level,required_choices,is_good_ending
-id,text,text,ref<Characters>,i32,[ref<Choices>],bool
+id,text,text,&Characters,i32,[&Choices],bool
 1,雪的真结局,阳太与雪互相告白，两人开始交往，从此过上了幸福的生活,1,5,"[1,4,7,10]",true
 2,雪的普通结局,阳太与雪成为了好朋友，虽然没有成为恋人，但友情长存,1,3,"[1,4,7]",true
 3,雪的坏结局,阳太错过了与雪的机会，雪最终选择了别人,1,1,"[2,5,8]",false

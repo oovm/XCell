@@ -1,10 +1,10 @@
 [package]
-name = "xcell-types"
+name = "xcell-core"
 version = "0.2.0"
 authors = { workspace = true }
-description = "Types definition for xcell"
+description = "Core types and utilities for xcell"
 repository = "https://github.com/oovm/XCell"
-documentation = "https://docs.rs/xcell-types"
+documentation = "https://docs.rs/xcell-core"
 readme = "Readme.md"
 license = { workspace = true }
 edition = { workspace = true }
@@ -12,11 +12,11 @@ edition = { workspace = true }
 [dependencies]
 serde = { workspace = true }
 itertools = { workspace = true }
-#integer-encoding = "3.0.4"
 vlq-rust = { workspace = true }
 diagnostic = { workspace = true }
 validatus = { workspace = true }
 futures = { workspace = true }
+xcell-parser = { path = "../xcell-parser", version = "0.2.0" }
 calamine = { workspace = true, optional = true, features = ["dates"] }
 tera = { workspace = true, optional = true }
 toml = { workspace = true, optional = true }

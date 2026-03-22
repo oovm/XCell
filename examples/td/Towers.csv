@@ -1,5 +1,5 @@
 @list,name,description,type,attack,attack_speed,range,cost,upgrade_to,projectile_id,special_effect,icon
-id,text,text,text,i32,f32,vec3<f32>,i32,ref<Towers>,ref<Projectiles>,ref<Effects>,text
+id,text,text,text,i32,f32,vec3<f32>,i32,&Towers,&Projectiles,&Effects,text
 1,箭塔I,基础远程攻击塔,arrow,15,1.0,(3.0,0.0,3.0),50,2,1,,tower_arrow_1
 2,箭塔II,强化箭塔,arrow,25,1.2,(3.5,0.0,3.5),80,3,1,,tower_arrow_2
 3,箭塔III,精英箭塔,arrow,40,1.5,(4.0,0.0,4.0),120,,2,,tower_arrow_3

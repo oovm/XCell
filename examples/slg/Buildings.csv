@@ -1,5 +1,5 @@
 @list,name,type,level,hp,build_time,resource_cost,effect,description,required_technologies
-id,text,text,u32,u32,u32,u32,text,text,[ref<Technologies>]
+id,text,text,u32,u32,u32,u32,text,text,[&Technologies]
 1,主城,core,1,1000,300,1000,基础建筑，增加人口上限,游戏的核心建筑,[]
 2,兵营,military,1,500,150,500,训练步兵和骑兵,训练地面单位的建筑,[]
 3,箭塔,defense,1,300,100,300,防御建筑，攻击敌人,防御性建筑,[]

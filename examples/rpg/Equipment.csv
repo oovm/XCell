@@ -1,5 +1,5 @@
 @list,name,slot,item_id,gem_slots,set_id
-id,text,text,ref<Item>,[ref<Gem>],ref<SetBonus>
+id,text,text,&Item,[&Gem],&SetBonus
 1,烈焰之剑,weapon,5,"1,4",1
 2,寒冰法杖,weapon,14,"2,5",2
 3,雷霆权杖,weapon,10,"1,6",3

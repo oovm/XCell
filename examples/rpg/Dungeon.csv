@@ -1,5 +1,5 @@
 @list,name,description,min_level,max_level,monsters,boss_id,rewards_gold_min,rewards_gold_max,rewards_exp
-id,text,text,i32,i32,[ref<Monsters>],ref<Monsters>,i32,i32,i32
+id,text,text,i32,i32,[&Monsters],&Monsters,i32,i32,i32
 1,哥布林营地,哥布林的聚集地，适合新手练级,1,2,"1,1,2",2,50,100,80
 2,骷髅墓穴,充满亡灵的古老墓穴,2,3,"3,3,5",5,100,200,150
 3,蜘蛛森林,巨型蜘蛛的栖息地,3,4,"4,4,4",4,150,300,200

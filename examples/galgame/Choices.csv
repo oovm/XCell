@@ -1,5 +1,5 @@
 @list,dialogue_id,choice_text,next_dialogue_id,affection_character,affection_change
-id,ref<Dialogues>,text,ref<Dialogues>,ref<Characters>,i32
+id,&Dialogues,text,&Dialogues,&Characters,i32
 1,1,早上好，雪！,2,1,5
 2,1,嗯，你也是！,2,1,2
 3,1,（微笑）,2,1,3

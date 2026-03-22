@@ -1,5 +1,5 @@
 @list,name,description,hero_power_name,hero_power_description,hero_power_cost,hero_power_effect,icon,color
-id,i32,text,text,text,text,i32,ref<Effects>,text,color
+id,i32,text,text,text,text,i32,&Effects,text,color
 1,战士,以护甲和武器为核心的职业,全副武装,获得2点护甲,2,1,icon_warrior.png,#C79C6E
 2,法师,掌控奥术之力的法术大师,火焰冲击,造成1点伤害,2,2,icon_mage.png,#69CCF0
 3,牧师,神圣之光的守护者,次级治疗,恢复2点生命值,2,3,icon_priest.png,#FFFFFF

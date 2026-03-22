@@ -21,8 +21,8 @@
 
 ## 特性展示
 
-- `ref<TableName>` 外键引用
-- `[ref<TableName>]` 引用列表
+- `&TableName` 外键引用
+- `[&TableName]` 引用列表
 - `time` 时间类型
 - `color` 颜色类型
 - Enum 枚举类型

@@ -1,5 +1,5 @@
 @list,name,speed,damage_type,splash_radius,effect_id,visual_effect
-id,text,f32,text,f32,ref<Effects>,text
+id,text,f32,text,f32,&Effects,text
 1,箭矢,15.0,physical,0.0,,arrow_normal
 2,穿甲箭,12.0,physical,0.0,,arrow_armor
 3,炮弹,8.0,explosive,1.5,,cannonball

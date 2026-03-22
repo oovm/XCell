@@ -1,6 +1,6 @@
 @list,名称,类型,位置,宽度,高度,连接房间ID,敌人刷新,事件ID,是否起点,是否BOSS,是否商店
 id,name,type,position,width,height,connections,event_id,is_start,is_boss,is_shop
-i32,text,text,"vec2<i32>",i32,i32,"[i32]","[ref<Enemies>]",ref<Events>,bool,bool,bool
+i32,text,text,"vec2<i32>",i32,i32,"[i32]","[&Enemies]",&Events,bool,bool,bool
 1,入口大厅,起点,"(0,0)",3,3,"[2,3]","[]",0,true,false,false
 2,训练室,训练,"(3,0)",2,2,"[1,4]","[]",7,false,false,false
 3,战斗房间,战斗,"(0,3)",2,2,"[1,5,6]","[1,2]",0,false,false,false

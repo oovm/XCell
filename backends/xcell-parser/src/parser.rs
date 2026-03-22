@@ -37,12 +37,12 @@ impl TypeParser {
     }
 
     /// 获取当前 Token
-    fn current(&self) -> &Token {
-        self.tokens.get(self.pos).unwrap_or(&Token::eof(0))
+    fn current(&self) -> Token {
+        self.tokens.get(self.pos).cloned().unwrap_or_else(|| Token::eof(0))
     }
 
     /// 前进一个 Token
-    fn advance(&mut self) -> &Token {
+    fn advance(&mut self) -> Token {
         let token = self.current();
         self.pos += 1;
         token
@@ -50,7 +50,7 @@ impl TypeParser {
 
     /// 期望特定类型的 Token
     fn expect(&mut self, kind: TokenKind) -> ParseResult<Token> {
-        let token = self.current().clone();
+        let token = self.current();
         if token.kind == kind {
             self.advance();
             Ok(token)
@@ -65,52 +65,30 @@ impl TypeParser {
 
     /// 解析类型
     fn parse_type(&mut self) -> ParseResult<TypeExpr> {
-        self.parse_postfix_type()
+        self.parse_prefix_type()
     }
 
-    /// 解析后缀类型（处理 `?` 等后缀修饰符）
-    fn parse_postfix_type(&mut self) -> ParseResult<TypeExpr> {
-        let mut ty = self.parse_prefix_type()?;
-
-        loop {
-            match self.current().kind {
-                TokenKind::Question => {
-                    self.advance();
-                    ty = TypeExpr::Optional(Box::new(ty));
-                }
-                _ => break,
-            }
-        }
-
-        Ok(ty)
-    }
-
-    /// 解析前缀类型（处理 `&`、`*`、`@`、`@@` 等前缀修饰符）
+    /// 解析前缀类型（处理 `&`、`@`、`@@` 等前缀修饰符）
     fn parse_prefix_type(&mut self) -> ParseResult<TypeExpr> {
         match self.current().kind {
+            // 引用类型 `&TableName`
             TokenKind::Ampersand => {
                 self.advance();
                 let name_token = self.expect(TokenKind::Identifier)?;
                 Ok(TypeExpr::Reference { target: name_token.text })
             }
-            TokenKind::Asterisk => {
-                self.advance();
-                let inner = self.parse_prefix_type()?;
-                Ok(TypeExpr::Pointer(Box::new(inner)))
-            }
+            // 独一类型 `@T` 或主键类型 `@@T`
             TokenKind::At => {
                 self.advance();
-                let is_primary = if self.current().kind == TokenKind::At {
+                // 检查是否为主键 `@@T`
+                if self.current().kind == TokenKind::At {
                     self.advance();
-                    true
+                    let inner = self.parse_primary_type()?;
+                    Ok(TypeExpr::PrimaryKey { inner: Box::new(inner) })
                 } else {
-                    false
-                };
-                let inner = self.parse_prefix_type()?;
-                Ok(TypeExpr::Unique {
-                    inner: Box::new(inner),
-                    is_primary,
-                })
+                    let inner = self.parse_primary_type()?;
+                    Ok(TypeExpr::Unique { inner: Box::new(inner) })
+                }
             }
             _ => self.parse_primary_type(),
         }
@@ -181,14 +159,6 @@ impl TypeParser {
             return Ok(TypeExpr::Primitive(prim));
         }
 
-        // 检查是否为 ref<...>
-        if name.eq_ignore_ascii_case("ref") {
-            self.expect(TokenKind::LeftAngle)?;
-            let target_token = self.expect(TokenKind::Identifier)?;
-            self.expect(TokenKind::RightAngle)?;
-            return Ok(TypeExpr::Ref { target: target_token.text });
-        }
-
         // 检查是否为泛型 `Name<T1, T2, ...>`
         if self.current().kind == TokenKind::LeftAngle {
             self.advance();
@@ -203,6 +173,12 @@ impl TypeParser {
             }
 
             self.expect(TokenKind::RightAngle)?;
+            
+            // 特殊处理 Vec<T>
+            if name.eq_ignore_ascii_case("Vec") && args.len() == 1 {
+                return Ok(TypeExpr::Vec { element: Box::new(args.remove(0)) });
+            }
+            
             return Ok(TypeExpr::Generic { name, args });
         }
 
@@ -228,18 +204,16 @@ mod tests {
         assert!(matches!(parse("i32").unwrap(), TypeExpr::Primitive(PrimitiveType::I32)));
         assert!(matches!(parse("bool").unwrap(), TypeExpr::Primitive(PrimitiveType::Bool)));
         assert!(matches!(parse("string").unwrap(), TypeExpr::Primitive(PrimitiveType::String)));
+        assert!(matches!(parse("f32").unwrap(), TypeExpr::Primitive(PrimitiveType::F32)));
     }
 
     #[test]
     fn test_reference_type() {
         let ty = parse("&Item").unwrap();
         assert!(matches!(ty, TypeExpr::Reference { target } if target == "Item"));
-    }
-
-    #[test]
-    fn test_ref_generic() {
-        let ty = parse("ref<Monster>").unwrap();
-        assert!(matches!(ty, TypeExpr::Ref { target } if target == "Monster"));
+        
+        let ty = parse("&Quality").unwrap();
+        assert!(matches!(ty, TypeExpr::Reference { target } if target == "Quality"));
     }
 
     #[test]
@@ -266,13 +240,13 @@ mod tests {
     }
 
     #[test]
-    fn test_nested_list() {
-        let ty = parse("[[i32]]").unwrap();
+    fn test_vec_type() {
+        let ty = parse("Vec<i32>").unwrap();
         match ty {
-            TypeExpr::List { element } => {
-                assert!(matches!(*element, TypeExpr::List { .. }));
+            TypeExpr::Vec { element } => {
+                assert!(matches!(*element, TypeExpr::Primitive(PrimitiveType::I32)));
             }
-            _ => panic!("Expected nested List type"),
+            _ => panic!("Expected Vec type"),
         }
     }
 
@@ -288,23 +262,11 @@ mod tests {
     }
 
     #[test]
-    fn test_optional_type() {
-        let ty = parse("i32?").unwrap();
-        match ty {
-            TypeExpr::Optional(inner) => {
-                assert!(matches!(*inner, TypeExpr::Primitive(PrimitiveType::I32)));
-            }
-            _ => panic!("Expected Optional type"),
-        }
-    }
-
-    #[test]
     fn test_unique_type() {
         let ty = parse("@i32").unwrap();
         match ty {
-            TypeExpr::Unique { inner, is_primary } => {
+            TypeExpr::Unique { inner } => {
                 assert!(matches!(*inner, TypeExpr::Primitive(PrimitiveType::I32)));
-                assert!(!is_primary);
             }
             _ => panic!("Expected Unique type"),
         }
@@ -314,11 +276,32 @@ mod tests {
     fn test_primary_key_type() {
         let ty = parse("@@i32").unwrap();
         match ty {
-            TypeExpr::Unique { inner, is_primary } => {
+            TypeExpr::PrimaryKey { inner } => {
                 assert!(matches!(*inner, TypeExpr::Primitive(PrimitiveType::I32)));
-                assert!(is_primary);
             }
-            _ => panic!("Expected Unique type with primary key"),
+            _ => panic!("Expected PrimaryKey type"),
+        }
+    }
+
+    #[test]
+    fn test_unique_string() {
+        let ty = parse("@string").unwrap();
+        match ty {
+            TypeExpr::Unique { inner } => {
+                assert!(matches!(*inner, TypeExpr::Primitive(PrimitiveType::String)));
+            }
+            _ => panic!("Expected Unique type"),
+        }
+    }
+
+    #[test]
+    fn test_primary_key_string() {
+        let ty = parse("@@string").unwrap();
+        match ty {
+            TypeExpr::PrimaryKey { inner } => {
+                assert!(matches!(*inner, TypeExpr::Primitive(PrimitiveType::String)));
+            }
+            _ => panic!("Expected PrimaryKey type"),
         }
     }
 
@@ -346,27 +329,24 @@ mod tests {
     }
 
     #[test]
-    fn test_complex_nested_type() {
-        let ty = parse("[&Item]?").unwrap();
+    fn test_named_type() {
+        let ty = parse("QualityType").unwrap();
         match ty {
-            TypeExpr::Optional(inner) => {
-                match *inner {
-                    TypeExpr::List { element } => {
-                        assert!(matches!(*element, TypeExpr::Reference { target } if target == "Item"));
-                    }
-                    _ => panic!("Expected List inside Optional"),
-                }
+            TypeExpr::Named(name) => {
+                assert_eq!(name, "QualityType");
             }
-            _ => panic!("Expected Optional type"),
+            _ => panic!("Expected Named type"),
         }
     }
 
     #[test]
     fn test_display() {
-        assert_eq!(parse("i32").unwrap().to_string(), "I32");
+        assert_eq!(parse("i32").unwrap().to_string(), "i32");
         assert_eq!(parse("&Item").unwrap().to_string(), "&Item");
         assert_eq!(parse("[i32]").unwrap().to_string(), "[i32]");
         assert_eq!(parse("[i32; 5]").unwrap().to_string(), "[i32; 5]");
-        assert_eq!(parse("ref<Monster>").unwrap().to_string(), "ref<Monster>");
+        assert_eq!(parse("Vec<i32>").unwrap().to_string(), "Vec<i32>");
+        assert_eq!(parse("@i32").unwrap().to_string(), "@i32");
+        assert_eq!(parse("@@string").unwrap().to_string(), "@@string");
     }
 }

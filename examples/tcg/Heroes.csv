@@ -1,5 +1,5 @@
 @list,name,class_id,starting_hp,hero_power_id,portrait,unlock_condition
-id,i32,text,ref<Classes>,i32,ref<Effects>,text,text
+id,i32,text,&Classes,i32,&Effects,text,text
 1,加尔鲁什·地狱咆哮,1,30,1,portrait_garrosh.png,默认解锁
 2,吉安娜·普罗德摩尔,2,30,2,portrait_jaina.png,默认解锁
 3,安杜因·乌瑞恩,3,30,3,portrait_anduin.png,默认解锁

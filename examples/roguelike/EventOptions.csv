@@ -1,6 +1,6 @@
 @list,事件ID,选项文字,结果文字,下一个事件ID,奖励金币,奖励遗物,奖励效果,生命变化,需要金币,需要生命百分比
 id,event_id,option_text,result_text,next_event_id,reward_gold,reward_relics,reward_effects,health_change,required_gold,required_health_percent
-i32,ref<Events>,text,text,ref<Events>,i32,"[ref<Relics>]","[ref<Effects>]",i32,i32,f32
+i32,&Events,text,text,&Events,i32,"[&Relics]","[&Effects]",i32,i32,f32
 1,1,打开宝箱,宝箱中装满了金币和一件遗物!,0,100,"[1]","[]",0,0,0.0
 2,1,小心检查后打开,你发现了一个陷阱，但成功避开了!,0,50,"[2]","[5]",0,0,0.0
 3,1,离开宝箱,明智的选择，也许下次会有更好的机会。,0,0,"[]","[]",0,0,0.0

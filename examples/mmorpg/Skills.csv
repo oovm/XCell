@@ -1,5 +1,5 @@
 @list,name,description,class_id,type,damage,mana_cost,cooldown,cast_time,range,required_level
-id,text,text,ref<Classes>,text,i32,i32,time,time,f32,i32
+id,text,text,&Classes,text,i32,i32,time,time,f32,i32
 1,冲锋,向目标发起冲锋,造成伤害并使其眩晕,1,攻击,50,15,15s,0s,25,1
 2,盾牌猛击,使用盾牌猛击敌人,造成伤害并打断施法,1,攻击,80,20,10s,1s,5,10
 3,战斗怒吼,发出震耳欲聋的怒吼,提升周围队友的攻击力,1,增益,0,30,60s,2s,20,20

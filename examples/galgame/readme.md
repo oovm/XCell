@@ -18,7 +18,7 @@
 ## 特性展示
 
 - `@text` 唯一名称约束
-- `ref<TableName>` 外键引用
-- `[ref<TableName>]` 引用列表
+- `&TableName` 外键引用
+- `[&TableName]` 引用列表
 - 分支剧情系统
 - 好感度系统

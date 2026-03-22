@@ -1,5 +1,5 @@
 @list,name,level,hp,attack,defense,type,drop_table,skills,is_boss
-id,text,i32,i32,i32,i32,text,[ref<DropTable>],[ref<Skills>],bool
+id,text,i32,i32,i32,i32,text,[&DropTable],[&Skills],bool
 1,野狼,1,50,10,5,野兽,"1,4",,false
 2,野猪,3,80,15,10,野兽,"1,4",,false
 3,哥布林,5,100,20,8,人形,"1,2,4",,false

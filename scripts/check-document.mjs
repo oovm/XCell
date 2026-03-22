@@ -71,7 +71,7 @@ async function scanDirectory(dir, baseDir = dir) {
 
 function parseMarkdownHeaders(content) {
     const headers = [];
-    const lines = content.split('\n');
+    const lines = content.split(/\r?\n/);
     let inCodeBlock = false;
 
     for (let i = 0; i < lines.length; i++) {

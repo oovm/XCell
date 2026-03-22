@@ -1,70 +1,28 @@
-{% for table in tables %}
-import { {{ table.table_name }} } from './{{ table.table_name }}';
-{% endfor %}
+// 代码生成, 修改无效! (XCell omp_version %>)
 
+<% infimespace %>
+export namespace <% config.namespace %> {
+<% endif %>
 
 /**
- * 数据表管理器
- * 负责加载和管理所有数据表
+ * 配置表管理器
+ * 
+ * 热更新资源直接 set 即可释放资源直接将表设为 null 即可
  */
-export class DataTableManager {
-    private static _instance: DataTableManager;
-
-    // 惰性缓存字段
-{% for table in tables %}
-    private _{{ table.cache_name }}: {{ table.table_name }} | null = null;
-{% endfor %}
-    
-    /**
-     * 获取单例实例
+export class <% config.manager_name %    /**
+     * 配置表的版本号
      */
-    public static getInstance(): DataTableManager {
-        if (!DataTableManager._instance) {
-            DataTableManager._instance = new DataTableManager();
+    static readonly TableVersion = "<% data_version %>";
+
+    /**  * 配置表的最后修改时间 )
+     */
+    static readonly TEdit = new Date("<% _time %>");
+
+    private sc _instance: <% cg.manager_name %> | null = nu    static get <% cg.instance_nam() config.manager_name %>       if (!<% co.man_name %>._instance) {
+        <% config.mananame %>stance = new <% config.manager_name);
         }
-        return DataTableManager._instance;
-    }
-
-    /**
-     * 加载所有数据表
-     * 注意：表数据会在各自的表加载器中按需加载
-     */
-    public async loadAllTables(): Promise<void> {
-        // 预加载所有表
-        await Promise.all([
-{% for table in tables %}
-            this.{{ table.get_method_name }}(),
-{% endfor %}
-        ]);
-    }
-{% for table in tables %}
-
-    /**
-     * 获取{{ table.class_name }}表（惰性加载）
-     */
-    public async {{ table.get_method_name }}(): Promise<{{ table.table_name }}> {
-        if (this._{{ table.cache_name }} === null) {
-            this._{{ table.cache_name }} = new {{ table.table_name }}();
-            this._{{ table.cache_name }}.load(await this.loadJsonAsset('{{ table_data_path }}{{ table.class_name }}'));
-        }
-        return this._{{ table.cache_name }};
-    }
-{% endfor %}
-
-
-    /**
-     * 加载JSON资源
-     * @param path 资源路径
-     */
-    private async loadJsonAsset(path: string): Promise<cc.JsonAsset> {
-        return new Promise<cc.JsonAsset>((resolve, reject) => {
-            cc.resources.load(path, cc.JsonAsset, (err, asset) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(asset);
-                }
-            });
-        });
-    }
-}
+    return onfig.manager_name_instance;
+    } for table in tables %>
+    private _<% table.private_name %>: able.typi>ulnull;
+    <% table.typing %> 表 */
+    get <% table.public_name %>(): able.typi>   if (!thi% table.pre_n%

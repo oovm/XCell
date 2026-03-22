@@ -7,8 +7,8 @@ use std::{
 };
 use xcell_types::{XError, XResult};
 use url::Url;
-use dejavu_macros::template;
-use dejavu_types::values::{Context, Value};
+
+mod config;
 
 /// 枚举项数据结构
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -45,145 +45,153 @@ pub struct CocosDataTableItem {
     pub get_method_name: String,
 }
 
-// 使用 template! 宏定义模板
-template! {
-    {
-        CocosEnumerateTemplate
-        "/**
- * {{ class_name }}接口
+// 简化的模板定义，使用字符串拼接代替复杂的模板系统
+fn render_enumerate_template(class_name: &str, items: &[CocosEnumerateItem]) -> String {
+    let mut content = format!("/**
+ * {}接口
  */
-export interface {{ class_name }} {
+export interface {} {{
     /**
-     * {{ class_name }}ID
+     * {}ID
      */
     id: number;
     /**
-     * {{ class_name }}名称
+     * {}名称
      */
     name: string;
     /**
-     * {{ class_name }}描述
+     * {}描述
      */
     description: string;
-}
+}}
 
 /**
- * {{ class_name }}枚举
+ * {}枚举
  */
-export const {{ class_name }} = {
-{% for item in items %}
-    /**
-     * {{ item.name }}{{ class_name }}
+export const {} = {{
+", class_name, class_name, class_name, class_name, class_name, class_name, class_name);
+
+    for (i, item) in items.iter().enumerate() {
+        content.push_str(&format!("    /**
+     * {}{}
      */
-    {{ item.key }}: {
-        id: {{ item.id }},
-        name: "{{ item.name }}",
-        description: "{{ item.description }}"
-    }{% if not loop.last %},{% endif %}
-{% endfor %}
-} as const as Record<string, {{ class_name }}>;
-"
+    {}: {{
+        id: {},
+        name: \"{}\",
+        description: \"{}\"
+    }}{}\n", item.name, class_name, item.key, item.id, item.name, item.description, if i < items.len() - 1 { "," } else { "" }));
     }
+
+    content.push_str(&format!("}} as const as Record<string, {}>;
+", class_name));
+    content
 }
 
-template! {
-    {
-        CocosClassTemplate
-        "/**
- * {{ class_name }}数据结构
+fn render_class_template(class_name: &str, table_name: &str, fields: &[CocosField], has_type_field: bool, is_monster: bool, has_level_field: bool, is_skill: bool) -> String {
+    let mut content = format!("/**
+ * {}数据结构
  */
-export interface {{ class_name }} {
-{% for field in fields %}
-    /**
-     * {{ field.name }}
+export interface {} {{
+", class_name, class_name);
+
+    for field in fields {
+        content.push_str(&format!("    /**
+     * {}
      */
-    {{ field.name }}: {{ field.type }};
-{% endfor %}
-}
+    {}: {};
+", field.name, field.name, field.r#type));
+    }
 
-/**
- * {{ class_name }}表加载器
+    content.push_str(&format!("}}\n\n/**
+ * {}表加载器
  */
-export class {{ table_name }} {
-    private items: {{ class_name }}[] = [];
+export class {} {{
+    private items: {}[] = [];
 
     /**
-     * 加载{{ class_name }}表数据
+     * 加载{}表数据
      * @param asset JSON资源
      */
-    public load(asset: cc.JsonAsset): void {
+    public load(asset: cc.JsonAsset): void {{
         const data = asset.json;
-        if (data) {
-            this.items = data as {{ class_name }}[];
+        if (data) {{
+            this.items = data as {}[];
+        }}
+    }}
+
+    /**
+     * 根据ID获取{}
+     * @param id {}ID
+     */
+    public get{}ById(id: number): {} | null {{
+        return this.items.find(item => item.id === id) || null;
+    }}
+
+    /**
+     * 获取所有{}
+     */
+    public getAll{}(): {}[] {{
+        return this.items;
+    }}
+", class_name, table_name, class_name, class_name, class_name, class_name, class_name, class_name, class_name, class_name, class_name, class_name));
+
+    if has_type_field {
+        if is_monster {
+            content.push_str(&format!("    /**
+     * 根据类型获取{}
+     * @param type 怪物类型
+     */
+    public get{}ByType(type: MonsterType): {}[] {{
+        return this.items.filter(item => item.type === type);
+    }}
+", class_name, class_name, class_name));
+        } else {
+            content.push_str(&format!("    /**
+     * 根据类型获取{}
+     * @param type 类型
+     */
+    public get{}ByType(type: string): {}[] {{
+        return this.items.filter(item => item.type === type);
+    }}
+", class_name, class_name, class_name));
         }
     }
 
-    /**
-     * 根据ID获取{{ class_name }}
-     * @param id {{ class_name }}ID
-     */
-    public get{{ class_name }}ById(id: number): {{ class_name }} | null {
-        return this.items.find(item => item.id === id) || null;
-    }
-
-    /**
-     * 获取所有{{ class_name }}
-     */
-    public getAll{{ class_name }}(): {{ class_name }}[] {
-        return this.items;
-    }
-{% if has_type_field %}
-{% if is_monster %}
-    /**
-     * 根据类型获取{{ class_name }}
-     * @param type 怪物类型
-     */
-    public get{{ class_name }}ByType(type: MonsterType): {{ class_name }}[] {
-        return this.items.filter(item => item.type === type);
-    }
-{% else %}
-    /**
-     * 根据类型获取{{ class_name }}
-     * @param type 类型
-     */
-    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
-        return this.items.filter(item => item.type === type);
-    }
-{% endif %}
-{% endif %}
-{% if has_level_field %}
-{% if is_skill %}
-    /**
-     * 根据等级获取{{ class_name }}
+    if has_level_field {
+        if is_skill {
+            content.push_str(&format!("    /**
+     * 根据等级获取{}
      * @param level 等级
      */
-    public get{{ class_name }}ByLevel(level: number): {{ class_name }}[] {
+    public get{}ByLevel(level: number): {}[] {{
         return this.items.filter(item => item.level_requirement <= level);
-    }
-{% else %}
-    /**
-     * 根据等级获取{{ class_name }}
+    }}
+", class_name, class_name, class_name));
+        } else {
+            content.push_str(&format!("    /**
+     * 根据等级获取{}
      * @param level 等级
      */
-    public get{{ class_name }}ByLevel(level: number): {{ class_name }}[] {
+    public get{}ByLevel(level: number): {}[] {{
         return this.items.filter(item => item.level === level);
+    }}
+", class_name, class_name, class_name));
+        }
     }
-{% endif %}
-{% endif %}
+
+    content.push_str("}\n");
+    content
 }
-"
+
+fn render_manager_template(tables: &[CocosDataTableItem], table_data_path: &str) -> String {
+    let mut content = String::new();
+
+    for table in tables {
+        content.push_str(&format!("import {{ {} }} from './{}';
+", table.table_name, table.table_name));
     }
-}
 
-template! {
-    {
-        CocosDataTableManagerTemplate
-        "{% for table in tables %}
-import { {{ table.table_name }} } from './{{ table.table_name }}';
-{% endfor %}
-
-
-/**
+    content.push_str("\n\n/**
  * 数据表管理器
  * 负责加载和管理所有数据表
  */
@@ -191,10 +199,14 @@ export class DataTableManager {
     private static _instance: DataTableManager;
 
     // 惰性缓存字段
-{% for table in tables %}
-    private _{{ table.cache_name }}: {{ table.table_name }} | null = null;
-{% endfor %}
-    
+");
+
+    for table in tables {
+        content.push_str(&format!("    private _{}: {} | null = null;
+", table.cache_name, table.table_name));
+    }
+
+    content.push_str("    
     /**
      * 获取单例实例
      */
@@ -212,25 +224,32 @@ export class DataTableManager {
     public async loadAllTables(): Promise<void> {
         // 预加载所有表
         await Promise.all([
-{% for table in tables %}
-            this.{{ table.get_method_name }}(),
-{% endfor %}
-        ]);
-    }
-{% for table in tables %}
+");
 
+    for table in tables {
+        content.push_str(&format!("            this.{}(),\n", table.get_method_name));
+    }
+
+    content.push_str("        ]);
+    }
+");
+
+    for table in tables {
+        content.push_str(&format!("    
     /**
-     * 获取{{ table.class_name }}表（惰性加载）
+     * 获取{}表（惰性加载）
      */
-    public async {{ table.get_method_name }}(): Promise<{{ table.table_name }}> {
-        if (this._{{ table.cache_name }} === null) {
-            this._{{ table.cache_name }} = new {{ table.table_name }}();
-            this._{{ table.cache_name }}.load(await this.loadJsonAsset('{{ table_data_path }}{{ table.class_name }}'));
-        }
-        return this._{{ table.cache_name }};
+    public async {}(): Promise<{}> {{
+        if (this._{} === null) {{
+            this._{} = new {}();
+            this._{}.load(await this.loadJsonAsset('{}{}'));
+        }}
+        return this._{};
+    }}
+", table.class_name, table.get_method_name, table.table_name, table.cache_name, table.cache_name, table.table_name, table.cache_name, table_data_path, table.class_name, table.cache_name));
     }
-{% endfor %}
 
+    content.push_str("    
 
     /**
      * 加载JSON资源
@@ -248,75 +267,8 @@ export class DataTableManager {
         });
     }
 }
-"
-    }
-}
-
-/// 类型转换到 dejavu 值的 trait
-trait ToDejavuValue {
-    /// 转换为 dejavu 值
-    fn to_dejavu_value(&self) -> Value;
-}
-
-impl ToDejavuValue for String {
-    fn to_dejavu_value(&self) -> Value {
-        Value::String(self.clone())
-    }
-}
-
-impl ToDejavuValue for &str {
-    fn to_dejavu_value(&self) -> Value {
-        Value::String(self.to_string())
-    }
-}
-
-impl ToDejavuValue for u32 {
-    fn to_dejavu_value(&self) -> Value {
-        Value::Integer(*self as i64)
-    }
-}
-
-impl ToDejavuValue for bool {
-    fn to_dejavu_value(&self) -> Value {
-        Value::Bool(*self)
-    }
-}
-
-impl<T: ToDejavuValue> ToDejavuValue for Vec<T> {
-    fn to_dejavu_value(&self) -> Value {
-        Value::Array(self.iter().map(|x| x.to_dejavu_value()).collect())
-    }
-}
-
-impl ToDejavuValue for CocosEnumerateItem {
-    fn to_dejavu_value(&self) -> Value {
-        let mut map = std::collections::HashMap::new();
-        map.insert("key".to_string(), self.key.to_dejavu_value());
-        map.insert("id".to_string(), self.id.to_dejavu_value());
-        map.insert("name".to_string(), self.name.to_dejavu_value());
-        map.insert("description".to_string(), self.description.to_dejavu_value());
-        Value::Object(map)
-    }
-}
-
-impl ToDejavuValue for CocosField {
-    fn to_dejavu_value(&self) -> Value {
-        let mut map = std::collections::HashMap::new();
-        map.insert("name".to_string(), self.name.to_dejavu_value());
-        map.insert("type".to_string(), self.r#type.to_dejavu_value());
-        Value::Object(map)
-    }
-}
-
-impl ToDejavuValue for CocosDataTableItem {
-    fn to_dejavu_value(&self) -> Value {
-        let mut map = std::collections::HashMap::new();
-        map.insert("class_name".to_string(), self.class_name.to_dejavu_value());
-        map.insert("table_name".to_string(), self.table_name.to_dejavu_value());
-        map.insert("cache_name".to_string(), self.cache_name.to_dejavu_value());
-        map.insert("get_method_name".to_string(), self.get_method_name.to_dejavu_value());
-        Value::Object(map)
-    }
+");
+    content
 }
 
 /// Cocos 存储格式配置
@@ -561,12 +513,7 @@ impl CocosCodegen {
                     })
                     .collect::<Vec<_>>();
                 
-                let mut ctx = Context::new();
-                ctx.set_var("class_name".to_string(), class_name.to_dejavu_value());
-                ctx.set_var("items".to_string(), items.to_dejavu_value());
-                
-                let template = CocosEnumerateTemplate;
-                let content = template.render(&ctx).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))?;
+                let content = render_enumerate_template(class_name, &items);
                 
                 let mut file = File::create(ts_path)?;
                 file.write_all(content.as_bytes())?;
@@ -587,17 +534,7 @@ impl CocosCodegen {
                 let has_type_field = fields.iter().any(|f| f.name == "type");
                 let has_level_field = fields.iter().any(|f| f.name == "level") || fields.iter().any(|f| f.name == "level_requirement");
                 
-                let mut ctx = Context::new();
-                ctx.set_var("class_name".to_string(), class_name.to_dejavu_value());
-                ctx.set_var("table_name".to_string(), table_class_name.to_dejavu_value());
-                ctx.set_var("fields".to_string(), fields.to_dejavu_value());
-                ctx.set_var("has_type_field".to_string(), has_type_field.to_dejavu_value());
-                ctx.set_var("is_monster".to_string(), (class_name == "Monster").to_dejavu_value());
-                ctx.set_var("has_level_field".to_string(), has_level_field.to_dejavu_value());
-                ctx.set_var("is_skill".to_string(), (class_name == "Skill").to_dejavu_value());
-                
-                let template = CocosClassTemplate;
-                let content = template.render(&ctx).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))?;
+                let content = render_class_template(class_name, &table_class_name, &fields, has_type_field, class_name == "Monster", has_level_field, class_name == "Skill");
                 
                 let mut file = File::create(ts_path)?;
                 file.write_all(content.as_bytes())?;
@@ -703,22 +640,21 @@ impl CocosCodegen {
     /// 返回对应的 TypeScript 类型字符串。
     pub fn map_csv_type_to_typescript(&self, csv_type: &str, field_name: &str, class_name: &str) -> String {
         let trimmed_type = csv_type.trim();
-        
-        if trimmed_type == "string[]" {
-            return "number[]".to_string();
-        }
-        
-        if trimmed_type == "text" || trimmed_type == "string" {
-            if field_name == "drop_items" || field_name == "skills" || field_name == "unlock_skills" {
-                return "number[]".to_string();
-            } else if field_name == "type" && class_name == "Monster" {
-                return "MonsterType".to_string();
-            } else {
-                return "string".to_string();
+        match trimmed_type {
+            "i32" | "i64" | "u32" | "u64" | "f32" | "f64" => "number".to_string(),
+            "text" | "string" => {
+                if field_name == "drop_items" || field_name == "skills" || field_name == "unlock_skills" {
+                    "number[]".to_string()
+                } else if field_name == "type" && class_name == "Monster" {
+                    "MonsterType".to_string()
+                } else {
+                    "string".to_string()
+                }
             }
+            "string[]" => "number[]".to_string(),
+            "any" => "string".to_string(),
+            _ => config::get_type_mapping(trimmed_type).to_string(),
         }
-        
-        config::get_type_mapping(trimmed_type).to_string()
     }
     
     /// 写入 DataTableManager.ts
@@ -773,12 +709,7 @@ impl CocosCodegen {
             }
         }
         
-        let mut ctx = Context::new();
-        ctx.set_var("tables".to_string(), tables.to_dejavu_value());
-        ctx.set_var("table_data_path".to_string(), table_data_path.to_dejavu_value());
-        
-        let template = CocosDataTableManagerTemplate;
-        let content = template.render(&ctx).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))?;
+        let content = render_manager_template(&tables, table_data_path);
         
         let mut file = File::create(manager_path)?;
         file.write_all(content.as_bytes())?;

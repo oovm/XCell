@@ -47,6 +47,8 @@ pub struct CocosCodegen {
     pub suffix_table: String,
     /// 生成的实例名称
     pub instance_name: String,
+    /// 表数据路径前缀
+    pub table_data_path: String,
     /// 存储格式配置
     pub storage: CocosStorage,
     /// 开发时用的储存格式

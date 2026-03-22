@@ -89,6 +89,8 @@ pub use self::{
     for_3rd::DateTime,
     integer::{IntegerDescription, IntegerKind},
     language::LanguageDescription,
+    list::ListDescription,
+    reference::ReferenceDescription,
     string::StringDescription,
     typing::*,
     value::{XCellValue, color::ColorDescription, time::TimeDescription},
@@ -112,6 +114,8 @@ mod errors;
 pub mod for_3rd;
 mod integer;
 mod language;
+mod list;
+mod reference;
 mod string;
 mod typing;
 mod value;

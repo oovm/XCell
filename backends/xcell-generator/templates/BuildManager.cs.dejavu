@@ -18,7 +18,7 @@ namespace <% config.namespace %>
     ///
     /// 释放资源直接将表设为 null 即可
     /// </summary>
-    public partial class <% config.manager_name %>
+    public partial class <% config.manager %>
     {
         /// <summary>
         /// 配置表的版本号
@@ -32,8 +32,8 @@ namespace <% config.namespace %>
         /// <remarks>自动生成</remarks>
         public DateTime TableEditTime = <% edit_time %>;
 
-        private static readonly Lazy<<% config.manager_name %>> singleton = new(() => new <% config.manager_name %>());
-        public static <% config.manager_name %> <% config.instance_name %> => singleton.Value;
+        private static readonly Lazy<<% config.manager %>> singleton = new(() => new <% config.manager %>());
+        public static <% config.manager %> Instance => singleton.Value;
 <% for table in tables %>
         private <% table.typing %>? <% table.private_name %>;
         /// <inheritdoc cref="<% config.namespace %>.<% table.typing %>" />
@@ -53,7 +53,7 @@ namespace <% config.namespace %>
         public static void Reload()
         {
 <%- for table in tables %>
-            <% config.instance_name %>.<% table.private_name %> = new <% table.typing %>();
+            Instance.<% table.private_name %> = new <% table.typing %>();
 <%- endfor %>
         }
 #if UNITY_EDITOR
@@ -62,7 +62,7 @@ namespace <% config.namespace %>
         public static void Clear()
         {
 <%- for table in tables %>
-            <% config.instance_name %>.<% table.private_name %> = null;
+            Instance.<% table.private_name %> = null;
 <%- endfor %>
         }
 #if UNITY_EDITOR
@@ -70,14 +70,14 @@ namespace <% config.namespace %>
         public static void ExportXML()
         {
 <%- for table in tables %>
-            SerializerXML("Assets/Data/Table/Binary/<% table.typing %>.xml", <% config.instance_name %>.<% table.private_name %>);
+            SerializerXML("Assets/Data/Table/Binary/<% table.typing %>.xml", Instance.<% table.private_name %>);
 <%- endfor %>
         }
         [UnityEditor.MenuItem("Tools/XCell/ExportJSON")]
         public static void ExportJSON()
         {
 <%- for table in tables %>
-            SerializerJSON("Assets/Data/Table/Readable/<% table.typing %>.json", <% config.instance_name %>.<% table.private_name %>);
+            SerializerJSON("Assets/Data/Table/Readable/<% table.typing %>.json", Instance.<% table.private_name %>);
 <%- endfor %>
         }
 

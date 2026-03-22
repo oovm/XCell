@@ -7,7 +7,7 @@ use xcell_analyzer::XClassItem;
 use xcell_types::codegen::TypeScriptWriter;
 
 #[derive(Template)]
-#[template(path = "BuildClass.ts", escape = "none")]
+#[template(path = "BuildClass.ts.dejavu", escape = "none")]
 pub struct CocosClass {
     /// Compiler version
     compiler_version: &'static str,

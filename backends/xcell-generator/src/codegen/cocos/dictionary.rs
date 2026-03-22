@@ -8,7 +8,7 @@ use xcell_provider::XCellAccess;
 use xcell_types::codegen::TypeScriptWriter;
 
 #[derive(Template)]
-#[template(path = "BuildDictionary.ts", escape = "none")]
+#[template(path = "BuildDictionary.ts.dejavu", escape = "none")]
 pub struct CocosDictionaryTemplate {
     /// Compiler version
     compiler_version: &'static str,

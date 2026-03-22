@@ -1,5 +1,5 @@
-id,name,description,background_image,bgm
-u32,text,text,text,text
+@list,name,description,background_image,bgm
+id,text,text,text,text
 1,教室,学校的普通教室，有黑板和课桌,scene_classroom.png,bgm_classroom.mp3
 2,校园,学校的校园，有操场和教学楼,scene_schoolyard.png,bgm_schoolyard.mp3
 3,图书馆,学校的图书馆，有很多书架,scene_library.png,bgm_library.mp3

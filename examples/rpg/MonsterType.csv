@@ -1,8 +1,7 @@
-变体,ID,名称,描述
-variant,id,name,description
-enum,i32,text,text
+@enum,id,name,description
+name,i32,text,text
 Normal,1,普通,普通怪物
-Undead,2, undead, undead 怪物
+Undead,2,亡灵,亡灵怪物
 Beast,3,野兽,野兽
 Humanoid,4,人形,人形生物
 Giant,5,巨型,巨型生物

@@ -1,5 +1,5 @@
-id,name,age,gender,personality,description,image
-u32,text,u32,text,text,text,text
+@list,name,age,gender,personality,description,image
+id,@text,u32,text,text,text,text
 1,樱井雪,17,女,温柔善良,主人公的同班同学，成绩优秀，性格温柔,character_sakurai_yuki.png
 2,佐藤阳太,18,男,阳光开朗,主人公，喜欢运动，性格开朗,character_sato_yota.png
 3,田中麻衣,17,女,活泼好动,雪的好朋友，喜欢参加各种活动,character_tanaka_mai.png

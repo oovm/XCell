@@ -2,7 +2,8 @@ use super::*;
 
 impl XCellTyped {
     pub fn parse(input: &str, info: &TypeMetaInfo) -> Self {
-        let normed = Self::norm_typing(input);
+        let trimmed = input.trim();
+        let normed = Self::norm_typing(trimmed);
         match normed.as_str() {
             "bool" | "boolean" => info.boolean.clone().into(),
             // int
@@ -29,10 +30,28 @@ impl XCellTyped {
             "v4" | "vec4" => ArrayDescription::new(ArrayKind::Vector4).into(),
             "q4" | "quaternion" => ArrayDescription::new(ArrayKind::Quaternion4).into(),
             // slow path
-            _ => XCellTyped::parse_complex(input, &normed, info),
+            _ => XCellTyped::parse_complex(trimmed, &normed, info),
         }
     }
     fn parse_complex(raw: &str, normed: &str, info: &TypeMetaInfo) -> Self {
+        // 检查引用类型: &TableName
+        if raw.starts_with('&') {
+            let table_name = raw[1..].trim();
+            if !table_name.is_empty() {
+                return ReferenceDescription::new(table_name).into();
+            }
+        }
+        // 检查引用类型: ref<TableName> 或 Ref<TableName>
+        if normed.starts_with("ref<") && normed.ends_with('>') {
+            let table_name = &normed[4..normed.len() - 1];
+            if !table_name.is_empty() {
+                return ReferenceDescription::new(table_name).into();
+            }
+        }
+        // 检查列表类型: [T] 或 [T; N]
+        if raw.starts_with('[') && raw.ends_with(']') {
+            return Self::parse_list_type(raw, info);
+        }
         if info.matches_string(normed) {
             return info.string.clone().into();
         }
@@ -41,6 +60,30 @@ impl XCellTyped {
             return info.vector.clone().with_type(typing).into();
         }
         EnumerateDescription::new(raw).into()
+    }
+
+    /// 解析列表类型语法
+    ///
+    /// 支持格式:
+    /// - `[T]` - 动态数组
+    /// - `[T; N]` - 固定长度数组
+    fn parse_list_type(raw: &str, info: &TypeMetaInfo) -> Self {
+        let inner = &raw[1..raw.len() - 1];
+        let inner = inner.trim();
+        // 检查是否有固定长度: [T; N]
+        if let Some(semi_pos) = inner.find(';') {
+            let type_part = inner[..semi_pos].trim();
+            let len_part = inner[semi_pos + 1..].trim();
+            if let Ok(fixed_length) = len_part.parse::<usize>() {
+                let element_type = XCellTyped::parse(type_part, info);
+                let list = ListDescription { element_type, fixed_length: Some(fixed_length), ..Default::default() };
+                return list.into();
+            }
+        }
+        // 动态数组: [T]
+        let element_type = XCellTyped::parse(inner, info);
+        let list = ListDescription { element_type, ..Default::default() };
+        list.into()
     }
     fn norm_typing(input: &str) -> String {
         let mut out = String::with_capacity(input.len());

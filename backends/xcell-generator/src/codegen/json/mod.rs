@@ -1,37 +1,51 @@
 use crate::{XResult, WorkspaceManager, XClassData, XDictData, XEnumerateData, XListData};
 use serde::Serialize;
-use serde_json::json;
-use std::{fs::File, path::{Path, PathBuf}};
+use std::{
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+};
 use url::Url;
+use xcell_types::XCellValue;
 
+/// JSON 代码生成器配置
 #[derive(Clone, Debug, Serialize)]
 pub struct JsonCodegen {
-    /// Whether to generate JSON code
+    /// 是否启用 JSON 生成
     pub enable: bool,
-    /// Output directory
+    /// 输出目录
     pub output: String,
+    /// 是否格式化输出
+    pub pretty: bool,
+    /// 是否允许尾随逗号
+    pub trailing_comma: bool,
 }
 
 impl Default for JsonCodegen {
     fn default() -> Self {
-        JsonCodegen { enable: false, output: "json".to_string() }
+        JsonCodegen {
+            enable: false,
+            output: "json".to_string(),
+            pretty: true,
+            trailing_comma: false,
+        }
     }
 }
 
 impl JsonCodegen {
-    /// JSON output directory
+    /// 获取 JSON 文件输出路径
     pub fn json_path(&self, root: &Path, file_name: &str) -> XResult<PathBuf> {
         let dir = root.join(&self.output);
         let path = dir.join(file_name).with_extension("json");
         Ok(path)
     }
 
-    /// JSON relative path
+    /// 获取 JSON 相对路径
     pub fn json_relative(&self, file_name: &str) -> String {
         format!("{}/{}.json", self.output, file_name)
     }
 
-    /// Ensure output directories exist
+    /// 确保输出目录存在
     pub fn ensure_path(&self, root: &Path) -> XResult<()> {
         if self.enable {
             if let Some(s) = self.json_path(root, "test")?.parent() {
@@ -41,7 +55,7 @@ impl JsonCodegen {
         Ok(())
     }
 
-    /// Write JSON code
+    /// 写入 JSON 数据
     pub fn write_json(&self, ws: &WorkspaceManager) -> XResult<()> {
         if !self.enable {
             return Ok(());
@@ -73,73 +87,236 @@ impl JsonCodegen {
         Ok(())
     }
 
-    /// Write class JSON
-    fn write_class(&self, _ws: &WorkspaceManager, _table: &XClassData) -> XResult<()> {
-        // TODO: Implement write_class
-        Ok(())
+    /// 写入类表 JSON
+    fn write_class(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
+        let json_data = self.make_class(table);
+        self.write_json_file(ws, &table.name, &json_data)
     }
 
-    /// Write enumerate JSON
-    fn write_enumerate(&self, _ws: &WorkspaceManager, _table: &XEnumerateData) -> XResult<()> {
-        // TODO: Implement write_enumerate
-        Ok(())
+    /// 写入枚举表 JSON
+    fn write_enumerate(&self, ws: &WorkspaceManager, table: &XEnumerateData) -> XResult<()> {
+        let json_data = self.make_enumerate(table);
+        self.write_json_file(ws, &table.name, &json_data)
     }
 
-    /// Write dict JSON
-    fn write_dict(&self, _ws: &WorkspaceManager, _table: &XDictData) -> XResult<()> {
-        // TODO: Implement write_dict
-        Ok(())
+    /// 写入字典表 JSON
+    fn write_dict(&self, ws: &WorkspaceManager, table: &XDictData) -> XResult<()> {
+        let json_data = self.make_dict(table);
+        self.write_json_file(ws, &table.name, &json_data)
     }
 
-    /// Write list JSON
-    fn write_list(&self, _ws: &WorkspaceManager, _table: &XListData) -> XResult<()> {
-        // TODO: Implement write_list
-        Ok(())
+    /// 写入列表表 JSON
+    fn write_list(&self, ws: &WorkspaceManager, table: &XListData) -> XResult<()> {
+        let json_data = self.make_list(table);
+        self.write_json_file(ws, &table.name, &json_data)
     }
 
-    /// Make class JSON data
-    fn make_class(&self, _table: &XClassData) -> serde_json::Value {
-        let data = json!({});
-        // TODO: Implement class JSON generation
-        data
-    }
-
-    /// Make enumerate JSON data
-    fn make_enumerate(&self, _table: &XEnumerateData) -> serde_json::Value {
-        let data = json!({});
-        // TODO: Implement enumerate JSON generation
-        data
-    }
-
-    /// Make dict JSON data
-    fn make_dict(&self, _table: &XDictData) -> serde_json::Value {
-        let data = json!({});
-        // TODO: Implement dict JSON generation
-        data
-    }
-
-    /// Make list JSON data
-    fn make_list(&self, _table: &XListData) -> serde_json::Value {
-        let data = json!({});
-        // TODO: Implement list JSON generation
-        data
-    }
-
-    /// Log JSON file creation
-    fn log_json(&self, ws: &WorkspaceManager, name: &str) -> XResult<File> {
+    /// 使用 oak-json 写入 JSON 文件
+    fn write_json_file(&self, ws: &WorkspaceManager, name: &str, data: &impl Serialize) -> XResult<()> {
         let path = self.json_path(&ws.config.root, name)?;
+        
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+
+        let json_string = if self.pretty {
+            oak_json::to_string_pretty(data)
+                .map_err(|e| xcell_types::XError::runtime_error(format!("JSON序列化失败: {:?}", e)))?
+        } else {
+            oak_json::to_string(data)
+                .map_err(|e| xcell_types::XError::runtime_error(format!("JSON序列化失败: {:?}", e)))?
+        };
+
+        let mut file = File::create(&path)?;
+        file.write_all(json_string.as_bytes())?;
+
         tracing::info!("写入 JSON: {}\n{}", self.json_relative(name), Url::from_file_path(&path)?);
-        Ok(File::create(path)?)
+        Ok(())
+    }
+
+    /// 生成类表 JSON 数据
+    fn make_class(&self, table: &XClassData) -> JsonClassData {
+        JsonClassData {
+            name: table.name.clone(),
+            fields: table.items.iter().map(|item| JsonFieldData {
+                name: item.field.clone(),
+                r#type: item.typing.as_typescript_type(),
+                default: self.xcell_value_to_json(&item.default),
+                comment: item.document.lines().collect(),
+            }).collect(),
+        }
+    }
+
+    /// 生成枚举表 JSON 数据
+    fn make_enumerate(&self, table: &XEnumerateData) -> JsonEnumerateData {
+        JsonEnumerateData {
+            name: table.name.clone(),
+            id_type: table.typing.kind.as_typescript_type(),
+            values: table.lines.iter().map(|line| JsonEnumValue {
+                id: line.id.to_string(),
+                key: line.key.clone(),
+                comment: line.comment.lines().collect(),
+                fields: table.headers.iter().enumerate().map(|(i, header)| {
+                    let value = line.data.get(i);
+                    JsonFieldData {
+                        name: header.field_name.clone(),
+                        r#type: header.typing.as_typescript_type(),
+                        default: value.map(|v| self.xcell_value_to_json(v)).unwrap_or_default(),
+                        comment: header.document.lines().collect(),
+                    }
+                }).collect(),
+            }).collect(),
+        }
+    }
+
+    /// 生成字典表 JSON 数据
+    fn make_dict(&self, table: &XDictData) -> JsonDictData {
+        JsonDictData {
+            name: table.name.clone(),
+            entries: table.mapping.iter().map(|(key, line)| {
+                JsonDictEntry {
+                    key: key.clone(),
+                    fields: table.headers.iter().enumerate().map(|(i, header)| {
+                        let value = line.data.get(i);
+                        (header.field_name.clone(), value.map(|v| self.xcell_value_to_json(v)).unwrap_or_default())
+                    }).collect(),
+                }
+            }).collect(),
+        }
+    }
+
+    /// 生成列表表 JSON 数据
+    fn make_list(&self, table: &XListData) -> JsonListData {
+        JsonListData {
+            name: table.name.clone(),
+            id_type: table.id_type.as_typescript_type(),
+            entries: table.mapping.iter().map(|(id, line)| {
+                JsonListEntry {
+                    id: id.to_string(),
+                    key: line.key.clone(),
+                    fields: table.headers.iter().enumerate().map(|(i, header)| {
+                        let value = line.data.get(i);
+                        (header.field_name.clone(), value.map(|v| self.xcell_value_to_json(v)).unwrap_or_default())
+                    }).collect(),
+                }
+            }).collect(),
+        }
+    }
+
+    /// 将 XCellValue 转换为 serde_json::Value
+    fn xcell_value_to_json(&self, value: &XCellValue) -> serde_json::Value {
+        match value {
+            XCellValue::Boolean(b) => serde_json::Value::Bool(*b),
+            XCellValue::Integer8(i) => serde_json::Value::Number((*i).into()),
+            XCellValue::Integer16(i) => serde_json::Value::Number((*i).into()),
+            XCellValue::Integer32(i) => serde_json::Value::Number((*i).into()),
+            XCellValue::Integer64(i) => serde_json::Value::Number((*i).into()),
+            XCellValue::Unsigned8(u) => serde_json::Value::Number((*u).into()),
+            XCellValue::Unsigned16(u) => serde_json::Value::Number((*u).into()),
+            XCellValue::Unsigned32(u) => serde_json::Value::Number((*u).into()),
+            XCellValue::Unsigned64(u) => serde_json::Value::Number((*u).into()),
+            XCellValue::Float32(f) => {
+                serde_json::Number::from_f64(*f as f64)
+                    .map(serde_json::Value::Number)
+                    .unwrap_or(serde_json::Value::Null)
+            }
+            XCellValue::Float64(f) => {
+                serde_json::Number::from_f64(*f)
+                    .map(serde_json::Value::Number)
+                    .unwrap_or(serde_json::Value::Null)
+            }
+            XCellValue::String(s) => serde_json::Value::String(s.clone()),
+            XCellValue::Vector2(v) => serde_json::json!([v[0], v[1]]),
+            XCellValue::Vector3(v) => serde_json::json!([v[0], v[1], v[2]]),
+            XCellValue::Vector4(v) => serde_json::json!([v[0], v[1], v[2], v[3]]),
+            XCellValue::Quaternion4(v) => serde_json::json!([v[0], v[1], v[2], v[3]]),
+            XCellValue::Color(c) => serde_json::json!({
+                "r": c.r,
+                "g": c.g,
+                "b": c.b,
+                "a": c.a,
+            }),
+            XCellValue::Vector(v) => {
+                serde_json::Value::Array(v.iter().map(|item| self.xcell_value_to_json(item)).collect())
+            }
+            XCellValue::Enumerate(s) => serde_json::Value::String(s.clone()),
+            XCellValue::Reference(r) => serde_json::Value::Number((*r).into()),
+        }
     }
 }
 
 impl super::Codegen for JsonCodegen {
-    fn generate(&self, _context: &super::CodegenContext) -> XResult<()> {
-        // TODO: Implement JSON code generation
+    fn generate(&self, context: &super::CodegenContext) -> XResult<()> {
+        if let Some(workspace) = &context.workspace {
+            self.write_json(workspace)?;
+        }
         Ok(())
     }
 
     fn name(&self) -> &'static str {
         "json"
     }
+}
+
+/// 类表 JSON 数据结构
+#[derive(Serialize)]
+struct JsonClassData {
+    name: String,
+    fields: Vec<JsonFieldData>,
+}
+
+/// 字段 JSON 数据结构
+#[derive(Serialize)]
+struct JsonFieldData {
+    name: String,
+    r#type: String,
+    default: serde_json::Value,
+    comment: Vec<String>,
+}
+
+/// 枚举表 JSON 数据结构
+#[derive(Serialize)]
+struct JsonEnumerateData {
+    name: String,
+    id_type: String,
+    values: Vec<JsonEnumValue>,
+}
+
+/// 枚举值 JSON 数据结构
+#[derive(Serialize)]
+struct JsonEnumValue {
+    id: String,
+    key: String,
+    comment: Vec<String>,
+    fields: Vec<JsonFieldData>,
+}
+
+/// 字典表 JSON 数据结构
+#[derive(Serialize)]
+struct JsonDictData {
+    name: String,
+    entries: Vec<JsonDictEntry>,
+}
+
+/// 字典条目 JSON 数据结构
+#[derive(Serialize)]
+struct JsonDictEntry {
+    key: String,
+    fields: std::collections::BTreeMap<String, serde_json::Value>,
+}
+
+/// 列表表 JSON 数据结构
+#[derive(Serialize)]
+struct JsonListData {
+    name: String,
+    id_type: String,
+    entries: Vec<JsonListEntry>,
+}
+
+/// 列表条目 JSON 数据结构
+#[derive(Serialize)]
+struct JsonListEntry {
+    id: String,
+    key: String,
+    fields: std::collections::BTreeMap<String, serde_json::Value>,
 }

@@ -19,6 +19,8 @@ pub use crate::{
     decimal::DecimalDescription,
     enumerate::EnumerateDescription,
     integer::{IntegerDescription, IntegerKind},
+    list::ListDescription,
+    reference::ReferenceDescription,
     string::StringDescription,
     value::{color::ColorDescription, time::TimeDescription},
     vector::VectorDescription,
@@ -65,6 +67,10 @@ pub enum XCellTyped {
     Array(Box<ArrayDescription>),
     /// 向量类型
     Vector(Box<VectorDescription>),
+    /// 引用类型
+    Reference(Box<ReferenceDescription>),
+    /// 列表类型
+    List(Box<ListDescription>),
 }
 
 impl Default for XCellTyped {
@@ -93,6 +99,8 @@ impl XCellTyped {
             XCellTyped::Enumerate(typing) => typing.parse_cell(cell),
             XCellTyped::Array(typing) => typing.parse_cell(cell),
             XCellTyped::Vector(typing) => typing.parse_cell(cell),
+            XCellTyped::Reference(typing) => typing.parse_cell(cell),
+            XCellTyped::List(typing) => typing.parse_cell(cell),
         }
     }
 }

@@ -28,5 +28,5 @@ pub use self::{
 pub use xcell_provider::XCellHeader;
 mod config;
 pub mod utils;
-mod validation;
+pub mod validation;
 mod x_table;

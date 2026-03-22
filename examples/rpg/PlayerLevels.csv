@@ -1,5 +1,5 @@
-id,name,required_exp,health,damage,defense,unlock_skills
-i32,text,i32,i32,i32,i32,[i32]
+@list,name,required_exp,health,damage,defense,unlock_skills
+id,text,i32,i32,i32,i32,[i32]
 1,1级,0,100,10,5,""
 2,2级,1000,120,15,8,"1,2"
 3,3级,3000,150,20,12,"1,2,3"

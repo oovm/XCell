@@ -3,7 +3,8 @@ use std::fmt::{Debug, Display, Formatter};
 use std::io::Write;
 use serde::{Deserialize, Serialize};
 use dejavu_macros::Template;
-use xcell_analyzer::{UnityCodegen, WorkspaceManager, XClassData, XClassItem};
+use xcell_analyzer::{WorkspaceManager, XClassData, XClassItem};
+use xcell_config::UnityCodegen;
 use xcell_types::{
     XResult,
     codegen::{CSharpReader, CSharpWriter},
@@ -11,7 +12,7 @@ use xcell_types::{
 
 /// Unity class code generation template
 #[derive(Template)]
-#[template(path = "BuildClass.cs", escape = "none")]
+#[template(path = "BuildClass.cs.dejavu", escape = "none")]
 pub struct UnityClassTemplate {
     /// Compiler version
     compiler_version: &'static str,
@@ -102,17 +103,12 @@ impl UnityCodegen {
     ///
     /// # Returns
     /// Result of the operation
-    pub(super) fn write_class(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
-        let unity = &ws.config.unity;
+    pub fn write_class(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
         let root = &ws.config.root;
         
-        let table_name = format!("{}{}", table.name, unity.loader.suffix_table);
+        let table_name = format!("{}{}", table.name, self.suffix_table);
         
-        let output_dir = PathBuf::from(&unity.loader.output);
-        let output_dir = match output_dir.is_absolute() {
-            true => output_dir,
-            false => root.join(output_dir),
-        };
+        let output_dir = self.loader_path(root);
         
         if let Some(parent) = output_dir.parent() {
             std::fs::create_dir_all(parent)?;
@@ -133,8 +129,8 @@ impl UnityCodegen {
     ///
     /// # Returns
     /// Unity class template data
-    fn make_class(&self, table: &XClassData, table_name: String) -> UnityClass {
-        UnityClass {
+    fn make_class(&self, table: &XClassData, table_name: String) -> UnityClassTemplate {
+        UnityClassTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             table_name,

@@ -1,5 +1,5 @@
 use crate::{WorkspaceManager, XCellHeader, XClassData, XDictData, XEnumerateData, XListData};
-use dejavu_derive::Template;
+use dejavu_macros::Template;
 use std::{fs::File, io::Write, path::Path};
 use xcell_errors::{XError, XResult, for_3rd::Url};
 

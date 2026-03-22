@@ -28,3 +28,4 @@ dejavu-engine = { workspace = true }
 dejavu-types = { workspace = true }
 dejavu-macros = { workspace = true }
 tempfile = { workspace = true }
+oak-json = { workspace = true }

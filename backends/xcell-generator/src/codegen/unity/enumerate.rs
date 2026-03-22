@@ -4,12 +4,13 @@ use std::fmt::{Debug, Display, Formatter};
 use std::io::Write;
 use serde::{Deserialize, Serialize};
 use dejavu_macros::Template;
-use xcell_analyzer::{UnityCodegen, WorkspaceManager, XCellHeader, XDataLine, XEnumerateData};
-use xcell_types::{XError, XResult};
+use xcell_analyzer::{WorkspaceManager, XCellHeader, XDataLine, XEnumerateData};
+use xcell_config::UnityCodegen;
+use xcell_types::XResult;
 
 /// Unity enumerate code generation template
 #[derive(Template)]
-#[template(path = "BuildEnumerate.cs", escape = "none")]
+#[template(path = "BuildEnumerate.cs.dejavu", escape = "none")]
 pub struct UnityEnumerateTemplate {
     /// Compiler version
     compiler_version: &'static str,
@@ -66,15 +67,10 @@ impl UnityCodegen {
     ///
     /// # Returns
     /// Result of the operation
-    pub(super) fn write_enumerate(&self, ws: &WorkspaceManager, table: &XEnumerateData) -> XResult<()> {
-        let unity = &ws.config.unity;
+    pub fn write_enumerate(&self, ws: &WorkspaceManager, table: &XEnumerateData) -> XResult<()> {
         let root = &ws.config.root;
         
-        let output_dir = PathBuf::from(&unity.loader.output);
-        let output_dir = match output_dir.is_absolute() {
-            true => output_dir,
-            false => root.join(output_dir),
-        };
+        let output_dir = self.loader_path(root);
         
         if let Some(parent) = output_dir.parent() {
             std::fs::create_dir_all(parent)?;
@@ -94,8 +90,8 @@ impl UnityCodegen {
     ///
     /// # Returns
     /// Unity enumerate template data
-    fn make_enumerate(&self, table: &XEnumerateData) -> UnityEnumerate {
-        UnityEnumerate {
+    fn make_enumerate(&self, table: &XEnumerateData) -> UnityEnumerateTemplate {
+        UnityEnumerateTemplate {
             compiler_version: env!("CARGO_PKG_VERSION"),
             config: self.clone(),
             class_name: table.name.clone(),
@@ -143,7 +139,6 @@ impl XDataLine {
     /// # Returns
     /// EnumeratePair representation
     fn as_pair(&self, index: usize) -> EnumeratePair {
-        // 枚举和字段一样长, 必定存在
         let data = self.data.get(index).unwrap();
         EnumeratePair { key: self.key.clone(), value: data.as_csharp_value(), document: self.comment.lines() }
     }

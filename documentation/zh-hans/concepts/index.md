@@ -4,36 +4,53 @@
 
 ## 目录
 
-- [表格格式](./index.md#表格格式)：表格的基本结构
-- [Class 表格类型](./class.md)：全局配置类表格
-- [Dictionary 表格类型](./dictionary.md)：字典类型表格（List 和 Dict）
-- [Enumerate 表格类型](./enumerate.md)：枚举类型表格
-- [Language 表格类型](./language.md)：多语言支持表格
-- [配置文件](./config.md)：XCell 配置说明
+- [dict 表](./dict.md)：最常用的配置形式，字符串主键
+- [list 表](./list.md)：整数 ID 主键，按顺序访问
+- [enum 表](./enum.md)：枚举类型，附加额外数据
+- [class 表](./class.md)：全局配置类，单例模式
+- [language 表](./language.md)：多语言支持
 - [合表规则](./merge.md)：表格合并规则
 
 ## 表格格式
 
-XCell 采用统一的表格格式，适合各种复杂度的配置表。
+XCell 采用统一的三行表格格式：
 
-### 基本结构
+| 行号 | 内容 |
+|------|------|
+| 第一行 | 字段注释 |
+| 第二行 | 字段名（可带类型标记） |
+| 第三行 | 字段类型 |
+| 第四行及以后 | 数据行 |
 
-- **直接定义字段**：第一行开始直接定义字段名和数据
-- **优点**：结构紧凑，易于编辑和阅读
-- **适用场景**：所有配置表，从简单到复杂
+> 如果是旧表改造，可通过 line 映射调整行顺序，参见 [配置文件](./config.md#line-映射)。
 
-### 示例
+## 类型标记
 
-| id | name | hp |
-| -- | ---- | -- |
-| 1  | 史莱姆  | 50 |
-| 2  | 哥布林  | 80 |
+类型标记放在第一行第一列，用于声明表格类型：
+
+| 标记 | 说明 |
+|------|------|
+| 无标记 | 默认为 dict 表 |
+| `@dict` | 显式声明 dict 表 |
+| `@list` | 声明 list 表 |
+| `@enum` | 声明 enum 表 |
+| `@class` | 声明 class 表 |
+| `@language` | 声明 language 表 |
+
+可通过 `@类型 名称` 指定生成的名称，如 `@enum MonsterType`。
 
 ## 快速入门
 
-要开始使用 XCell，建议按以下顺序阅读：
+1. [dict 表](./dict.md)：默认使用 dict 表即可满足大部分需求
+2. [list 表](./list.md)：需要整数 ID 时使用 list 表
+3. [enum 表](./enum.md)：需要枚举时使用 enum 表
+4. [class 表](./class.md)：全局配置使用 class 表
+5. [language 表](./language.md)：多语言支持使用 language 表
 
-1. 首先阅读 [配置文件](./config.md) 了解如何配置项目
-2. 根据您的需求阅读对应的表格类型文档
-3. 了解 [合表规则](./merge.md) 以处理复杂的数据合并场景
+## 进阶
 
+- [类型系统](../advanced/type-system.md)：基本类型、复合类型
+- [引用类型](../advanced/ref-type.md)：表间关联关系
+- [元属性](../advanced/meta-data.md)：字段元数据配置
+- [扩展性](../advanced/extensibility.md)：自定义类型、代码生成器
+- [高级功能](../advanced/advanced-features.md)：高级配置选项

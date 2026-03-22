@@ -8,7 +8,7 @@
 2. [扩展代码生成器](#扩展代码生成器)
 3. [插件开发指南](#插件开发指南)
 
----
+***
 
 ## 自定义类型系统
 
@@ -18,15 +18,15 @@ XCell 提供了灵活的类型系统，支持多种内置数据类型，并允�
 
 XCell 支持以下内置类型：
 
-| 类型类别 | 支持的类型 |
-|---------|-----------|
-| 布尔型 | `bool`, `boolean` |
-| 整数型 | `byte`/`i8`, `short`/`i16`, `int`/`i32`, `long`/`i64`, `sbyte`/`u8`, `ushort`/`u16`, `uint`/`u32`, `ulong`/`u64` |
-| 小数型 | `float`/`f32`, `double`/`f64`, `decimal`/`d128`/`f128` |
-| 字符串 | `string` |
-| 特殊类型 | `color`/`colour`, `color32`, `time`/`date`/`datetime` |
-| 向量/数组 | `v2`/`vec2`, `v3`/`vec3`, `v4`/`vec4`, `q4`/`quaternion` |
-| 枚举 | 自定义枚举类型 |
+| 类型类别  | 支持的类型                                                                                                            |
+| ----- | ---------------------------------------------------------------------------------------------------------------- |
+| 布尔型   | `bool`, `boolean`                                                                                                |
+| 整数型   | `byte`/`i8`, `short`/`i16`, `int`/`i32`, `long`/`i64`, `sbyte`/`u8`, `ushort`/`u16`, `uint`/`u32`, `ulong`/`u64` |
+| 小数型   | `float`/`f32`, `double`/`f64`, `decimal`/`d128`/`f128`                                                           |
+| 字符串   | `string`                                                                                                         |
+| 特殊类型  | `color`/`colour`, `color32`, `time`/`date`/`datetime`                                                            |
+| 向量/数组 | `v2`/`vec2`, `v3`/`vec3`, `v4`/`vec4`, `q4`/`quaternion`                                                         |
+| 枚举    | 自定义枚举类型                                                                                                          |
 
 ### 类型系统架构
 
@@ -106,7 +106,7 @@ pub struct TypeMetaInfo {
 
 在 `projects/xcell-types/src/codegen/` 中为新类型添加代码生成逻辑，确保能够正确生成目标语言（如 C#）的类型定义。
 
----
+***
 
 ## 扩展代码生成器
 
@@ -185,7 +185,7 @@ impl CocosCodegen {
 
 在 `WorkspaceManager::write_unity()` 或类似方法中调用新生成器。
 
----
+***
 
 ## 插件开发指南
 
@@ -249,7 +249,7 @@ impl MyCustomTable {
 4. **文档**：为插件提供完整的使用文档
 5. **测试**：编写充分的测试用例
 
----
+***
 
 ## 总结
 

@@ -6,7 +6,11 @@ export const config = {
         rpgUntyped: 'examples/rpg',
         rpgTyped: 'examples/rpg',
         galgame: 'examples/galgame',
-        slg: 'examples/slg'
+        slg: 'examples/slg',
+        mmorpg: 'examples/mmorpg',
+        roguelike: 'examples/roguelike',
+        towerDefense: 'examples/tower-defense',
+        tcg: 'examples/tcg'
     },
     // 路径配置
     paths: {

@@ -711,8 +711,8 @@ impl CalamineTable {
         }
         None
     }
-    fn read_comment_details(&self, index: usize) -> XDocument {
-        XDocument
+    fn read_comment_details(&self, _index: usize) -> XDocument {
+        XDocument::default()
     }
 }
 

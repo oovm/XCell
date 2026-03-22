@@ -67,6 +67,8 @@ dejavu-types = { path = "../dejavu-engine/backends/dejavu-types" }
 dejavu-macros = { path = "../dejavu-engine/backends/dejavu-macros" }
 dejavu-engine = { path = "../dejavu-engine/backends/dejavu-engine" }
 
+oak-json = { path = "../oaks/examples/oak-json" }
+
 xcell-types = { path = "backends/xcell-types", version = "0.2.0" }
 xcell-analyzer = { path = "backends/xcell-analyzer", version = "0.2.0" }
 xcell-provider = { path = "backends/xcell-provider", version = "0.2.0" }
@@ -74,6 +76,7 @@ xcell = { path = "backends/xcell", version = "0.2.0" }
 xcell-generator = { path = "backends/xcell-generator", version = "0.2.0" }
 xcell-plugin = { path = "backends/xcell-plugin", version = "0.2.0" }
 xcell-config = { path = "backends/xcell-config", version = "0.2.0" }
+xcell-parser = { path = "backends/xcell-parser", version = "0.2.0" }
 
 
 tempfile = "3.10.1"

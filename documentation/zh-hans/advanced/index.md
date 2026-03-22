@@ -5,17 +5,28 @@
 ## 文档结构
 
 ### 核心概念
+- [type-system.md](type-system.md) - 类型系统文档
+  - 基本类型（整数、浮点数、布尔、字符串）
+  - 复合类型（数组、向量、字典、元组）
+  - 特殊类型（颜色、时间）
+  - 自定义类型（枚举、结构体）
+  - 类型转换和验证
+
+- [key-field.md](key-field.md) - 主键字段文档
+  - 默认规则
+  - 显式标记
+  - 主键类型
+
+- [ref-type.md](ref-type.md) - 引用类型文档
+  - 基本格式
+  - 工作原理
+  - 使用场景
+  - 引用验证
+
 - [meta-data.md](meta-data.md) - 元属性文档
   - 基本元属性（var, type, default, field, client, server, meta）
   - 表格类型标记（class, enum, table, language）
   - 使用规则和示例
-
-- [type-system.md](type-system.md) - 类型系统文档
-  - 基本类型（整数、浮点数、布尔、字符串）
-  - 复合类型（数组、向量、字典、元组）
-  - 特殊类型（颜色、时间、引用）
-  - 自定义类型（枚举、结构体）
-  - 类型转换和验证
 
 ### 扩展性
 - [extensibility.md](extensibility.md) - 扩展性文档

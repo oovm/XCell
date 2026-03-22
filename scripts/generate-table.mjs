@@ -14,7 +14,11 @@ async function main() {
         path.resolve(projectRoot, config.examples.rpgUntyped),
         path.resolve(projectRoot, config.examples.rpgTyped),
         path.resolve(projectRoot, config.examples.galgame),
-        path.resolve(projectRoot, config.examples.slg)
+        path.resolve(projectRoot, config.examples.slg),
+        path.resolve(projectRoot, config.examples.mmorpg),
+        path.resolve(projectRoot, config.examples.roguelike),
+        path.resolve(projectRoot, config.examples.towerDefense),
+        path.resolve(projectRoot, config.examples.tcg)
     ];
     
     console.log('Finding xcell executable...');

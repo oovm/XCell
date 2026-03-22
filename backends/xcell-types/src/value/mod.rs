@@ -52,6 +52,8 @@ pub enum XCellValue {
     // Time(DateTime),
     Vector(Vec<XCellValue>),
     Enumerate(String),
+    /// 引用类型，存储引用 ID
+    Reference(i64),
 }
 
 impl Default for XCellValue {

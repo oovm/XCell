@@ -1,6 +1,7 @@
 use super::*;
 
 impl XCellTyped {
+    /// 返回当前 XCell 类型对应的 C# 默认值字符串
     pub fn as_csharp_default(&self) -> String {
         match self {
             XCellTyped::Boolean(v) => v.as_csharp_default(),
@@ -17,11 +18,14 @@ impl XCellTyped {
                 }
                 format!("new () {{{}}}", v.default.iter().map(|v| v.as_csharp_value()).join(", "))
             }
+            XCellTyped::Reference(v) => v.as_csharp_default(),
+            XCellTyped::List(v) => v.as_csharp_default(),
         }
     }
 }
 
 impl XCellValue {
+    /// 返回当前 XCell 值对应的 C# 值字符串
     pub fn as_csharp_value(&self) -> String {
         match self {
             XCellValue::Boolean(v) => v.to_string(),
@@ -65,11 +69,16 @@ impl XCellValue {
             XCellValue::Vector(_) => {
                 todo!()
             }
+            XCellValue::Reference(v) => v.to_string(),
         }
     }
 }
 
 impl BooleanDescription {
+    /// 返回布尔类型对应的 C# 默认值字符串
+    ///
+    /// # 返回值
+    /// 返回 C# 默认值字符串
     pub fn as_csharp_default(&self) -> String {
         match self.default {
             true => "true".to_string(),
@@ -79,24 +88,40 @@ impl BooleanDescription {
 }
 
 impl IntegerDescription {
+    /// 返回整数类型对应的 C# 默认值字符串
+    ///
+    /// # 返回值
+    /// 返回 C# 默认值字符串
     pub fn as_csharp_default(&self) -> String {
         if self.default.is_zero() { "".to_string() } else { self.default.to_string() }
     }
 }
 
 impl DecimalDescription {
+    /// 返回小数类型对应的 C# 默认值字符串
+    ///
+    /// # 返回值
+    /// 返回 C# 默认值字符串
     pub fn as_csharp_default(&self) -> String {
         if self.default.is_zero() { "".to_string() } else { self.default.to_string() }
     }
 }
 
 impl StringDescription {
+    /// 返回字符串类型对应的 C# 默认值字符串
+    ///
+    /// # 返回值
+    /// 返回 C# 默认值字符串
     pub fn as_csharp_default(&self) -> String {
         if self.default.is_empty() { "\"\"".to_string() } else { format!("{:?}", self.default) }
     }
 }
 
 impl TimeDescription {
+    /// 返回时间类型对应的 C# 默认值字符串
+    ///
+    /// # 返回值
+    /// 返回 C# 默认值字符串
     fn as_csharp_default(&self) -> String {
         match &self.default {
             Some(s) => {
@@ -116,6 +141,10 @@ impl TimeDescription {
 }
 
 impl ColorDescription {
+    /// 返回颜色类型对应的 C# 默认值字符串
+    ///
+    /// # 返回值
+    /// 返回 C# 默认值字符串
     fn as_csharp_default(&self) -> String {
         let [r, g, b, a] = self.default.to_rgba8();
         format!("new Color32({r}, {g}, {b}, {a})")
@@ -123,26 +152,27 @@ impl ColorDescription {
 }
 
 impl ArrayDescription {
+    /// 返回数组类型对应的 C# 默认值字符串
+    ///
+    /// # 返回值
+    /// 返回 C# 默认值字符串
     fn as_csharp_default(&self) -> String {
-        // match self.kind {
-        //     ArrayKind::Vector2 => {}
-        //     ArrayKind::Vector3 => {}
-        //     ArrayKind::Vector4 => {}
-        //     ArrayKind::Color4 => {}
-        //     ArrayKind::Quaternion4 => {}
-        // }
-        //
-        // let [r, g, b, a] = self.default.to_rgba8();
         "new ()".to_string()
     }
 }
 
 impl XCellTyped {
+    /// 创建 C# 二进制写入器配置
+    ///
+    /// # 参数
+    /// * `field` - 字段名称
+    ///
+    /// # 返回值
+    /// 返回 CSharpWriter 配置结构体
     pub fn make_cs_binary_writer(&self, field: &str) -> CSharpWriter {
         let properties = match self {
             XCellTyped::Time(_) => vec![".Ticks".to_string()],
             XCellTyped::Color(_) => vec![".r".to_string(), ".g".to_string(), ".b".to_string(), ".a".to_string()],
-            // XCellTyped::Enumerate(v) => out.push(v.default.to_string()),
             XCellTyped::Enumerate(_) => {
                 return CSharpWriter {
                     is_vector: false,
@@ -152,16 +182,44 @@ impl XCellTyped {
                 };
             }
             XCellTyped::Vector(v) => return CSharpWriter { is_vector: true, ..v.get_type().make_cs_binary_writer(field) },
+            XCellTyped::Reference(_) => {
+                return CSharpWriter {
+                    is_vector: false,
+                    field: field.to_string(),
+                    cast: "".to_string(),
+                    properties: vec!["".to_string()],
+                };
+            }
+            XCellTyped::List(v) => {
+                return CSharpWriter {
+                    is_vector: true,
+                    ..v.element_type.make_cs_binary_writer(field)
+                };
+            }
             _ => vec!["".to_string()],
         };
         CSharpWriter { is_vector: false, field: field.to_string(), cast: "".to_string(), properties }
     }
+
+    /// 创建 C# 二进制读取器配置
+    ///
+    /// # 参数
+    /// * `field` - 字段名称
+    ///
+    /// # 返回值
+    /// 返回 CSharpReader 配置结构体
     pub fn make_cs_binary_reader(&self, field: &str) -> CSharpReader {
         match self {
             XCellTyped::Vector(v) => CSharpReader { is_vector: true, ..v.get_type().make_cs_binary_reader(field) },
+            XCellTyped::List(v) => CSharpReader { is_vector: true, ..v.element_type.make_cs_binary_reader(field) },
             _ => CSharpReader { is_vector: false, function: self.as_csharp_reader(), field: field.to_string() },
         }
     }
+
+    /// 返回 C# 二进制读取表达式
+    ///
+    /// # 返回值
+    /// 返回 C# 读取表达式的字符串
     pub fn as_csharp_reader(&self) -> String {
         let str = match self {
             XCellTyped::Boolean(_) => "r.ReadBoolean()",
@@ -182,21 +240,39 @@ impl XCellTyped {
                 ArrayKind::Quaternion4 => "new Vector2(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte())",
             },
             XCellTyped::Vector(_) => unreachable!(),
+            XCellTyped::Reference(_) => "r.ReadInt32()",
+            XCellTyped::List(_) => unreachable!(),
         };
         str.to_string()
     }
 }
 
 impl BooleanDescription {
+    /// 返回布尔类型的 C# 读取语句
+    ///
+    /// # 参数
+    /// * `field` - 字段名称
+    ///
+    /// # 返回值
+    /// 返回 C# 读取语句字符串
     pub fn as_csharp_reader(&self, field: &str) -> String {
         format!("{field} = r.{reader}()", reader = self.as_csharp_reader_function())
     }
+
+    /// 返回布尔类型的 C# 读取函数名称
+    ///
+    /// # 返回值
+    /// 返回读取函数名称字符串
     pub fn as_csharp_reader_function(&self) -> &'static str {
         "ReadBoolean"
     }
 }
 
 impl IntegerKind {
+    /// 返回整数类型对应的 C# 类型名称
+    ///
+    /// # 返回值
+    /// 返回 C# 类型名称字符串
     pub fn as_csharp_type(&self) -> &'static str {
         match self {
             IntegerKind::Integer8 => "byte",
@@ -209,6 +285,11 @@ impl IntegerKind {
             IntegerKind::Unsigned64 => "ulong",
         }
     }
+
+    /// 返回整数类型对应的 C# 读取表达式
+    ///
+    /// # 返回值
+    /// 返回 C# 读取表达式字符串
     pub fn as_csharp_reader(&self) -> &'static str {
         match self {
             IntegerKind::Integer8 => "r.ReadByte()",
@@ -226,6 +307,10 @@ impl IntegerKind {
 impl IntegerDescription {}
 
 impl DecimalKind {
+    /// 返回小数类型对应的 C# 类型名称
+    ///
+    /// # 返回值
+    /// 返回 C# 类型名称字符串
     pub fn as_csharp_type(&self) -> &'static str {
         match self {
             DecimalKind::Float32 => "float",
@@ -238,3 +323,26 @@ impl DecimalKind {
 impl DecimalDescription {}
 
 impl StringDescription {}
+
+impl ReferenceDescription {
+    /// 返回引用类型对应的 C# 默认值字符串
+    pub fn as_csharp_default(&self) -> String {
+        match self.default {
+            Some(v) => v.to_string(),
+            None => "0".to_string(),
+        }
+    }
+}
+
+impl ListDescription {
+    /// 返回列表类型对应的 C# 默认值字符串
+    pub fn as_csharp_default(&self) -> String {
+        if self.default.is_empty() {
+            return "new()".to_string();
+        }
+        format!(
+            "new () {{ {} }}",
+            self.default.iter().map(|v| v.as_csharp_value()).join(", ")
+        )
+    }
+}

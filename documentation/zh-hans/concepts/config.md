@@ -2,59 +2,7 @@
 
 XCell 使用 TOML 格式的配置文件来管理项目设置，配置文件命名为 `XCell.toml`，位于项目根目录。
 
-## 完整配置示例
-
-```toml
-version = "0.0.0"
-
-exclude = ""
-include = "*.xlsx"
-
-line.field = 1
-line.type = 2
-line.comment = 3
-line.data = 4
-
-[type.bool]
-accept = ["true", "√"]
-reject = ["false", "x"]
-
-[type.string]
-
-[unity]
-enable = true
-project = "../"
-output = "Assets/Scripts/DataTable/Generated"
-namespace = "DataTable.Generated"
-manager = "DataTableManager"
-suffix_table = "Table"
-suffix_element = "Element"
-support_clone = true
-legacy_using = false
-legacy_null_null = false
-
-[unity.binary]
-enable = true
-output = "Assets/Tables/Generated"
-
-[unity.xlua]
-enable = false
-
-[unity.xml]
-enable = false
-output = "Assets/Tables/Readable"
-
-[unity.json]
-enable = false
-output = "Assets/Tables/Readable"
-
-[unity.protobuf]
-enable = false
-```
-
-## 配置项详解
-
-### 基本配置
+## 基本配置
 
 | 配置项 | 类型 | 说明 | 默认值 |
 |--------|------|------|--------|
@@ -72,6 +20,36 @@ enable = false
 | line.type | int | 数据类型所在行 | 2 |
 | line.comment | int | 注释所在行 | 3 |
 | line.data | int | 数据起始行 | 4 |
+
+#### 旧表迁移
+
+XCell 默认的表格格式为：
+
+| 行号 | 内容 |
+|------|------|
+| 第 1 行 | 字段注释 |
+| 第 2 行 | 字段名 |
+| 第 3 行 | 字段类型 |
+| 第 4 行+ | 数据行 |
+
+如果您的旧表格式不同，可通过 line 映射调整。例如旧表格式为：
+
+| 行号 | 内容 |
+|------|------|
+| 第 1 行 | 字段名 |
+| 第 2 行 | 字段类型 |
+| 第 3 行+ | 数据行 |
+
+配置如下：
+
+```toml
+line.field = 1
+line.type = 2
+line.comment = 0  # 无注释行
+line.data = 3
+```
+
+> 注：`line.comment = 0` 表示无注释行。
 
 ### 类型解析配置 (type)
 

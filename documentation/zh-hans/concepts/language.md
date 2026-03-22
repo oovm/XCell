@@ -1,48 +1,50 @@
-# Language 表格类型
+# language 表
 
 Language 表格用于管理多语言文本，XCell 提供了完整的国际化支持。
 
-## 基本结构
+## 约定
 
-- **第一行**：字段名
-- **第二行**：数据类型
-- **第三行及以后**：数据行
-- **优点**：结构清晰，易于编辑和阅读
+- **第一行第一列为 `@language` 标记**
+- **可选 `@group` 字段用于分组**
+- **其余列为语言 ID**
+- **生成的名称默认以文件名为准，可通过 `@language 名称` 指定**
 
-### 示例
+## 标记方式
 
-| 语言键名称        | 语言分组  | 中文翻译     | 英文翻译     | 日文翻译     |
-| ------------ | ----- | -------- | -------- | -------- |
-| key          | group | zh\_cn   | en\_us   | ja\_jp   |
-| utf8         | utf8  | language | language | language |
-| Ui\_Start    | ui    | 开始       | Start    | スタート     |
-| Ui\_Settings | ui    | 设置       | Settings | 設定       |
-| Ui\_Exit     | ui    | 退出       | Exit     | 終了       |
+第一行第一列使用 `@language` 标记，可选 `@group`，其余为语言 ID：
 
-## TOML 配置
+| @language | @group | zh_cn | en_us | ja_jp |
+|-----------|--------|-------|-------|-------|
+| Ui_Start | ui | 开始 | Start | スタート |
+| Ui_Settings | ui | 设置 | Settings | 設定 |
+| Ui_Exit | ui | 退出 | Exit | 終了 |
 
-Language 表格可以通过 TOML 配置文件来定义元属性：
+## 代码生成
 
-```toml
-# Language 表格示例 - 多语言支持
-[table]
-type = "language"
+### TypeScript (Cocos, Laya)
 
-[fields]
-  [fields.key]
-  type = "string"
-  
-  [fields.group]
-  type = "string"
-  
-  [fields.zh_cn]
-  type = "language"
-  
-  [fields.en_us]
-  type = "language"
-  
-  [fields.ja_jp]
-  type = "language"
+```typescript
+export class LanguageTable {
+    private static _items: Map<string, string>;
+    
+    public static get(key: string): string {
+        return this._items.get(key) ?? key;
+    }
+}
+```
+
+### C# (Unity, Godot)
+
+```csharp
+public static class LanguageTable
+{
+    private static Dictionary<string, string> _items;
+    
+    public static string Get(string key)
+    {
+        return _items.TryGetValue(key, out var value) ? value : key;
+    }
+}
 ```
 
 ## 使用场景
@@ -51,4 +53,3 @@ type = "language"
 - 应用程序国际化
 - 多语言文档系统
 - 需要支持多种语言的任何项目
-

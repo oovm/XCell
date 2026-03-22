@@ -28,73 +28,14 @@ namespace <% config.namespace %>
     <%- endif %>
 <%- endfor %>
     }
-<% if config.binary.enable %>
-    public partial class <% class_name %> : IBinarySupport
-    {
-        public <%class_name%>()
-        {
-            BinaryRead("<% config.binary.output %>/<% table_name %>.binary");
-        }
-        /// <summary>
-        /// 从二进制文件中读取静态数据
-        /// </summary>
-        /// <param name="path">二进制文件包路径</param>
-        ///
-        /// <example>
-        /// <code>
-        /// AssetDatabase.GetAssetPath    // 根据 Asset 路径
-        /// AssetDatabase.GUIDToAssetPath // 根据 GUID
-        /// </code>
-        /// </example>
-        public void BinaryRead(string path)
-        {
-            using var stream = File.Open(path, FileMode.Open);
-            using var reader = new BinaryReader(stream, Encoding.UTF8, false);
-            BinaryRead(reader);
-        }
-        /// <inheritdoc cref="IBinarySupport.BinaryRead"/>
-        public void BinaryRead(BinaryReader r)
-        {
-<%- for field in class_fields %>
-    <%- if field.reader.is_vector %>
-            var <% field.reader.field %>Count = r.ReadUInt32();
-            <% field.reader.field %> = new((int) <% field.reader.field %>Count);
-            for (var i = 0; i < <% field.reader.field %>Count; i++)
-            {
-                <% field.reader.field %>.Add(<% field.reader.function %>);
-            }
-    <%- else %>
-            <% field.reader.field %> = <% field.reader.function %>;
-    <%- endif %>
-<%- endfor %>
-        }
-
-        /// <inheritdoc cref="IBinarySupport.BinaryWrite"/>
-        public void BinaryWrite(BinaryWriter w)
-        {
-<%- for field in class_fields %>
-    <%- if field.writer.is_vector %>
-            w.Write((uint) <% field.writer.field %>.Count);
-            foreach (var <% field.writer.field %>Item in <% field.writer.field %>)
-            {
-        <%- for property in field.writer.properties %>
-                w.Write(<% field.writer.field %>Item<% property %>);
-        <%- endfor %>
-            }
-    <%- else %>
-        <%- for property in field.writer.properties %>
-            w.Write(<% field.writer.cast %><% field.writer.field %><% property %>);
-        <%- endfor %>
-    <%- endif %>
-<%- endfor %>
-        }
 <% if config.support_clone %>
+    public partial class <% class_name %> : ICloneable
+    {
         /// <inheritdoc cref="ICloneable.Clone"/>
         public <% class_name %> Clone()
         {
             return (<% class_name %>) MemberwiseClone();
         }
-<%- endif %>
     }
 <%- endif %>
 }

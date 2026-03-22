@@ -61,6 +61,9 @@ impl Display for XCellValue {
             XCellValue::Enumerate(v) => {
                 write!(f, "{v}")
             }
+            XCellValue::Reference(v) => {
+                write!(f, "{v}")
+            }
         }
     }
 }

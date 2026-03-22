@@ -12,6 +12,8 @@ impl Debug for XCellTyped {
             XCellTyped::Enumerate(v) => Debug::fmt(v, f),
             XCellTyped::Array(v) => Debug::fmt(v, f),
             XCellTyped::Vector(v) => Debug::fmt(v, f),
+            XCellTyped::Reference(v) => Debug::fmt(v, f),
+            XCellTyped::List(v) => Debug::fmt(v, f),
         }
     }
 }

@@ -63,6 +63,9 @@ impl StreamWriter for XCellValue {
             XCellValue::Enumerate(v) => {
                 panic!("无法写入二进制 `{}`", v)
             }
+            XCellValue::Reference(v) => {
+                v.write_to(buffer, order)?
+            }
         }
         Ok(())
     }

@@ -46,32 +46,23 @@ impl UnityCodegen {
         
         let path = output_dir.join("LanguageTable.cs");
         let mut file = std::fs::File::create(path)?;
-        writeln!(file, "// Unity generated file")?;
-        writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity.loader.namespace)?;
-        writeln!(file, "{{")?;
-        writeln!(file, "    public class LanguageTable")?;
-        writeln!(file, "    {{")?;
-        writeln!(file, "        // Language Table generated from XCell")?;
-        writeln!(file, "    }}")?;
-        writeln!(file, "}}" )?;
+        let out = self.make_languages(ws).render()?;
+        file.write_all(out.as_bytes())?;
         Ok(())
     }
-    // 暂时移除 make_languages 方法，因为它依赖于不存在的字段和方法
-    // fn make_languages(&self, ws: &WorkspaceManager) -> UnityLanguage {
-    //     UnityLanguage {
-    //         compiler_version: env!("CARGO_PKG_VERSION"),
-    //         binary_path: self.storage.binary.output.clone(),
-    //         config: self.clone(),
-    //         language_fields: ws
-    //             .languages()
-    //             .iter()
-    //             .map(|data| LanguageField {
-    //                 class_name: data.key.to_case(Case::Pascal),
-    //                 public_name: data.key.to_case(Case::Camel),
-    //                 private_name: format!("_{}", data.key.to_case(Case::Snake)),
-    //             })
-    //             .collect(),
-    //     }
-    // }
+    /// Creates Unity language template data
+    ///
+    /// # Arguments
+    /// * `ws` - Workspace manager
+    ///
+    /// # Returns
+    /// Unity language template data
+    fn make_languages(&self, ws: &WorkspaceManager) -> UnityLanguage {
+        UnityLanguage {
+            compiler_version: env!("CARGO_PKG_VERSION"),
+            binary_path: "".to_string(),
+            config: self.clone(),
+            language_fields: Vec::new(),
+        }
+    }
 }

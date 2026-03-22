@@ -47,36 +47,24 @@ impl UnityCodegen {
         
         let path = output_dir.join("DataTableManager.cs");
         let mut file = std::fs::File::create(path)?;
-        writeln!(file, "// Unity generated file")?;
-        writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity.loader.namespace)?;
-        writeln!(file, "{{")?;
-        writeln!(file, "    public class DataTableManager")?;
-        writeln!(file, "    {{")?;
-        writeln!(file, "        // DataTable Manager generated from XCell")?;
-        writeln!(file, "    }}")?;
-        writeln!(file, "}}" )?;
+        let out = self.make_manager(ws).render()?;
+        file.write_all(out.as_bytes())?;
         Ok(())
     }
-    // 暂时移除 make_manager 方法，因为它依赖于不存在的字段和方法
-    // fn make_manager(&self, ws: &WorkspaceManager) -> UnityManager {
-    //     UnityManager {
-    //         compiler_version: env!("CARGO_PKG_VERSION"),
-    //         data_version: ws.config.version.clone(),
-    //         edit_time: XCellValue::csharp_now(),
-    //         config: ws.config.unity.clone(),
-    //         tables: ws
-    //             .class_names()
-    //             .iter()
-    //             .map(|name| {
-    //                 let name = format!("{name}{}", self.suffix_table);
-    //                 TableField {
-    //                     typing: name.to_case(Case::Pascal),
-    //                     public_name: name.to_case(Case::Camel),
-    //                     private_name: format!("_{}", name.to_case(Case::Snake)),
-    //                 }
-    //             })
-    //             .collect(),
-    //     }
-    // }
+    /// Creates Unity manager template data
+    ///
+    /// # Arguments
+    /// * `ws` - Workspace manager
+    ///
+    /// # Returns
+    /// Unity manager template data
+    fn make_manager(&self, ws: &WorkspaceManager) -> UnityManager {
+        UnityManager {
+            compiler_version: env!("CARGO_PKG_VERSION"),
+            data_version: "".to_string(),
+            edit_time: "".to_string(),
+            config: self.clone(),
+            tables: Vec::new(),
+        }
+    }
 }

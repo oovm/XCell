@@ -5,8 +5,10 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
 };
-use xcell_types::{XError, XResult};
+use xcell_types::{XError, XResult, XCellValue, for_3rd::ToPrimitive};
+use xcell_analyzer::{XClassData, XListData, XDictData};
 use url::Url;
+use dejavu_macros::Template;
 
 mod config;
 
@@ -45,230 +47,68 @@ pub struct CocosDataTableItem {
     pub get_method_name: String,
 }
 
-// 简化的模板定义，使用字符串拼接代替复杂的模板系统
-fn render_enumerate_template(class_name: &str, items: &[CocosEnumerateItem]) -> String {
-    let mut content = format!("/**
- * {}接口
- */
-export interface {} {{
-    /**
-     * {}ID
-     */
-    id: number;
-    /**
-     * {}名称
-     */
-    name: string;
-    /**
-     * {}描述
-     */
-    description: string;
-}}
-
-/**
- * {}枚举
- */
-export const {} = {{
-", class_name, class_name, class_name, class_name, class_name, class_name, class_name);
-
-    for (i, item) in items.iter().enumerate() {
-        content.push_str(&format!("    /**
-     * {}{}
-     */
-    {}: {{
-        id: {},
-        name: \"{}\",
-        description: \"{}\"
-    }}{}\n", item.name, class_name, item.key, item.id, item.name, item.description, if i < items.len() - 1 { "," } else { "" }));
-    }
-
-    content.push_str(&format!("}} as const as Record<string, {}>;
-", class_name));
-    content
+/// Cocos 枚举模板
+#[derive(Template)]
+#[template(path = "CocosEnumerate.ts.dejavu")]
+pub struct CocosEnumerateTemplate {
+    /// 类名
+    class_name: String,
+    /// 枚举项
+    items: Vec<CocosEnumerateItem>,
 }
 
-fn render_class_template(class_name: &str, table_name: &str, fields: &[CocosField], has_type_field: bool, is_monster: bool, has_level_field: bool, is_skill: bool) -> String {
-    let mut content = format!("/**
- * {}数据结构
- */
-export interface {} {{
-", class_name, class_name);
-
-    for field in fields {
-        content.push_str(&format!("    /**
-     * {}
-     */
-    {}: {};
-", field.name, field.name, field.r#type));
-    }
-
-    content.push_str(&format!("}}\n\n/**
- * {}表加载器
- */
-export class {} {{
-    private items: {}[] = [];
-
-    /**
-     * 加载{}表数据
-     * @param asset JSON资源
-     */
-    public load(asset: cc.JsonAsset): void {{
-        const data = asset.json;
-        if (data) {{
-            this.items = data as {}[];
-        }}
-    }}
-
-    /**
-     * 根据ID获取{}
-     * @param id {}ID
-     */
-    public get{}ById(id: number): {} | null {{
-        return this.items.find(item => item.id === id) || null;
-    }}
-
-    /**
-     * 获取所有{}
-     */
-    public getAll{}(): {}[] {{
-        return this.items;
-    }}
-", class_name, table_name, class_name, class_name, class_name, class_name, class_name, class_name, class_name, class_name, class_name, class_name));
-
-    if has_type_field {
-        if is_monster {
-            content.push_str(&format!("    /**
-     * 根据类型获取{}
-     * @param type 怪物类型
-     */
-    public get{}ByType(type: MonsterType): {}[] {{
-        return this.items.filter(item => item.type === type);
-    }}
-", class_name, class_name, class_name));
-        } else {
-            content.push_str(&format!("    /**
-     * 根据类型获取{}
-     * @param type 类型
-     */
-    public get{}ByType(type: string): {}[] {{
-        return this.items.filter(item => item.type === type);
-    }}
-", class_name, class_name, class_name));
-        }
-    }
-
-    if has_level_field {
-        if is_skill {
-            content.push_str(&format!("    /**
-     * 根据等级获取{}
-     * @param level 等级
-     */
-    public get{}ByLevel(level: number): {}[] {{
-        return this.items.filter(item => item.level_requirement <= level);
-    }}
-", class_name, class_name, class_name));
-        } else {
-            content.push_str(&format!("    /**
-     * 根据等级获取{}
-     * @param level 等级
-     */
-    public get{}ByLevel(level: number): {}[] {{
-        return this.items.filter(item => item.level === level);
-    }}
-", class_name, class_name, class_name));
-        }
-    }
-
-    content.push_str("}\n");
-    content
+/// Cocos 类模板
+#[derive(Template)]
+#[template(path = "CocosClass.ts.dejavu")]
+pub struct CocosClassTemplate {
+    /// 类名
+    class_name: String,
+    /// 表名
+    table_name: String,
+    /// 字段
+    fields: Vec<CocosField>,
+    /// 是否有类型字段
+    has_type_field: bool,
+    /// 是否是怪物
+    is_monster: bool,
 }
 
-fn render_manager_template(tables: &[CocosDataTableItem], table_data_path: &str) -> String {
-    let mut content = String::new();
-
-    for table in tables {
-        content.push_str(&format!("import {{ {} }} from './{}';
-", table.table_name, table.table_name));
-    }
-
-    content.push_str("\n\n/**
- * 数据表管理器
- * 负责加载和管理所有数据表
- */
-export class DataTableManager {
-    private static _instance: DataTableManager;
-
-    // 惰性缓存字段
-");
-
-    for table in tables {
-        content.push_str(&format!("    private _{}: {} | null = null;
-", table.cache_name, table.table_name));
-    }
-
-    content.push_str("    
-    /**
-     * 获取单例实例
-     */
-    public static getInstance(): DataTableManager {
-        if (!DataTableManager._instance) {
-            DataTableManager._instance = new DataTableManager();
-        }
-        return DataTableManager._instance;
-    }
-
-    /**
-     * 加载所有数据表
-     * 注意：表数据会在各自的表加载器中按需加载
-     */
-    public async loadAllTables(): Promise<void> {
-        // 预加载所有表
-        await Promise.all([
-");
-
-    for table in tables {
-        content.push_str(&format!("            this.{}(),\n", table.get_method_name));
-    }
-
-    content.push_str("        ]);
-    }
-");
-
-    for table in tables {
-        content.push_str(&format!("    
-    /**
-     * 获取{}表（惰性加载）
-     */
-    public async {}(): Promise<{}> {{
-        if (this._{} === null) {{
-            this._{} = new {}();
-            this._{}.load(await this.loadJsonAsset('{}{}'));
-        }}
-        return this._{};
-    }}
-", table.class_name, table.get_method_name, table.table_name, table.cache_name, table.cache_name, table.table_name, table.cache_name, table_data_path, table.class_name, table.cache_name));
-    }
-
-    content.push_str("    
-
-    /**
-     * 加载JSON资源
-     * @param path 资源路径
-     */
-    private async loadJsonAsset(path: string): Promise<cc.JsonAsset> {
-        return new Promise<cc.JsonAsset>((resolve, reject) => {
-            cc.resources.load(path, cc.JsonAsset, (err, asset) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(asset);
-                }
-            });
-        });
-    }
+/// Cocos 管理器模板
+#[derive(Template)]
+#[template(path = "CocosDataTableManager.ts.dejavu")]
+pub struct CocosManagerTemplate {
+    /// 表数据
+    tables: Vec<CocosDataTableItem>,
+    /// 表数据路径
+    table_data_path: String,
 }
-");
-    content
+
+// 使用dejavu模板生成代码
+fn render_enumerate_template(class_name: &str, items: &[CocosEnumerateItem]) -> XResult<String> {
+    let template = CocosEnumerateTemplate {
+        class_name: class_name.to_string(),
+        items: items.to_vec(),
+    };
+    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+}
+
+fn render_class_template(class_name: &str, table_name: &str, fields: &[CocosField], has_type_field: bool, is_monster: bool) -> XResult<String> {
+    let template = CocosClassTemplate {
+        class_name: class_name.to_string(),
+        table_name: table_name.to_string(),
+        fields: fields.to_vec(),
+        has_type_field,
+        is_monster,
+    };
+    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+}
+
+fn render_manager_template(tables: &[CocosDataTableItem], table_data_path: &str) -> XResult<String> {
+    let template = CocosManagerTemplate {
+        tables: tables.to_vec(),
+        table_data_path: table_data_path.to_string(),
+    };
+    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 /// Cocos 存储格式配置
@@ -327,12 +167,21 @@ pub struct CocosCodegen {
 /// Cocos JSON 配置
 ///
 /// 用于配置 JSON 数据生成
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CocosJsonConfig {
     /// 是否启用 JSON 生成
     pub enable: bool,
     /// 生成的 JSON 文件目录
     pub output: String,
+}
+
+impl Default for CocosJsonConfig {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            output: "tables".to_string(),
+        }
+    }
 }
 
 /// Cocos 代码生成器
@@ -513,7 +362,7 @@ impl CocosCodegen {
                     })
                     .collect::<Vec<_>>();
                 
-                let content = render_enumerate_template(class_name, &items);
+                let content = render_enumerate_template(class_name, &items)?;
                 
                 let mut file = File::create(ts_path)?;
                 file.write_all(content.as_bytes())?;
@@ -532,9 +381,8 @@ impl CocosCodegen {
                 
                 let fields = self.read_csv_fields(&entry.path(), class_name)?;
                 let has_type_field = fields.iter().any(|f| f.name == "type");
-                let has_level_field = fields.iter().any(|f| f.name == "level") || fields.iter().any(|f| f.name == "level_requirement");
                 
-                let content = render_class_template(class_name, &table_class_name, &fields, has_type_field, class_name == "Monster", has_level_field, class_name == "Skill");
+                let content = render_class_template(class_name, &table_class_name, &fields, has_type_field, class_name == "Monster")?;
                 
                 let mut file = File::create(ts_path)?;
                 file.write_all(content.as_bytes())?;
@@ -709,7 +557,7 @@ impl CocosCodegen {
             }
         }
         
-        let content = render_manager_template(&tables, table_data_path);
+        let content = render_manager_template(&tables, table_data_path)?;
         
         let mut file = File::create(manager_path)?;
         file.write_all(content.as_bytes())?;
@@ -733,8 +581,207 @@ impl CocosCodegen {
 
         self.ensure_path(&ws.config.root)?;
 
+        let root = &ws.config.root;
+        
+        // 处理类表
+        for table in ws.classes() {
+            let json_path = self.cocos_json_path(root, &table.name)?;
+            
+            println!("Generating JSON for {} -> {}", table.name, json_path.display());
+            
+            if let Some(parent) = json_path.parent() {
+                std::fs::create_dir_all(parent)?;
+                println!("Created directory: {:?}", parent);
+            }
+            
+            let json_data = self.convert_class_data_to_json(table)?;
+            let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
+            
+            let mut file = std::fs::File::create(json_path)?;
+            file.write_all(json_string.as_bytes())?;
+            
+            println!("Created JSON file for {} successfully", table.name);
+        }
+        
+        // 处理列表
+        for table in ws.lists() {
+            let json_path = self.cocos_json_path(root, &table.name)?;
+            
+            println!("Generating JSON for {} -> {}", table.name, json_path.display());
+            
+            if let Some(parent) = json_path.parent() {
+                std::fs::create_dir_all(parent)?;
+                println!("Created directory: {:?}", parent);
+            }
+            
+            let json_data = self.convert_list_data_to_json(table)?;
+            let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
+            
+            let mut file = std::fs::File::create(json_path)?;
+            file.write_all(json_string.as_bytes())?;
+            
+            println!("Created JSON file for {} successfully", table.name);
+        }
+        
+        // 处理字典
+        for table in ws.dicts() {
+            let json_path = self.cocos_json_path(root, &table.name)?;
+            
+            println!("Generating JSON for {} -> {}", table.name, json_path.display());
+            
+            if let Some(parent) = json_path.parent() {
+                std::fs::create_dir_all(parent)?;
+                println!("Created directory: {:?}", parent);
+            }
+            
+            let json_data = self.convert_dict_data_to_json(table)?;
+            let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
+            
+            let mut file = std::fs::File::create(json_path)?;
+            file.write_all(json_string.as_bytes())?;
+            
+            println!("Created JSON file for {} successfully", table.name);
+        }
+
         Ok(())
     }
+    
+    /// 将类表数据转换为 JSON
+    ///
+    /// # 参数
+    /// * `table` - 类表数据
+    ///
+    /// # 返回值
+    /// 返回 JSON 数据，成功时返回 Ok(serde_json::Value)，失败时返回 XError。
+    fn convert_class_data_to_json(&self, table: &XClassData) -> XResult<serde_json::Value> {
+        let mut records = Vec::new();
+        
+        for item in &table.items {
+            let mut record_map = serde_json::Map::new();
+            record_map.insert("field".to_string(), serde_json::Value::String(item.field.clone()));
+            record_map.insert("default".to_string(), self.convert_xcell_value_to_json(&item.default));
+            
+            records.push(serde_json::Value::Object(record_map));
+        }
+        
+        Ok(serde_json::Value::Array(records))
+    }
+    
+    /// 将列表数据转换为 JSON
+    ///
+    /// # 参数
+    /// * `table` - 列表数据
+    ///
+    /// # 返回值
+    /// 返回 JSON 数据，成功时返回 Ok(serde_json::Value)，失败时返回 XError。
+    fn convert_list_data_to_json(&self, table: &XListData) -> XResult<serde_json::Value> {
+        let mut records = Vec::new();
+        
+        for line in table.mapping.values() {
+            let mut record_map = serde_json::Map::new();
+            record_map.insert("id".to_string(), serde_json::Value::Number(serde_json::Number::from(line.id.to_u64().unwrap_or(0))));
+            record_map.insert("key".to_string(), serde_json::Value::String(line.key.clone()));
+            
+            // 处理数据字段
+            for (i, header) in table.headers.iter().enumerate() {
+                if i < line.data.len() {
+                    let json_value = self.convert_xcell_value_to_json(&line.data[i]);
+                    record_map.insert(header.field_name.clone(), json_value);
+                }
+            }
+            
+            records.push(serde_json::Value::Object(record_map));
+        }
+        
+        Ok(serde_json::Value::Array(records))
+    }
+    
+    /// 将字典数据转换为 JSON
+    ///
+    /// # 参数
+    /// * `table` - 字典数据
+    ///
+    /// # 返回值
+    /// 返回 JSON 数据，成功时返回 Ok(serde_json::Value)，失败时返回 XError。
+    fn convert_dict_data_to_json(&self, table: &XDictData) -> XResult<serde_json::Value> {
+        let mut records = Vec::new();
+        
+        for line in table.mapping.values() {
+            let mut record_map = serde_json::Map::new();
+            record_map.insert("id".to_string(), serde_json::Value::Number(serde_json::Number::from(line.id.to_u64().unwrap_or(0))));
+            record_map.insert("key".to_string(), serde_json::Value::String(line.key.clone()));
+            
+            // 处理数据字段
+            for (i, header) in table.headers.iter().enumerate() {
+                if i < line.data.len() {
+                    let json_value = self.convert_xcell_value_to_json(&line.data[i]);
+                    record_map.insert(header.field_name.clone(), json_value);
+                }
+            }
+            
+            records.push(serde_json::Value::Object(record_map));
+        }
+        
+        Ok(serde_json::Value::Array(records))
+    }
+    
+    /// 将 XCellValue 转换为 JSON 值
+    ///
+    /// # 参数
+    /// * `value` - XCellValue 值
+    ///
+    /// # 返回值
+    /// 返回对应的 JSON 值
+    fn convert_xcell_value_to_json(&self, value: &XCellValue) -> serde_json::Value {
+        match value {
+            XCellValue::Boolean(b) => serde_json::Value::Bool(*b),
+            XCellValue::Integer8(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
+            XCellValue::Integer16(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
+            XCellValue::Integer32(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
+            XCellValue::Integer64(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
+            XCellValue::Unsigned8(u) => serde_json::Value::Number(serde_json::Number::from(*u)),
+            XCellValue::Unsigned16(u) => serde_json::Value::Number(serde_json::Number::from(*u)),
+            XCellValue::Unsigned32(u) => serde_json::Value::Number(serde_json::Number::from(*u)),
+            XCellValue::Unsigned64(u) => serde_json::Value::Number(serde_json::Number::from(*u)),
+            XCellValue::Float32(f) => serde_json::Value::Number(serde_json::Number::from_f64(*f as f64).unwrap()),
+            XCellValue::Float64(f) => serde_json::Value::Number(serde_json::Number::from_f64(*f).unwrap()),
+            XCellValue::String(s) => serde_json::Value::String(s.clone()),
+            XCellValue::Vector2(v) => serde_json::Value::Array(vec![
+                serde_json::Value::Number(serde_json::Number::from_f64(v[0] as f64).unwrap()),
+                serde_json::Value::Number(serde_json::Number::from_f64(v[1] as f64).unwrap())
+            ]),
+            XCellValue::Vector3(v) => serde_json::Value::Array(vec![
+                serde_json::Value::Number(serde_json::Number::from_f64(v[0] as f64).unwrap()),
+                serde_json::Value::Number(serde_json::Number::from_f64(v[1] as f64).unwrap()),
+                serde_json::Value::Number(serde_json::Number::from_f64(v[2] as f64).unwrap())
+            ]),
+            XCellValue::Vector4(v) => serde_json::Value::Array(vec![
+                serde_json::Value::Number(serde_json::Number::from_f64(v[0] as f64).unwrap()),
+                serde_json::Value::Number(serde_json::Number::from_f64(v[1] as f64).unwrap()),
+                serde_json::Value::Number(serde_json::Number::from_f64(v[2] as f64).unwrap()),
+                serde_json::Value::Number(serde_json::Number::from_f64(v[3] as f64).unwrap())
+            ]),
+            XCellValue::Quaternion4(v) => serde_json::Value::Array(vec![
+                serde_json::Value::Number(serde_json::Number::from_f64(v[0] as f64).unwrap()),
+                serde_json::Value::Number(serde_json::Number::from_f64(v[1] as f64).unwrap()),
+                serde_json::Value::Number(serde_json::Number::from_f64(v[2] as f64).unwrap()),
+                serde_json::Value::Number(serde_json::Number::from_f64(v[3] as f64).unwrap())
+            ]),
+            XCellValue::Color(c) => serde_json::Value::Object(serde_json::Map::from_iter(vec![
+                ("r".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(c.r as f64).unwrap())),
+                ("g".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(c.g as f64).unwrap())),
+                ("b".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(c.b as f64).unwrap())),
+                ("a".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(c.a as f64).unwrap()))
+            ])),
+            XCellValue::Vector(v) => serde_json::Value::Array(
+                v.iter().map(|item| self.convert_xcell_value_to_json(item)).collect()
+            ),
+            XCellValue::Enumerate(s) => serde_json::Value::String(s.clone()),
+            _ => serde_json::Value::Null,
+        }
+    }
+    
+
 
     /// 记录 TypeScript 文件创建
     ///

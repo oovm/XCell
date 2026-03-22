@@ -1,12 +1,55 @@
 use super::*;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use std::{
-    fs::{File, create_dir_all},
+    fs::create_dir_all,
     io::Write,
-    path::Path,
 };
-use url::Url;
 use xcell_analyzer::WorkspaceManager;
+use xcell_types::XError;
+use dejavu_macros::Template;
+use dejavu_types;
+
+/// Unity 字段数据结构
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct UnityField {
+    /// 字段名
+    pub field: String,
+    /// 字段类型
+    pub r#type: String,
+}
+
+/// Unity 表数据结构
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct UnityTableItem {
+    /// 类名
+    pub class_name: String,
+    /// 表名
+    pub table_name: String,
+}
+
+/// Unity 类模板
+#[derive(Template)]
+#[template(path = "UnityClass.cs.dejavu")]
+pub struct UnityClassTemplate {
+    /// 类名
+    class_name: String,
+    /// 表名
+    table_name: String,
+    /// 命名空间
+    namespace: String,
+    /// 字段
+    items: Vec<UnityField>,
+}
+
+/// Unity 管理器模板
+#[derive(Template)]
+#[template(path = "UnityDataTableManager.cs.dejavu")]
+pub struct UnityManagerTemplate {
+    /// 命名空间
+    namespace: String,
+    /// 表数据
+    tables: Vec<UnityTableItem>,
+}
 
 /// Unity 代码生成器配置
 ///
@@ -28,6 +71,25 @@ pub struct UnityCodegen {
 /// Unity 代码生成器
 ///
 /// 负责生成 Unity 平台的代码和数据文件
+// 使用dejavu模板生成代码
+fn render_class_template(class_name: &str, table_name: &str, namespace: &str, items: &[UnityField]) -> XResult<String> {
+    let template = UnityClassTemplate {
+        class_name: class_name.to_string(),
+        table_name: table_name.to_string(),
+        namespace: namespace.to_string(),
+        items: items.to_vec(),
+    };
+    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+}
+
+fn render_manager_template(namespace: &str, tables: &[UnityTableItem]) -> XResult<String> {
+    let template = UnityManagerTemplate {
+        namespace: namespace.to_string(),
+        tables: tables.to_vec(),
+    };
+    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+}
+
 impl UnityCodegen {
     /// 创建新的 Unity 代码生成器实例
     pub fn new() -> Self {
@@ -35,7 +97,7 @@ impl UnityCodegen {
     }
 
     /// 写入 C# 代码
-    pub fn write_csharp(&self, ws: &WorkspaceManager, output_dir: &std::path::Path, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
+    pub fn write_csharp(&self, ws: &WorkspaceManager, _output_dir: &std::path::Path, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
         let root = &ws.config.root;
         
         // 使用现有的路径解析方法计算加载器路径
@@ -67,88 +129,26 @@ impl UnityCodegen {
         let path = output_dir.join("DataTableManager.cs");
         let mut file = std::fs::File::create(path)?;
         
-        // 生成完整的 DataTableManager
-        writeln!(file, "// Unity generated file")?;
-        writeln!(file, "")?;
-        writeln!(file, "using System;")?;
-        writeln!(file, "using System.Collections.Generic;")?;
-        writeln!(file, "using System.IO;")?;
-        writeln!(file, "using UnityEngine;")?;
-        writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity_config.namespace)?;
-        writeln!(file, "{{")?;
-        writeln!(file, "    /// <summary>")?;
-        writeln!(file, "    /// 数据表管理器")?;
-        writeln!(file, "    /// 负责加载和管理所有数据表")?;
-        writeln!(file, "    /// </summary>")?;
-        writeln!(file, "    public class DataTableManager")?;
-        writeln!(file, "    {{")?;
-        writeln!(file, "        private static DataTableManager instance;")?;
-        writeln!(file, "        private Dictionary<string, object> tables = new Dictionary<string, object>();")?;
-        writeln!(file, "")?;
-        writeln!(file, "        /// <summary>")?;
-        writeln!(file, "        /// 获取单例实例")?;
-        writeln!(file, "        /// </summary>")?;
-        writeln!(file, "        public static DataTableManager Instance")?;
-        writeln!(file, "        {{")?;
-        writeln!(file, "            get")?;
-        writeln!(file, "            {{")?;
-        writeln!(file, "                if (instance == null)")?;
-        writeln!(file, "                {{")?;
-        writeln!(file, "                    instance = new DataTableManager();")?;
-        writeln!(file, "                }}")?;
-        writeln!(file, "                return instance;")?;
-        writeln!(file, "            }}")?;
-        writeln!(file, "        }}")?;
-        writeln!(file, "")?;
-        writeln!(file, "        /// <summary>")?;
-        writeln!(file, "        /// 加载所有数据表")?;
-        writeln!(file, "        /// </summary>")?;
-        writeln!(file, "        public void LoadAllTables()")?;
-        writeln!(file, "        {{")?;
-        
-        // 为每个表生成加载代码
+        // 准备表数据
+        let mut tables = Vec::new();
         for table in ws.classes() {
             let table_name = format!("{}{}", table.name, unity_config.suffix_table);
-            writeln!(file, "            {}.Load();", table_name)?;
+            tables.push(UnityTableItem {
+                class_name: table.name.to_string(),
+                table_name,
+            });
         }
         
-        writeln!(file, "        }}")?;
-        writeln!(file, "")?;
-        writeln!(file, "        /// <summary>")?;
-        writeln!(file, "        /// 存储数据表")?;
-        writeln!(file, "        /// </summary>")?;
-        writeln!(file, "        /// <typeparam name=\"T\">数据表类型</typeparam>")?;
-        writeln!(file, "        /// <param name=\"tableName\">表名</param>")?;
-        writeln!(file, "        /// <param name=\"table\">数据表实例</param>")?;
-        writeln!(file, "        public void SetTable<T>(string tableName, T table)")?;
-        writeln!(file, "        {{")?;
-        writeln!(file, "            tables[tableName] = table;")?;
-        writeln!(file, "        }}")?;
-        writeln!(file, "")?;
-        writeln!(file, "        /// <summary>")?;
-        writeln!(file, "        /// 获取数据表")?;
-        writeln!(file, "        /// </summary>")?;
-        writeln!(file, "        /// <typeparam name=\"T\">数据表类型</typeparam>")?;
-        writeln!(file, "        /// <param name=\"tableName\">表名</param>")?;
-        writeln!(file, "        /// <returns>数据表实例</returns>")?;
-        writeln!(file, "        public T GetTable<T>(string tableName)")?;
-        writeln!(file, "        {{")?;
-        writeln!(file, "            if (tables.TryGetValue(tableName, out var table))")?;
-        writeln!(file, "            {{")?;
-        writeln!(file, "                return (T)table;")?;
-        writeln!(file, "            }}")?;
-        writeln!(file, "            return default;")?;
-        writeln!(file, "        }}")?;
-        writeln!(file, "    }}")?;
-        writeln!(file, "}}" )?;
+        // 使用模板渲染
+        let content = render_manager_template(&unity_config.namespace, &tables)?;
+        file.write_all(content.as_bytes())?;
         
         Ok(())
     }
     
     /// 写入表的类型定义和加载器
-    pub fn write_class(&self, ws: &WorkspaceManager, table: &xcell_analyzer::XClassData, output_dir: PathBuf, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
-        let root = &ws.config.root;
+    pub fn write_class(&self, _ws: &WorkspaceManager, table: &xcell_analyzer::XClassData, output_dir: PathBuf, unity_config: &xcell_config::unity::UnityCodegen) -> XResult<()> {
+        // let root = &_ws.config.root;
         
         let table_name = format!("{}{}", table.name, unity_config.suffix_table);
         
@@ -159,90 +159,18 @@ impl UnityCodegen {
         let path = output_dir.join(format!("{}.cs", table_name));
         let mut file = std::fs::File::create(path)?;
         
-        // 生成表的类型定义和加载器
-        writeln!(file, "// Unity generated file")?;
-        writeln!(file, "")?;
-        writeln!(file, "using System;")?;
-        writeln!(file, "using System.Collections.Generic;")?;
-        writeln!(file, "using System.IO;")?;
-        writeln!(file, "using UnityEngine;")?;
-        writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity_config.namespace)?;
-        writeln!(file, "{{")?;
-        
-        // 生成数据结构
-        writeln!(file, "    /// <summary>")?;
-        writeln!(file, "    /// {}表数据结构", table.name)?;
-        writeln!(file, "    /// </summary>")?;
-        writeln!(file, "    public class {}", table.name)?;
-        writeln!(file, "    {{")?;
-        
+        // 准备字段数据
+        let mut items = Vec::new();
         for item in &table.items {
-            writeln!(file, "        /// <summary>")?;
-            writeln!(file, "        /// {}", item.field)?;
-            writeln!(file, "        /// </summary>")?;
-            writeln!(file, "        public {} {} {{ get; set; }}", item.typing.as_csharp_type(), item.field)?;
+            items.push(UnityField {
+                field: item.field.to_string(),
+                r#type: item.typing.as_csharp_type().to_string(),
+            });
         }
         
-        writeln!(file, "    }}")?;
-        writeln!(file, "")?;
-        
-        // 生成加载器
-        writeln!(file, "    /// <summary>")?;
-        writeln!(file, "    /// {}表加载器", table.name)?;
-        writeln!(file, "    /// </summary>")?;
-        writeln!(file, "    public static class {}", table_name)?;
-        writeln!(file, "    {{")?;
-        writeln!(file, "        private static Dictionary<string, {}> items = new Dictionary<string, {}>();", table.name, table.name)?;
-        writeln!(file, "")?;
-        writeln!(file, "        /// <summary>")?;
-        writeln!(file, "        /// 加载{}表数据", table.name)?;
-        writeln!(file, "        /// </summary>")?;
-        writeln!(file, "        public static void Load()")?;
-        writeln!(file, "        {{")?;
-        writeln!(file, "            // 从二进制文件或JSON文件加载数据")?;
-        writeln!(file, "            // 暂时使用示例数据")?;
-        writeln!(file, "            LoadSampleData();")?;
-        writeln!(file, "            ")?;
-        writeln!(file, "            // 存储到 DataTableManager")?;
-        writeln!(file, "            DataTableManager.Instance.SetTable(\"{}\", items);", table.name)?;
-        writeln!(file, "        }}")?;
-        writeln!(file, "")?;
-        writeln!(file, "        /// <summary>")?;
-        writeln!(file, "        /// 加载示例数据")?;
-        writeln!(file, "        /// </summary>")?;
-        writeln!(file, "        private static void LoadSampleData()")?;
-        writeln!(file, "        {{")?;
-        writeln!(file, "            items.Clear();")?;
-        writeln!(file, "            ")?;
-        writeln!(file, "            // 示例数据")?;
-        writeln!(file, "            // 实际项目中应该从文件加载")?;
-        writeln!(file, "        }}")?;
-        writeln!(file, "")?;
-        writeln!(file, "        /// <summary>")?;
-        writeln!(file, "        /// 根据ID获取{}", table.name)?;
-        writeln!(file, "        /// </summary>")?;
-        writeln!(file, "        /// <param name=\"id\">ID</param>")?;
-        writeln!(file, "        /// <returns>实例</returns>")?;
-        writeln!(file, "        public static {} Get{}ById(string id)", table.name, table.name)?;
-        writeln!(file, "        {{")?;
-        writeln!(file, "            if (items.TryGetValue(id, out var item))")?;
-        writeln!(file, "            {{")?;
-        writeln!(file, "                return item;")?;
-        writeln!(file, "            }}")?;
-        writeln!(file, "            return null;")?;
-        writeln!(file, "        }}")?;
-        writeln!(file, "")?;
-        writeln!(file, "        /// <summary>")?;
-        writeln!(file, "        /// 获取所有{}", table.name)?;
-        writeln!(file, "        /// </summary>")?;
-        writeln!(file, "        /// <returns>列表</returns>")?;
-        writeln!(file, "        public static List<{}> GetAll{}()", table.name, table.name)?;
-        writeln!(file, "        {{")?;
-        writeln!(file, "            return new List<{}>(items.Values);", table.name)?;
-        writeln!(file, "        }}")?;
-        writeln!(file, "    }}")?;
-        writeln!(file, "}}" )?;
+        // 使用模板渲染
+        let content = render_class_template(&table.name, &table_name, &unity_config.namespace, &items)?;
+        file.write_all(content.as_bytes())?;
         
         Ok(())
     }

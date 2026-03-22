@@ -1,82 +1,66 @@
 /**
- * {{ class_name }}数据结构
+ * Characters数据结构
  */
-export interface {{ class_name }} {
-{% for field in fields %}
+export interface Characters {
     /**
-     * {{ field.name }}
+     * id
      */
-    {{ field.name }}: {{ field.type }};
-{% endfor %}
+    id: number;
+    /**
+     * name
+     */
+    name: string;
+    /**
+     * age
+     */
+    age: number;
+    /**
+     * gender
+     */
+    gender: string;
+    /**
+     * personality
+     */
+    personality: string;
+    /**
+     * description
+     */
+    description: string;
+    /**
+     * image
+     */
+    image: string;
 }
 
 /**
- * {{ class_name }}表加载器
+ * Characters表加载器
  */
-export class {{ table_name }} {
-    private items: {{ class_name }}[] = [];
+export class CharactersTable {
+    private items: Characters[] = [];
 
     /**
-     * 加载{{ class_name }}表数据
+     * 加载Characters表数据
      * @param asset JSON资源
      */
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.items = data as {{ class_name }}[];
+            this.items = data as Characters[];
         }
     }
 
     /**
-     * 根据ID获取{{ class_name }}
-     * @param id {{ class_name }}ID
+     * 根据ID获取Characters
+     * @param id CharactersID
      */
-    public get{{ class_name }}ById(id: number): {{ class_name }} | null {
+    public getCharactersById(id: number): Characters | null {
         return this.items.find(item => item.id === id) || null;
     }
 
     /**
-     * 获取所有{{ class_name }}
+     * 获取所有Characters
      */
-    public getAll{{ class_name }}(): {{ class_name }}[] {
+    public getAllCharacters(): Characters[] {
         return this.items;
     }
-{% if has_type_field %}
-{% if is_monster %}
-    /**
-     * 根据类型获取{{ class_name }}
-     * @param type 怪物类型
-     */
-    public get{{ class_name }}ByType(type: MonsterType): {{ class_name }}[] {
-        return this.items.filter(item => item.type === type);
-    }
-{% else %}
-    /**
-     * 根据类型获取{{ class_name }}
-     * @param type 类型
-     */
-    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
-        return this.items.filter(item => item.type === type);
-    }
-{% endif %}
-{% endif %}
-{% if has_level_field %}
-{% if is_skill %}
-    /**
-     * 根据等级获取{{ class_name }}
-     * @param level 等级
-     */
-    public get{{ class_name }}ByLevel(level: number): {{ class_name }}[] {
-        return this.items.filter(item => item.level_requirement <= level);
-    }
-{% else %}
-    /**
-     * 根据等级获取{{ class_name }}
-     * @param level 等级
-     */
-    public get{{ class_name }}ByLevel(level: number): {{ class_name }}[] {
-        return this.items.filter(item => item.level === level);
-    }
-{% endif %}
-{% endif %}
 }

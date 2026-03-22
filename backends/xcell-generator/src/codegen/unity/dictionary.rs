@@ -123,15 +123,8 @@ impl UnityCodegen {
         
         let path = output_dir.join(format!("{}.cs", table_name));
         let mut file = std::fs::File::create(path)?;
-        writeln!(file, "// Unity generated file")?;
-        writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity.loader.namespace)?;
-        writeln!(file, "{{")?;
-        writeln!(file, "    public class {}", table_name)?;
-        writeln!(file, "    {{")?;
-        writeln!(file, "        // Dictionary generated from {}", table.name)?;
-        writeln!(file, "    }}")?;
-        writeln!(file, "}}" )?;
+        let out = self.make_dict(table, table_name).render()?;
+        file.write_all(out.as_bytes())?;
         Ok(())
     }
 
@@ -183,15 +176,8 @@ impl UnityCodegen {
         
         let path = output_dir.join(format!("{}.cs", table_name));
         let mut file = std::fs::File::create(path)?;
-        writeln!(file, "// Unity generated file")?;
-        writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity.loader.namespace)?;
-        writeln!(file, "{{")?;
-        writeln!(file, "    public class {}", table_name)?;
-        writeln!(file, "    {{")?;
-        writeln!(file, "        // List generated from {}", table.name)?;
-        writeln!(file, "    }}")?;
-        writeln!(file, "}}" )?;
+        let out = self.make_list(table, table_name).render()?;
+        file.write_all(out.as_bytes())?;
         Ok(())
     }
 

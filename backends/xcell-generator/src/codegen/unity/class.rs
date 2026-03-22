@@ -120,15 +120,8 @@ impl UnityCodegen {
         
         let path = output_dir.join(format!("{}.cs", table_name));
         let mut file = std::fs::File::create(path)?;
-        writeln!(file, "// Unity generated file")?;
-        writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity.loader.namespace)?;
-        writeln!(file, "{{")?;
-        writeln!(file, "    public class {}", table_name)?;
-        writeln!(file, "    {{")?;
-        writeln!(file, "        // Class generated from {}", table.name)?;
-        writeln!(file, "    }}")?;
-        writeln!(file, "}}" )?;
+        let out = self.make_class(table, table_name).render()?;
+        file.write_all(out.as_bytes())?;
         Ok(())
     }
 

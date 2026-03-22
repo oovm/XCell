@@ -60,23 +60,5 @@ export class {{ table_name }} {
     }
 {% endif %}
 {% endif %}
-{% if has_level_field %}
-{% if is_skill %}
-    /**
-     * 根据等级获取{{ class_name }}
-     * @param level 等级
-     */
-    public get{{ class_name }}ByLevel(level: number): {{ class_name }}[] {
-        return this.items.filter(item => item.level_requirement <= level);
-    }
-{% else %}
-    /**
-     * 根据等级获取{{ class_name }}
-     * @param level 等级
-     */
-    public get{{ class_name }}ByLevel(level: number): {{ class_name }}[] {
-        return this.items.filter(item => item.level === level);
-    }
-{% endif %}
-{% endif %}
+
 }

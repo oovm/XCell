@@ -82,15 +82,8 @@ impl UnityCodegen {
         
         let path = output_dir.join(format!("{}.cs", table.name));
         let mut file = std::fs::File::create(path)?;
-        writeln!(file, "// Unity generated file")?;
-        writeln!(file, "")?;
-        writeln!(file, "namespace {}", unity.loader.namespace)?;
-        writeln!(file, "{{")?;
-        writeln!(file, "    public enum {}", table.name)?;
-        writeln!(file, "    {{")?;
-        writeln!(file, "        // Enumerate generated from {}", table.name)?;
-        writeln!(file, "    }}")?;
-        writeln!(file, "}}" )?;
+        let out = self.make_enumerate(table).render()?;
+        file.write_all(out.as_bytes())?;
         Ok(())
     }
 

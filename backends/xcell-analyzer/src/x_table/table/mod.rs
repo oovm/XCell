@@ -1,6 +1,7 @@
 use crate::utils::norm_string;
 use calamine::Data;
 use std::{path::Path, sync::Arc};
+use xcell_parser::{parse_field, parse_meta, FieldConstraint, TableKind};
 use xcell_provider::{TableReader as XCellTableReader, XCellAccess, XCellHeader, XDocument, load_table as load_table_reader};
 use xcell_core::{ByteOrder, IntegerKind, StreamReader, XCellTyped, XErrorKind};
 
@@ -445,11 +446,11 @@ impl XCellTableReader for CalamineTable {
 
     fn get_header(&self, index: usize) -> XCellHeader {
         let mut complete = true;
-        let field_name = match self.get_field_name(index) {
-            Some(s) => s,
+        let (field_name, constraint) = match self.get_field_name(index) {
+            Some((name, constraint)) => (name, constraint),
             None => {
                 complete = false;
-                Default::default()
+                (Default::default(), None)
             }
         };
         let typing = match self.get_field_type(index) {
@@ -460,7 +461,7 @@ impl XCellTableReader for CalamineTable {
             }
         };
         let access = if field_name.starts_with("_") { XCellAccess::Private } else { XCellAccess::Public };
-        XCellHeader { column: index, document: self.read_comment_details(index), typing, field_name, complete, access }
+        XCellHeader { column: index, document: self.read_comment_details(index), typing, field_name, complete, access, constraint }
     }
 
     fn headers(&self) -> Box<dyn Iterator<Item = XCellHeader> + '_> {
@@ -658,11 +659,11 @@ impl CalamineTable {
     /// 获得第 `index` 列的表头
     pub fn get_header(&self, index: usize) -> XCellHeader {
         let mut complete = true;
-        let field_name = match self.get_field_name(index) {
-            Some(s) => s,
+        let (field_name, constraint) = match self.get_field_name(index) {
+            Some((name, constraint)) => (name, constraint),
             None => {
                 complete = false;
-                Default::default()
+                (Default::default(), None)
             }
         };
         let typing = match self.get_field_type(index) {
@@ -673,13 +674,26 @@ impl CalamineTable {
             }
         };
         let access = if field_name.starts_with("_") { XCellAccess::Private } else { XCellAccess::Public };
-        XCellHeader { column: index, document: self.read_comment_details(index), typing, field_name, complete, access }
+        XCellHeader { column: index, document: self.read_comment_details(index), typing, field_name, complete, access, constraint }
     }
-    fn get_field_name(&self, index: usize) -> Option<String> {
+    
+    /// 获取表格类型
+    pub fn table_kind(&self) -> Option<TableKind> {
+        if let Some(value) = self.table.get_value((0, 0)) {
+            if let Data::String(s) = value {
+                if let Ok(meta) = parse_meta(s) {
+                    return Some(meta.kind);
+                }
+            }
+        }
+        None
+    }
+    
+    fn get_field_name(&self, index: usize) -> Option<(String, Option<FieldConstraint>)> {
         // 优先从 TOML 配置文件中获取字段名
         if let Some(field) = self.config.fields.get(index) {
             if !field.name.is_empty() {
-                return Some(field.name.clone());
+                return Some((field.name.clone(), None));
             }
         }
         // 如果 TOML 配置文件中没有字段名，则从 CSV 文件的第一行获取
@@ -687,7 +701,12 @@ impl CalamineTable {
         let field_row = 0; // CSV 文件的第一行（0-based）
         if let Some(value) = self.table.get_value((field_row, index as u32)) {
             if let Data::String(s) = value {
-                return Some(s.to_string());
+                // 使用 xcell-parser 解析字段名
+                if let Ok(field_expr) = parse_field(s) {
+                    return Some((field_expr.name, field_expr.constraint));
+                }
+                // 回退到原始逻辑
+                return Some((s.to_string(), None));
             }
         }
         None

@@ -3,6 +3,7 @@
     "scripts": {
         "build": "cargo build --release",
         "build:homepage": "cd frontends/homepage && pnpm build",
+        "dev:homepage": "cd frontends/homepage && pnpm dev",
         "test": "cargo test --release",
         "fmt": "npx @biomejs/biome format --write . && cargo fmt --all",
         "i": "cd projects/xcell-cli && cargo install --path . --force",

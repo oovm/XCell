@@ -323,6 +323,7 @@ impl CsvTable {
                         typing: XCellTyped::default(),
                         document: XDocument::default(),
                         complete: true,
+                        constraint: None,
                     });
                 }
             }

@@ -4,11 +4,11 @@ use std::fs;
 
 use tracing::Level;
 use xcell_analyzer::{
-    PROJECT_CONFIG, ProjectConfig, WorkspaceManager, XListData, XDictData,
+    PROJECT_CONFIG, ProjectConfig,
 };
-use xcell_analyzer::validation::{RefValidator, ValidationResult, Validator};
-use xcell_types::for_3rd::BigInt;
-use std::str::FromStr;
+use xcell_analyzer::validation::{RefValidator, ValidationResult};
+use xcell_core::for_3rd::BigInt;
+use xcell_core::XError;
 
 mod test_buffer;
 
@@ -160,7 +160,7 @@ fn test_validation_result_add_error() {
     let mut result = ValidationResult::new();
     assert!(!result.has_errors());
 
-    result.add_error(xcell_types::XError::runtime_error("Test error"));
+    result.add_error(XError::runtime_error("Test error"));
     assert!(result.has_errors());
     assert_eq!(result.errors.len(), 1);
 }
@@ -168,11 +168,11 @@ fn test_validation_result_add_error() {
 #[test]
 fn test_validation_result_merge() {
     let mut result1 = ValidationResult::new();
-    result1.add_error(xcell_types::XError::runtime_error("Error 1"));
+    result1.add_error(XError::runtime_error("Error 1"));
 
     let mut result2 = ValidationResult::new();
-    result2.add_error(xcell_types::XError::runtime_error("Error 2"));
-    result2.add_error(xcell_types::XError::runtime_error("Error 3"));
+    result2.add_error(XError::runtime_error("Error 2"));
+    result2.add_error(XError::runtime_error("Error 3"));
 
     result1.merge(result2);
     assert_eq!(result1.errors.len(), 3);
@@ -180,6 +180,7 @@ fn test_validation_result_merge() {
 
 #[test]
 fn test_bigint_from_str() {
+    use std::str::FromStr;
     let id = BigInt::from_str("12345").unwrap();
     assert_eq!(id, BigInt::from(12345));
 

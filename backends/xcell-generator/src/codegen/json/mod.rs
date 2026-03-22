@@ -140,9 +140,9 @@ impl JsonCodegen {
             name: table.name.clone(),
             fields: table.items.iter().map(|item| JsonFieldData {
                 name: item.field.clone(),
-                r#type: item.typing.as_typescript_type(),
+                r#type: item.typing.as_typescript_type().to_string(),
                 default: self.xcell_value_to_json(&item.default),
-                comment: item.document.lines().collect(),
+                comment: item.document.lines(),
             }).collect(),
         }
     }
@@ -151,18 +151,18 @@ impl JsonCodegen {
     fn make_enumerate(&self, table: &XEnumerateData) -> JsonEnumerateData {
         JsonEnumerateData {
             name: table.name.clone(),
-            id_type: table.typing.kind.as_typescript_type(),
+            id_type: table.typing.kind.as_typescript_type().to_string(),
             values: table.lines.iter().map(|line| JsonEnumValue {
                 id: line.id.to_string(),
                 key: line.key.clone(),
-                comment: line.comment.lines().collect(),
+                comment: line.comment.lines(),
                 fields: table.headers.iter().enumerate().map(|(i, header)| {
                     let value = line.data.get(i);
                     JsonFieldData {
                         name: header.field_name.clone(),
-                        r#type: header.typing.as_typescript_type(),
+                        r#type: header.typing.as_typescript_type().to_string(),
                         default: value.map(|v| self.xcell_value_to_json(v)).unwrap_or_default(),
-                        comment: header.document.lines().collect(),
+                        comment: header.document.lines(),
                     }
                 }).collect(),
             }).collect(),
@@ -189,7 +189,7 @@ impl JsonCodegen {
     fn make_list(&self, table: &XListData) -> JsonListData {
         JsonListData {
             name: table.name.clone(),
-            id_type: table.id_type.as_typescript_type(),
+            id_type: table.id_type.as_typescript_type().to_string(),
             entries: table.mapping.iter().map(|(id, line)| {
                 JsonListEntry {
                     id: id.to_string(),

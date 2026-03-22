@@ -5,10 +5,11 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
 };
-use xcell_types::{XError, XResult, XCellValue, for_3rd::ToPrimitive};
+use xcell_core::{XError, XResult, XCellValue, for_3rd::ToPrimitive};
 use xcell_analyzer::{XClassData, XListData, XDictData};
 use url::Url;
 use dejavu_macros::Template;
+use dejavu_types::values::Context;
 
 mod config;
 
@@ -154,7 +155,7 @@ fn render_enumerate_template(config: &CocosCodegen, class_name: &str, items: &[C
         config: config.clone(),
         enumerate_ids,
     };
-    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+    template.render(&Context::new()).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 fn render_class_template(config: &CocosCodegen, class_name: &str, table_name: &str, fields: &[CocosField]) -> XResult<String> {
@@ -174,7 +175,7 @@ fn render_class_template(config: &CocosCodegen, class_name: &str, table_name: &s
         key_name: "id".to_string(),
         class_fields,
     };
-    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+    template.render(&Context::new()).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 fn render_manager_template(config: &CocosCodegen, tables: &[CocosDataTableItem]) -> XResult<String> {
@@ -192,7 +193,7 @@ fn render_manager_template(config: &CocosCodegen, tables: &[CocosDataTableItem])
         edit_time: chrono::Utc::now().to_rfc3339(),
         tables: table_items,
     };
-    template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
+    template.render(&Context::new()).map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
 /// Cocos 存储格式配置
@@ -334,23 +335,9 @@ pub struct CsvCache {
 ///
 /// 负责生成 Cocos 平台的代码和数据文件
 impl CocosCodegen {
-    /// 内部缓存
-    pub(crate) cache: CsvCache,
-    
     /// 创建新的 CocosCodegen 实例
     pub fn new() -> Self {
-        Self {
-            storage: Default::default(),
-            enable: false,
-            project: String::new(),
-            output: String::new(),
-            namespace: String::new(),
-            manager_name: "DataTableManager".to_string(),
-            suffix_table: "Table".to_string(),
-            instance_name: "dataTableManager".to_string(),
-            table_data_path: "tables/".to_string(),
-            cache: Default::default(),
-        }
+        Self::default()
     }
     
     /// 获取 Cocos 项目路径
@@ -517,18 +504,18 @@ impl CocosCodegen {
         
         let csv_files = self.get_csv_files(root)?;
         
-        for entry in &csv_files {
-            let file_name_os = entry.file_name();
-            let file_name_str = file_name_os.to_string_lossy();
-            let file_name = file_name_str.to_string();
+        for path in &csv_files {
+            let file_name = path.file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_default();
             let class_name = file_name.split('.').next().unwrap_or(&file_name);
             
             let is_enum = self.is_enum(class_name);
             
             if is_enum {
-                self.process_enum_file(ws, entry, class_name)?;
+                self.process_enum_file(ws, path, class_name)?;
             } else {
-                self.process_table_file(ws, entry, class_name)?;
+                self.process_table_file(ws, path, class_name)?;
             }
         }
         
@@ -541,12 +528,12 @@ impl CocosCodegen {
     ///
     /// # 参数
     /// * `ws` - 工作区管理器
-    /// * `entry` - 文件入口
+    /// * `path` - 文件路径
     /// * `class_name` - 类名
     ///
     /// # 返回值
     /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    fn process_enum_file(&mut self, ws: &WorkspaceManager, entry: &std::fs::DirEntry, class_name: &str) -> XResult<()> {
+    fn process_enum_file(&mut self, ws: &WorkspaceManager, path: &PathBuf, class_name: &str) -> XResult<()> {
         let root = &ws.config.root;
         let ts_path = self.cocos_typescript_path(root, class_name)?;
         
@@ -557,7 +544,7 @@ impl CocosCodegen {
             tracing::debug!("created_directory", path = ?parent);
         }
         
-        let enum_data = self.read_enum_data(&entry.path())?;
+        let enum_data = self.read_enum_data(path)?;
         
         let items = enum_data.into_iter()
             .map(|(id, name, description)| {
@@ -584,12 +571,12 @@ impl CocosCodegen {
     ///
     /// # 参数
     /// * `ws` - 工作区管理器
-    /// * `entry` - 文件入口
+    /// * `path` - 文件路径
     /// * `class_name` - 类名
     ///
     /// # 返回值
     /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    fn process_table_file(&mut self, ws: &WorkspaceManager, entry: &std::fs::DirEntry, class_name: &str) -> XResult<()> {
+    fn process_table_file(&mut self, ws: &WorkspaceManager, path: &PathBuf, class_name: &str) -> XResult<()> {
         let root = &ws.config.root;
         let table_class_name = format!("{}Table", class_name);
         let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
@@ -601,7 +588,7 @@ impl CocosCodegen {
             tracing::debug!("created_directory", path = ?parent);
         }
         
-        let fields = self.read_csv_fields(&entry.path(), class_name)?;
+        let fields = self.read_csv_fields(path, class_name)?;
         
         let content = render_class_template(self, class_name, &table_class_name, &fields)?;
         
@@ -618,19 +605,20 @@ impl CocosCodegen {
     /// * `root` - 根目录路径
     ///
     /// # 返回值
-    /// 返回 CSV 文件列表，成功时返回 Ok(Vec<std::fs::DirEntry>)，失败时返回 XError。
-    pub fn get_csv_files(&mut self, root: &Path) -> XResult<Vec<std::fs::DirEntry>> {
+    /// 返回 CSV 文件路径列表，成功时返回 Ok(Vec<PathBuf>)，失败时返回 XError。
+    pub fn get_csv_files(&mut self, root: &Path) -> XResult<Vec<PathBuf>> {
         if let Some(cache) = &self.cache.files_cache {
             tracing::debug!("Using cached CSV files list");
             return Ok(cache.clone());
         }
         
-        let csv_files = std::fs::read_dir(root)?
+        let csv_files: Vec<PathBuf> = std::fs::read_dir(root)?
             .filter_map(|entry| entry.ok())
             .filter(|entry| {
                 entry.path().is_file() && entry.path().extension().map(|ext| ext == "csv").unwrap_or(false)
             })
-            .collect::<Vec<_>>();
+            .map(|entry| entry.path())
+            .collect();
         
         self.cache.files_cache = Some(csv_files.clone());
         Ok(csv_files)

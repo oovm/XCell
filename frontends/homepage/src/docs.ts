@@ -101,34 +101,44 @@ const docNodes: DocNodeConfig[] = [
 				order: 1,
 			},
 			{
-				id: "concepts-table",
-				path: "/document/concepts/table",
+				id: "concepts-dict",
+				path: "/document/concepts/dict",
 				title: {
-					"zh-hans": "表格",
-					en: "Table",
+					"zh-hans": "dict 表",
+					en: "Dict Table",
 				},
-				filePath: "concepts/table.md",
+				filePath: "concepts/dict.md",
 				order: 2,
 			},
 			{
-				id: "concepts-enumerate",
-				path: "/document/concepts/enumerate",
+				id: "concepts-list",
+				path: "/document/concepts/list",
 				title: {
-					"zh-hans": "枚举",
-					en: "Enumerate",
+					"zh-hans": "list 表",
+					en: "List Table",
 				},
-				filePath: "concepts/enumerate.md",
+				filePath: "concepts/list.md",
 				order: 3,
+			},
+			{
+				id: "concepts-enum",
+				path: "/document/concepts/enum",
+				title: {
+					"zh-hans": "enum 表",
+					en: "Enum Table",
+				},
+				filePath: "concepts/enum.md",
+				order: 4,
 			},
 			{
 				id: "concepts-language",
 				path: "/document/concepts/language",
 				title: {
-					"zh-hans": "语言",
-					en: "Language",
+					"zh-hans": "language 表",
+					en: "Language Table",
 				},
 				filePath: "concepts/language.md",
-				order: 4,
+				order: 5,
 			},
 			{
 				id: "concepts-merge",
@@ -138,7 +148,7 @@ const docNodes: DocNodeConfig[] = [
 					en: "Merge",
 				},
 				filePath: "concepts/merge.md",
-				order: 5,
+				order: 6,
 			},
 			{
 				id: "concepts-config",
@@ -148,7 +158,7 @@ const docNodes: DocNodeConfig[] = [
 					en: "Config",
 				},
 				filePath: "concepts/config.md",
-				order: 6,
+				order: 7,
 			},
 		],
 	},
@@ -207,16 +217,6 @@ const docNodes: DocNodeConfig[] = [
 		order: 5,
 		children: [
 			{
-				id: "advanced-advanced-features",
-				path: "/document/advanced/advanced-features",
-				title: {
-					"zh-hans": "高级特性",
-					en: "Advanced Features",
-				},
-				filePath: "advanced/advanced-features.md",
-				order: 1,
-			},
-			{
 				id: "advanced-type-system",
 				path: "/document/advanced/type-system",
 				title: {
@@ -224,17 +224,37 @@ const docNodes: DocNodeConfig[] = [
 					en: "Type System",
 				},
 				filePath: "advanced/type-system.md",
+				order: 1,
+			},
+			{
+				id: "advanced-key-field",
+				path: "/document/advanced/key-field",
+				title: {
+					"zh-hans": "字段约束",
+					en: "Field Constraints",
+				},
+				filePath: "advanced/key-field.md",
 				order: 2,
+			},
+			{
+				id: "advanced-ref-type",
+				path: "/document/advanced/ref-type",
+				title: {
+					"zh-hans": "引用类型",
+					en: "Reference Type",
+				},
+				filePath: "advanced/ref-type.md",
+				order: 3,
 			},
 			{
 				id: "advanced-meta-data",
 				path: "/document/advanced/meta-data",
 				title: {
-					"zh-hans": "元数据",
+					"zh-hans": "元属性",
 					en: "Meta Data",
 				},
 				filePath: "advanced/meta-data.md",
-				order: 3,
+				order: 4,
 			},
 			{
 				id: "advanced-extensibility",
@@ -244,7 +264,7 @@ const docNodes: DocNodeConfig[] = [
 					en: "Extensibility",
 				},
 				filePath: "advanced/extensibility.md",
-				order: 4,
+				order: 5,
 			},
 		],
 	},

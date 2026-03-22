@@ -50,7 +50,7 @@ impl Generator {
         generators.insert("json".to_string(), Box::new(codegen::json::JsonCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("binary".to_string(), Box::new(codegen::binary::BinaryCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("cocos".to_string(), Box::new(codegen::cocos::CocosCodegen::default()) as Box<dyn codegen::Codegen>);
-        generators.insert("unity".to_string(), Box::new(codegen::unity::UnityCodegen::default()) as Box<dyn codegen::Codegen>);
+        // generators.insert("unity".to_string(), Box::new(codegen::unity::UnityCodegen::default()) as Box<dyn codegen::Codegen>);  // 暂时禁用
         generators.insert("dejavu".to_string(), Box::new(codegen::dejavu::DejavuCodegen::new()) as Box<dyn codegen::Codegen>);
 
         info!("生成器实例创建完成，注册了 {} 个代码生成器", generators.len());

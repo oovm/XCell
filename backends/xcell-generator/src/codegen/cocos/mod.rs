@@ -236,7 +236,7 @@ pub struct TypeMapping {
 /// Cocos 代码生成器配置
 ///
 /// 用于配置 Cocos 平台的代码生成
-#[derive(Clone, Debug, Default, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct CocosCodegen {
     /// 存储格式配置
     pub storage: CocosStorage,
@@ -795,9 +795,9 @@ impl CocosCodegen {
         let mut tables = Vec::new();
         
         for entry in &csv_files {
-            let file_name_os = entry.file_name();
-            let file_name_str = file_name_os.to_string_lossy();
-            let file_name = file_name_str.to_string();
+            let file_name = entry.file_name()
+                .map(|n| n.to_string_lossy().to_string())
+                .unwrap_or_default();
             let class_name = file_name.split('.').next().unwrap_or(&file_name);
             
             let is_enum = self.is_enum(class_name);
@@ -1040,7 +1040,7 @@ impl CocosCodegen {
     }
     
     /// 将整数转换为 JSON
-    fn convert_integer_to_json<T: Into<u64>>(&self, value: T) -> serde_json::Value {
+    fn convert_integer_to_json<T: Into<i64>>(&self, value: T) -> serde_json::Value {
         serde_json::Value::Number(serde_json::Number::from(value.into()))
     }
     

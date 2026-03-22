@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import type { DocNode } from "@/docs";
+import type { DocNode } from "@/utils/docs";
 
 interface Props {
 	node: DocNode;

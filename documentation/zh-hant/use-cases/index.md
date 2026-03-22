@@ -4,16 +4,16 @@
 
 ## 可用案例
 
-- [Unity 集成](unity-integration.md) - 屆 XCell 與 Unity 遊戲引擎集成使用
+- [Unity 集成](unity-integration.md) - 將 XCell 與 Unity 遊戲引擎集成使用
 
 ## 案例说明
 
 ### Unity 集成
 
-适用於使用 Unity 引擎開發游戏的開發者。该案例详细介绍了如何屆 XCell 設定資料表管理工具與 Unity 專案无缝集成，套件括：
+适用於使用 Unity 引擎開發游戲的開發者。该案例详细介绍了如何將 XCell 設定資料表管理工具與 Unity 專案无缝集成，套件括：
 
 - Unity 專案設定
 - 設定資料表的建立和管理
-- C# 程式碼生成
-- 二進位元資料載入
-- 執行时使用範例
+- C# 程式碼產生
+- 二進位資料載入
+- 執行階段使用範例

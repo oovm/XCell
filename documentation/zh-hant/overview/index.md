@@ -4,21 +4,21 @@
 
 | 類型 | 说明 |
 | ---- | ---- |
-| dict 資料表 | 字元串主鍵，最常用的設定形式 |
+| dict 資料表 | 字串主鍵，最常用的設定形式 |
 | list 資料表 | 整数主鍵，按顺序存取 |
 | enum 資料表 | 列舉類型，附加额外資料 |
-| class 資料表 | 全局設定類別，單例模式 |
+| class 資料表 | 全局設定类，單例模式 |
 | language 資料表 | 多語言支援 |
 
-## 程式碼生成目标
+## 程式碼產生目标
 
 | 目标 | 語言/格式 | 狀態 |
 | ---- | --------- | ---- |
-| Unity | C# | ✅ 已導现 |
-| Cocos | TypeScript + JSON | ✅ 已導现 |
-| JSON | JSON 資料 | ✅ 已導现 |
-| Binary | 二進位元資料 | ✅ 已導现 |
-| Dejavu | 範本引擎 | ✅ 已導现 |
+| Unity | C# | ✅ 已實现 |
+| Cocos | TypeScript + JSON | ✅ 已實现 |
+| JSON | JSON 資料 | ✅ 已實现 |
+| Binary | 二進位資料 | ✅ 已實现 |
+| Dejavu | 範本引擎 | ✅ 已實现 |
 
 ## 類型系統
 
@@ -26,18 +26,18 @@
 
 | 類型 | 说明 |
 | ---- | ---- |
-| `bool` | 布屬值 |
-| `i8`, `i16`, `i32`, `i64` | 有符後整数 |
-| `u8`, `u16`, `u32`, `u64` | 无符後整数 |
+| `bool` | 布爾值 |
+| `i8`, `i16`, `i32`, `i64` | 有符號整数 |
+| `u8`, `u16`, `u32`, `u64` | 无符號整数 |
 | `f32`, `f64` | 浮点数 |
-| `string` | 字元串 |
+| `string` | 字串 |
 
-### 奧合類型
+### 復合類型
 
 | 類型 | 说明 |
 | ---- | ---- |
-| `[T]` | 勁态陣列 |
-| `[T; N]` | 静态陣列 |
+| `[T]` | 動態陣列 |
+| `[T; N]` | 静態陣列 |
 | `Vec<T>` | 向量/串列 |
 | `vec2`, `vec3`, `vec4` | 向量類型 |
 | `HashMap<K, V>` | 字典類型 |
@@ -52,8 +52,8 @@
 
 ## 合資料表功能
 
-- **命名约定**：下則线命名自勁合併，如 `Item_Weapon` + `Item_Armor` → `Item`
-- **合併规創**：相同结构自勁合併，相同 ID 报错
+- **命名约定**：下劃线命名自動合併，如 `Item_Weapon` + `Item_Armor` → `Item`
+- **合併规則**：相同结构自動合併，相同 ID 報错
 - **保留資料表名**：`Language` 為保留資料表名
 
 ## 設定系統
@@ -65,11 +65,11 @@
 ## 架构
 
 ```
-xcell-provider (資料表格读農)
+xcell-provider (資料表格读寫)
     ↓
 xcell-analyzer (資料表格分析)
     ↓
-xcell-generator (程式碼生成)
+xcell-generator (程式碼產生)
     ↓
 xcell (CLI 工具)
 ```
@@ -79,10 +79,10 @@ xcell (CLI 工具)
 | 模組 | 功能 |
 | ---- | ---- |
 | xcell-types | 類型系統定義 |
-| xcell-provider | 資料表格读農介面 |
+| xcell-provider | 資料表格读寫介面 |
 | xcell-parser | 语法剖析器 |
 | xcell-analyzer | 資料表格分析器 |
 | xcell-config | 設定管理 |
-| xcell-generator | 程式碼生成器 |
+| xcell-generator | 程式碼產生器 |
 | xcell-plugin | 外掛程式系統 |
 | xcell | 命令列工具 |

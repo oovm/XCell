@@ -1,17 +1,17 @@
 # language 資料表
 
-Language 資料表格用於管理多語言文本，XCell 提供了完整的阪际化支援。
+Language 資料表格用於管理多語言文本，XCell 提供了完整的國际化支援。
 
 ## 约定
 
 - **第一行第一列為 `@language` 標記**
-- **可选 `@group` 欄位元用於分組**
-- **其傭列為語言 ID**
+- **可选 `@group` 欄位用於分組**
+- **其餘列為語言 ID**
 - **生成的名称預設以檔案名為准，可通过 `@language 名称` 指定**
 
 ## 標記方式
 
-第一行第一列使用 `@language` 標記，可选 `@group`，其傭為語言 ID：
+第一行第一列使用 `@language` 標記，可选 `@group`，其餘為語言 ID：
 
 | @language | @group | zh_cn | en_us | ja_jp |
 |-----------|--------|-------|-------|-------|
@@ -19,7 +19,7 @@ Language 資料表格用於管理多語言文本，XCell 提供了完整的阪�
 | Ui_Settings | ui | 設定 | Settings | 設定 |
 | Ui_Exit | ui | 結束 | Exit | 終了 |
 
-## 程式碼生成
+## 程式碼產生
 
 ### TypeScript (Cocos, Laya)
 
@@ -49,7 +49,7 @@ public static class LanguageTable
 
 ## 使用場景
 
-- 游戏 UI 多語言支援
-- 套用程式阪际化
+- 游戲 UI 多語言支援
+- 應用程式國际化
 - 多語言文件系統
 - 需要支援多种語言的任何專案

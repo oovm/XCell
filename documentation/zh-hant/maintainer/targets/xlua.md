@@ -6,18 +6,18 @@ XLua 是 Unity 中常用的 Lua 指令碼解決方案，XCell 提供了與 XLua 
 
 | XCell 類型 | XLua 類型 | 说明 |
 |-----------|-----------|------|
-| `i8` | `number` | 8位元有符後整数 |
-| `i16` | `number` | 16位元有符後整数 |
-| `i32` | `number` | 32位元有符後整数 |
-| `i64` | `number` | 64位元有符後整数 |
-| `u8` | `number` | 8位元无符後整数 |
-| `u16` | `number` | 16位元无符後整数 |
-| `u32` | `number` | 32位元无符後整数 |
-| `u64` | `number` | 64位元无符後整数 |
-| `f32` | `number` | 32位元浮点数 |
-| `f64` | `number` | 64位元浮点数 |
-| `bool` | `boolean` | 布屬值 |
-| `string` | `string` | 字元串 |
+| `i8` | `number` | 8位有符號整数 |
+| `i16` | `number` | 16位有符號整数 |
+| `i32` | `number` | 32位有符號整数 |
+| `i64` | `number` | 64位有符號整数 |
+| `u8` | `number` | 8位无符號整数 |
+| `u16` | `number` | 16位无符號整数 |
+| `u32` | `number` | 32位无符號整数 |
+| `u64` | `number` | 64位无符號整数 |
+| `f32` | `number` | 32位浮点数 |
+| `f64` | `number` | 64位浮点数 |
+| `bool` | `boolean` | 布爾值 |
+| `string` | `string` | 字串 |
 | `array<T>` | `table` | 陣列 |
 | `map<K, V>` | `table` | 對應 |
 | `enum` | `number` | 列舉 |
@@ -26,7 +26,7 @@ XLua 是 Unity 中常用的 Lua 指令碼解決方案，XCell 提供了與 XLua 
 ## 集成步骤
 
 1. **安装 XLua**：在 Unity 專案中安装 XLua 外掛程式
-2. **設定 XCell**：在專案設定中啟用 XLua 程式碼生成
+2. **設定 XCell**：在專案設定中啟用 XLua 程式碼產生
 3. **生成程式碼**：使用 XCell 生成 XLua 相容的程式碼
 4. **載入資料**：在 Lua 指令碼中載入生成的資料
 
@@ -44,6 +44,6 @@ print("Player level: " .. playerConfig.level)
 
 ## 注意事项
 
-- XLua 中的數位類型统一為 `number`，可能會屭致精度损失
-- 奧杂資料结构會被转换為 Lua table
+- XLua 中的数字類型统一為 `number`，可能會導致精度损失
+- 復杂資料結構會被转换為 Lua table
 - 建議使用 LuaJIT 以获得更好的效能

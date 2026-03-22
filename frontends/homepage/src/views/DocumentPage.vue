@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
-import { loadDocs, getDocContent, type DocNode } from "@/docs";
+import { loadDocs, getDocContent, type DocNode } from "@/utils/docs";
 import MarkdownViewer from "@/components/MarkdownViewer.vue";
 import DocTreeNode from "@/components/DocTreeNode.vue";
 

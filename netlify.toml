@@ -4,6 +4,3 @@
 
 [build.environment]
   NPM_FLAGS = "--version"
-
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"

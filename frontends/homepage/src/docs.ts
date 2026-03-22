@@ -1,3 +1,12 @@
+export interface DocNodeConfig {
+	id: string;
+	path: string;
+	title: Record<string, string>;
+	filePath: string;
+	order: number;
+	children?: DocNodeConfig[];
+}
+
 const docNodes: DocNodeConfig[] = [
 	{
 		id: "index",
@@ -176,3 +185,5 @@ const docNodes: DocNodeConfig[] = [
 		],
 	},
 ];
+
+export { docNodes };

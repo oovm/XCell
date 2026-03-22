@@ -1,3 +1,5 @@
+import { docsModules } from "virtual:docs";
+
 export interface DocNode {
 	id: string;
 	title: string;
@@ -12,12 +14,6 @@ export interface DocMetadata {
 	title?: string;
 	order?: number;
 }
-
-const docsModules = import.meta.glob("../documentation/zh-hans/**/*.md", {
-	query: "?raw",
-	import: "default",
-	eager: true,
-});
 
 function parseDocMetadata(content: string): DocMetadata {
 	const metadata: DocMetadata = {};
@@ -41,7 +37,6 @@ function parseDocMetadata(content: string): DocMetadata {
 
 function generateId(path: string): string {
 	return path
-		.replace("../documentation/zh-hans/", "")
 		.replace(/\.md$/, "")
 		.replace(/\//g, "-");
 }
@@ -90,7 +85,7 @@ function buildDocTree(docs: DocNode[]): DocNode[] {
 		const node = nodeMap[doc.id];
 		const pathParts = doc.path.split("/");
 
-		if (pathParts.length <= 3) {
+		if (pathParts.length <= 2) {
 			if (!tree.some((n) => n.id === node.id)) {
 				tree.push(node);
 			}
@@ -98,7 +93,7 @@ function buildDocTree(docs: DocNode[]): DocNode[] {
 			const parentPathParts = pathParts.slice(0, -1);
 			let currentParent: DocNode | undefined;
 
-			for (let i = parentPathParts.length; i >= 3; i--) {
+			for (let i = parentPathParts.length; i >= 2; i--) {
 				const currentParentPathParts = parentPathParts.slice(0, i);
 				const parentPath = currentParentPathParts.join("/") + "/index.md";
 				const parentId = generateId(parentPath);
@@ -132,7 +127,7 @@ function buildDocTree(docs: DocNode[]): DocNode[] {
 	return sortNodes(tree);
 }
 
-export async function loadDocs(): Promise<DocNode[]> {
+export async function loadDocs(language: string): Promise<DocNode[]> {
 	console.log("docsModules keys:", Object.keys(docsModules));
 	const docs: DocNode[] = [];
 
@@ -141,15 +136,20 @@ export async function loadDocs(): Promise<DocNode[]> {
 			continue;
 		}
 
+		if (!path.startsWith(language + "/")) {
+			continue;
+		}
+
 		const content = docsModules[path] as string;
 		const metadata = parseDocMetadata(content);
-		const id = generateId(path);
-		const title = getDocTitle(path, metadata);
+		const relativePath = path.replace(language + "/", "");
+		const id = generateId(relativePath);
+		const title = getDocTitle(relativePath, metadata);
 
 		docs.push({
 			id,
 			title,
-			path,
+			path: relativePath,
 			isDirectory: false,
 			order: metadata.order,
 		});
@@ -159,6 +159,10 @@ export async function loadDocs(): Promise<DocNode[]> {
 	return buildDocTree(docs);
 }
 
-export async function getDocContent(path: string): Promise<string> {
-	return (docsModules[path] as string) || "";
+export async function getDocContent(
+	path: string,
+	language: string,
+): Promise<string> {
+	const fullPath = language + "/" + path;
+	return (docsModules[fullPath] as string) || "";
 }

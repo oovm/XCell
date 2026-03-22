@@ -5,12 +5,12 @@ Enumerate 資料表格用於定義列舉類型，同时还可以為每個列舉�
 ## 约定
 
 - **第一列视為主鍵**
-- **使用 `@enum` 標記显式夾明為 Enum 類型**
+- **使用 `@enum` 標記显式聲明為 Enum 類型**
 - **生成的名称預設以檔案名為准，可通过 `@enum 名称` 指定**
 
 ## 儲存结构
 
-Enum 資料表格儲存為 **enum + 静态欄位元/静态方法**，享受额外的最佳化。
+Enum 資料表格儲存為 **enum + 静態欄位/静態方法**，享受额外的最佳化。
 
 > ⚠️ 如果程式没有特殊要求，建議使用預設的 dict 類型。
 
@@ -25,9 +25,9 @@ Enum 資料表格儲存為 **enum + 静态欄位元/静态方法**，享受额�
 | Norma | 普通品质 | icon_01.png |
 | Rare | 稀有品质 | icon_02.png |
 | Epic | 史诗品质 | icon_03.png |
-| Super | 傷说品质 | icon_04.png |
+| Super | 傳说品质 | icon_04.png |
 
-## 程式碼生成
+## 程式碼產生
 
 ### TypeScript (Cocos, Laya)
 
@@ -91,7 +91,7 @@ export const Quality = {
     Super: {
         id: 3,
         name: "Super",
-        comment: "傷说品质",
+        comment: "傳说品质",
         icon: "icon_04.png"
     }
 } as const as Record<string, Quality>;
@@ -118,7 +118,7 @@ public enum Quality
     /// </summary>
     Epic = 2,
     /// <summary>
-    /// 傷说品质
+    /// 傳说品质
     /// </summary>
     Super = 3
 }
@@ -133,7 +133,7 @@ public static class QualityExtension
         new QualityData { Id = 0, Name = "Norma", Comment = "普通品质", Icon = "icon_01.png" },
         new QualityData { Id = 1, Name = "Rare", Comment = "稀有品质", Icon = "icon_02.png" },
         new QualityData { Id = 2, Name = "Epic", Comment = "史诗品质", Icon = "icon_03.png" },
-        new QualityData { Id = 3, Name = "Super", Comment = "傷说品质", Icon = "icon_04.png" }
+        new QualityData { Id = 3, Name = "Super", Comment = "傳说品质", Icon = "icon_04.png" }
     };
 
     public static QualityData GetData(this Quality quality)

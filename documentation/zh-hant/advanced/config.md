@@ -1,22 +1,22 @@
 # 設定檔案
 
-XCell 使用 TOML 格式的設定檔案来管理專案設定，設定檔案命名為 `XCell.toml`，位元於專案根目錄。
+XCell 使用 TOML 格式的設定檔案来管理專案設定，設定檔案命名為 `XCell.toml`，位於專案根目錄。
 
 ## 基本設定
 
 | 設定项 | 類型 | 说明 | 預設值 |
 |--------|------|------|--------|
-| version | string | 設定檔案版本後 | "0.0.0" |
+| version | string | 設定檔案版本號 | "0.0.0" |
 | include | string | 套件含的 Excel 檔案路徑模式（優先级最高） | "*.xlsx" |
 | exclude | string | 排除的 Excel 檔案路徑模式（優先级低於 include） | "" |
 
 ### 行列設定 (line)
 
-定義資料表格中各資訊所在的行後（從 1 開始）。
+定義資料表格中各資訊所在的行號（從 1 開始）。
 
 | 設定项 | 類型 | 说明 | 預設值 |
 |--------|------|------|--------|
-| line.field | int | 欄位元名所在行 | 1 |
+| line.field | int | 欄位名所在行 | 1 |
 | line.type | int | 資料類型所在行 | 2 |
 | line.comment | int | 註解所在行 | 3 |
 | line.data | int | 資料起始行 | 4 |
@@ -25,19 +25,19 @@ XCell 使用 TOML 格式的設定檔案来管理專案設定，設定檔案命�
 
 XCell 預設的資料表格格式為：
 
-| 行後 | 冊容 |
+| 行號 | 內容 |
 |------|------|
-| 第 1 行 | 欄位元註解 |
-| 第 2 行 | 欄位元名 |
-| 第 3 行 | 欄位元類型 |
+| 第 1 行 | 欄位註解 |
+| 第 2 行 | 欄位名 |
+| 第 3 行 | 欄位類型 |
 | 第 4 行+ | 資料行 |
 
 如果您的旧資料表格式不同，可通过 line 對應調整。例如旧資料表格式為：
 
-| 行後 | 冊容 |
+| 行號 | 內容 |
 |------|------|
-| 第 1 行 | 欄位元名 |
-| 第 2 行 | 欄位元類型 |
+| 第 1 行 | 欄位名 |
+| 第 2 行 | 欄位類型 |
 | 第 3 行+ | 資料行 |
 
 設定如下：
@@ -53,9 +53,9 @@ line.data = 3
 
 ### 類型剖析設定 (type)
 
-設定各种資料類型的剖析规創。
+設定各种資料類型的剖析规則。
 
-#### 布屬類型 (bool)
+#### 布爾類型 (bool)
 
 | 設定项 | 類型 | 说明 |
 |--------|------|------|
@@ -69,22 +69,22 @@ accept = ["true", "√", "是", "1"]
 reject = ["false", "x", "否", "0"]
 ```
 
-### Unity 程式碼生成設定 (unity)
+### Unity 程式碼產生設定 (unity)
 
-設定 C# 程式碼生成相茲設定。
+設定 C# 程式碼產生相關設定。
 
 | 設定项 | 類型 | 说明 | 預設值 |
 |--------|------|------|--------|
-| unity.enable | bool | 是否啟用 Unity 程式碼生成 | true |
+| unity.enable | bool | 是否啟用 Unity 程式碼產生 | true |
 | unity.project | string | Unity 專案路徑 | "../" |
 | unity.output | string | 程式碼輸出目錄 | "Assets/Scripts/DataTable/Generated" |
 | unity.namespace | string | 生成程式碼的命名空間 | "DataTable.Generated" |
-| unity.manager | string | 管理器類別名 | "DataTableManager" |
-| unity.suffix_table | string | 資料表格類別唕缀 | "Table" |
-| unity.suffix_element | string | 元素類別唕缀 | "Element" |
+| unity.manager | string | 管理器类名 | "DataTableManager" |
+| unity.suffix_table | string | 資料表格类後缀 | "Table" |
+| unity.suffix_element | string | 元素类後缀 | "Element" |
 | unity.support_clone | bool | 是否支援複製 | true |
 | unity.legacy_using | bool | 是否使用旧版 using | false |
-| unity.legacy_null_null | bool | 是否使用旧版 null 奮理 | false |
+| unity.legacy_null_null | bool | 是否使用旧版 null 處理 | false |
 
 ### 資料輸出格式設定
 
@@ -113,12 +113,12 @@ reject = ["false", "x", "否", "0"]
 
 #### 其他格式
 
-- **xlua**: Lua 程式碼生成
+- **xlua**: Lua 程式碼產生
 - **protobuf**: Protobuf 格式輸出
 
 ## 使用说明
 
 1. 在專案根目錄建立 `XCell.toml` 檔案
 2. 根据需要修改設定项
-3. 執行 XCell 工具时會自勁載入設定
+3. 執行 XCell 工具时會自動載入設定
 4. 資料表格設定可覆盖全局設定（建立同名 `.toml` 檔案）

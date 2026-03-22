@@ -9,9 +9,10 @@ enable = true
 project = "."
 output = "cocos"
 
-[[generators]]
-type = "unity"
-enable = true
-project = "."
-output = "unity"
-namespace = "DataTable"
+# Unity 生成器暂时禁用
+# [[generators]]
+# type = "unity"
+# enable = true
+# project = "."
+# output = "unity"
+# namespace = "DataTable"

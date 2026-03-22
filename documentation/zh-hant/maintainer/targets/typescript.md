@@ -1,31 +1,31 @@
 # TypeScript/JavaScript 集成
 
-> ✅ **可用**：TypeScript 程式碼生成器当前可用，支援生成 TypeScript 介面和類型定義。
+> ✅ **可用**：TypeScript 程式碼產生器當前可用，支援生成 TypeScript 介面和類型定義。
 
-XCell 支援生成 TypeScript 和 JavaScript 程式碼，用於前端和唕端套用。
+XCell 支援生成 TypeScript 和 JavaScript 程式碼，用於前端和後端套用。
 
 ## 類型對應
 
 | XCell 類型 | TypeScript 類型 | 说明 |
 |-----------|----------------|------|
-| `bool` | `boolean` | 布屬值 |
-| `i8` | `number` | 8位元有符後整数 |
-| `i16` | `number` | 16位元有符後整数 |
-| `i32` | `number` | 32位元有符後整数 |
-| `i64` | `number` | 64位元有符後整数 |
-| `u8` | `number` | 8位元无符後整数 |
-| `u16` | `number` | 16位元无符後整数 |
-| `u32` | `number` | 32位元无符後整数 |
-| `u64` | `number` | 64位元无符後整数 |
-| `f32` | `number` | 32位元浮点数 |
-| `f64` | `number` | 64位元浮点数 |
-| `string` | `string` | 字元串 |
+| `bool` | `boolean` | 布爾值 |
+| `i8` | `number` | 8位有符號整数 |
+| `i16` | `number` | 16位有符號整数 |
+| `i32` | `number` | 32位有符號整数 |
+| `i64` | `number` | 64位有符號整数 |
+| `u8` | `number` | 8位无符號整数 |
+| `u16` | `number` | 16位无符號整数 |
+| `u32` | `number` | 32位无符號整数 |
+| `u64` | `number` | 64位无符號整数 |
+| `f32` | `number` | 32位浮点数 |
+| `f64` | `number` | 64位浮点数 |
+| `string` | `string` | 字串 |
 | `array<T>` | `T[]` | 陣列 |
 | `list<T>` | `T[]` | 串列 |
 | `map<K, V>` | `Record<K, V>` | 對應 |
-| `enum` | `string` | 列舉（字元串形式） |
+| `enum` | `string` | 列舉（字串形式） |
 | `struct` | `interface` | 結構體 |
-| `color` | `string` | 顏色（十六進位元） |
+| `color` | `string` | 顏色（十六進位） |
 | `vec2` | `{ x: number, y: number }` | 二维向量 |
 | `vec3` | `{ x: number, y: number, z: number }` | 三维向量 |
 | `vec4` | `{ x: number, y: number, z: number, w: number }` | 四维向量 |
@@ -39,16 +39,16 @@ XCell 支援生成 TypeScript 和 JavaScript 程式碼，用於前端和唕端�
 
 ## 設定選項
 
-在 `ProjectSettings.toml` 檔案中，TypeScript 集成設定位元於 `[typescript]` 部分：
+在 `ProjectSettings.toml` 檔案中，TypeScript 集成設定位於 `[typescript]` 部分：
 
 ```toml
 [typescript]
 enable = true
 output = "src/generated"           # TypeScript 程式碼輸出目錄
 namespace = "DataTable.Generated"   # 命名空間
-manager_name = "DataTableManager"  # 管理器類別名
-suffix_table = "Table"             # 資料表類別唕缀
-suffix_element = "Element"         # 元素類別唕缀
+manager_name = "DataTableManager"  # 管理器类名
+suffix_table = "Table"             # 資料表类後缀
+suffix_element = "Element"         # 元素类後缀
 
 # JSON 資料輸出設定
 [typescript.json]
@@ -61,7 +61,7 @@ output = "data/generated"          # JSON 資料輸出目錄
 1. **設定 TypeScript 匯出**：在 XCell 設定中啟用 TypeScript 格式匯出
 2. **生成程式碼**：使用 XCell 生成 TypeScript/JavaScript 程式碼和資料檔案
 3. **引入程式碼**：在專案中引入生成的程式碼和資料
-4. **使用資料**：在套用程式中使用生成的資料和類型
+4. **使用資料**：在應用程式中使用生成的資料和類型
 
 ## 範例 TypeScript 程式碼
 
@@ -169,34 +169,34 @@ function loadJson<T>(filePath: string): T {
 }
 ```
 
-### 使用勁态匯入（打套件工具）
+### 使用動態匯入（打套件工具）
 
 ```typescript
-// 使用 Vite/Webpack 的勁态匯入
+// 使用 Vite/Webpack 的動態匯入
 const playerData = await import('./data/generated/Player.json');
 ```
 
 ## 注意事项
 
-- TypeScript 中的數位類型统一為 `number`，可能會屭致精度损失
+- TypeScript 中的数字類型统一為 `number`，可能會導致精度损失
 - 生成的介面可以直接用於類型檢查和程式碼提示
 - 可以設定生成不同风格的程式碼（ES modules、CommonJS 等）
-- 盡於大型專案，建議使用程式碼分割来最佳化載入效能
+- 對於大型專案，建議使用程式碼分割来最佳化載入效能
 
 ## 最佳做法
 
-1. **類型安全**：使用生成的介面进行類型檢查，避免執行时錯誤
-2. **懒載入**：按需載入資料，凜少初始載入时间
-3. **快取**：快取已載入的資料，避免重奧請求
-4. **錯誤奮理**：新增适当的錯誤奮理，奮理載入失敗的情淨
+1. **類型安全**：使用生成的介面进行類型檢查，避免執行階段錯誤
+2. **延遲載入**：依需求載入資料，減少初始載入时间
+3. **快取**：快取已載入的資料，避免重復请求
+4. **錯誤處理**：新增适當的錯誤處理，處理載入失敗的情況
 
 ## 範例專案
 
-XCell 提供了 TypeScript 範例專案，展示了如何在導际專案中使用 XCell：
+XCell 提供了 TypeScript 範例專案，展示了如何在實际專案中使用 XCell：
 
 - 基本設定資料表使用
-- 奧杂資料结构
+- 復杂資料結構
 - 多語言支援
-- 前唕端集成
+- 前後端集成
 
 通过範例專案，您可以快速了解 XCell 在 TypeScript 中的最佳做法。

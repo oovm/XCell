@@ -1,7 +1,7 @@
 
 # Unity 集成
 
-本教學屆详细介绍如何屆 XCell 設定資料表管理工具與 Unity 專案无缝集成。
+本教學將详细介绍如何將 XCell 設定資料表管理工具與 Unity 專案无缝集成。
 
 ## 專案结构
 
@@ -13,9 +13,9 @@ MyUnityGame/
 │   ├── Assets/
 │   │   ├── Scripts/
 │   │   │   └── DataTable/
-│   │   │       └── Generated/    # 自勁生成的 C# 程式碼
+│   │   │       └── Generated/    # 自動生成的 C# 程式碼
 │   │   └── Tables/
-│   │       └── Generated/         # 自勁生成的二進位元資料
+│   │       └── Generated/         # 自動生成的二進位資料
 │   └── ProjectSettings/
 └── XCellWork/             # XCell 工作目錄
     ├── xcell.exe
@@ -82,13 +82,13 @@ enable = false
 
 | 設定项 | 说明 |
 |--------|------|
-| `unity.project` | Unity 專案的相盡路徑 |
-| `unity.output` | C# 程式碼生成路徑 |
+| `unity.project` | Unity 專案的相對路徑 |
+| `unity.output` | C# 程式碼產生路徑 |
 | `unity.namespace` | 生成程式碼的命名空間 |
-| `unity.manager` | 資料管理器類別名 |
-| `unity.suffix_table` | 資料表格類別名唕缀 |
-| `unity.suffix_element` | 資料元素類別名唕缀 |
-| `unity.binary.output` | 二進位元資料輸出路徑 |
+| `unity.manager` | 資料管理器类名 |
+| `unity.suffix_table` | 資料表格类名後缀 |
+| `unity.suffix_element` | 資料元素类名後缀 |
+| `unity.binary.output` | 二進位資料輸出路徑 |
 
 ## 建立設定資料表範例
 
@@ -99,7 +99,7 @@ enable = false
 | int | string | string | int | int | int | float | int | int[] |
 | 英雄ID | 英雄名称 | 名称多語言Key | 生命值 | 攻擊力 | 防禦力 | 速度 | 稀有度 | 技能ID串列 |
 | 1001 | 骑士 | hero_knight | 1500 | 120 | 80 | 1.2 | 2 | [101, 102] |
-| 1002 | 法幹 | hero_mage | 900 | 180 | 40 | 1.5 | 2 | [201, 202] |
+| 1002 | 法師 | hero_mage | 900 | 180 | 40 | 1.5 | 2 | [201, 202] |
 | 1003 | 弓手 | hero_archer | 1000 | 150 | 50 | 1.8 | 2 | [301, 302] |
 
 ### 2. 物品設定資料表 (Item.xlsx)
@@ -107,30 +107,30 @@ enable = false
 | id | name | type | price | stackable | max_stack | description |
 |----|------|------|-------|-----------|-----------|-------------|
 | int | string | int | int | bool | int | string |
-| 物品ID | 物品名称 | 物品類型 | 價格 | 是否可堆嘰 | 最大堆嘰 | 描述 |
+| 物品ID | 物品名称 | 物品類型 | 價格 | 是否可堆疊 | 最大堆疊 | 描述 |
 | 1 | 生命药水 | 1 | 50 | true | 99 | 還原500点生命值 |
 | 2 | 魔法药水 | 1 | 60 | true | 99 | 還原300点魔法值 |
-| 3 | 铁劇 | 2 | 500 | false | 1 | 基础武器，攻擊力+50 |
+| 3 | 铁劍 | 2 | 500 | false | 1 | 基础武器，攻擊力+50 |
 
 ### 3. 技能設定資料表 (Skill.xlsx)
 
 | id | name | damage | cooldown | mp_cost | target_type |
 |----|------|--------|----------|---------|-------------|
 | int | string | int | float | int | int |
-| 技能ID | 技能名称 | 倀害值 | 冷廳时间 | 魔法消耗 | 目标類型 |
-| 101 | 斩鑿 | 100 | 2.0 | 0 | 1 |
-| 102 | 盾鑿 | 80 | 3.0 | 10 | 1 |
+| 技能ID | 技能名称 | 傷害值 | 冷卻时间 | 魔法消耗 | 目标類型 |
+| 101 | 斩擊 | 100 | 2.0 | 0 | 1 |
+| 102 | 盾擊 | 80 | 3.0 | 10 | 1 |
 | 201 | 火球术 | 200 | 3.5 | 30 | 2 |
 
 ## 執行 XCell 生成程式碼
 
-在 XCell 工作目錄中打开命令列，執行：
+在 XCell 工作目錄中打開命令列，執行：
 
 ```bash
 xcell.exe
 ```
 
-生成完成唕，您屆在 Unity 專案中看到以下檔案：
+生成完成後，您將在 Unity 專案中看到以下檔案：
 
 ```
 UnityProject/
@@ -209,7 +209,7 @@ public class DataTableLoader : MonoBehaviour
 }
 ```
 
-## 在游戏中使用設定資料表
+## 在游戲中使用設定資料表
 
 ### 範例 1：获取英雄資料
 
@@ -272,7 +272,7 @@ public class InventoryManager : MonoBehaviour
 
     private void EquipWeapon(ItemData item)
     {
-        Debug.Log($"装獎武器: {item.name}");
+        Debug.Log($"装備武器: {item.name}");
     }
 }
 ```
@@ -291,7 +291,7 @@ public class SkillController : MonoBehaviour
             return;
         }
 
-        Debug.Log($"釋放技能: {skillData.name}, 倀害: {skillData.damage}");
+        Debug.Log($"釋放技能: {skillData.name}, 傷害: {skillData.damage}");
     }
 }
 ```
@@ -307,18 +307,18 @@ public class SkillController : MonoBehaviour
 
 ### 監聽模式
 
-在開發过程中，可以使用監聽模式自勁检测檔案號化：
+在開發过程中，可以使用監聽模式自動检测檔案變化：
 
 ```bash
 xcell.exe --watch
 ```
 
-这样，当您修改 Excel 資料表格唕，XCell 會自勁重新生成程式碼和資料檔案。
+这样，當您修改 Excel 資料表格後，XCell 會自動重新生成程式碼和資料檔案。
 
 ## 最佳做法
 
-1. **版本控制**：屆 Excel 資料表格和 `ProjectConfig.toml` 纳入版本控制，不纳入生成的程式碼和二進位元檔案
-2. **檔案嫵组织**：按功能模組组织 Excel 資料表格檔案
+1. **版本控制**：將 Excel 資料表格和 `ProjectConfig.toml` 纳入版本控制，不纳入生成的程式碼和二進位檔案
+2. **資料夾组织**：按功能模組组织 Excel 資料表格檔案
 3. **命名规范**：使用一致的命名规范，如 PascalCase 或 snake_case
 4. **資料驗證**：定期使用 `xcell.exe check` 驗證設定資料表資料的正确性
-5. **文件维护**：為奧杂的設定資料表新增说明文件
+5. **文件维護**：為復杂的設定資料表新增说明文件

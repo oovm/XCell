@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use xcell_types::{XError, XResult};
+use xcell_core::{XError, XResult};
 
 use super::*;
 

@@ -1,5 +1,5 @@
 {% for table in tables %}
-import { <% table.table_name %> } from './<% table.table_name %>';
+import { {{ table.table_name }} } from './{{ table.table_name }}';
 {% endfor %}
 
 
@@ -12,7 +12,7 @@ export class DataTableManager {
 
     // 惰性缓存字段
 {% for table in tables %}
-    private _<% table.cache_name %>: <% table.table_name %> | null = null;
+    private _{{ table.cache_name }}: {{ table.table_name }} | null = null;
 {% endfor %}
     
     /**
@@ -33,21 +33,21 @@ export class DataTableManager {
         // 预加载所有表
         await Promise.all([
 {% for table in tables %}
-            this.<% table.get_method_name %>(),
+            this.{{ table.get_method_name }}(),
 {% endfor %}
         ]);
     }
 {% for table in tables %}
 
     /**
-     * 获取<% table.class_name %>表（惰性加载）
+     * 获取{{ table.class_name }}表（惰性加载）
      */
-    public async <% table.get_method_name %>(): Promise<<% table.table_name %>> {
-        if (this._<% table.cache_name %> === null) {
-            this._<% table.cache_name %> = new <% table.table_name %>();
-            this._<% table.cache_name %>.load(await this.loadJsonAsset('<% table_data_path %><% table.class_name %>'));
+    public async {{ table.get_method_name }}(): Promise<{{ table.table_name }}> {
+        if (this._{{ table.cache_name }} === null) {
+            this._{{ table.cache_name }} = new {{ table.table_name }}();
+            this._{{ table.cache_name }}.load(await this.loadJsonAsset('{{ table_data_path }}{{ table.class_name }}'));
         }
-        return this._<% table.cache_name %>;
+        return this._{{ table.cache_name }};
     }
 {% endfor %}
 

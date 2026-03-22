@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use xcell_types::{EnumerateDescription, XCellTyped, XCellValue, for_3rd::BigInt};
+use xcell_core::{EnumerateDescription, XCellTyped, XCellValue, for_3rd::BigInt};
 
 use crate::{
     CalamineTable, ProjectConfig, TableConfig, WorkspaceManager, XCellHeader, XDocument, XEnumerateData, XError, XResult,

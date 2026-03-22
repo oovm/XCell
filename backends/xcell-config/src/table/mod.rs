@@ -3,7 +3,7 @@ use std::path::Path;
 use serde::{Deserialize, Deserializer, Serialize};
 use toml;
 
-use xcell_types::{TypeMetaInfo, XResult};
+use xcell_core::{TypeMetaInfo, XResult};
 
 use super::*;
 use crate::{project::ProjectConfig, unity::UnityCodegen};

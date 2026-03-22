@@ -10,7 +10,7 @@ mod reader;
 pub use file_format::{FileFormat, FileFormatDetector};
 pub use reader::{CsvTable, ExcelTable, TableReader, TsvTable, XCellAccess, XCellHeader, XDocument};
 
-use xcell_types::{TypeMetaInfo, XError, XErrorKind, XResult};
+use xcell_core::{TypeMetaInfo, XError, XErrorKind, XResult};
 
 /// 根据文件路径自动检测文件格式并加载表格
 ///

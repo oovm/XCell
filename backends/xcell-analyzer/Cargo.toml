@@ -30,7 +30,7 @@ integer-encoding = { workspace = true }
 
 
 
-[dependencies.xcell-types]
+[dependencies.xcell-core]
 workspace = true
 features = ["csharp", "typescript", "globset", "notify", "walkdir", "async-walkdir"]
 

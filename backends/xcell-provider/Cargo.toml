@@ -14,7 +14,7 @@ byteorder = { workspace = true }
 concat-idents = { workspace = true }
 csv = { workspace = true }
 calamine = { workspace = true }
-xcell-types = { workspace = true }
+xcell-core = { workspace = true }
 serde = { workspace = true }
 
 

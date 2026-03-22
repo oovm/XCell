@@ -17,7 +17,7 @@ crate-type = ["cdylib"]
 [dependencies]
 wit-bindgen-rt = "0.44.0"
 xcell-analyzer = { workspace = true }
-xcell-types = { workspace = true }
+xcell-core = { workspace = true }
 once_cell = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

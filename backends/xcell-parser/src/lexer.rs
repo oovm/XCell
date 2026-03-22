@@ -10,6 +10,8 @@ pub enum TokenKind {
     Identifier,
     /// 整数字面量
     Integer,
+    /// 字符串字面量
+    String,
     /// 左方括号 `[`
     LeftBracket,
     /// 右方括号 `]`
@@ -45,6 +47,7 @@ impl std::fmt::Display for TokenKind {
         match self {
             TokenKind::Identifier => write!(f, "标识符"),
             TokenKind::Integer => write!(f, "整数"),
+            TokenKind::String => write!(f, "字符串"),
             TokenKind::LeftBracket => write!(f, "["),
             TokenKind::RightBracket => write!(f, "]"),
             TokenKind::LeftAngle => write!(f, "<"),
@@ -159,6 +162,22 @@ impl<'a> Lexer<'a> {
         Token::new(TokenKind::Integer, text, start, self.position)
     }
 
+    /// 读取字符串字面量（双引号包围）
+    fn read_string(&mut self, start: usize) -> ParseResult<Token> {
+        while let Some(c) = self.peek() {
+            if c == '"' {
+                self.advance();
+                let text = self.input[start..self.position].to_string();
+                return Ok(Token::new(TokenKind::String, text, start, self.position));
+            }
+            self.advance();
+        }
+        Err(ParseError::new(
+            crate::error::ParseErrorKind::InvalidSyntax("未闭合的字符串".to_string()),
+            start,
+        ))
+    }
+
     /// 获取下一个 Token
     pub fn next_token(&mut self) -> ParseResult<Token> {
         self.skip_whitespace();
@@ -182,6 +201,7 @@ impl<'a> Lexer<'a> {
                     '*' => Ok(Token::new(TokenKind::Asterisk, "*".to_string(), start, self.position)),
                     '?' => Ok(Token::new(TokenKind::Question, "?".to_string(), start, self.position)),
                     '@' => Ok(Token::new(TokenKind::At, "@".to_string(), start, self.position)),
+                    '"' => self.read_string(start),
                     c if c.is_ascii_digit() => Ok(self.read_number(start)),
                     c if c.is_alphabetic() || c == '_' => Ok(self.read_identifier(start)),
                     c => Err(ParseError::new(

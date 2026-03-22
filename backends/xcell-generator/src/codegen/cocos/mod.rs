@@ -47,60 +47,150 @@ pub struct CocosDataTableItem {
     pub get_method_name: String,
 }
 
+/// 枚举键值对
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct EnumeratePair {
+    /// 键
+    pub key: String,
+    /// 值
+    pub value: String,
+    /// 文档
+    pub document: Vec<String>,
+}
+
 /// Cocos 枚举模板
 #[derive(Template)]
-#[template(path = "CocosEnumerate.ts.dejavu")]
+#[template(path = "BuildEnumerate.ts.dejavu", escape = "none")]
 pub struct CocosEnumerateTemplate {
+    /// 编译器版本
+    compiler_version: &'static str,
     /// 类名
     class_name: String,
-    /// 枚举项
-    items: Vec<CocosEnumerateItem>,
+    /// ID 类型
+    id_type: String,
+    /// Cocos 代码生成配置
+    config: CocosCodegen,
+    /// 枚举 ID 列表
+    enumerate_ids: Vec<EnumeratePair>,
 }
 
 /// Cocos 类模板
 #[derive(Template)]
-#[template(path = "CocosClass.ts.dejavu")]
+#[template(path = "BuildClass.ts.dejavu", escape = "none")]
 pub struct CocosClassTemplate {
+    /// 编译器版本
+    compiler_version: &'static str,
     /// 类名
     class_name: String,
     /// 表名
     table_name: String,
-    /// 字段
-    fields: Vec<CocosField>,
+    /// ID 类型
+    id_type: String,
+    /// Cocos 代码生成配置
+    config: CocosCodegen,
+    /// 键名
+    key_name: String,
+    /// 类字段
+    class_fields: Vec<ClassFieldTemplate>,
+}
+
+/// 类字段模板数据
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ClassFieldTemplate {
+    /// 字段文档
+    pub document: Vec<String>,
+    /// 字段名
+    pub name: String,
+    /// 字段类型
+    pub typing: String,
+    /// 是否有默认值
+    pub has_default: bool,
+    /// 默认值
+    pub default: String,
 }
 
 /// Cocos 管理器模板
 #[derive(Template)]
-#[template(path = "CocosDataTableManager.ts.dejavu")]
+#[template(path = "BuildManager.ts.dejavu", escape = "none")]
 pub struct CocosManagerTemplate {
-    /// 表数据
-    tables: Vec<CocosDataTableItem>,
-    /// 表数据路径
-    table_data_path: String,
+    /// 编译器版本
+    compiler_version: &'static str,
+    /// 管理器名称
+    class_name: String,
+    /// 实例名称
+    instance_name: String,
+    /// Cocos 代码生成配置
+    config: CocosCodegen,
+    /// 数据版本
+    data_version: String,
+    /// 编辑时间
+    edit_time: String,
+    /// 表列表
+    tables: Vec<TableItem>,
+}
+
+/// 表项数据
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TableItem {
+    /// 私有名称
+    pub private_name: String,
+    /// 公共名称
+    pub public_name: String,
+    /// 类型
+    pub typing: String,
 }
 
 // 使用dejavu模板生成代码
-fn render_enumerate_template(class_name: &str, items: &[CocosEnumerateItem]) -> XResult<String> {
+fn render_enumerate_template(config: &CocosCodegen, class_name: &str, items: &[CocosEnumerateItem]) -> XResult<String> {
+    let enumerate_ids: Vec<EnumeratePair> = items.iter().map(|item| EnumeratePair {
+        key: item.key.clone(),
+        value: item.id.to_string(),
+        document: vec![item.description.clone()],
+    }).collect();
     let template = CocosEnumerateTemplate {
+        compiler_version: env!("CARGO_PKG_VERSION"),
         class_name: class_name.to_string(),
-        items: items.to_vec(),
+        id_type: "number".to_string(),
+        config: config.clone(),
+        enumerate_ids,
     };
     template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
-fn render_class_template(class_name: &str, table_name: &str, fields: &[CocosField]) -> XResult<String> {
+fn render_class_template(config: &CocosCodegen, class_name: &str, table_name: &str, fields: &[CocosField]) -> XResult<String> {
+    let class_fields: Vec<ClassFieldTemplate> = fields.iter().map(|field| ClassFieldTemplate {
+        document: vec![],
+        name: field.name.clone(),
+        typing: field.r#type.clone(),
+        has_default: false,
+        default: String::new(),
+    }).collect();
     let template = CocosClassTemplate {
+        compiler_version: env!("CARGO_PKG_VERSION"),
         class_name: class_name.to_string(),
         table_name: table_name.to_string(),
-        fields: fields.to_vec(),
+        id_type: "number".to_string(),
+        config: config.clone(),
+        key_name: "id".to_string(),
+        class_fields,
     };
     template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
 
-fn render_manager_template(tables: &[CocosDataTableItem], table_data_path: &str) -> XResult<String> {
+fn render_manager_template(config: &CocosCodegen, tables: &[CocosDataTableItem]) -> XResult<String> {
+    let table_items: Vec<TableItem> = tables.iter().map(|table| TableItem {
+        private_name: table.cache_name.clone(),
+        public_name: table.get_method_name.clone(),
+        typing: table.table_name.clone(),
+    }).collect();
     let template = CocosManagerTemplate {
-        tables: tables.to_vec(),
-        table_data_path: table_data_path.to_string(),
+        compiler_version: env!("CARGO_PKG_VERSION"),
+        class_name: config.manager_name.clone(),
+        instance_name: config.instance_name.clone(),
+        config: config.clone(),
+        data_version: "1.0.0".to_string(),
+        edit_time: chrono::Utc::now().to_rfc3339(),
+        tables: table_items,
     };
     template.render().map_err(|e| XError::runtime_error(format!("Template render error: {}", e)))
 }
@@ -491,7 +581,7 @@ impl CocosCodegen {
             })
             .collect::<Vec<_>>();
         
-        let content = render_enumerate_template(class_name, &items)?;
+        let content = render_enumerate_template(self, class_name, &items)?;
         
         let mut file = File::create(ts_path)?;
         file.write_all(content.as_bytes())?;
@@ -523,7 +613,7 @@ impl CocosCodegen {
         
         let fields = self.read_csv_fields(&entry.path(), class_name)?;
         
-        let content = render_class_template(class_name, &table_class_name, &fields)?;
+        let content = render_class_template(self, class_name, &table_class_name, &fields)?;
         
         let mut file = File::create(ts_path)?;
         file.write_all(content.as_bytes())?;
@@ -748,7 +838,7 @@ impl CocosCodegen {
             }
         }
         
-        let content = render_manager_template(&tables, table_data_path)?;
+        let content = render_manager_template(self, &tables)?;
         
         let mut file = File::create(manager_path)?;
         file.write_all(content.as_bytes())?;

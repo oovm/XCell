@@ -1,7 +1,7 @@
 use std::ops::{AddAssign, Sub};
 
 use xcell_provider::TableReader as XCellTableReader;
-use xcell_types::{
+use xcell_core::{
     IntegerDescription,
     for_3rd::{BigInt, Zero},
 };

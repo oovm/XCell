@@ -5,7 +5,7 @@
 
 use std::path::Path;
 
-use xcell_types::{XError, XResult};
+use xcell_core::{XError, XResult};
 
 /// Workspace manager trait
 ///

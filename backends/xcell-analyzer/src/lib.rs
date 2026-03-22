@@ -4,7 +4,7 @@
 #![feature(path_file_prefix)]
 
 pub use utils::comment::XDocument;
-pub use xcell_types::{XError, XErrorKind};
+pub use xcell_core::{XError, XErrorKind};
 pub type XResult<T> = Result<T, XError>;
 
 pub use xcell_config::{

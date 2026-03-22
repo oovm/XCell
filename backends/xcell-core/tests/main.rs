@@ -1,8 +1,8 @@
-use xcell_types::{
+use xcell_core::{
     ListDescription, ReferenceDescription, StringDescription, TypeMetaInfo, VectorDescription,
     XCellTyped, XCellValue,
 };
-use xcell_types::for_3rd::Data;
+use xcell_core::for_3rd::Data;
 
 #[test]
 fn ready() {
@@ -34,11 +34,11 @@ fn test_reference_type_parsing() {
     assert!(ref_type.is_reference());
     assert_eq!(ref_type.as_reference().unwrap().target_table, "Item");
 
-    let ref_type2 = XCellTyped::parse("ref<Monster>", &info);
+    let ref_type2 = XCellTyped::parse("&Monster", &info);
     assert!(ref_type2.is_reference());
     assert_eq!(ref_type2.as_reference().unwrap().target_table, "Monster");
 
-    let ref_type3 = XCellTyped::parse("Ref<Weapon>", &info);
+    let ref_type3 = XCellTyped::parse("&Weapon", &info);
     assert!(ref_type3.is_reference());
     assert_eq!(ref_type3.as_reference().unwrap().target_table, "Weapon");
 }
@@ -181,4 +181,13 @@ fn test_list_cell_parsing_reference_elements() {
         }
         _ => panic!("Expected Vector"),
     }
+}
+
+#[test]
+fn test_vec_type_parsing() {
+    let info = TypeMetaInfo::default();
+
+    let vec_type = XCellTyped::parse("Vec<i32>", &info);
+    // Vec<T> 应该解析成功
+    let _ = vec_type;
 }

@@ -7,7 +7,7 @@ use crate::{XError, XResult};
 
 use crate::{WorkspaceManager, x_table::table::TableReader};
 use calamine::Data;
-use xcell_types::{XCellTyped, XCellValue, for_3rd::BigInt};
+use xcell_core::{XCellTyped, XCellValue, for_3rd::BigInt};
 use std::str::FromStr;
 
 /// 验证结果

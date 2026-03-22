@@ -37,7 +37,7 @@ chrono = "^0.4"
 rand = "^0.8"
 urlencoding = "^2.1"
 tokio = { version = "^1.0", features = ["sync"] }
-xcell-types = { path = "../../backends/xcell-types" }
+xcell-core = { path = "../../backends/xcell-core" }
 xcell-analyzer = { path = "../../backends/xcell-analyzer" }
 xcell-config = { path = "../../backends/xcell-config" }
 

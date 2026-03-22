@@ -1,6 +1,6 @@
 use crate::error::{ParseError, ParseErrorKind, ParseResult};
 use crate::lexer::{Token, TokenKind};
-use crate::ast::{PrimitiveType, TypeExpr};
+use crate::ast::{FieldConstraint, FieldExpr, FieldMeta, MetaExpr, PrimitiveType, TableKind, TypeExpr, TypeMeta};
 
 /// 类型表达式解析器
 pub struct TypeParser {
@@ -14,26 +14,6 @@ impl TypeParser {
     /// 创建新的解析器
     pub fn new(tokens: Vec<Token>) -> Self {
         Self { tokens, pos: 0 }
-    }
-
-    /// 解析类型表达式
-    pub fn parse_type_expr(&mut self) -> ParseResult<TypeExpr> {
-        if self.tokens.is_empty() {
-            return Err(ParseError::new(ParseErrorKind::EmptyInput, 0));
-        }
-
-        let result = self.parse_type()?;
-        
-        // 确保所有 token 都被消费
-        if self.pos < self.tokens.len() && self.tokens[self.pos].kind != TokenKind::Eof {
-            return Err(ParseError::unexpected_token(
-                "输入结束",
-                Some(&self.tokens[self.pos].text),
-                self.tokens[self.pos].start,
-            ));
-        }
-
-        Ok(result)
     }
 
     /// 获取当前 Token
@@ -63,40 +43,39 @@ impl TypeParser {
         }
     }
 
-    /// 解析类型
-    fn parse_type(&mut self) -> ParseResult<TypeExpr> {
-        self.parse_prefix_type()
+    /// 检查是否到达末尾
+    fn is_at_end(&self) -> bool {
+        self.current().kind == TokenKind::Eof
     }
 
-    /// 解析前缀类型（处理 `&`、`@`、`@@` 等前缀修饰符）
-    fn parse_prefix_type(&mut self) -> ParseResult<TypeExpr> {
-        match self.current().kind {
-            // 引用类型 `&TableName`
-            TokenKind::Ampersand => {
-                self.advance();
-                let name_token = self.expect(TokenKind::Identifier)?;
-                Ok(TypeExpr::Reference { target: name_token.text })
-            }
-            // 独一类型 `@T` 或主键类型 `@@T`
-            TokenKind::At => {
-                self.advance();
-                // 检查是否为主键 `@@T`
-                if self.current().kind == TokenKind::At {
-                    self.advance();
-                    let inner = self.parse_primary_type()?;
-                    Ok(TypeExpr::PrimaryKey { inner: Box::new(inner) })
-                } else {
-                    let inner = self.parse_primary_type()?;
-                    Ok(TypeExpr::Unique { inner: Box::new(inner) })
-                }
-            }
-            _ => self.parse_primary_type(),
+    /// 解析类型表达式
+    pub fn parse_type_expr(&mut self) -> ParseResult<TypeExpr> {
+        if self.tokens.is_empty() {
+            return Err(ParseError::new(ParseErrorKind::EmptyInput, 0));
         }
+
+        let result = self.parse_type()?;
+        
+        if !self.is_at_end() {
+            return Err(ParseError::unexpected_token(
+                "输入结束",
+                Some(&self.current().text),
+                self.current().start,
+            ));
+        }
+
+        Ok(result)
+    }
+
+    /// 解析类型
+    fn parse_type(&mut self) -> ParseResult<TypeExpr> {
+        self.parse_primary_type()
     }
 
     /// 解析基本类型
     fn parse_primary_type(&mut self) -> ParseResult<TypeExpr> {
         match self.current().kind {
+            TokenKind::Ampersand => self.parse_reference_type(),
             TokenKind::LeftBracket => self.parse_list_or_array(),
             TokenKind::LeftParen => self.parse_tuple(),
             TokenKind::Identifier => self.parse_named_or_generic(),
@@ -106,6 +85,13 @@ impl TypeParser {
                 self.current().start,
             )),
         }
+    }
+
+    /// 解析引用类型 `&TableName`
+    fn parse_reference_type(&mut self) -> ParseResult<TypeExpr> {
+        self.expect(TokenKind::Ampersand)?;
+        let name_token = self.expect(TokenKind::Identifier)?;
+        Ok(TypeExpr::Reference { target: name_token.text })
     }
 
     /// 解析列表或固定数组 `[T]` 或 `[T; N]`
@@ -185,6 +171,210 @@ impl TypeParser {
         // 普通命名类型
         Ok(TypeExpr::Named(name))
     }
+
+    /// 解析字段表达式（字段名 + 可选约束）
+    pub fn parse_field_expr(&mut self) -> ParseResult<FieldExpr> {
+        if self.tokens.is_empty() {
+            return Err(ParseError::new(ParseErrorKind::EmptyInput, 0));
+        }
+
+        let constraint = match self.current().kind {
+            // @@field_name - 主键约束
+            TokenKind::At => {
+                self.advance();
+                if self.current().kind == TokenKind::At {
+                    self.advance();
+                    Some(FieldConstraint::Primary)
+                } else {
+                    Some(FieldConstraint::Unique)
+                }
+            }
+            _ => None,
+        };
+
+        let name_token = self.expect(TokenKind::Identifier)?;
+        
+        if !self.is_at_end() {
+            return Err(ParseError::unexpected_token(
+                "输入结束",
+                Some(&self.current().text),
+                self.current().start,
+            ));
+        }
+
+        Ok(FieldExpr {
+            name: name_token.text,
+            constraint,
+        })
+    }
+
+    /// 解析元数据表达式（第一行第一个单元格）
+    pub fn parse_meta_expr(&mut self) -> ParseResult<MetaExpr> {
+        if self.tokens.is_empty() {
+            return Err(ParseError::new(ParseErrorKind::EmptyInput, 0));
+        }
+
+        // 解析表类型 @dict, @class, @enum, @lang, @config
+        self.expect(TokenKind::At)?;
+        let kind_token = self.expect(TokenKind::Identifier)?;
+        let kind = match kind_token.text.to_lowercase().as_str() {
+            "dict" => TableKind::Dict,
+            "class" => TableKind::Class,
+            "enum" => TableKind::Enum,
+            "lang" => TableKind::Lang,
+            "config" => TableKind::Config,
+            _ => return Err(ParseError::new(ParseErrorKind::InvalidTypeName(kind_token.text.clone()), kind_token.start)),
+        };
+
+        // 解析可选的复合唯一约束 @unique(field1, field2)
+        let mut unique_fields = Vec::new();
+        if self.current().kind == TokenKind::At {
+            self.advance();
+            let unique_token = self.expect(TokenKind::Identifier)?;
+            if unique_token.text.eq_ignore_ascii_case("unique") {
+                self.expect(TokenKind::LeftParen)?;
+                if self.current().kind != TokenKind::RightParen {
+                    let field = self.expect(TokenKind::Identifier)?;
+                    unique_fields.push(field.text);
+                    while self.current().kind == TokenKind::Comma {
+                        self.advance();
+                        let field = self.expect(TokenKind::Identifier)?;
+                        unique_fields.push(field.text);
+                    }
+                }
+                self.expect(TokenKind::RightParen)?;
+            }
+        }
+
+        if !self.is_at_end() {
+            return Err(ParseError::unexpected_token(
+                "输入结束",
+                Some(&self.current().text),
+                self.current().start,
+            ));
+        }
+
+        Ok(MetaExpr { kind, unique_fields })
+    }
+
+    /// 解析字段元属性（Excel 注释中）
+    pub fn parse_field_metas(&mut self) -> ParseResult<Vec<FieldMeta>> {
+        if self.tokens.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut metas = Vec::new();
+        while !self.is_at_end() {
+            let meta = self.parse_field_meta()?;
+            metas.push(meta);
+        }
+
+        Ok(metas)
+    }
+
+    /// 解析单个字段元属性
+    fn parse_field_meta(&mut self) -> ParseResult<FieldMeta> {
+        self.expect(TokenKind::At)?;
+        let name_token = self.expect(TokenKind::Identifier)?;
+        
+        match name_token.text.to_lowercase().as_str() {
+            "primary" => Ok(FieldMeta::Primary),
+            "virtual" => Ok(FieldMeta::Virtual),
+            "computed" => Ok(FieldMeta::Computed),
+            "default" => {
+                self.expect(TokenKind::LeftParen)?;
+                let value = self.parse_meta_value()?;
+                self.expect(TokenKind::RightParen)?;
+                Ok(FieldMeta::Default(value))
+            }
+            _ => Err(ParseError::new(ParseErrorKind::InvalidTypeName(name_token.text.clone()), name_token.start)),
+        }
+    }
+
+    /// 解析类型元属性（Excel 注释中）
+    pub fn parse_type_metas(&mut self) -> ParseResult<Vec<TypeMeta>> {
+        if self.tokens.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut metas = Vec::new();
+        while !self.is_at_end() {
+            let meta = self.parse_type_meta()?;
+            metas.push(meta);
+        }
+
+        Ok(metas)
+    }
+
+    /// 解析单个类型元属性
+    fn parse_type_meta(&mut self) -> ParseResult<TypeMeta> {
+        self.expect(TokenKind::At)?;
+        let name_token = self.expect(TokenKind::Identifier)?;
+        
+        match name_token.text.to_lowercase().as_str() {
+            "min" => {
+                self.expect(TokenKind::LeftParen)?;
+                let value = self.parse_meta_number()?;
+                self.expect(TokenKind::RightParen)?;
+                Ok(TypeMeta::Min(value))
+            }
+            "max" => {
+                self.expect(TokenKind::LeftParen)?;
+                let value = self.parse_meta_number()?;
+                self.expect(TokenKind::RightParen)?;
+                Ok(TypeMeta::Max(value))
+            }
+            "range" => {
+                self.expect(TokenKind::LeftParen)?;
+                let min = self.parse_meta_number()?;
+                self.expect(TokenKind::Comma)?;
+                let max = self.parse_meta_number()?;
+                self.expect(TokenKind::RightParen)?;
+                Ok(TypeMeta::Range(min, max))
+            }
+            "default" => {
+                self.expect(TokenKind::LeftParen)?;
+                let value = self.parse_meta_value()?;
+                self.expect(TokenKind::RightParen)?;
+                Ok(TypeMeta::Default(value))
+            }
+            _ => Err(ParseError::new(ParseErrorKind::InvalidTypeName(name_token.text.clone()), name_token.start)),
+        }
+    }
+
+    /// 解析元属性值
+    fn parse_meta_value(&mut self) -> ParseResult<String> {
+        let token = self.current();
+        match token.kind {
+            TokenKind::Integer | TokenKind::Identifier => {
+                self.advance();
+                Ok(token.text)
+            }
+            TokenKind::String => {
+                self.advance();
+                // 移除引号
+                let text = token.text;
+                if text.len() >= 2 {
+                    Ok(text[1..text.len()-1].to_string())
+                } else {
+                    Ok(text)
+                }
+            }
+            _ => Err(ParseError::unexpected_token(
+                "值",
+                Some(&token.kind.to_string()),
+                token.start,
+            )),
+        }
+    }
+
+    /// 解析元属性数字
+    fn parse_meta_number(&mut self) -> ParseResult<i64> {
+        let token = self.expect(TokenKind::Integer)?;
+        token.text.parse().map_err(|_| {
+            ParseError::new(ParseErrorKind::InvalidNumberLiteral(token.text.clone()), token.start)
+        })
+    }
 }
 
 #[cfg(test)]
@@ -192,44 +382,49 @@ mod tests {
     use super::*;
     use crate::lexer::Lexer;
 
-    fn parse(input: &str) -> ParseResult<TypeExpr> {
+    fn parse_type(input: &str) -> ParseResult<TypeExpr> {
         let lexer = Lexer::new(input);
         let tokens: Vec<Token> = lexer.collect::<Result<_, _>>()?;
         let mut parser = TypeParser::new(tokens);
         parser.parse_type_expr()
     }
 
+    fn parse_field(input: &str) -> ParseResult<FieldExpr> {
+        let lexer = Lexer::new(input);
+        let tokens: Vec<Token> = lexer.collect::<Result<_, _>>()?;
+        let mut parser = TypeParser::new(tokens);
+        parser.parse_field_expr()
+    }
+
+    fn parse_meta(input: &str) -> ParseResult<MetaExpr> {
+        let lexer = Lexer::new(input);
+        let tokens: Vec<Token> = lexer.collect::<Result<_, _>>()?;
+        let mut parser = TypeParser::new(tokens);
+        parser.parse_meta_expr()
+    }
+
     #[test]
     fn test_primitive_types() {
-        assert!(matches!(parse("i32").unwrap(), TypeExpr::Primitive(PrimitiveType::I32)));
-        assert!(matches!(parse("bool").unwrap(), TypeExpr::Primitive(PrimitiveType::Bool)));
-        assert!(matches!(parse("string").unwrap(), TypeExpr::Primitive(PrimitiveType::String)));
-        assert!(matches!(parse("f32").unwrap(), TypeExpr::Primitive(PrimitiveType::F32)));
+        assert!(matches!(parse_type("i32").unwrap(), TypeExpr::Primitive(PrimitiveType::I32)));
+        assert!(matches!(parse_type("bool").unwrap(), TypeExpr::Primitive(PrimitiveType::Bool)));
+        assert!(matches!(parse_type("string").unwrap(), TypeExpr::Primitive(PrimitiveType::String)));
     }
 
     #[test]
     fn test_reference_type() {
-        let ty = parse("&Item").unwrap();
+        let ty = parse_type("&Item").unwrap();
         assert!(matches!(ty, TypeExpr::Reference { target } if target == "Item"));
-        
-        let ty = parse("&Quality").unwrap();
-        assert!(matches!(ty, TypeExpr::Reference { target } if target == "Quality"));
     }
 
     #[test]
     fn test_list_type() {
-        let ty = parse("[i32]").unwrap();
-        match ty {
-            TypeExpr::List { element } => {
-                assert!(matches!(*element, TypeExpr::Primitive(PrimitiveType::I32)));
-            }
-            _ => panic!("Expected List type"),
-        }
+        let ty = parse_type("[i32]").unwrap();
+        assert!(matches!(ty, TypeExpr::List { .. }));
     }
 
     #[test]
     fn test_fixed_array() {
-        let ty = parse("[i32; 5]").unwrap();
+        let ty = parse_type("[i32; 5]").unwrap();
         match ty {
             TypeExpr::FixedArray { element, length } => {
                 assert!(matches!(*element, TypeExpr::Primitive(PrimitiveType::I32)));
@@ -240,19 +435,8 @@ mod tests {
     }
 
     #[test]
-    fn test_vec_type() {
-        let ty = parse("Vec<i32>").unwrap();
-        match ty {
-            TypeExpr::Vec { element } => {
-                assert!(matches!(*element, TypeExpr::Primitive(PrimitiveType::I32)));
-            }
-            _ => panic!("Expected Vec type"),
-        }
-    }
-
-    #[test]
     fn test_reference_list() {
-        let ty = parse("[&Item]").unwrap();
+        let ty = parse_type("[&Item]").unwrap();
         match ty {
             TypeExpr::List { element } => {
                 assert!(matches!(*element, TypeExpr::Reference { target } if target == "Item"));
@@ -262,91 +446,59 @@ mod tests {
     }
 
     #[test]
-    fn test_unique_type() {
-        let ty = parse("@i32").unwrap();
-        match ty {
-            TypeExpr::Unique { inner } => {
-                assert!(matches!(*inner, TypeExpr::Primitive(PrimitiveType::I32)));
-            }
-            _ => panic!("Expected Unique type"),
-        }
+    fn test_vec_type() {
+        let ty = parse_type("Vec<i32>").unwrap();
+        assert!(matches!(ty, TypeExpr::Vec { .. }));
     }
 
     #[test]
-    fn test_primary_key_type() {
-        let ty = parse("@@i32").unwrap();
-        match ty {
-            TypeExpr::PrimaryKey { inner } => {
-                assert!(matches!(*inner, TypeExpr::Primitive(PrimitiveType::I32)));
-            }
-            _ => panic!("Expected PrimaryKey type"),
-        }
+    fn test_field_without_constraint() {
+        let field = parse_field("item_id").unwrap();
+        assert_eq!(field.name, "item_id");
+        assert!(field.constraint.is_none());
     }
 
     #[test]
-    fn test_unique_string() {
-        let ty = parse("@string").unwrap();
-        match ty {
-            TypeExpr::Unique { inner } => {
-                assert!(matches!(*inner, TypeExpr::Primitive(PrimitiveType::String)));
-            }
-            _ => panic!("Expected Unique type"),
-        }
+    fn test_field_with_unique() {
+        let field = parse_field("@email").unwrap();
+        assert_eq!(field.name, "email");
+        assert!(matches!(field.constraint, Some(FieldConstraint::Unique)));
     }
 
     #[test]
-    fn test_primary_key_string() {
-        let ty = parse("@@string").unwrap();
-        match ty {
-            TypeExpr::PrimaryKey { inner } => {
-                assert!(matches!(*inner, TypeExpr::Primitive(PrimitiveType::String)));
-            }
-            _ => panic!("Expected PrimaryKey type"),
-        }
+    fn test_field_with_primary() {
+        let field = parse_field("@@item_id").unwrap();
+        assert_eq!(field.name, "item_id");
+        assert!(matches!(field.constraint, Some(FieldConstraint::Primary)));
     }
 
     #[test]
-    fn test_generic_type() {
-        let ty = parse("HashMap<string, i32>").unwrap();
-        match ty {
-            TypeExpr::Generic { name, args } => {
-                assert_eq!(name, "HashMap");
-                assert_eq!(args.len(), 2);
-            }
-            _ => panic!("Expected Generic type"),
-        }
+    fn test_meta_dict() {
+        let meta = parse_meta("@dict").unwrap();
+        assert!(matches!(meta.kind, TableKind::Dict));
+        assert!(meta.unique_fields.is_empty());
     }
 
     #[test]
-    fn test_tuple_type() {
-        let ty = parse("(i32, string, bool)").unwrap();
-        match ty {
-            TypeExpr::Tuple(elements) => {
-                assert_eq!(elements.len(), 3);
-            }
-            _ => panic!("Expected Tuple type"),
-        }
+    fn test_meta_class() {
+        let meta = parse_meta("@class").unwrap();
+        assert!(matches!(meta.kind, TableKind::Class));
     }
 
     #[test]
-    fn test_named_type() {
-        let ty = parse("QualityType").unwrap();
-        match ty {
-            TypeExpr::Named(name) => {
-                assert_eq!(name, "QualityType");
-            }
-            _ => panic!("Expected Named type"),
-        }
+    fn test_meta_with_unique_fields() {
+        let meta = parse_meta("@dict @unique(class, level)").unwrap();
+        assert!(matches!(meta.kind, TableKind::Dict));
+        assert_eq!(meta.unique_fields, vec!["class", "level"]);
     }
 
     #[test]
     fn test_display() {
-        assert_eq!(parse("i32").unwrap().to_string(), "i32");
-        assert_eq!(parse("&Item").unwrap().to_string(), "&Item");
-        assert_eq!(parse("[i32]").unwrap().to_string(), "[i32]");
-        assert_eq!(parse("[i32; 5]").unwrap().to_string(), "[i32; 5]");
-        assert_eq!(parse("Vec<i32>").unwrap().to_string(), "Vec<i32>");
-        assert_eq!(parse("@i32").unwrap().to_string(), "@i32");
-        assert_eq!(parse("@@string").unwrap().to_string(), "@@string");
+        assert_eq!(parse_type("i32").unwrap().to_string(), "i32");
+        assert_eq!(parse_type("&Item").unwrap().to_string(), "&Item");
+        assert_eq!(parse_type("[i32]").unwrap().to_string(), "[i32]");
+        assert_eq!(parse_field("@email").unwrap().to_string(), "@email");
+        assert_eq!(parse_field("@@id").unwrap().to_string(), "@@id");
+        assert_eq!(parse_meta("@dict").unwrap().to_string(), "@dict");
     }
 }

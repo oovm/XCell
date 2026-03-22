@@ -36,16 +36,6 @@ pub enum TypeExpr {
     },
     /// 元组类型 `(T1, T2, ...)`
     Tuple(Vec<TypeExpr>),
-    /// 独一类型 `@T`（值唯一）
-    Unique {
-        /// 内部类型
-        inner: Box<TypeExpr>,
-    },
-    /// 主键类型 `@@T`（值唯一且作为主键）
-    PrimaryKey {
-        /// 内部类型
-        inner: Box<TypeExpr>,
-    },
     /// 命名类型（自定义类型名，如枚举、结构体）
     Named(String),
 }
@@ -127,15 +117,72 @@ impl PrimitiveType {
     }
 }
 
-/// 类型修饰符
+/// 字段约束
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub enum TypeModifier {
-    /// 引用修饰符 `&`
-    Reference,
-    /// 独一修饰符 `@`
+pub enum FieldConstraint {
+    /// 唯一约束 `@field_name`
     Unique,
-    /// 主键修饰符 `@@`
-    PrimaryKey,
+    /// 主键约束 `@@field_name`
+    Primary,
+}
+
+/// 字段表达式（字段名 + 可选约束）
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct FieldExpr {
+    /// 字段名
+    pub name: String,
+    /// 约束（如果有）
+    pub constraint: Option<FieldConstraint>,
+}
+
+/// 表类型（元数据）
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TableKind {
+    /// 字典表 `@dict`
+    Dict,
+    /// 类表 `@class`
+    Class,
+    /// 枚举表 `@enum`
+    Enum,
+    /// 语言表 `@lang`
+    Lang,
+    /// 配置表 `@config`
+    Config,
+}
+
+/// 元数据表达式（第一行第一个单元格）
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MetaExpr {
+    /// 表类型
+    pub kind: TableKind,
+    /// 复合唯一约束字段列表
+    pub unique_fields: Vec<String>,
+}
+
+/// 字段元属性（写在 Excel 注释中）
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum FieldMeta {
+    /// 主键 `@primary`
+    Primary,
+    /// 默认值 `@default(value)`
+    Default(String),
+    /// 虚拟字段 `@virtual`
+    Virtual,
+    /// 计算属性 `@computed`
+    Computed,
+}
+
+/// 类型元属性（写在 Excel 注释中）
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum TypeMeta {
+    /// 最小值 `@min(value)`
+    Min(i64),
+    /// 最大值 `@max(value)`
+    Max(i64),
+    /// 范围 `@range(min, max)`
+    Range(i64, i64),
+    /// 默认值 `@default(value)`
+    Default(String),
 }
 
 impl std::fmt::Display for TypeExpr {
@@ -166,8 +213,6 @@ impl std::fmt::Display for TypeExpr {
                 }
                 write!(f, ")")
             }
-            TypeExpr::Unique { inner } => write!(f, "@{}", inner),
-            TypeExpr::PrimaryKey { inner } => write!(f, "@@{}", inner),
             TypeExpr::Named(name) => write!(f, "{}", name),
         }
     }
@@ -197,6 +242,67 @@ impl std::fmt::Display for PrimitiveType {
             PrimitiveType::Vec2 => write!(f, "vec2"),
             PrimitiveType::Vec3 => write!(f, "vec3"),
             PrimitiveType::Vec4 => write!(f, "vec4"),
+        }
+    }
+}
+
+impl std::fmt::Display for FieldExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.constraint {
+            Some(FieldConstraint::Unique) => write!(f, "@{}", self.name),
+            Some(FieldConstraint::Primary) => write!(f, "@@{}", self.name),
+            None => write!(f, "{}", self.name),
+        }
+    }
+}
+
+impl std::fmt::Display for TableKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TableKind::Dict => write!(f, "@dict"),
+            TableKind::Class => write!(f, "@class"),
+            TableKind::Enum => write!(f, "@enum"),
+            TableKind::Lang => write!(f, "@lang"),
+            TableKind::Config => write!(f, "@config"),
+        }
+    }
+}
+
+impl std::fmt::Display for MetaExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.kind)?;
+        if !self.unique_fields.is_empty() {
+            write!(f, " @unique(")?;
+            for (i, field) in self.unique_fields.iter().enumerate() {
+                if i > 0 {
+                    write!(f, ", ")?;
+                }
+                write!(f, "{}", field)?;
+            }
+            write!(f, ")")?;
+        }
+        Ok(())
+    }
+}
+
+impl std::fmt::Display for FieldMeta {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FieldMeta::Primary => write!(f, "@primary"),
+            FieldMeta::Default(v) => write!(f, "@default({})", v),
+            FieldMeta::Virtual => write!(f, "@virtual"),
+            FieldMeta::Computed => write!(f, "@computed"),
+        }
+    }
+}
+
+impl std::fmt::Display for TypeMeta {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TypeMeta::Min(v) => write!(f, "@min({})", v),
+            TypeMeta::Max(v) => write!(f, "@max({})", v),
+            TypeMeta::Range(min, max) => write!(f, "@range({}, {})", min, max),
+            TypeMeta::Default(v) => write!(f, "@default({})", v),
         }
     }
 }

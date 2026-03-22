@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use toml;
 
-use xcell_types::TypeMetaInfo;
+use xcell_core::TypeMetaInfo;
 
 use super::*;
 use crate::{

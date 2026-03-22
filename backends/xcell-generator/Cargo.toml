@@ -8,7 +8,7 @@ edition = { workspace = true }
 
 
 [dependencies]
-xcell-types = { workspace = true }
+xcell-core = { workspace = true }
 xcell-provider = { workspace = true }
 xcell-analyzer = { workspace = true }
 xcell-config = { workspace = true }
@@ -22,6 +22,7 @@ serde_json = { workspace = true }
 convert_case = { workspace = true }
 url = { workspace = true }
 csv = { workspace = true }
+chrono = { workspace = true }
 
 # 代码生成依赖
 dejavu-engine = { workspace = true }

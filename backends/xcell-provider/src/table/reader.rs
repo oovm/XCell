@@ -5,7 +5,7 @@
 use calamine::{Data, Reader};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
-use xcell_types::{IntegerKind, TypeMetaInfo, XCellTyped, XError, XErrorKind, XResult};
+use xcell_core::{IntegerKind, TypeMetaInfo, XCellTyped, XError, XErrorKind, XResult};
 
 /// 表格访问权限枚举
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]

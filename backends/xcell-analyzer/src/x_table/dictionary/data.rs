@@ -2,7 +2,7 @@ use calamine::{Data, DataType};
 use std::str::FromStr;
 
 use crate::{XCellHeader, XDocument};
-use xcell_types::{
+use xcell_core::{
     IntegerKind, XCellValue, XError, XResult,
     for_3rd::{BigInt, FromPrimitive},
 };

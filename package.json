@@ -2,6 +2,7 @@
     "private": true,
     "scripts": {
         "build": "cargo build --release",
+        "build:homepage": "cd frontends/homepage && pnpm build",
         "test": "cargo test --release",
         "fmt": "npx @biomejs/biome format --write . && cargo fmt --all",
         "i": "cd projects/xcell-cli && cargo install --path . --force",

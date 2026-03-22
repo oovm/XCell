@@ -69,7 +69,7 @@ dejavu-engine = { path = "../dejavu-engine/backends/dejavu-engine" }
 
 oak-json = { path = "../oaks/examples/oak-json" }
 
-xcell-types = { path = "backends/xcell-types", version = "0.2.0" }
+xcell-core = { path = "backends/xcell-core", version = "0.2.0" }
 xcell-analyzer = { path = "backends/xcell-analyzer", version = "0.2.0" }
 xcell-provider = { path = "backends/xcell-provider", version = "0.2.0" }
 xcell = { path = "backends/xcell", version = "0.2.0" }

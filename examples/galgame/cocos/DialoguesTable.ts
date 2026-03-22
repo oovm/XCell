@@ -1,70 +1,64 @@
 /**
- * Dialogues数据结构
+ * {{ class_name }}数据结构
  */
-export interface Dialogues {
+export interface {{ class_name }} {
+{% for field in fields %}
     /**
-     * id
+     * {{ field.name }}
      */
-    id: number;
-    /**
-     * scene_id
-     */
-    scene_id: number;
-    /**
-     * character_id
-     */
-    character_id: number;
-    /**
-     * text
-     */
-    text: string;
-    /**
-     * choice_1
-     */
-    choice_1: string;
-    /**
-     * choice_2
-     */
-    choice_2: string;
-    /**
-     * choice_3
-     */
-    choice_3: string;
-    /**
-     * next_dialogue_id
-     */
-    next_dialogue_id: number;
+    {{ field.name }}: {{ field.type }};
+{% endfor %}
 }
 
 /**
- * Dialogues表加载器
+ * {{ class_name }}表加载器
  */
-export class DialoguesTable {
-    private items: Dialogues[] = [];
+export class {{ table_name }} {
+    private items: {{ class_name }}[] = [];
 
     /**
-     * 加载Dialogues表数据
+     * 加载{{ class_name }}表数据
      * @param asset JSON资源
      */
     public load(asset: cc.JsonAsset): void {
         const data = asset.json;
         if (data) {
-            this.items = data as Dialogues[];
+            this.items = data as {{ class_name }}[];
         }
     }
 
     /**
-     * 根据ID获取Dialogues
-     * @param id DialoguesID
+     * 根据ID获取{{ class_name }}
+     * @param id {{ class_name }}ID
      */
-    public getDialoguesById(id: number): Dialogues | null {
+    public get{{ class_name }}ById(id: number): {{ class_name }} | null {
         return this.items.find(item => item.id === id) || null;
     }
 
     /**
-     * 获取所有Dialogues
+     * 获取所有{{ class_name }}
      */
-    public getAllDialogues(): Dialogues[] {
+    public getAll{{ class_name }}(): {{ class_name }}[] {
         return this.items;
     }
+{% if has_type_field %}
+{% if is_monster %}
+    /**
+     * 根据类型获取{{ class_name }}
+     * @param type 怪物类型
+     */
+    public get{{ class_name }}ByType(type: MonsterType): {{ class_name }}[] {
+        return this.items.filter(item => item.type === type);
+    }
+{% else %}
+    /**
+     * 根据类型获取{{ class_name }}
+     * @param type 类型
+     */
+    public get{{ class_name }}ByType(type: string): {{ class_name }}[] {
+        return this.items.filter(item => item.type === type);
+    }
+{% endif %}
+{% endif %}
+
 }

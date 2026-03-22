@@ -1,6 +1,6 @@
 #![warn(missing_docs)]
 pub use byteorder::{BigEndian, LittleEndian};
-pub use xcell_types::{XError, XErrorKind};
+pub use xcell_core::{XError, XErrorKind};
 pub type XResult<T> = Result<T, XError>;
 
 pub use self::{

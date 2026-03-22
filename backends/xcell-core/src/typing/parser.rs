@@ -18,7 +18,6 @@ impl XCellTyped {
         match expr {
             TypeExpr::Primitive(p) => Self::from_primitive(p, info),
             TypeExpr::Reference { target } => ReferenceDescription::new(&target).into(),
-            TypeExpr::Ref { target } => ReferenceDescription::new(&target).into(),
             TypeExpr::List { element } => {
                 let element_type = Self::from_type_expr(*element, info);
                 ListDescription { element_type, ..Default::default() }.into()
@@ -31,18 +30,9 @@ impl XCellTyped {
                     ..Default::default()
                 }.into()
             }
-            TypeExpr::Optional(inner) => {
-                // 可选类型暂不直接支持，返回内部类型
-                Self::from_type_expr(*inner, info)
-            }
-            TypeExpr::Pointer(inner) => {
-                // 指针类型暂不直接支持，返回内部类型
-                Self::from_type_expr(*inner, info)
-            }
-            TypeExpr::Unique { inner, is_primary } => {
-                // 独一类型，如果是主键则标记
-                let _ = is_primary;
-                Self::from_type_expr(*inner, info)
+            TypeExpr::Vec { element } => {
+                let element_type = Self::from_type_expr(*element, info);
+                info.vector.clone().with_type(element_type).into()
             }
             TypeExpr::Generic { name, args } => {
                 Self::from_generic(&name, args, info)
@@ -73,11 +63,9 @@ impl XCellTyped {
             ParserPrimitiveType::U16 => IntegerDescription::range(u16::MIN, u16::MAX, IntegerKind::Unsigned16).into(),
             ParserPrimitiveType::U32 => IntegerDescription::range(u32::MIN, u32::MAX, IntegerKind::Unsigned32).into(),
             ParserPrimitiveType::U64 => IntegerDescription::range(u64::MIN, u64::MAX, IntegerKind::Unsigned64).into(),
-            ParserPrimitiveType::I128 => IntegerDescription::range(i128::MIN, i128::MAX, IntegerKind::Integer64).into(),
-            ParserPrimitiveType::U128 => IntegerDescription::range(u128::MIN, u128::MAX, IntegerKind::Unsigned64).into(),
             ParserPrimitiveType::F32 | ParserPrimitiveType::F64 => Self::Decimal(Default::default()),
             ParserPrimitiveType::String => info.string.clone().into(),
-            ParserPrimitiveType::Char => info.string.clone().into(),
+            ParserPrimitiveType::Utf8 | ParserPrimitiveType::Utf16 => info.string.clone().into(),
             ParserPrimitiveType::Color => Self::Color(Default::default()),
             ParserPrimitiveType::Time => Self::Time(Default::default()),
             ParserPrimitiveType::DateTime => Self::Time(Default::default()),
@@ -85,7 +73,6 @@ impl XCellTyped {
             ParserPrimitiveType::Vec2 => ArrayDescription::new(ArrayKind::Vector2).into(),
             ParserPrimitiveType::Vec3 => ArrayDescription::new(ArrayKind::Vector3).into(),
             ParserPrimitiveType::Vec4 => ArrayDescription::new(ArrayKind::Vector4).into(),
-            ParserPrimitiveType::Quaternion => ArrayDescription::new(ArrayKind::Quaternion4).into(),
         }
     }
 

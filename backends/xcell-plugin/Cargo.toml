@@ -13,7 +13,7 @@ edition = { workspace = true }
 tracing = { workspace = true }
 serde = { workspace = true }
 
-[dependencies.xcell-types]
+[dependencies.xcell-core]
 workspace = true
 
 [dependencies.xcell-provider]

@@ -2,7 +2,7 @@ use crate::utils::norm_string;
 use calamine::Data;
 use std::{path::Path, sync::Arc};
 use xcell_provider::{TableReader as XCellTableReader, XCellAccess, XCellHeader, XDocument, load_table as load_table_reader};
-use xcell_types::{ByteOrder, IntegerKind, StreamReader, XCellTyped, XErrorKind};
+use xcell_core::{ByteOrder, IntegerKind, StreamReader, XCellTyped, XErrorKind};
 
 use super::*;
 
@@ -131,7 +131,7 @@ impl XCellTableReader for ArcTableReader {
         XCellTableReader::parse_type(&*self.inner, name)
     }
 
-    fn parse_type_with_config(&self, name: &str, config: &xcell_types::TypeMetaInfo) -> XCellTyped {
+    fn parse_type_with_config(&self, name: &str, config: &xcell_core::TypeMetaInfo) -> XCellTyped {
         XCellTableReader::parse_type_with_config(&*self.inner, name, config)
     }
 
@@ -288,7 +288,7 @@ impl XCellTableReader for WrappedTableReader {
         self.inner.parse_type(name)
     }
 
-    fn parse_type_with_config(&self, name: &str, config: &xcell_types::TypeMetaInfo) -> XCellTyped {
+    fn parse_type_with_config(&self, name: &str, config: &xcell_core::TypeMetaInfo) -> XCellTyped {
         self.inner.parse_type_with_config(name, config)
     }
 
@@ -523,7 +523,7 @@ impl XCellTableReader for CalamineTable {
         XCellTyped::parse(name, &self.config.typing)
     }
 
-    fn parse_type_with_config(&self, name: &str, config: &xcell_types::TypeMetaInfo) -> XCellTyped {
+    fn parse_type_with_config(&self, name: &str, config: &xcell_core::TypeMetaInfo) -> XCellTyped {
         XCellTyped::parse(name, config)
     }
 

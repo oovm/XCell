@@ -5,7 +5,7 @@ use serde::{
     de::{Error, MapAccess, Visitor},
 };
 
-use xcell_types::default_deserialize;
+use xcell_core::default_deserialize;
 
 use super::*;
 

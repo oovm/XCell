@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::{XError, XResult};
-use xcell_types::for_3rd::{GlobSet, StreamExt, build_glob_set, file_watcher};
+use xcell_core::for_3rd::{GlobSet, StreamExt, build_glob_set, file_watcher};
 
 use crate::{
     LanguageManager, XClassData, XClassTable, XDictData, XDictTable, XEnumerateData, XEnumerateTable, XLanguageID, XLanguageTable, XListData, XListTable,
@@ -69,7 +69,7 @@ impl WorkspaceManager {
     /// 首次加载目录
     pub fn first_walk(&mut self) -> XResult<()> {
         let glob = build_glob_set(&self.config.include).result(|e| tracing::error!("{e}"))?;
-        let entries = xcell_types::for_3rd::SyncWalkDir::new(&self.config.root);
+        let entries = xcell_core::for_3rd::SyncWalkDir::new(&self.config.root);
         for entry in entries {
             match entry {
                 Ok(o) => {

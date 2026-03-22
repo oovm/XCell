@@ -1,6 +1,6 @@
-import { CharactersTable } from './CharactersTable';
-import { DialoguesTable } from './DialoguesTable';
-import { ScenesTable } from './ScenesTable';
+{% for table in tables %}
+import { {{ table.table_name }} } from './{{ table.table_name }}';
+{% endfor %}
 
 
 /**
@@ -11,9 +11,9 @@ export class DataTableManager {
     private static _instance: DataTableManager;
 
     // 惰性缓存字段
-    private _charactersTable: CharactersTable | null = null;
-    private _dialoguesTable: DialoguesTable | null = null;
-    private _scenesTable: ScenesTable | null = null;
+{% for table in tables %}
+    private _{{ table.cache_name }}: {{ table.table_name }} | null = null;
+{% endfor %}
     
     /**
      * 获取单例实例
@@ -32,45 +32,25 @@ export class DataTableManager {
     public async loadAllTables(): Promise<void> {
         // 预加载所有表
         await Promise.all([
-            this.getCharactersTable(),
-            this.getDialoguesTable(),
-            this.getScenesTable(),
+{% for table in tables %}
+            this.{{ table.get_method_name }}(),
+{% endfor %}
         ]);
     }
-    
+{% for table in tables %}
+
     /**
-     * 获取Characters表（惰性加载）
+     * 获取{{ table.class_name }}表（惰性加载）
      */
-    public async getCharactersTable(): Promise<CharactersTable> {
-        if (this._charactersTable === null) {
-            this._charactersTable = new CharactersTable();
-            this._charactersTable.load(await this.loadJsonAsset('tables/Characters'));
+    public async {{ table.get_method_name }}(): Promise<{{ table.table_name }}> {
+        if (this._{{ table.cache_name }} === null) {
+            this._{{ table.cache_name }} = new {{ table.table_name }}();
+            this._{{ table.cache_name }}.load(await this.loadJsonAsset('{{ table_data_path }}{{ table.class_name }}'));
         }
-        return this._charactersTable;
+        return this._{{ table.cache_name }};
     }
-    
-    /**
-     * 获取Dialogues表（惰性加载）
-     */
-    public async getDialoguesTable(): Promise<DialoguesTable> {
-        if (this._dialoguesTable === null) {
-            this._dialoguesTable = new DialoguesTable();
-            this._dialoguesTable.load(await this.loadJsonAsset('tables/Dialogues'));
-        }
-        return this._dialoguesTable;
-    }
-    
-    /**
-     * 获取Scenes表（惰性加载）
-     */
-    public async getScenesTable(): Promise<ScenesTable> {
-        if (this._scenesTable === null) {
-            this._scenesTable = new ScenesTable();
-            this._scenesTable.load(await this.loadJsonAsset('tables/Scenes'));
-        }
-        return this._scenesTable;
-    }
-    
+{% endfor %}
+
 
     /**
      * 加载JSON资源

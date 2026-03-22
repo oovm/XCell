@@ -10,7 +10,7 @@ use std::{
 };
 use twox_hash::XxHash64;
 
-use xcell_types::Itertools;
+use xcell_core::Itertools;
 
 pub use self::workspace::*;
 

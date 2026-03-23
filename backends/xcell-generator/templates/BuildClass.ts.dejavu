@@ -1,8 +1,6 @@
 // 代码生成, 修改无效! (XCell <% compiler_version %>)
 
-<% if namespace %>
-export namespace <% namespace %> {
-<% end if %>
+
 
 <% loop line in class_document %>
 /** <% line %> */
@@ -20,6 +18,3 @@ export class <% class_name %> {
 <% end loop %>
 }
 
-<% if namespace %>
-}
-<% end if %>

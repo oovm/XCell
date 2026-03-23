@@ -81,21 +81,21 @@ pub struct CocosEnumerateTemplate {
 #[template(path = "BuildClass.ts.dejavu")]
 pub struct CocosClassTemplate {
     /// 编译器版本
-    compiler_version: &'static str,
+    pub compiler_version: &'static str,
     /// 类名
-    class_name: String,
+    pub class_name: String,
     /// 表名
-    table_name: String,
+    pub table_name: String,
     /// ID 类型
-    id_type: String,
+    pub id_type: String,
     /// 命名空间
-    namespace: String,
+    pub namespace: String,
     /// 键名
-    key_name: String,
+    pub key_name: String,
     /// 类文档
-    class_document: Vec<String>,
+    pub class_document: Vec<String>,
     /// 类字段
-    class_fields: Vec<ClassFieldTemplate>,
+    pub class_fields: Vec<ClassFieldTemplate>,
 }
 
 /// 类字段模板数据
@@ -118,21 +118,21 @@ pub struct ClassFieldTemplate {
 #[template(path = "BuildManager.ts.dejavu")]
 pub struct CocosManagerTemplate {
     /// 编译器版本
-    compiler_version: &'static str,
+    pub compiler_version: &'static str,
     /// 管理器名称
-    class_name: String,
+    pub class_name: String,
     /// 实例名称
-    instance_name: String,
+    pub instance_name: String,
     /// 命名空间
-    namespace: String,
+    pub namespace: String,
     /// 管理器名称
-    manager_name: String,
+    pub manager_name: String,
     /// 数据版本
-    data_version: String,
+    pub data_version: String,
     /// 编辑时间
-    edit_time: String,
+    pub edit_time: String,
     /// 表列表
-    tables: Vec<TableItem>,
+    pub tables: Vec<TableItem>,
 }
 
 /// 表项数据

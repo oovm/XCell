@@ -1,8 +1,6 @@
 // 代码生成, 修改无效! (XCell <% compiler_version %>)
 
-<% if namespace %>
-export namespace <% namespace %> {
-<% end if %>
+
 
 /**
  * 配置表管理器
@@ -57,7 +55,3 @@ export class <% class_name %> {
 <% end loop %>
     }
 }
-
-<% if namespace %>
-}
-<% end if %>

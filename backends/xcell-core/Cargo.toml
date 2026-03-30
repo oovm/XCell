@@ -5,7 +5,6 @@ authors = { workspace = true }
 description = "Core types and utilities for xcell"
 repository = "https://github.com/oovm/XCell"
 documentation = "https://docs.rs/xcell-core"
-readme = "Readme.md"
 license = { workspace = true }
 edition = { workspace = true }
 

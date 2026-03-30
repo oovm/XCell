@@ -5,7 +5,6 @@ authors = { workspace = true }
 description = "XCell plugin system"
 repository = "https://github.com/oovm/XCell"
 documentation = "https://docs.rs/xcell-plugin"
-readme = "readme.md"
 license = { workspace = true }
 edition = { workspace = true }
 

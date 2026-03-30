@@ -5,7 +5,6 @@ authors = { workspace = true }
 description = "Macros for xcell"
 repository = "https://github.com/oovm/XCell"
 documentation = "https://docs.rs/xcell-macros"
-readme = "readme.md"
 license = { workspace = true }
 edition = { workspace = true }
 

@@ -5,7 +5,6 @@ authors = { workspace = true }
 description = "Parser for XCell type expressions using parser combinators"
 repository = "https://github.com/oovm/XCell"
 documentation = "https://docs.rs/xcell-parser"
-readme = "Readme.md"
 license = { workspace = true }
 edition = { workspace = true }
 

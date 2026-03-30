@@ -5,7 +5,6 @@ authors = { workspace = true }
 description = "XCell command line tool"
 repository = "https://github.com/oovm/XCell"
 documentation = "https://docs.rs/xcell"
-readme = "Readme.md"
 license = { workspace = true }
 edition = { workspace = true }
 

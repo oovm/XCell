@@ -1,1 +1,1 @@
-pub use serde_json::Value as Json;
+pub use oak_json::JsonValue as Json;

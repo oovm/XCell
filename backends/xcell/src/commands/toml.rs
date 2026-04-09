@@ -1,6 +1,7 @@
 use clap::{Arg, ArgAction, Command};
 use std::fs;
 use std::path::Path;
+use oak_toml::{TomlValue, TomlTable, TomlArray, to_string, from_str};
 
 use crate::utils::read_to_string;
 
@@ -57,7 +58,7 @@ fn handle_toml_list(cmd: &clap::ArgMatches) -> anyhow::Result<()> {
     }
     
     let content = read_to_string(path)?;
-    let table: toml::Value = content.parse()?;
+    let table: TomlValue = from_str(&content)?;
     
     if let Some(fields) = table.get("fields").and_then(|v| v.as_array()) {
         println!("Fields in {}", file);
@@ -90,36 +91,36 @@ fn handle_toml_add(cmd: &clap::ArgMatches) -> anyhow::Result<()> {
         let content = read_to_string(path)?;
         content.parse()?
     } else {
-        toml::Value::Table(toml::Table::new())
+        TomlValue::Table(TomlTable { dict: std::collections::HashMap::new() })
     };
     
     let fields = table.get_mut("fields").and_then(|v| v.as_array_mut());
     let fields = match fields {
         Some(fields) => fields,
         None => {
-            let new_array = toml::Value::Array(vec![]);
-            if let toml::Value::Table(ref mut table) = table {
-                table.insert("fields".to_string(), new_array);
+            let new_array = TomlValue::Array(TomlArray { list: vec![] });
+            if let TomlValue::Table(ref mut table) = table {
+                table.dict.insert("fields".to_string(), new_array);
             }
             table.get_mut("fields").and_then(|v| v.as_array_mut()).unwrap()
         }
     };
     
-    let mut field = toml::Value::Table(toml::Table::new());
-    if let toml::Value::Table(ref mut field_table) = field {
-        field_table.insert("name".to_string(), toml::Value::String(name.to_string()));
-        field_table.insert("type".to_string(), toml::Value::String(type_name.to_string()));
+    let mut field = TomlValue::Table(TomlTable { dict: std::collections::HashMap::new() });
+    if let TomlValue::Table(ref mut field_table) = field {
+        field_table.dict.insert("name".to_string(), TomlValue::String(name.to_string()));
+        field_table.dict.insert("type".to_string(), TomlValue::String(type_name.to_string()));
         if let Some(comment) = comment {
-            field_table.insert("comment".to_string(), toml::Value::String(comment.to_string()));
+            field_table.dict.insert("comment".to_string(), TomlValue::String(comment.to_string()));
         }
         if let Some(default) = default {
-            field_table.insert("default".to_string(), toml::Value::String(default.to_string()));
+            field_table.dict.insert("default".to_string(), TomlValue::String(default.to_string()));
         }
     }
     
     fields.push(field);
     
-    let content = toml::to_string(&table)?;
+    let content = to_string(&table)?;
     fs::write(path, content)?;
     
     println!("Added field {} to {}", name, file);
@@ -147,7 +148,7 @@ fn handle_toml_remove(cmd: &clap::ArgMatches) -> anyhow::Result<()> {
         });
         
         if fields.len() < initial_len {
-            let content = toml::to_string(&table)?;
+            let content = to_string(&table)?;
             fs::write(path, content)?;
             println!("Removed field {} from {}", name, file);
         } else {
@@ -179,16 +180,16 @@ fn handle_toml_update(cmd: &clap::ArgMatches) -> anyhow::Result<()> {
     if let Some(fields) = table.get_mut("fields").and_then(|v| v.as_array_mut()) {
         let mut found = false;
         for field in fields {
-            if let toml::Value::Table(ref mut field_table) = field {
-                if field_table.get("name").and_then(|v| v.as_str()) == Some(name) {
+            if let TomlValue::Table(ref mut field_table) = field {
+                if field_table.dict.get("name").and_then(|v| v.as_str()) == Some(name) {
                     if let Some(type_name) = type_name {
-                        field_table.insert("type".to_string(), toml::Value::String(type_name.to_string()));
+                        field_table.dict.insert("type".to_string(), TomlValue::String(type_name.to_string()));
                     }
                     if let Some(comment) = comment {
-                        field_table.insert("comment".to_string(), toml::Value::String(comment.to_string()));
+                        field_table.dict.insert("comment".to_string(), TomlValue::String(comment.to_string()));
                     }
                     if let Some(default) = default {
-                        field_table.insert("default".to_string(), toml::Value::String(default.to_string()));
+                        field_table.dict.insert("default".to_string(), TomlValue::String(default.to_string()));
                     }
                     found = true;
                     break;
@@ -197,7 +198,7 @@ fn handle_toml_update(cmd: &clap::ArgMatches) -> anyhow::Result<()> {
         }
         
         if found {
-            let content = toml::to_string(&table)?;
+            let content = to_string(&table)?;
             fs::write(path, content)?;
             println!("Updated field {} in {}", name, file);
         } else {

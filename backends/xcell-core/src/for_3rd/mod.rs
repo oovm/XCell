@@ -19,7 +19,7 @@ pub use for_notify::*;
 #[cfg(feature = "num")]
 pub use for_num::*;
 pub use for_serde::*;
-#[cfg(feature = "serde_json")]
+#[cfg(feature = "oak-json")]
 pub use for_serde_json::*;
 
 #[cfg(feature = "async-walkdir")]
@@ -38,15 +38,13 @@ mod for_globset;
 mod for_notify;
 #[cfg(feature = "num")]
 mod for_num;
-#[cfg(feature = "tera")]
-mod for_tera;
-#[cfg(feature = "toml")]
+#[cfg(feature = "oak-toml")]
 mod for_toml;
 #[cfg(feature = "walkdir")]
 mod for_walkdir;
 
 mod for_serde;
-#[cfg(feature = "serde_json")]
+#[cfg(feature = "oak-json")]
 mod for_serde_json;
 
 #[cfg(feature = "askama")]

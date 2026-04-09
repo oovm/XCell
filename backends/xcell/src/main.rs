@@ -3,6 +3,7 @@ use xcell::{SubArgs, TomlSubArgs, XCellArgs, logger, pause};
 use xcell_analyzer::{WorkspaceManager, XResult, XError};
 use xcell_config::project::Generator;
 use std::path::PathBuf;
+use oak_toml::{TomlValue, TomlTable, TomlArray, to_string, from_str};
 
 #[tokio::main]
 async fn main() -> XResult<()> {
@@ -24,7 +25,7 @@ async fn main() -> XResult<()> {
         Some(SubArgs::Toml { subcommand }) => match subcommand {
             TomlSubArgs::List { file } => {
                 let content = std::fs::read_to_string(&file)?;
-                let table: toml::Value = content.parse().map_err(|e| XError::runtime_error(format!("TOML parse error: {}", e)))?;
+                let table: TomlValue = from_str(&content).map_err(|e| XError::runtime_error(format!("TOML parse error: {}", e)))?;
                 if let Some(fields) = table.get("fields").and_then(|v| v.as_array()) {
                     println!("Fields in {}", file);
                     println!("{:-<50}", "");
@@ -42,49 +43,49 @@ async fn main() -> XResult<()> {
                 Ok(())
             }
             TomlSubArgs::Add { file, name, r#type, comment, default } => {
-                let mut table: toml::Value = if std::path::Path::new(&file).exists() {
+                let mut table: TomlValue = if std::path::Path::new(&file).exists() {
                     let content = std::fs::read_to_string(&file)?;
-                    content.parse().map_err(|e| XError::runtime_error(format!("TOML parse error: {}", e)))?
+                    from_str(&content).map_err(|e| XError::runtime_error(format!("TOML parse error: {}", e)))?
                 }
                 else {
-                    toml::Value::Table(toml::Table::new())
+                    TomlValue::Table(TomlTable { dict: std::collections::HashMap::new() })
                 };
                 let fields = table.get_mut("fields").and_then(|v| v.as_array_mut());
                 let fields = match fields {
                     Some(fields) => fields,
                     None => {
-                        let new_array = toml::Value::Array(vec![]);
-                        if let toml::Value::Table(ref mut table) = table {
-                            table.insert("fields".to_string(), new_array);
+                        let new_array = TomlValue::Array(TomlArray { list: vec![] });
+                        if let TomlValue::Table(ref mut table) = table {
+                            table.dict.insert("fields".to_string(), new_array);
                         }
                         table.get_mut("fields").and_then(|v| v.as_array_mut()).unwrap()
                     }
                 };
-                let mut field = toml::Value::Table(toml::Table::new());
-                if let toml::Value::Table(ref mut field_table) = field {
-                    field_table.insert("name".to_string(), toml::Value::String(name.clone()));
-                    field_table.insert("type".to_string(), toml::Value::String(r#type));
+                let mut field = TomlValue::Table(TomlTable { dict: std::collections::HashMap::new() });
+                if let TomlValue::Table(ref mut field_table) = field {
+                    field_table.dict.insert("name".to_string(), TomlValue::String(name.clone()));
+                    field_table.dict.insert("type".to_string(), TomlValue::String(r#type));
                     if let Some(comment) = comment {
-                        field_table.insert("comment".to_string(), toml::Value::String(comment));
+                        field_table.dict.insert("comment".to_string(), TomlValue::String(comment));
                     }
                     if let Some(default) = default {
-                        field_table.insert("default".to_string(), toml::Value::String(default));
+                        field_table.dict.insert("default".to_string(), TomlValue::String(default));
                     }
                 }
                 fields.push(field);
-                let content = toml::to_string(&table).map_err(|e| XError::runtime_error(format!("TOML serialize error: {}", e)))?;
+                let content = to_string(&table).map_err(|e| XError::runtime_error(format!("TOML serialize error: {}", e)))?;
                 std::fs::write(&file, content)?;
                 println!("Added field {} to {}", name, file);
                 Ok(())
             }
             TomlSubArgs::Remove { file, name } => {
                 let content = std::fs::read_to_string(&file)?;
-                let mut table: toml::Value = content.parse().map_err(|e| XError::runtime_error(format!("TOML parse error: {}", e)))?;
+                let mut table: TomlValue = from_str(&content).map_err(|e| XError::runtime_error(format!("TOML parse error: {}", e)))?;
                 if let Some(fields) = table.get_mut("fields").and_then(|v| v.as_array_mut()) {
                     let initial_len = fields.len();
                     fields.retain(|field| field.get("name").and_then(|v| v.as_str()) != Some(&name));
                     if fields.len() < initial_len {
-                        let content = toml::to_string(&table).map_err(|e| XError::runtime_error(format!("TOML serialize error: {}", e)))?;
+                        let content = to_string(&table).map_err(|e| XError::runtime_error(format!("TOML serialize error: {}", e)))?;
                         std::fs::write(&file, content)?;
                         println!("Removed field {} from {}", name, file);
                     }
@@ -99,20 +100,20 @@ async fn main() -> XResult<()> {
             }
             TomlSubArgs::Update { file, name, r#type, comment, default } => {
                 let content = std::fs::read_to_string(&file)?;
-                let mut table: toml::Value = content.parse().map_err(|e| XError::runtime_error(format!("TOML parse error: {}", e)))?;
+                let mut table: TomlValue = from_str(&content).map_err(|e| XError::runtime_error(format!("TOML parse error: {}", e)))?;
                 if let Some(fields) = table.get_mut("fields").and_then(|v| v.as_array_mut()) {
                     let mut found = false;
                     for field in fields {
-                        if let toml::Value::Table(field_table) = field {
-                            if field_table.get("name").and_then(|v| v.as_str()) == Some(&name) {
+                        if let TomlValue::Table(ref mut field_table) = field {
+                            if field_table.dict.get("name").and_then(|v| v.as_str()) == Some(&name) {
                                 if let Some(r#type) = r#type {
-                                    field_table.insert("type".to_string(), toml::Value::String(r#type));
+                                    field_table.dict.insert("type".to_string(), TomlValue::String(r#type));
                                 }
                                 if let Some(comment) = comment {
-                                    field_table.insert("comment".to_string(), toml::Value::String(comment));
+                                    field_table.dict.insert("comment".to_string(), TomlValue::String(comment));
                                 }
                                 if let Some(default) = default {
-                                    field_table.insert("default".to_string(), toml::Value::String(default));
+                                    field_table.dict.insert("default".to_string(), TomlValue::String(default));
                                 }
                                 found = true;
                                 break;
@@ -120,7 +121,7 @@ async fn main() -> XResult<()> {
                         }
                     }
                     if found {
-                        let content = toml::to_string(&table).map_err(|e| XError::runtime_error(format!("TOML serialize error: {}", e)))?;
+                        let content = to_string(&table).map_err(|e| XError::runtime_error(format!("TOML serialize error: {}", e)))?;
                         std::fs::write(&file, content)?;
                         println!("Updated field {} in {}", name, file);
                     }

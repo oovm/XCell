@@ -2,6 +2,7 @@ use std::{fs::File, io::Write, path::PathBuf};
 
 use xcell_provider::{CsvTable, TsvTable, TableReader};
 use xcell_analyzer::{PROJECT_CONFIG, ProjectConfig};
+use oak_toml::from_str;
 
 /// 测试 CSV 文件的正常处理
 #[test]
@@ -14,7 +15,7 @@ fn test_csv_normal() {
     writeln!(file, "1,Alice,25").unwrap();
     writeln!(file, "2,Bob,30").unwrap();
 
-    let config = toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
+    let config = from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
 
     let table = CsvTable::load(&path).unwrap();
 
@@ -43,7 +44,7 @@ fn test_tsv_normal() {
     writeln!(file, "name\tAlice").unwrap();
     writeln!(file, "age\t25").unwrap();
 
-    let config = toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
+    let config = from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
 
     let table = TsvTable::load(&path).unwrap();
 
@@ -64,7 +65,7 @@ fn test_empty_file() {
     let mut path = PathBuf::from("test_empty.csv");
     File::create(&path).unwrap();
 
-    let config = toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
+    let config = from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
 
     let table = CsvTable::load(&path).unwrap();
 
@@ -85,7 +86,7 @@ fn test_only_header() {
     writeln!(file, "id,name,age").unwrap();
     writeln!(file, "int,string,int").unwrap();
 
-    let config = toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
+    let config = from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
 
     let table = CsvTable::load(&path).unwrap();
 
@@ -102,7 +103,7 @@ fn test_only_header() {
 fn test_file_not_exists() {
     let path = PathBuf::from("non_existent_file.csv");
 
-    let config = toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
+    let config = from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
 
     let result = CsvTable::load(&path);
     assert!(result.is_err());
@@ -117,7 +118,7 @@ fn test_invalid_format() {
     writeln!(file, "id,name,age").unwrap();
     writeln!(file, "1,Alice").unwrap();
 
-    let config = toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
+    let config = from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
 
     let table = CsvTable::load(&path).unwrap();
 
@@ -139,7 +140,7 @@ fn test_large_file() {
         writeln!(file, "{},Person{},{}", i, i, 20 + i % 50).unwrap();
     }
 
-    let config = toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
+    let config = from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap();
 
     let start = std::time::Instant::now();
 

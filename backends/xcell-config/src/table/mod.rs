@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use serde::{Deserialize, Deserializer, Serialize};
-use toml;
+use oak_from_str;
 
 use xcell_core::{TypeMetaInfo, XResult};
 
@@ -52,7 +52,7 @@ impl TableConfig {
         };
         if let Some(path) = path {
             if let Ok(text) = std::fs::read_to_string(path) {
-                if let Ok(config) = toml::from_str(&text) {
+                if let Ok(config) = from_str(&text) {
                     return Ok(config);
                 }
             }

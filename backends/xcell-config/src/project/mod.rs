@@ -1,8 +1,8 @@
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use toml;
+use oak_json::JsonValue;
+use oak_toml::{from_str, to_string};
 
 use xcell_core::TypeMetaInfo;
 
@@ -123,15 +123,15 @@ impl ProjectConfig {
         if settings_path.exists() {
             // 如果文件存在，从文件中加载配置
             if let Ok(content) = std::fs::read_to_string(&settings_path) {
-                if let Ok(config) = toml::from_str::<Self>(&content) {
+                if let Ok(config) = from_str::<Self>(&content) {
                     let config = Self { root: root.to_path_buf(), ..config };
                     return config;
                 }
             }
         } else {
             // 如果文件不存在，创建一个默认的配置文件
-            let basic: Self = toml::from_str(PROJECT_CONFIG).unwrap();
-            if let Ok(config_str) = toml::to_string(&basic) {
+            let basic: Self = from_str(PROJECT_CONFIG).unwrap();
+            if let Ok(config_str) = to_string(&basic) {
                 if std::fs::write(&settings_path, config_str).is_ok() {
                     println!("Created ProjectSettings.toml with default configuration");
                 }
@@ -139,7 +139,7 @@ impl ProjectConfig {
         }
         
         // 使用默认配置
-        let basic: Self = toml::from_str(PROJECT_CONFIG).unwrap();
+        let basic: Self = from_str(PROJECT_CONFIG).unwrap();
         Self { root: root.to_path_buf(), ..basic }
     }
 }

@@ -17,9 +17,8 @@ validatus = { workspace = true }
 futures = { workspace = true }
 xcell-parser = { path = "../xcell-parser", version = "0.2.0" }
 calamine = { workspace = true, optional = true, features = ["dates"] }
-tera = { workspace = true, optional = true }
-toml = { workspace = true, optional = true }
-serde_json = { workspace = true, optional = true }
+oak-toml = { path = "../../../oaks/examples/oak-toml", features = ["serde"], optional = true }
+oak-json = { path = "../../../oaks/examples/oak-json", optional = true }
 async-walkdir = { workspace = true, optional = true }
 notify = { workspace = true, optional = true, features = ["serde"] }
 walkdir = { workspace = true, optional = true }
@@ -36,6 +35,6 @@ csscolorparser = { workspace = true, optional = true, features = ["serde"] }
 [build-dependencies]
 
 [features]
-default = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine", "serde_json"]
+default = ["num", "bigdecimal", "chrono", "csscolorparser", "calamine", "oak-json"]
 csharp = []
 typescript = []

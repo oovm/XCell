@@ -20,7 +20,7 @@ xcell-analyzer = { workspace = true }
 xcell-core = { workspace = true }
 once_cell = { workspace = true }
 serde = { workspace = true }
-serde_json = { workspace = true }
+oak-json = { path = "../../../oaks/examples/oak-json" }
 
 [package.metadata.component]
 package = "xcell:core"

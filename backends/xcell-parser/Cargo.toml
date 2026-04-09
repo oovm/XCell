@@ -1,6 +1,6 @@
 [package]
 name = "xcell-parser"
-version = "0.2.0"
+version = { workspace = true }
 authors = { workspace = true }
 description = "Parser for XCell type expressions using parser combinators"
 repository = "https://github.com/oovm/XCell"
@@ -10,7 +10,6 @@ edition = { workspace = true }
 
 [dependencies]
 serde = { workspace = true }
-thiserror = "1.0.0"
 
 [dev-dependencies]
 

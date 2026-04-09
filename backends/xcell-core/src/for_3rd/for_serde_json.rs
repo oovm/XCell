@@ -1,1 +1,1 @@
-pub use oak_json::JsonValue as Json;
+pub use oak_json::JsonValueNode as Json;

@@ -1,43 +1,6 @@
 #![warn(missing_docs)]
 
-//! XCell 类型表达式解析器
-//!
-//! 使用 parser combinator 实现的类型表达式解析器，支持复杂的嵌套类型语法。
-//!
-//! # 解析功能
-//!
-//! - `parse_type` - 解析类型表达式（如 `i32`, `&Item`, `[string]`）
-//! - `parse_field` - 解析字段名（可能包含 `@` 或 `@@` 约束前缀）
-//! - `parse_meta` - 解析元数据（第一行第一个单元格，如 `@dict`, `@class`）
-//! - `parse_field_metas` - 解析字段元属性（Excel 注释中）
-//! - `parse_type_metas` - 解析类型元属性（Excel 注释中）
-//!
-//! # 支持的类型语法
-//!
-//! - 原始类型: `i32`, `bool`, `string`, `f32`, etc.
-//! - 引用类型: `&TableName`
-//! - 列表类型: `[T]`, `[&Item]`
-//! - 固定数组: `[T; N]`
-//! - 向量类型: `Vec<T>`
-//! - 泛型类型: `HashMap<string, i32>`
-//!
-//! # 示例
-//!
-//! ```
-//! use xcell_parser::{parse_type, parse_field, parse_meta};
-//!
-//! // 解析类型
-//! let ty = parse_type("i32").unwrap();
-//! let ty = parse_type("[&Item]").unwrap();
-//!
-//! // 解析字段（带约束）
-//! let field = parse_field("@email").unwrap();  // 唯一约束
-//! let field = parse_field("@@id").unwrap();    // 主键约束
-//!
-//! // 解析元数据
-//! let meta = parse_meta("@dict").unwrap();
-//! let meta = parse_meta("@class @unique(name, level)").unwrap();
-//! ```
+#![doc = include_str!("../README.md")]
 
 mod error;
 mod lexer;

@@ -1,6 +1,6 @@
 [package]
 name = "xcell-macros"
-version = "0.2.0"
+version = { workspace = true }
 authors = { workspace = true }
 description = "Macros for xcell"
 repository = "https://github.com/oovm/XCell"
@@ -15,7 +15,7 @@ proc-macro = true
 # Proc macro dependencies
 proc-macro2 = { workspace = true }
 syn = { workspace = true }
-quote = "1.0.0"
+quote = { workspace = true }
 
 # Other dependencies
 serde = { workspace = true }

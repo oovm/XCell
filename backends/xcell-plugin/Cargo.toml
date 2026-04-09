@@ -1,6 +1,6 @@
 [package]
 name = "xcell-plugin"
-version = "0.2.0"
+version = { workspace = true }
 authors = { workspace = true }
 description = "XCell plugin system"
 repository = "https://github.com/oovm/XCell"

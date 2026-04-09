@@ -1,5 +1,7 @@
+#![warn(missing_docs)]
+
 //! XCell plugin system
-//!
+//! 
 //! This crate provides the plugin system for XCell, allowing users to extend XCell's functionality
 //! through custom plugins.
 

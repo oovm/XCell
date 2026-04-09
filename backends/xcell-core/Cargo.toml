@@ -1,6 +1,6 @@
 [package]
 name = "xcell-core"
-version = "0.2.0"
+version = { workspace = true }
 authors = { workspace = true }
 description = "Core types and utilities for xcell"
 repository = "https://github.com/oovm/XCell"
@@ -15,10 +15,11 @@ vlq-rust = { workspace = true }
 diagnostic = { workspace = true }
 validatus = { workspace = true }
 futures = { workspace = true }
-xcell-parser = { path = "../xcell-parser", version = "0.2.0" }
+xcell-parser = { workspace = true }
 calamine = { workspace = true, optional = true, features = ["dates"] }
-oak-toml = { path = "../../../oaks/examples/oak-toml", features = ["serde"], optional = true }
-oak-json = { path = "../../../oaks/examples/oak-json", optional = true }
+oak-toml = { workspace = true, features = ["serde"], optional = true }
+oak-json = { workspace = true, optional = true }
+oak-core = { path = "../../../oaks/projects/oak-core" }
 async-walkdir = { workspace = true, optional = true }
 notify = { workspace = true, optional = true, features = ["serde"] }
 walkdir = { workspace = true, optional = true }

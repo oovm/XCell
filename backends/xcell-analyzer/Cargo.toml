@@ -1,6 +1,6 @@
 [package]
 name = "xcell-analyzer"
-version = "0.2.0"
+version = { workspace = true }
 authors = { workspace = true }
 description = "XCell analyzer library"
 repository = "https://github.com/oovm/XCell"
@@ -13,8 +13,8 @@ edition = { workspace = true }
 tracing = { workspace = true }
 calamine = { workspace = true }
 convert_case = { workspace = true }
-oak-toml = { path = "../../../oaks/examples/oak-toml", features = ["serde"] }
-oak-json = { path = "../../../oaks/examples/oak-json" }
+oak-toml = { workspace = true, features = ["serde"] }
+oak-json = { workspace = true }
 pathdiff = { workspace = true }
 nargo-template = { workspace = true }
 regex = { workspace = true }

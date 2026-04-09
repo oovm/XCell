@@ -1,10 +1,12 @@
 [package]
 name = "xcell-config"
-version = "0.2.0"
-edition = "2021"
+version = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]
 serde = { workspace = true }
-oak-json = { path = "../../../oaks/examples/oak-json" }
-oak-toml = { path = "../../../oaks/examples/oak-toml", features = ["serde"] }
-xcell-core = { path = "../xcell-core" }
+oak-json = { workspace = true }
+oak-toml = { workspace = true, features = ["serde"] }
+xcell-core = { workspace = true }

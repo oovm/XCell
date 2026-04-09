@@ -1,5 +1,7 @@
+#![warn(missing_docs)]
+
 //! XCell 配置模块
-//!
+//! 
 //! 负责管理 XCell 的所有配置相关功能，包括项目配置、表格配置等。
 
 pub mod cocos;

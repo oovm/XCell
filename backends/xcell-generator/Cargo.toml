@@ -1,6 +1,6 @@
 [package]
 name = "xcell-generator"
-version = "0.2.0"
+version = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
 edition = { workspace = true }
@@ -17,8 +17,8 @@ xcell-config = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-oak-toml = { path = "../../../oaks/examples/oak-toml", features = ["serde"] }
-oak-json = { path = "../../../oaks/examples/oak-json" }
+oak-toml = { workspace = true, features = ["serde"] }
+oak-json = { workspace = true }
 convert_case = { workspace = true }
 url = { workspace = true }
 csv = { workspace = true }

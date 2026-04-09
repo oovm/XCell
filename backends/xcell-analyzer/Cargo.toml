@@ -16,8 +16,7 @@ convert_case = { workspace = true }
 toml = { workspace = true }
 serde_json = { workspace = true }
 pathdiff = { workspace = true }
-dejavu-types = { workspace = true }
-dejavu-macros = { workspace = true }
+nargo-template = { workspace = true }
 regex = { workspace = true }
 twox-hash = { workspace = true }
 serde = { workspace = true }

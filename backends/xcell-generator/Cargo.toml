@@ -25,8 +25,6 @@ csv = { workspace = true }
 chrono = { workspace = true }
 
 # 代码生成依赖
-dejavu-engine = { workspace = true }
-dejavu-types = { workspace = true }
-dejavu-macros = { workspace = true }
+nargo-template = { workspace = true }
 tempfile = { workspace = true }
 oak-json = { workspace = true }

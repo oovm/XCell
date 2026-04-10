@@ -18,13 +18,38 @@ use xcell_config::{PROJECT_CONFIG, ProjectConfig, TableConfig, TableLineMode, Un
 use xcell_plugin::{PluginManager, WorkspaceManager as PluginWorkspaceManager};
 
 pub struct WorkspaceManager {
+    /// 项目配置
     pub config: ProjectConfig,
+    /// 文件匹配模式
     pub glob_pattern: GlobSet,
+    /// 枚举定义管理器
     pub defines: DefineManager,
+    /// 语言管理器
     pub languages: LanguageManager,
+    /// 文件修改时间记录
     pub file_modification_times: std::collections::HashMap<PathBuf, SystemTime>,
+    /// 验证管理器
     pub validation_manager: ValidationManager,
+    /// 插件管理器
     pub plugin_manager: PluginManager,
+    /// 文件变更回调
+    pub on_file_changed: Option<std::sync::Arc<dyn Fn(&Self) + Send + Sync>>,
+}
+
+/// 工作空间状态信息
+pub struct WorkspaceStatus {
+    /// 列表表数量
+    pub list_count: usize,
+    /// 字典表数量
+    pub dict_count: usize,
+    /// 类表数量
+    pub class_count: usize,
+    /// 枚举表数量
+    pub enumerate_count: usize,
+    /// 语言数据数量
+    pub language_count: usize,
+    /// 已加载文件数量
+    pub file_count: usize,
 }
 
 impl Debug for WorkspaceManager {
@@ -63,6 +88,7 @@ impl WorkspaceManager {
             file_modification_times: Default::default(),
             validation_manager: Default::default(),
             plugin_manager: Default::default(),
+            on_file_changed: None,
         };
         Ok(workspace)
     }
@@ -104,47 +130,90 @@ impl WorkspaceManager {
         // self.write_cocos()?;
         Ok(())
     }
+    /// 启动文件监控，支持防抖和优雅退出
     pub async fn watcher(&mut self) -> XResult<()> {
+        use tokio::time::{sleep, Duration};
+
         let mut watcher = file_watcher(&self.config.root)?;
+        let debounce_delay = Duration::from_millis(500);
+
         loop {
-            match watcher.next().await {
-                Some(Ok(o)) => {
-                    tracing::trace!("文件变更: {:?}", o);
-                    // 处理文件修改事件
-                    for path in o.paths {
-                        // 直接检查路径是否为有效文件
-                        if path.is_file() {
-                            let normed = get_relative(&self.config.root, &path)?;
-                            if self.glob_pattern.is_match(&normed) {
-                                // 检查文件是否过期
-                                if let Ok(meta) = metadata(&path) {
-                                    if let Ok(mtime) = meta.modified() {
-                                        if let Some(old_mtime) = self.file_modification_times.get(&path) {
-                                            if mtime > *old_mtime {
-                                                tracing::info!("文件过期: {}", normed.display());
-                                                // 重新加载文件
-                                                self.load_file(&path);
-                                                // 更新修改时间
-                                                self.file_modification_times.insert(path, mtime);
+            tokio::select! {
+                event = watcher.next() => {
+                    match event {
+                        Some(Ok(o)) => {
+                            tracing::trace!("文件变更: {:?}", o);
+                            sleep(debounce_delay).await;
+
+                            for path in o.paths {
+                                if !path.exists() {
+                                    if self.file_modification_times.remove(&path).is_some() {
+                                        tracing::info!("文件已删除: {}", path.display());
+                                    }
+                                    continue;
+                                }
+                                if path.is_file() {
+                                    let normed = get_relative(&self.config.root, &path)?;
+                                    if self.glob_pattern.is_match(&normed) {
+                                        if let Ok(meta) = metadata(&path) {
+                                            if let Ok(mtime) = meta.modified() {
+                                                if let Some(old_mtime) = self.file_modification_times.get(&path) {
+                                                    if mtime > *old_mtime {
+                                                        tracing::info!("文件已更新: {}", normed.display());
+                                                        self.load_file(&path);
+                                                        self.file_modification_times.insert(path, mtime);
+                                                    }
+                                                } else {
+                                                    tracing::info!("新文件: {}", normed.display());
+                                                    self.load_file(&path);
+                                                    self.file_modification_times.insert(path, mtime);
+                                                }
                                             }
-                                        }
-                                        else {
-                                            // 新文件，加载并记录修改时间
-                                            tracing::info!("新文件: {}", normed.display());
-                                            self.load_file(&path);
-                                            self.file_modification_times.insert(path, mtime);
                                         }
                                     }
                                 }
                             }
+
+                            if let Some(ref callback) = self.on_file_changed {
+                                callback(self);
+                            }
                         }
+                        None => break,
+                        _ => continue,
                     }
                 }
-                None => break,
-                _ => continue,
+                _ = tokio::signal::ctrl_c() => {
+                    tracing::info!("收到退出信号，停止文件监控");
+                    break;
+                }
             }
         }
         Ok(())
+    }
+    /// 获取工作空间状态信息
+    pub fn status(&self) -> WorkspaceStatus {
+        WorkspaceStatus {
+            list_count: self.defines.list.len(),
+            dict_count: self.defines.dict.len(),
+            class_count: self.defines.class.len(),
+            enumerate_count: self.defines.enumerate.len(),
+            language_count: self.languages.store.len(),
+            file_count: self.file_modification_times.len(),
+        }
+    }
+    /// 获取工作空间摘要信息
+    pub fn summary(&self) -> String {
+        let status = self.status();
+        format!(
+            "工作空间摘要:\n  根目录: {}\n  列表表: {} 个\n  字典表: {} 个\n  类表: {} 个\n  枚举表: {} 个\n  语言数据: {} 个\n  已加载文件: {} 个",
+            self.config.root.display(),
+            status.list_count,
+            status.dict_count,
+            status.class_count,
+            status.enumerate_count,
+            status.language_count,
+            status.file_count
+        )
     }
 }
 
@@ -156,9 +225,9 @@ impl WorkspaceManager {
         }
     }
     pub fn try_perform_file(&mut self, file: &Path) -> XResult<()> {
-        println!("Processing file: {}", file.display());
+        tracing::debug!("处理文件: {}", file.display());
         let table = crate::x_table::load_table(file, &self.config)?;
-        println!("Table loaded successfully");
+        tracing::debug!("表格加载成功");
 
         // 执行数据验证
         let validation_result = self.validation_manager.validate(table.as_ref(), self);
@@ -169,13 +238,13 @@ impl WorkspaceManager {
         }
 
         // 尝试解析为 XListTable
-        println!("Trying to parse as XListTable");
+        tracing::debug!("尝试解析为 XListTable");
         let result = if let Ok(s) = XListTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
-            println!("XListTable::confirm succeeded, calling perform");
+            tracing::debug!("XListTable::confirm 成功, 调用 perform");
             for error in s.perform(self) {
                 tracing::error!("{}", error.with_path(file));
             }
-            println!("XListTable::perform completed, lists count = {}", self.defines.list.len());
+            tracing::debug!("XListTable::perform 完成, 列表数量 = {}", self.defines.list.len());
             Ok(())
         }
         else if let Ok(s) = XDictTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {

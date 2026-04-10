@@ -10,9 +10,9 @@ pub use crate::utils::{logger, pause};
 mod utils;
 mod workspace;
 
-/// Simple program to greet a person
+/// XCell 配置表管理工具
 #[derive(Parser, Debug)]
-#[command(author, version, about)]
+#[command(author, version, about = "XCell 配置表管理工具")]
 pub struct XCellArgs {
     /// 手动设置工作目录, 无表示当前目录
     #[arg(long, default_value_t = String::new())]
@@ -26,6 +26,18 @@ pub struct XCellArgs {
     /// 强制关闭 json 生成
     #[arg(long, default_value_t = false)]
     pub disable_json: bool,
+    /// 启用详细日志输出
+    #[arg(short, long, default_value_t = false)]
+    pub verbose: bool,
+    /// 静默模式，仅输出错误信息
+    #[arg(short, long, default_value_t = false)]
+    pub quiet: bool,
+    /// 试运行模式，仅分析不生成输出文件
+    #[arg(long, default_value_t = false)]
+    pub dry_run: bool,
+    /// 通过 glob 模式过滤需要处理的表格文件
+    #[arg(long, default_value_t = String::new())]
+    pub filter: String,
     #[command(subcommand)]
     pub command: Option<SubArgs>,
 }
@@ -36,6 +48,12 @@ pub enum SubArgs {
     Check,
     /// 清除数据库与缓存
     Clear,
+    /// 显示工作空间配置和状态摘要
+    Info,
+    /// 初始化工作空间，创建默认 ProjectConfig.toml
+    Init,
+    /// 列出工作空间中已加载的表格及其类型
+    List,
     /// 编辑 TOML 配置文件
     Toml {
         #[command(subcommand)]

@@ -7,8 +7,8 @@ use oak_toml::{TomlValue, TomlTable, TomlArray, to_string, from_str};
 
 #[tokio::main]
 async fn main() -> XResult<()> {
-    logger();
     let args = XCellArgs::parse();
+    logger(args.verbose, args.quiet);
     let result = match args.command {
         Some(SubArgs::Check) => {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
@@ -19,7 +19,7 @@ async fn main() -> XResult<()> {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
             // 清空文件修改时间记录
             ws.file_modification_times.clear();
-            println!("Cleared workspace cache");
+            tracing::info!("已清除工作空间缓存");
             Ok(())
         }
         Some(SubArgs::Toml { subcommand }) => match subcommand {
@@ -135,37 +135,86 @@ async fn main() -> XResult<()> {
                 Ok(())
             }
         },
+        Some(SubArgs::Info) => {
+            let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
+            ws.first_walk()?;
+            println!("{}", ws.summary());
+            Ok(())
+        }
+        Some(SubArgs::Init) => {
+            let workspace = args.resolve_workspace()?;
+            let config_path = workspace.join("ProjectConfig.toml");
+            if config_path.exists() {
+                tracing::warn!("工作空间已存在: {}", config_path.display());
+                return Ok(());
+            }
+            let default_config = r#"[project]
+include = ["**/*.xlsx", "**/*.xls", "**/*.csv", "**/*.tsv"]
+
+[typing.enumerate]
+integer = "i32"
+
+[typing.language]
+id = ["languageid"]
+key = ["languagekey"]
+value = ["languagevalue"]
+group = ["languagegroup"]
+"#;
+            std::fs::write(&config_path, default_config)?;
+            tracing::info!("已创建工作空间配置: {}", config_path.display());
+            Ok(())
+        }
+        Some(SubArgs::List) => {
+            let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
+            ws.first_walk()?;
+            let status = ws.status();
+            println!("表格列表 (共 {} 个)", status.list_count + status.dict_count + status.class_count + status.enumerate_count);
+            println!("{:-<60}", "");
+            for list in ws.lists() {
+                println!("  [List]    {}", list.name);
+            }
+            for dict in ws.dicts() {
+                println!("  [Dict]    {}", dict.name);
+            }
+            for class in ws.classes() {
+                println!("  [Class]   {}", class.name);
+            }
+            for enumerate in ws.enumerates() {
+                println!("  [Enum]    {}", enumerate.name);
+            }
+            Ok(())
+        }
         _ => {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
-            println!("Workspace root: {:?}", ws.config.root);
+            tracing::info!("工作空间根目录: {:?}", ws.config.root);
             
             // 从 generators 列表中查找 Unity 配置
             for generator in &ws.config.generators {
                 if let Generator::Unity(unity) = generator {
-                    println!("Unity loader enable: {:?}", unity.enable);
-                    println!("Unity loader output: {:?}", unity.output);
+                    tracing::info!("Unity 加载器启用: {:?}", unity.enable);
+                    tracing::info!("Unity 加载器输出: {:?}", unity.output);
                 }
             }
             
-            println!("Generators count: {:?}", ws.config.generators.len());
+            tracing::info!("生成器数量: {:?}", ws.config.generators.len());
             
             // 先进行首次遍历，加载表数据
             ws.first_walk()?;
             
             // 然后使用 xcell-generator 模块进行代码生成
             let config = xcell_generator::config::GeneratorConfig::from_project_config(&ws.config);
-            println!("Generated products count: {:?}", config.products.len());
+            tracing::info!("生成产物数量: {:?}", config.products.len());
             
             for product in &config.products {
-                println!("Product type: {:?}, output_dir: {:?}, enabled: {:?}", product.product_type, product.output_dir, product.enabled);
+                tracing::debug!("产物类型: {:?}, 输出目录: {:?}, 启用: {:?}", product.product_type, product.output_dir, product.enabled);
             }
             
             let generator = xcell_generator::Generator::new(config);
-            println!("Generator created, generator count: {:?}", generator.generator_count());
+            tracing::info!("生成器已创建, 生成器数量: {:?}", generator.generator_count());
             
-            println!("Calling generator.generate()");
+            tracing::info!("调用 generator.generate()");
             generator.generate(&ws)?;
-            println!("generator.generate() completed");
+            tracing::info!("generator.generate() 完成");
             
             if args.watch {
                 ws.watcher().await?;

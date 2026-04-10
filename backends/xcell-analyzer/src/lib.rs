@@ -13,6 +13,7 @@ pub use xcell_config::{
 };
 
 pub use self::{
+    config::WorkspaceStatus,
     config::WorkspaceManager,
     x_table::{
         class::{XClassData, XClassItem, XClassTable},

@@ -21,8 +21,19 @@ pub fn pause() {
     }
 }
 
-pub fn logger() {
-    let _ = tracing_subscriber::fmt().event_format(XCellFormat {}).with_env_filter(EnvFilter::from_default_env()).try_init();
+pub fn logger(verbose: bool, quiet: bool) {
+    let level = if verbose {
+        "trace"
+    } else if quiet {
+        "error"
+    } else {
+        "info"
+    };
+    let filter = EnvFilter::try_new(level).unwrap_or_else(|_| EnvFilter::from_default_env());
+    let _ = tracing_subscriber::fmt()
+        .event_format(XCellFormat {})
+        .with_env_filter(filter)
+        .try_init();
 }
 
 struct XCellFormat {}

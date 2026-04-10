@@ -23,7 +23,7 @@ pub fn logger() {
 
 #[test]
 fn project_config_default() {
-    println!("{:#?}", toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap())
+    println!("{:#?}", oak_toml::from_str::<ProjectConfig>(PROJECT_CONFIG).unwrap())
 }
 
 #[test]

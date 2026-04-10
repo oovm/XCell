@@ -63,6 +63,51 @@ renderer.code = function (data: { text: string; lang?: string; escaped?: boolean
   return `<pre><code class="language-${language}" data-code="${codeString}" data-language="${language}">${codeString}</code></pre>`;
 };
 
+// 为每个表格初始化行索引
+let tableRowIndex = 0;
+
+renderer.table = function (token: any) {
+  // 为每个表格重置行索引
+  tableRowIndex = 0;
+  
+  const header = token.header.map((cell: any) => this.tablecell(cell)).join('');
+  const rows = token.rows.map((row: any) => this.tablerow({ text: row.map((cell: any) => this.tablecell(cell)).join('') })).join('');
+  
+  return `
+    <table class="w-full border-collapse mb-4">
+      <thead>
+        <tr>${header}</tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+  `;
+};
+
+renderer.tablerow = function (token: any) {
+  const content = token.text;
+  
+  // 检查是否是表格的第二行或第三行（xcell 约定的特殊行）
+  if (tableRowIndex === 0 || tableRowIndex === 1) {
+    // 第二行（字段别名）和第三行（字段类型）
+    tableRowIndex++;
+    return `<tr class="bg-gray-50">${content}</tr>`;
+  }
+  
+  tableRowIndex++;
+  return `<tr>${content}</tr>`;
+};
+
+renderer.tablecell = function (token: any) {
+  const content = token.text;
+  if (token.header) {
+    return `<th class="border border-gray-300 px-4 py-2 bg-gray-100 font-semibold text-gray-800">${content}</th>`;
+  }
+  
+  return `<td class="border border-gray-300 px-4 py-2">${content}</td>`;
+};
+
 renderer.link = function (data: { href: string; title?: string | null; text: string }) {
   const { href, title, text } = data;
   let processedHref = href;
@@ -229,18 +274,7 @@ onMounted(async () => {
   @apply border-l-4 border-primary-500 pl-4 italic text-gray-600 mb-4 bg-primary-500/5 py-2;
 }
 
-.markdown-viewer :deep(table) {
-  @apply w-full border-collapse mb-4;
-}
 
-.markdown-viewer :deep(th),
-.markdown-viewer :deep(td) {
-  @apply border border-gray-300 px-4 py-2;
-}
-
-.markdown-viewer :deep(th) {
-  @apply bg-gray-100 font-semibold text-gray-800;
-}
 
 .markdown-viewer :deep(.code-platform-container) {
   @apply mb-6;

@@ -1,7 +1,7 @@
 use super::*;
 use crate::unity::{UnityStorage, UnityXluaConfig};
 use serde::{Deserialize, Deserializer};
-use serde_json::Value as JsonValue;
+use oak_json::JsonValueNode as JsonValue;
 
 #[derive(Deserialize)]
 struct GeneratorHelper {

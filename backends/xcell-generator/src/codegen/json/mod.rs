@@ -7,6 +7,8 @@ use std::{
 };
 use url::Url;
 use xcell_core::XCellValue;
+use oak_json::language::JsonValue;
+use oak_json::language::value::{JsonArray, JsonObject};
 
 /// JSON 代码生成器配置
 #[derive(Clone, Debug, Serialize)]
@@ -119,13 +121,8 @@ impl JsonCodegen {
             std::fs::create_dir_all(parent)?;
         }
 
-        let json_string = if self.pretty {
-            serde_json::to_string_pretty(data)
-                .map_err(|e| xcell_core::XError::runtime_error(format!("JSON序列化失败: {:?}", e)))?
-        } else {
-            serde_json::to_string(data)
-                .map_err(|e| xcell_core::XError::runtime_error(format!("JSON序列化失败: {:?}", e)))?
-        };
+        let json_string = oak_json::to_string(data)
+            .map_err(|e| xcell_core::XError::runtime_error(format!("JSON序列化失败: {:?}", e)))?;
 
         let mut file = File::create(&path)?;
         file.write_all(json_string.as_bytes())?;
@@ -203,44 +200,63 @@ impl JsonCodegen {
         }
     }
 
-    /// 将 XCellValue 转换为 serde_json::Value
-    fn xcell_value_to_json(&self, value: &XCellValue) -> serde_json::Value {
+    /// 将 XCellValue 转换为 oak_json::JsonValue
+    fn xcell_value_to_json(&self, value: &XCellValue) -> oak_json::JsonValue {
         match value {
-            XCellValue::Boolean(b) => serde_json::Value::Bool(*b),
-            XCellValue::Integer8(i) => serde_json::Value::Number((*i).into()),
-            XCellValue::Integer16(i) => serde_json::Value::Number((*i).into()),
-            XCellValue::Integer32(i) => serde_json::Value::Number((*i).into()),
-            XCellValue::Integer64(i) => serde_json::Value::Number((*i).into()),
-            XCellValue::Unsigned8(u) => serde_json::Value::Number((*u).into()),
-            XCellValue::Unsigned16(u) => serde_json::Value::Number((*u).into()),
-            XCellValue::Unsigned32(u) => serde_json::Value::Number((*u).into()),
-            XCellValue::Unsigned64(u) => serde_json::Value::Number((*u).into()),
-            XCellValue::Float32(f) => {
-                serde_json::Number::from_f64(*f as f64)
-                    .map(serde_json::Value::Number)
-                    .unwrap_or(serde_json::Value::Null)
-            }
-            XCellValue::Float64(f) => {
-                serde_json::Number::from_f64(*f)
-                    .map(serde_json::Value::Number)
-                    .unwrap_or(serde_json::Value::Null)
-            }
-            XCellValue::String(s) => serde_json::Value::String(s.clone()),
-            XCellValue::Vector2(v) => serde_json::json!([v[0], v[1]]),
-            XCellValue::Vector3(v) => serde_json::json!([v[0], v[1], v[2]]),
-            XCellValue::Vector4(v) => serde_json::json!([v[0], v[1], v[2], v[3]]),
-            XCellValue::Quaternion4(v) => serde_json::json!([v[0], v[1], v[2], v[3]]),
-            XCellValue::Color(c) => serde_json::json!({
-                "r": c.r,
-                "g": c.g,
-                "b": c.b,
-                "a": c.a,
+            XCellValue::Boolean(b) => oak_json::JsonValue::Boolean(*b),
+            XCellValue::Integer8(i) => oak_json::JsonValue::Integer(*i as i64),
+            XCellValue::Integer16(i) => oak_json::JsonValue::Integer(*i as i64),
+            XCellValue::Integer32(i) => oak_json::JsonValue::Integer(*i as i64),
+            XCellValue::Integer64(i) => oak_json::JsonValue::Integer(*i),
+            XCellValue::Unsigned8(u) => oak_json::JsonValue::Integer(*u as i64),
+            XCellValue::Unsigned16(u) => oak_json::JsonValue::Integer(*u as i64),
+            XCellValue::Unsigned32(u) => oak_json::JsonValue::Integer(*u as i64),
+            XCellValue::Unsigned64(u) => oak_json::JsonValue::Integer(*u as i64),
+            XCellValue::Float32(f) => oak_json::JsonValue::Float(*f as f64),
+            XCellValue::Float64(f) => oak_json::JsonValue::Float(*f),
+            XCellValue::String(s) => oak_json::JsonValue::String(s.clone()),
+            XCellValue::Vector2(v) => oak_json::JsonValue::Array(oak_json::JsonArray {
+                list: vec![
+                    oak_json::JsonValue::Float(v[0] as f64),
+                    oak_json::JsonValue::Float(v[1] as f64)
+                ]
             }),
-            XCellValue::Vector(v) => {
-                serde_json::Value::Array(v.iter().map(|item| self.xcell_value_to_json(item)).collect())
-            }
-            XCellValue::Enumerate(s) => serde_json::Value::String(s.clone()),
-            XCellValue::Reference(r) => serde_json::Value::Number((*r).into()),
+            XCellValue::Vector3(v) => oak_json::JsonValue::Array(oak_json::JsonArray {
+                list: vec![
+                    oak_json::JsonValue::Float(v[0] as f64),
+                    oak_json::JsonValue::Float(v[1] as f64),
+                    oak_json::JsonValue::Float(v[2] as f64)
+                ]
+            }),
+            XCellValue::Vector4(v) => oak_json::JsonValue::Array(oak_json::JsonArray {
+                list: vec![
+                    oak_json::JsonValue::Float(v[0] as f64),
+                    oak_json::JsonValue::Float(v[1] as f64),
+                    oak_json::JsonValue::Float(v[2] as f64),
+                    oak_json::JsonValue::Float(v[3] as f64)
+                ]
+            }),
+            XCellValue::Quaternion4(v) => oak_json::JsonValue::Array(oak_json::JsonArray {
+                list: vec![
+                    oak_json::JsonValue::Float(v[0] as f64),
+                    oak_json::JsonValue::Float(v[1] as f64),
+                    oak_json::JsonValue::Float(v[2] as f64),
+                    oak_json::JsonValue::Float(v[3] as f64)
+                ]
+            }),
+            XCellValue::Color(c) => oak_json::JsonValue::Object(oak_json::JsonObject {
+                dict: std::collections::HashMap::from([
+                    ("r".to_string(), oak_json::JsonValue::Float(c.r as f64)),
+                    ("g".to_string(), oak_json::JsonValue::Float(c.g as f64)),
+                    ("b".to_string(), oak_json::JsonValue::Float(c.b as f64)),
+                    ("a".to_string(), oak_json::JsonValue::Float(c.a as f64))
+                ])
+            }),
+            XCellValue::Vector(v) => oak_json::JsonValue::Array(oak_json::JsonArray {
+                list: v.iter().map(|item| self.xcell_value_to_json(item)).collect()
+            }),
+            XCellValue::Enumerate(s) => oak_json::JsonValue::String(s.clone()),
+            XCellValue::Reference(r) => oak_json::JsonValue::Integer(*r as i64),
         }
     }
 }
@@ -270,7 +286,7 @@ struct JsonClassData {
 struct JsonFieldData {
     name: String,
     r#type: String,
-    default: serde_json::Value,
+    default: oak_json::JsonValue,
     comment: Vec<String>,
 }
 
@@ -302,7 +318,7 @@ struct JsonDictData {
 #[derive(Serialize)]
 struct JsonDictEntry {
     key: String,
-    fields: std::collections::BTreeMap<String, serde_json::Value>,
+    fields: std::collections::BTreeMap<String, oak_json::JsonValue>,
 }
 
 /// 列表表 JSON 数据结构
@@ -318,5 +334,5 @@ struct JsonListData {
 struct JsonListEntry {
     id: String,
     key: String,
-    fields: std::collections::BTreeMap<String, serde_json::Value>,
+    fields: std::collections::BTreeMap<String, oak_json::JsonValue>,
 }

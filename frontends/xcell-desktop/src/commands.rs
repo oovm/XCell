@@ -7,7 +7,7 @@ use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use log::{error, info};
-use serde_json::Value;
+use oak_json::Value;
 use xcell_analyzer::WorkspaceManager;
 
 use crate::errors::{Result, XCellGuiError};
@@ -93,11 +93,11 @@ pub async fn validate_table(file_path: String) -> Result<Value> {
     let mut workspace = WorkspaceManager::new(workspace_path)?;
 
     match workspace.try_perform_file(&path) {
-        Ok(_) => Ok(serde_json::json!({
+        Ok(_) => Ok(oak_json::json!({
             "valid": true,
             "errors": []
         })),
-        Err(e) => Ok(serde_json::json!({
+        Err(e) => Ok(oak_json::json!({
             "valid": false,
             "errors": [e.to_string()]
         })),
@@ -175,7 +175,7 @@ pub async fn get_table_list(state: tauri::State<'_, AppState>) -> Result<Value> 
         .copied();
 
     for list in workspace.lists() {
-        table_list.push(serde_json::json!({
+        table_list.push(oak_json::json!({
             "id": list.name,
             "name": list.name,
             "type": "table",
@@ -186,7 +186,7 @@ pub async fn get_table_list(state: tauri::State<'_, AppState>) -> Result<Value> 
     }
 
     for dict in workspace.dicts() {
-        table_list.push(serde_json::json!({
+        table_list.push(oak_json::json!({
             "id": dict.name,
             "name": dict.name,
             "type": "table",
@@ -197,7 +197,7 @@ pub async fn get_table_list(state: tauri::State<'_, AppState>) -> Result<Value> 
     }
 
     for class in workspace.classes() {
-        table_list.push(serde_json::json!({
+        table_list.push(oak_json::json!({
             "id": class.name,
             "name": class.name,
             "type": "class",
@@ -208,7 +208,7 @@ pub async fn get_table_list(state: tauri::State<'_, AppState>) -> Result<Value> 
     }
 
     for enumerate in workspace.enumerates() {
-        table_list.push(serde_json::json!({
+        table_list.push(oak_json::json!({
             "id": enumerate.name,
             "name": enumerate.name,
             "type": "enum",
@@ -219,7 +219,7 @@ pub async fn get_table_list(state: tauri::State<'_, AppState>) -> Result<Value> 
     }
 
     for language in workspace.languages() {
-        table_list.push(serde_json::json!({
+        table_list.push(oak_json::json!({
             "id": language.key,
             "name": language.key,
             "type": "language",
@@ -412,27 +412,27 @@ pub async fn open_project(
 
 fn lookup_table_data(workspace: &WorkspaceManager, table_name: &str) -> Result<Value> {
     if let Some(list) = workspace.get_list(table_name) {
-        return serde_json::to_value(list)
+        return oak_json::to_value(list)
             .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 
     if let Some(dict) = workspace.get_dict(table_name) {
-        return serde_json::to_value(dict)
+        return oak_json::to_value(dict)
             .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 
     if let Some(enumerate) = workspace.get_enumerate(table_name) {
-        return serde_json::to_value(enumerate)
+        return oak_json::to_value(enumerate)
             .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 
     if let Some(class) = workspace.get_class(table_name) {
-        return serde_json::to_value(class)
+        return oak_json::to_value(class)
             .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 
     if let Some(language) = workspace.get_language(table_name) {
-        return serde_json::to_value(language)
+        return oak_json::to_value(language)
             .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 

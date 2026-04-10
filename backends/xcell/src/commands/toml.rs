@@ -87,9 +87,9 @@ fn handle_toml_add(cmd: &clap::ArgMatches) -> anyhow::Result<()> {
     
     let path = Path::new(file);
     
-    let mut table: toml::Value = if path.exists() {
+    let mut table: TomlValue = if path.exists() {
         let content = read_to_string(path)?;
-        content.parse()?
+        from_str(&content)?
     } else {
         TomlValue::Table(TomlTable { dict: std::collections::HashMap::new() })
     };
@@ -139,7 +139,7 @@ fn handle_toml_remove(cmd: &clap::ArgMatches) -> anyhow::Result<()> {
     }
     
     let content = read_to_string(path)?;
-    let mut table: toml::Value = content.parse()?;
+    let mut table: TomlValue = from_str(&content)?;
     
     if let Some(fields) = table.get_mut("fields").and_then(|v| v.as_array_mut()) {
         let initial_len = fields.len();
@@ -175,7 +175,7 @@ fn handle_toml_update(cmd: &clap::ArgMatches) -> anyhow::Result<()> {
     }
     
     let content = read_to_string(path)?;
-    let mut table: toml::Value = content.parse()?;
+    let mut table: TomlValue = from_str(&content)?;
     
     if let Some(fields) = table.get_mut("fields").and_then(|v| v.as_array_mut()) {
         let mut found = false;

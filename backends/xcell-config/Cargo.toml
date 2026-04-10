@@ -7,7 +7,7 @@ edition = { workspace = true }
 
 [dependencies]
 serde = { workspace = true }
-serde_json = { workspace = true }
+
 oak-json = { workspace = true }
 oak-toml = { workspace = true, features = ["serde"] }
 xcell-core = { workspace = true }

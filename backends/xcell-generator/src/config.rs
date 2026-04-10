@@ -120,7 +120,7 @@ impl GeneratorConfig {
             crate::error::GeneratorErrorExt::config_error(&format!("无法读取配置文件: {:?}", e))
         })?;
 
-        toml::from_str(&content).map_err(|e| -> GeneratorError {
+        oak_toml::from_str(&content).map_err(|e| -> GeneratorError {
             crate::error::GeneratorErrorExt::config_error(&format!("配置文件格式错误: {:?}", e))
         })
     }

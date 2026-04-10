@@ -1,0 +1,23 @@
+- [ ] XCellArgs 的 `#[command(about)]` 描述已从错误文本修改为正确的 XCell 工具描述
+- [ ] WorkspaceManager 中所有 `println!` 调试输出已替换为 `tracing` 日志调用
+- [ ] main.rs 中所有 `println!` 调试输出已替换为 `tracing` 日志调用
+- [ ] `WorkspaceStatus` 结构体已定义，包含表数量、枚举数量、字典数量、类数量等字段
+- [ ] `WorkspaceManager::status()` 方法已实现，返回 `WorkspaceStatus`
+- [ ] `WorkspaceManager::summary()` 方法已实现，返回格式化的摘要字符串
+- [ ] `--verbose` 选项已添加，启用 TRACE 级别日志
+- [ ] `--quiet` 选项已添加，仅输出 ERROR 级别日志
+- [ ] `--dry-run` 选项已添加，跳过代码生成步骤
+- [ ] `--filter` 选项已添加，支持 glob 模式过滤表格
+- [ ] `logger()` 函数已根据 `--verbose`/`--quiet` 选项设置日志级别
+- [ ] `Info` 子命令已实现，输出工作空间配置和状态摘要
+- [ ] `Init` 子命令已实现，创建默认 `ProjectConfig.toml`
+- [ ] `List` 子命令已实现，列出已加载的表格及类型
+- [ ] `FileFormatDetector::detect_by_content` 已优化为仅读取文件头部字节
+- [ ] 文件监控已支持文件创建事件
+- [ ] 文件监控已支持文件删除事件
+- [ ] 文件监控已实现防抖机制
+- [ ] 文件变更后已自动触发代码生成
+- [ ] 监控模式已支持 Ctrl+C 优雅退出
+- [ ] `first_walk()` 已支持 glob 过滤参数
+- [ ] 所有新增和修改的 public 项都有 `///` 风格的文档注释
+- [ ] `cargo check -p xcell -p xcell-analyzer` 编译通过

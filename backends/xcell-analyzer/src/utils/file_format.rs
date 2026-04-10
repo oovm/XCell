@@ -56,10 +56,9 @@ impl FileFormatDetector {
     fn detect_by_content(path: &Path) -> XResult<FileFormat> {
         let file = File::open(path)?;
         let mut reader = BufReader::new(file);
-        let mut buffer = Vec::with_capacity(1024);
-
-        // 读取文件开头的内容
-        reader.read_to_end(&mut buffer)?;
+        let mut buffer = vec![0u8; 8192];
+        let bytes_read = reader.read(&mut buffer)?;
+        buffer.truncate(bytes_read);
 
         // 检查 Excel 文件的魔术数字
         if buffer.len() >= 4 {

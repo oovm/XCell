@@ -10,6 +10,8 @@ use log::{error, info};
 use serde_json::Value;
 use xcell_analyzer::WorkspaceManager;
 
+use crate::errors::{Result, XCellGuiError};
+
 /// 应用状态
 pub struct AppState {
     /// 工作空间管理器
@@ -24,25 +26,25 @@ unsafe impl Sync for AppState {}
 pub async fn read_table(
     state: tauri::State<'_, AppState>,
     file_path: String,
-) -> Result<Value, String> {
+) -> Result<Value> {
     info!("Reading table from file: {}", file_path);
 
     let path = PathBuf::from(&file_path);
     if !path.exists() {
-        return Err(format!("File not found: {}", file_path));
+        return Err(XCellGuiError::General(format!(
+            "File not found: {}",
+            file_path
+        )));
     }
 
     let workspace_path = match path.parent() {
         Some(parent) => parent.to_path_buf(),
-        None => return Err("Invalid file path".to_string()),
+        None => return Err(XCellGuiError::General("Invalid file path".to_string())),
     };
 
-    let mut workspace = WorkspaceManager::new(workspace_path)
-        .map_err(|e| format!("Failed to create workspace: {}", e))?;
+    let mut workspace = WorkspaceManager::new(workspace_path)?;
 
-    workspace
-        .first_walk()
-        .map_err(|e| format!("Failed to walk workspace: {}", e))?;
+    workspace.first_walk()?;
 
     let table_name = path
         .file_stem()
@@ -52,7 +54,10 @@ pub async fn read_table(
 
     let table_data = lookup_table_data(&workspace, &table_name)?;
 
-    let mut guard = state.workspace.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut guard = state
+        .workspace
+        .lock()
+        .map_err(|e| XCellGuiError::General(format!("Lock error: {}", e)))?;
     *guard = Some(workspace);
 
     Ok(table_data)
@@ -60,28 +65,32 @@ pub async fn read_table(
 
 /// 保存表格数据
 #[tauri::command]
-pub async fn save_table(_file_path: String, _data: Value) -> Result<bool, String> {
+pub async fn save_table(_file_path: String, _data: Value) -> Result<bool> {
     info!("Save table called (not yet implemented)");
-    Err("Save functionality is not yet implemented at the backend level".to_string())
+    Err(XCellGuiError::General(
+        "Save functionality is not yet implemented at the backend level".to_string(),
+    ))
 }
 
 /// 验证表格文件
 #[tauri::command]
-pub async fn validate_table(file_path: String) -> Result<Value, String> {
+pub async fn validate_table(file_path: String) -> Result<Value> {
     info!("Validating table file: {}", file_path);
 
     let path = PathBuf::from(&file_path);
     if !path.exists() {
-        return Err(format!("File not found: {}", file_path));
+        return Err(XCellGuiError::General(format!(
+            "File not found: {}",
+            file_path
+        )));
     }
 
     let workspace_path = match path.parent() {
         Some(parent) => parent.to_path_buf(),
-        None => return Err("Invalid file path".to_string()),
+        None => return Err(XCellGuiError::General("Invalid file path".to_string())),
     };
 
-    let mut workspace = WorkspaceManager::new(workspace_path)
-        .map_err(|e| format!("Failed to create workspace: {}", e))?;
+    let mut workspace = WorkspaceManager::new(workspace_path)?;
 
     match workspace.try_perform_file(&path) {
         Ok(_) => Ok(serde_json::json!({
@@ -101,7 +110,7 @@ pub async fn generate_code(
     state: tauri::State<'_, AppState>,
     workspace_path: String,
     target: String,
-) -> Result<bool, String> {
+) -> Result<bool> {
     info!(
         "Generating code for workspace: {}, target: {}",
         workspace_path, target
@@ -109,27 +118,31 @@ pub async fn generate_code(
 
     let path = PathBuf::from(&workspace_path);
     if !path.exists() || !path.is_dir() {
-        return Err(format!("Invalid workspace path: {}", workspace_path));
+        return Err(XCellGuiError::General(format!(
+            "Invalid workspace path: {}",
+            workspace_path
+        )));
     }
 
-    let mut workspace = WorkspaceManager::new(path)
-        .map_err(|e| format!("Failed to create workspace: {}", e))?;
+    let mut workspace = WorkspaceManager::new(path)?;
 
-    workspace
-        .first_walk()
-        .map_err(|e| format!("Failed to load workspace: {}", e))?;
+    workspace.first_walk()?;
 
     match target.as_str() {
-        "unity" => workspace
-            .write_unity()
-            .map_err(|e| format!("Failed to generate Unity code: {}", e)),
-        "cocos" => workspace
-            .write_cocos()
-            .map_err(|e| format!("Failed to generate Cocos code: {}", e)),
-        _ => return Err(format!("Unsupported target: {}", target)),
-    }?;
+        "unity" => workspace.write_unity()?,
+        "cocos" => workspace.write_cocos()?,
+        _ => {
+            return Err(XCellGuiError::General(format!(
+                "Unsupported target: {}",
+                target
+            )))
+        }
+    }
 
-    let mut guard = state.workspace.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut guard = state
+        .workspace
+        .lock()
+        .map_err(|e| XCellGuiError::General(format!("Lock error: {}", e)))?;
     *guard = Some(workspace);
 
     Ok(true)
@@ -137,15 +150,20 @@ pub async fn generate_code(
 
 /// 获取表格列表
 #[tauri::command]
-pub async fn get_table_list(
-    state: tauri::State<'_, AppState>,
-) -> Result<Value, String> {
+pub async fn get_table_list(state: tauri::State<'_, AppState>) -> Result<Value> {
     info!("Getting table list");
 
-    let guard = state.workspace.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let guard = state
+        .workspace
+        .lock()
+        .map_err(|e| XCellGuiError::General(format!("Lock error: {}", e)))?;
     let workspace = match guard.as_ref() {
         Some(ws) => ws,
-        None => return Err("No workspace is currently open".to_string()),
+        None => {
+            return Err(XCellGuiError::General(
+                "No workspace is currently open".to_string(),
+            ))
+        }
     };
 
     let mut table_list = Vec::new();
@@ -219,13 +237,20 @@ pub async fn get_table_list(
 pub async fn get_table_detail(
     state: tauri::State<'_, AppState>,
     table_id: String,
-) -> Result<Value, String> {
+) -> Result<Value> {
     info!("Getting table detail for id: {}", table_id);
 
-    let guard = state.workspace.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let guard = state
+        .workspace
+        .lock()
+        .map_err(|e| XCellGuiError::General(format!("Lock error: {}", e)))?;
     let workspace = match guard.as_ref() {
         Some(ws) => ws,
-        None => return Err("No workspace is currently open".to_string()),
+        None => {
+            return Err(XCellGuiError::General(
+                "No workspace is currently open".to_string(),
+            ))
+        }
     };
 
     lookup_table_data(workspace, &table_id)
@@ -233,42 +258,52 @@ pub async fn get_table_detail(
 
 /// 创建表格
 #[tauri::command]
-pub async fn create_table(_table: Value) -> Result<Value, String> {
+pub async fn create_table(_table: Value) -> Result<Value> {
     info!("Create table called (not yet supported)");
-    Err("Create table is not yet supported by the backend".to_string())
+    Err(XCellGuiError::General(
+        "Create table is not yet supported by the backend".to_string(),
+    ))
 }
 
 /// 更新表格
 #[tauri::command]
-pub async fn update_table(_table_id: String, _table: Value) -> Result<Value, String> {
+pub async fn update_table(_table_id: String, _table: Value) -> Result<Value> {
     info!("Update table called (not yet supported)");
-    Err("Update table is not yet supported by the backend".to_string())
+    Err(XCellGuiError::General(
+        "Update table is not yet supported by the backend".to_string(),
+    ))
 }
 
 /// 删除表格
 #[tauri::command]
-pub async fn delete_table(_table_id: String) -> Result<bool, String> {
+pub async fn delete_table(_table_id: String) -> Result<bool> {
     info!("Delete table called (not yet supported)");
-    Err("Delete table is not yet supported by the backend".to_string())
+    Err(XCellGuiError::General(
+        "Delete table is not yet supported by the backend".to_string(),
+    ))
 }
 
 /// 导入表格
 #[tauri::command]
-pub async fn import_table(_file_name: String, _file_content: String) -> Result<Value, String> {
+pub async fn import_table(_file_name: String, _file_content: String) -> Result<Value> {
     info!("Import table called (not yet supported)");
-    Err("Import table is not yet supported by the backend".to_string())
+    Err(XCellGuiError::General(
+        "Import table is not yet supported by the backend".to_string(),
+    ))
 }
 
 /// 导出表格
 #[tauri::command]
-pub async fn export_table(_table_id: String) -> Result<String, String> {
+pub async fn export_table(_table_id: String) -> Result<String> {
     info!("Export table called (not yet supported)");
-    Err("Export table is not yet supported by the backend".to_string())
+    Err(XCellGuiError::General(
+        "Export table is not yet supported by the backend".to_string(),
+    ))
 }
 
 /// 打开文件选择对话框并选择项目文件夹
 #[tauri::command]
-pub fn open_project_dialog(app: tauri::AppHandle) -> Result<String, String> {
+pub fn open_project_dialog(app: tauri::AppHandle) -> Result<String> {
     info!("Opening project selection dialog");
 
     use tauri_plugin_dialog::DialogExt;
@@ -283,7 +318,7 @@ pub fn open_project_dialog(app: tauri::AppHandle) -> Result<String, String> {
         }
         None => {
             info!("User cancelled project selection");
-            Err("User cancelled".to_string())
+            Err(XCellGuiError::General("User cancelled".to_string()))
         }
     }
 }
@@ -293,7 +328,7 @@ pub fn open_project_dialog(app: tauri::AppHandle) -> Result<String, String> {
 pub fn open_editor_window(
     app: tauri::AppHandle,
     project_path: String,
-) -> Result<(), String> {
+) -> Result<()> {
     info!("Opening editor window for project: {}", project_path);
 
     use rand::Rng;
@@ -328,17 +363,17 @@ pub fn open_editor_window(
     .build()
     .map_err(|e| {
         error!("Failed to create window: {}", e);
-        e.to_string()
+        XCellGuiError::General(e.to_string())
     })?;
 
     window.show().map_err(|e| {
         error!("Failed to show window: {}", e);
-        e.to_string()
+        XCellGuiError::General(e.to_string())
     })?;
 
     window.set_focus().map_err(|e| {
         error!("Failed to set focus: {}", e);
-        e.to_string()
+        XCellGuiError::General(e.to_string())
     })?;
 
     info!("Successfully opened editor window: {}", window_label);
@@ -350,50 +385,61 @@ pub fn open_editor_window(
 pub async fn open_project(
     state: tauri::State<'_, AppState>,
     project_path: String,
-) -> Result<bool, String> {
+) -> Result<bool> {
     info!("Opening project: {}", project_path);
 
     let path = PathBuf::from(&project_path);
     if !path.exists() || !path.is_dir() {
-        return Err(format!("Invalid project path: {}", project_path));
+        return Err(XCellGuiError::General(format!(
+            "Invalid project path: {}",
+            project_path
+        )));
     }
 
-    let mut workspace = WorkspaceManager::new(path)
-        .map_err(|e| format!("Failed to create workspace: {}", e))?;
+    let mut workspace = WorkspaceManager::new(path)?;
 
-    workspace
-        .first_walk()
-        .map_err(|e| format!("Failed to load workspace: {}", e))?;
+    workspace.first_walk()?;
 
-    let mut guard = state.workspace.lock().map_err(|e| format!("Lock error: {}", e))?;
+    let mut guard = state
+        .workspace
+        .lock()
+        .map_err(|e| XCellGuiError::General(format!("Lock error: {}", e)))?;
     *guard = Some(workspace);
 
     info!("Project opened successfully: {}", project_path);
     Ok(true)
 }
 
-fn lookup_table_data(workspace: &WorkspaceManager, table_name: &str) -> Result<Value, String> {
+fn lookup_table_data(workspace: &WorkspaceManager, table_name: &str) -> Result<Value> {
     if let Some(list) = workspace.get_list(table_name) {
-        return serde_json::to_value(list).map_err(|e| format!("Serialization error: {}", e));
+        return serde_json::to_value(list)
+            .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 
     if let Some(dict) = workspace.get_dict(table_name) {
-        return serde_json::to_value(dict).map_err(|e| format!("Serialization error: {}", e));
+        return serde_json::to_value(dict)
+            .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 
     if let Some(enumerate) = workspace.get_enumerate(table_name) {
-        return serde_json::to_value(enumerate).map_err(|e| format!("Serialization error: {}", e));
+        return serde_json::to_value(enumerate)
+            .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 
     if let Some(class) = workspace.get_class(table_name) {
-        return serde_json::to_value(class).map_err(|e| format!("Serialization error: {}", e));
+        return serde_json::to_value(class)
+            .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 
     if let Some(language) = workspace.get_language(table_name) {
-        return serde_json::to_value(language).map_err(|e| format!("Serialization error: {}", e));
+        return serde_json::to_value(language)
+            .map_err(|e| XCellGuiError::General(format!("Serialization error: {}", e)));
     }
 
-    Err(format!("Table '{}' not found", table_name))
+    Err(XCellGuiError::General(format!(
+        "Table '{}' not found",
+        table_name
+    )))
 }
 
 fn format_system_time(time: Option<SystemTime>) -> String {

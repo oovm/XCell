@@ -13,4 +13,5 @@ pub use commands::{
     get_table_list, import_table, open_editor_window, open_project, open_project_dialog,
     read_table, save_table, update_table, validate_table,
 };
+pub use errors::XCellGuiError;
 pub use logger::TauriLogger;

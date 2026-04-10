@@ -38,10 +38,12 @@ pub struct XCellArgs {
     /// 通过 glob 模式过滤需要处理的表格文件
     #[arg(long, default_value_t = String::new())]
     pub filter: String,
+    /// TOML 配置文件子命令
     #[command(subcommand)]
     pub command: Option<SubArgs>,
 }
 
+/// CLI 子命令参数
 #[derive(Subcommand, Debug)]
 pub enum SubArgs {
     /// 检查配置表, 不导出任何文件
@@ -61,6 +63,7 @@ pub enum SubArgs {
     },
 }
 
+/// TOML 配置文件编辑子命令
 #[derive(Subcommand, Debug)]
 pub enum TomlSubArgs {
     /// 列出 TOML 文件中的字段

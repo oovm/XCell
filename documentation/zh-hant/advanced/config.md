@@ -4,17 +4,17 @@ XCell 使用 TOML 格式的設定檔案来管理專案設定，設定檔案命�
 
 ## 基本設定
 
-| 設定项 | 類型 | 说明 | 預設值 |
+| 設定项 | 類型 | 說明 | 預設值 |
 |--------|------|------|--------|
 | version | string | 設定檔案版本號 | "0.0.0" |
-| include | string | 套件含的 Excel 檔案路徑模式（優先级最高） | "*.xlsx" |
+| include | string | 包含的 Excel 檔案路徑模式（優先级最高） | "*.xlsx" |
 | exclude | string | 排除的 Excel 檔案路徑模式（優先级低於 include） | "" |
 
 ### 行列設定 (line)
 
 定義資料表格中各資訊所在的行號（從 1 開始）。
 
-| 設定项 | 類型 | 说明 | 預設值 |
+| 設定项 | 類型 | 說明 | 預設值 |
 |--------|------|------|--------|
 | line.field | int | 欄位名所在行 | 1 |
 | line.type | int | 資料類型所在行 | 2 |
@@ -53,11 +53,11 @@ line.data = 3
 
 ### 類型剖析設定 (type)
 
-設定各种資料類型的剖析规則。
+設定各种資料類型的剖析規則。
 
 #### 布爾類型 (bool)
 
-| 設定项 | 類型 | 说明 |
+| 設定项 | 類型 | 說明 |
 |--------|------|------|
 | type.bool.accept | array[string] | 接受為 true 的值串列 |
 | type.bool.reject | array[string] | 接受為 false 的值串列 |
@@ -73,13 +73,13 @@ reject = ["false", "x", "否", "0"]
 
 設定 C# 程式碼產生相關設定。
 
-| 設定项 | 類型 | 说明 | 預設值 |
+| 設定项 | 類型 | 說明 | 預設值 |
 |--------|------|------|--------|
 | unity.enable | bool | 是否啟用 Unity 程式碼產生 | true |
 | unity.project | string | Unity 專案路徑 | "../" |
 | unity.output | string | 程式碼輸出目錄 | "Assets/Scripts/DataTable/Generated" |
 | unity.namespace | string | 生成程式碼的命名空間 | "DataTable.Generated" |
-| unity.manager | string | 管理器类名 | "DataTableManager" |
+| unity.manager | string | 管理器類別名 | "DataTableManager" |
 | unity.suffix_table | string | 資料表格类後缀 | "Table" |
 | unity.suffix_element | string | 元素类後缀 | "Element" |
 | unity.support_clone | bool | 是否支援複製 | true |
@@ -92,21 +92,21 @@ reject = ["false", "x", "否", "0"]
 
 #### Binary 格式
 
-| 設定项 | 類型 | 说明 | 預設值 |
+| 設定项 | 類型 | 說明 | 預設值 |
 |--------|------|------|--------|
 | unity.binary.enable | bool | 是否啟用 Binary 輸出 | true |
 | unity.binary.output | string | Binary 檔案輸出目錄 | "Assets/Tables/Generated" |
 
 #### XML 格式
 
-| 設定项 | 類型 | 说明 | 預設值 |
+| 設定项 | 類型 | 說明 | 預設值 |
 |--------|------|------|--------|
 | unity.xml.enable | bool | 是否啟用 XML 輸出 | false |
 | unity.xml.output | string | XML 檔案輸出目錄 | "Assets/Tables/Readable" |
 
 #### JSON 格式
 
-| 設定项 | 類型 | 说明 | 預設值 |
+| 設定项 | 類型 | 說明 | 預設值 |
 |--------|------|------|--------|
 | unity.json.enable | bool | 是否啟用 JSON 輸出 | false |
 | unity.json.output | string | JSON 檔案輸出目錄 | "Assets/Tables/Readable" |
@@ -116,7 +116,7 @@ reject = ["false", "x", "否", "0"]
 - **xlua**: Lua 程式碼產生
 - **protobuf**: Protobuf 格式輸出
 
-## 使用说明
+## 使用說明
 
 1. 在專案根目錄建立 `XCell.toml` 檔案
 2. 根据需要修改設定项

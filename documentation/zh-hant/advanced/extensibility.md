@@ -1,6 +1,6 @@
-# 擴充性文件
+# 擴充性檔案
 
-本文件介绍如何擴充 XCell 設定資料表管理工具的功能，套件括自訂類型系統、擴充程式碼產生器以及外掛程式開發。
+本檔案介绍如何擴充 XCell 設定資料表管理工具的功能，包含自訂類型系統、擴充程式碼產生器以及外掛程式開發。
 
 ## 目錄
 
@@ -21,19 +21,19 @@ XCell 支援以下內置類型：
 | 類型类別  | 支援的類型                                                                                                            |
 | ----- | ---------------------------------------------------------------------------------------------------------------- |
 | 布爾型   | `bool`, `boolean`                                                                                                |
-| 整数型   | `byte`/`i8`, `short`/`i16`, `int`/`i32`, `long`/`i64`, `sbyte`/`u8`, `ushort`/`u16`, `uint`/`u32`, `ulong`/`u64` |
+| 整數型   | `byte`/`i8`, `short`/`i16`, `int`/`i32`, `long`/`i64`, `sbyte`/`u8`, `ushort`/`u16`, `uint`/`u32`, `ulong`/`u64` |
 | 小数型   | `float`/`f32`, `double`/`f64`, `decimal`/`d128`/`f128`                                                           |
 | 字串   | `string`                                                                                                         |
 | 特殊類型  | `color`/`colour`, `color32`, `time`/`date`/`datetime`                                                            |
 | 向量/陣列 | `v2`/`vec2`, `v3`/`vec3`, `v4`/`vec4`, `q4`/`quaternion`                                                         |
 | 列舉    | 自訂列舉類型                                                                                                          |
 
-### 類型系統架构
+### 類型系統架構
 
-XCell 的類型系統核心位於 `xcell-types` 模組中，主要套件含以下元件：
+XCell 的類型系統核心位於 `xcell-types` 模組中，主要包含以下元件：
 
 - `XCellTyped`：類型列舉，定義了所有支援的資料類型
-- `TypeMetaInfo`：類型元資訊，套件含類型的設定資訊
+- `TypeMetaInfo`：類型元資訊，包含類型的設定資訊
 - `XCellValue`：類型值，儲存剖析後的資料
 - 各類型描述器：如 `IntegerDescription`、`DecimalDescription` 等
 
@@ -68,7 +68,7 @@ impl MyTypeDescription {
 
 ```rust
 pub enum XCellTyped {
-    // ... 现有類型 ...
+    // ... 現有類型 ...
     MyType(Box<MyTypeDescription>),
 }
 ```
@@ -82,7 +82,7 @@ impl XCellTyped {
     pub fn parse(input: &str, info: &TypeMetaInfo) -> Self {
         let normed = Self::norm_typing(input);
         match normed.as_str() {
-            // ... 现有類型 ...
+            // ... 現有類型 ...
             "mytype" | "my_type" => info.my_type.clone().into(),
             _ => XCellTyped::parse_complex(input, &normed, info),
         }
@@ -97,22 +97,22 @@ impl XCellTyped {
 ```rust
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct TypeMetaInfo {
-    // ... 现有欄位 ...
+    // ... 現有欄位 ...
     pub my_type: MyTypeDescription,
 }
 ```
 
 #### 5. 新增程式碼產生支援
 
-在 `projects/xcell-types/src/codegen/` 中為新類型新增程式碼產生逻辑，确保能夠正确生成目标語言（如 C#）的類型定義。
+在 `projects/xcell-types/src/codegen/` 中為新類型新增程式碼產生逻辑，確保能夠正确生成目標語言（如 C#）的類型定義。
 
 ***
 
 ## 擴充程式碼產生器
 
-XCell 支援多种程式碼產生目标，套件括 Unity C#、二進位檔案、XML、JSON 等。您可以擴充这些生成器或建立新的生成器。
+XCell 支援多种程式碼產生目標，包含 Unity C#、二進位檔案、XML、JSON 等。您可以擴充这些生成器或建立新的生成器。
 
-### 程式碼產生架构
+### 程式碼產生架構
 
 程式碼產生主要在 `xcell-core/src/codegen/` 模組中實现：
 
@@ -124,7 +124,7 @@ XCell 支援多种程式碼產生目标，套件括 Unity C#、二進位檔案�
 
 Unity 程式碼產生器是最常用的生成器之一，以下是擴充它的步骤：
 
-#### 1. 查看现有範本
+#### 1. 查看現有範本
 
 Unity 程式碼產生使用範本檔案，位於 `projects/xcell-core/templates/` 目錄：
 
@@ -136,7 +136,7 @@ Unity 程式碼產生使用範本檔案，位於 `projects/xcell-core/templates/
 
 #### 2. 修改或建立範本
 
-根据需要修改现有範本或建立新的範本檔案。
+根据需要修改現有範本或建立新的範本檔案。
 
 #### 3. 更新 UnityCodegen 設定
 
@@ -145,7 +145,7 @@ Unity 程式碼產生使用範本檔案，位於 `projects/xcell-core/templates/
 ```rust
 #[derive(Debug, Clone)]
 pub struct UnityCodegen {
-    // ... 现有欄位 ...
+    // ... 現有欄位 ...
     pub my_custom_option: bool,
 }
 ```
@@ -183,7 +183,7 @@ impl CocosCodegen {
 
 #### 3. 連線到工作流
 
-在 `WorkspaceManager::write_unity()` 或类似方法中调用新生成器。
+在 `WorkspaceManager::write_unity()` 或類似方法中调用新生成器。
 
 ***
 
@@ -191,9 +191,9 @@ impl CocosCodegen {
 
 XCell 支援通过外掛程式系統擴充功能。外掛程式可以新增新的資料表格類型、自訂驗證逻辑或擴充程式碼產生能力。
 
-### 外掛程式架构
+### 外掛程式架構
 
-外掛程式系統基於 Rust 的 trait 系統，主要介面套件括：
+外掛程式系統基於 Rust 的 trait 系統，主要介面包含：
 
 - 資料表格處理器 trait
 - 驗證器 trait
@@ -239,20 +239,20 @@ impl MyCustomTable {
 
 #### 3. 註冊外掛程式
 
-在 `WorkspaceManager::try_perform_file()` 方法中註冊您的外掛程式，使其能夠被识別和處理。
+在 `WorkspaceManager::try_perform_file()` 方法中註冊您的外掛程式，使其能夠被識別和處理。
 
 ### 外掛程式最佳做法
 
 1. **保持外掛程式独立**：外掛程式應该盡量独立，減少對 XCell 內部實现的相依性
 2. **提供設定選項**：通过 `XCell.toml` 提供外掛程式設定
 3. **錯誤處理**：妥善處理錯誤，提供清晰的錯誤資訊
-4. **文件**：為外掛程式提供完整的使用文件
-5. **測試**：编寫充分的測試案例
+4. **檔案**：為外掛程式提供完整的使用檔案
+5. **測試**：編寫充分的測試案例
 
 ***
 
-## 總结
+## 總結
 
-XCell 提供了強大的擴充能力，允许開發者根据自己的需求定制功能。无论是新增新的資料類型、擴充程式碼產生器，还是開發独立的外掛程式，XCell 的模組化架构都能很好地支援这些需求。
+XCell 提供了強大的擴充能力，允许開發者根据自己的需求定制功能。无论是新增新的資料類型、擴充程式碼產生器，还是開發独立的外掛程式，XCell 的模組化架構都能很好地支援这些需求。
 
 如果您在擴充过程中遇到問題，请參考專案原始程式碼或認可 Issue 获取說明。

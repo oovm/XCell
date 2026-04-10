@@ -44,7 +44,7 @@ pub async fn read_table(
 
     let mut workspace = WorkspaceManager::new(workspace_path)?;
 
-    workspace.first_walk()?;
+    workspace.first_walk(None)?;
 
     let table_name = path
         .file_stem()
@@ -126,7 +126,7 @@ pub async fn generate_code(
 
     let mut workspace = WorkspaceManager::new(path)?;
 
-    workspace.first_walk()?;
+    workspace.first_walk(None)?;
 
     match target.as_str() {
         "unity" => workspace.write_unity()?,
@@ -398,7 +398,7 @@ pub async fn open_project(
 
     let mut workspace = WorkspaceManager::new(path)?;
 
-    workspace.first_walk()?;
+    workspace.first_walk(None)?;
 
     let mut guard = state
         .workspace

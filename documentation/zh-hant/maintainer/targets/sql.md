@@ -10,33 +10,33 @@ SQL 程式碼產生器 (`sql`) 當前處於開發中狀態，支援基本的 SQL
 
 ## 類型對應
 
-| XCell 類型 | SQL 類型 | 说明 |
+| XCell 類型 | SQL 類型 | 說明 |
 |-----------|---------|------|
 | `bool` | `BOOLEAN` | 布爾值 |
-| `i8` | `TINYINT` | 8位有符號整数 |
-| `i16` | `SMALLINT` | 16位有符號整数 |
-| `i32` | `INT` | 32位有符號整数 |
-| `i64` | `BIGINT` | 64位有符號整数 |
-| `u8` | `TINYINT UNSIGNED` | 8位无符號整数 |
-| `u16` | `SMALLINT UNSIGNED` | 16位无符號整数 |
-| `u32` | `INT UNSIGNED` | 32位无符號整数 |
-| `u64` | `BIGINT UNSIGNED` | 64位无符號整数 |
-| `f32` | `FLOAT` | 32位浮点数 |
-| `f64` | `DOUBLE` | 64位浮点数 |
+| `i8` | `TINYINT` | 8位有符號整數 |
+| `i16` | `SMALLINT` | 16位有符號整數 |
+| `i32` | `INT` | 32位有符號整數 |
+| `i64` | `BIGINT` | 64位有符號整數 |
+| `u8` | `TINYINT UNSIGNED` | 8位无符號整數 |
+| `u16` | `SMALLINT UNSIGNED` | 16位无符號整數 |
+| `u32` | `INT UNSIGNED` | 32位无符號整數 |
+| `u64` | `BIGINT UNSIGNED` | 64位无符號整數 |
+| `f32` | `FLOAT` | 32位浮點數 |
+| `f64` | `DOUBLE` | 64位浮點數 |
 | `string` | `VARCHAR(n)` | 可變长度字串 |
 | `text` | `TEXT` | 长文本 |
 | `array<T>` | `JSON` | JSON 陣列 |
 | `map<K, V>` | `JSON` | JSON 物件 |
-| `enum` | `VARCHAR(64)` | 列舉名称 |
+| `enum` | `VARCHAR(64)` | 列舉名稱 |
 
 ## 支援的資料庫
 
-| 資料庫 | 狀態 | 说明 |
+| 資料庫 | 狀態 | 說明 |
 |--------|------|------|
 | MySQL | ✅ 支援 | 支援 MySQL 5.7+ |
-| PostgreSQL | ⚠️ 開發中 | 计劃支援 |
-| SQLite | ⚠️ 開發中 | 计劃支援 |
-| SQL Server | 计劃中 | 未来支援 |
+| PostgreSQL | ⚠️ 開發中 | 計劃支援 |
+| SQLite | ⚠️ 開發中 | 計劃支援 |
+| SQL Server | 計劃中 | 未来支援 |
 
 ## 設定選項
 
@@ -47,7 +47,7 @@ SQL 程式碼產生器 (`sql`) 當前處於開發中狀態，支援基本的 SQL
 enable = true
 output = "output/sql"             # SQL 檔案輸出目錄
 database = "mysql"                # 資料庫類型
-schema_name = "game_data"         # 資料庫名称
+schema_name = "game_data"         # 資料庫名稱
 create_table = true               # 是否生成 CREATE TABLE 陳述式
 insert_data = true                # 是否生成 INSERT 陳述式
 drop_table = false                # 是否生成 DROP TABLE 陳述式
@@ -128,7 +128,7 @@ mysql -u root -p game_data < output/sql/init.sql
 
 ### 資料迁移
 
-使用 SQL 檔案进行資料迁移：
+使用 SQL 檔案進行資料迁移：
 
 ```bash
 # 匯出資料
@@ -150,7 +150,7 @@ SQL 中的 `VARCHAR` 類型需要指定长度，XCell 會根据資料自動推�
 
 ### 主鍵约束
 
-XCell 會自動识別主鍵欄位並新增 `PRIMARY KEY` 约束。
+XCell 會自動識別主鍵欄位並新增 `PRIMARY KEY` 约束。
 
 ### 索引
 
@@ -158,7 +158,7 @@ XCell 會自動识別主鍵欄位並新增 `PRIMARY KEY` 约束。
 
 ### 交易
 
-對於大量資料插入，建議使用交易套件装：
+對於大量資料插入，建議使用交易包裝：
 
 ```sql
 START TRANSACTION;
@@ -169,12 +169,12 @@ COMMIT;
 
 ## 最佳做法
 
-1. **備份資料**：在執行 SQL 檔案前，确保已備份现有資料
+1. **備份資料**：在執行 SQL 檔案前，確保已備份現有資料
 2. **測試環境**：先在測試環境驗證 SQL 檔案的正确性
 3. **版本控制**：將 SQL 檔案纳入版本控制
 4. **增量更新**：對於生產環境，建議使用增量更新而非全量覆盖
 
-## 未来计劃
+## 未来計劃
 
 - 支援 PostgreSQL 和 SQLite
 - 支援增量更新陳述式生成

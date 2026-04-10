@@ -17,6 +17,7 @@ use crate::{
 use xcell_config::{PROJECT_CONFIG, ProjectConfig, TableConfig, TableLineMode, UnityBinaryConfig, UnityCodegen};
 use xcell_plugin::{PluginManager, WorkspaceManager as PluginWorkspaceManager};
 
+/// 工作空间管理器，负责管理配置表文件的加载、监控和导出
 pub struct WorkspaceManager {
     /// 项目配置
     pub config: ProjectConfig,
@@ -93,8 +94,9 @@ impl WorkspaceManager {
         Ok(workspace)
     }
     /// 首次加载目录
-    pub fn first_walk(&mut self) -> XResult<()> {
+    pub fn first_walk(&mut self, filter: Option<&str>) -> XResult<()> {
         let glob = build_glob_set(&self.config.include).result(|e| tracing::error!("{e}"))?;
+        let filter_glob = filter.and_then(|f| build_glob_set(f).result(|e| tracing::error!("{e}")).ok());
         let entries = xcell_core::for_3rd::SyncWalkDir::new(&self.config.root);
         for entry in entries {
             match entry {
@@ -111,9 +113,13 @@ impl WorkspaceManager {
                     let file = o.path();
                     let normed = get_relative(&self.config.root, file)?;
                     if glob.is_match(&normed) {
+                        if let Some(ref fg) = filter_glob {
+                            if !fg.is_match(&normed) {
+                                continue;
+                            }
+                        }
                         tracing::info!("首次加载: {}", normed.display());
                         self.load_file(&file);
-                        // 记录文件修改时间
                         if let Ok(meta) = metadata(file) {
                             if let Ok(mtime) = meta.modified() {
                                 self.file_modification_times.insert(file.to_path_buf(), mtime);
@@ -125,9 +131,6 @@ impl WorkspaceManager {
             }
         }
         self.link_enumerate();
-        // 代码生成现在由 xcell 可执行文件中的 xcell-generator 模块处理
-        // self.write_unity()?;
-        // self.write_cocos()?;
         Ok(())
     }
     /// 启动文件监控，支持防抖和优雅退出
@@ -224,6 +227,7 @@ impl WorkspaceManager {
             tracing::error!("{e}")
         }
     }
+    /// 尝试处理单个文件，解析并加载表格数据
     pub fn try_perform_file(&mut self, file: &Path) -> XResult<()> {
         tracing::debug!("处理文件: {}", file.display());
         let table = crate::x_table::load_table(file, &self.config)?;
@@ -299,6 +303,7 @@ impl WorkspaceManager {
         true // 默认导出
     }
 
+    /// 生成 Unity 代码和资源文件
     pub fn write_unity(&self) -> XResult<()> {
         // 代码生成现在由 xcell 可执行文件中的 xcell-generator 模块处理
         Ok(())

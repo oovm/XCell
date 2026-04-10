@@ -1,11 +1,11 @@
 
 # Unity 集成
 
-本教學將详细介绍如何將 XCell 設定資料表管理工具與 Unity 專案无缝集成。
+本教學將詳細介绍如何將 XCell 設定資料表管理工具與 Unity 專案无缝集成。
 
-## 專案结构
+## 專案結構
 
-建議的 Unity 專案與 XCell 工作目錄结构如下：
+建議的 Unity 專案與 XCell 工作目錄結構如下：
 
 ```
 MyUnityGame/
@@ -78,16 +78,16 @@ output = "Assets/Tables/Readable"
 enable = false
 ```
 
-### 設定说明
+### 設定說明
 
-| 設定项 | 说明 |
+| 設定项 | 說明 |
 |--------|------|
 | `unity.project` | Unity 專案的相對路徑 |
 | `unity.output` | C# 程式碼產生路徑 |
 | `unity.namespace` | 生成程式碼的命名空間 |
-| `unity.manager` | 資料管理器类名 |
-| `unity.suffix_table` | 資料表格类名後缀 |
-| `unity.suffix_element` | 資料元素类名後缀 |
+| `unity.manager` | 資料管理器類別名 |
+| `unity.suffix_table` | 資料表格類別名後缀 |
+| `unity.suffix_element` | 資料元素類別名後缀 |
 | `unity.binary.output` | 二進位資料輸出路徑 |
 
 ## 建立設定資料表範例
@@ -97,8 +97,8 @@ enable = false
 | id | name | name_key | hp | attack | defense | speed | rarity | skill_ids |
 |----|------|----------|----|--------|---------|-------|--------|-----------|
 | int | string | string | int | int | int | float | int | int[] |
-| 英雄ID | 英雄名称 | 名称多語言Key | 生命值 | 攻擊力 | 防禦力 | 速度 | 稀有度 | 技能ID串列 |
-| 1001 | 骑士 | hero_knight | 1500 | 120 | 80 | 1.2 | 2 | [101, 102] |
+| 英雄ID | 英雄名稱 | 名稱多語言Key | 生命值 | 攻擊力 | 防禦力 | 速度 | 稀有度 | 技能ID串列 |
+| 1001 | 騎士 | hero_knight | 1500 | 120 | 80 | 1.2 | 2 | [101, 102] |
 | 1002 | 法師 | hero_mage | 900 | 180 | 40 | 1.5 | 2 | [201, 202] |
 | 1003 | 弓手 | hero_archer | 1000 | 150 | 50 | 1.8 | 2 | [301, 302] |
 
@@ -107,17 +107,17 @@ enable = false
 | id | name | type | price | stackable | max_stack | description |
 |----|------|------|-------|-----------|-----------|-------------|
 | int | string | int | int | bool | int | string |
-| 物品ID | 物品名称 | 物品類型 | 價格 | 是否可堆疊 | 最大堆疊 | 描述 |
+| 物品ID | 物品名稱 | 物品類型 | 價格 | 是否可堆疊 | 最大堆疊 | 描述 |
 | 1 | 生命药水 | 1 | 50 | true | 99 | 還原500点生命值 |
 | 2 | 魔法药水 | 1 | 60 | true | 99 | 還原300点魔法值 |
-| 3 | 铁劍 | 2 | 500 | false | 1 | 基础武器，攻擊力+50 |
+| 3 | 铁劍 | 2 | 500 | false | 1 | 基礎武器，攻擊力+50 |
 
 ### 3. 技能設定資料表 (Skill.xlsx)
 
 | id | name | damage | cooldown | mp_cost | target_type |
 |----|------|--------|----------|---------|-------------|
 | int | string | int | float | int | int |
-| 技能ID | 技能名称 | 傷害值 | 冷卻时间 | 魔法消耗 | 目标類型 |
+| 技能ID | 技能名稱 | 傷害值 | 冷卻时间 | 魔法消耗 | 目標類型 |
 | 101 | 斩擊 | 100 | 2.0 | 0 | 1 |
 | 102 | 盾擊 | 80 | 3.0 | 10 | 1 |
 | 201 | 火球术 | 200 | 3.5 | 30 | 2 |
@@ -209,7 +209,7 @@ public class DataTableLoader : MonoBehaviour
 }
 ```
 
-## 在游戲中使用設定資料表
+## 在遊戲中使用設定資料表
 
 ### 範例 1：获取英雄資料
 
@@ -272,7 +272,7 @@ public class InventoryManager : MonoBehaviour
 
     private void EquipWeapon(ItemData item)
     {
-        Debug.Log($"装備武器: {item.name}");
+        Debug.Log($"裝備武器: {item.name}");
     }
 }
 ```
@@ -321,4 +321,4 @@ xcell.exe --watch
 2. **資料夾组织**：按功能模組组织 Excel 資料表格檔案
 3. **命名规范**：使用一致的命名规范，如 PascalCase 或 snake_case
 4. **資料驗證**：定期使用 `xcell.exe check` 驗證設定資料表資料的正确性
-5. **文件维護**：為復杂的設定資料表新增说明文件
+5. **檔案维護**：為複雜的設定資料表新增說明檔案

@@ -9,10 +9,11 @@ use oak_toml::{TomlValue, TomlTable, TomlArray, to_string, from_str};
 async fn main() -> XResult<()> {
     let args = XCellArgs::parse();
     logger(args.verbose, args.quiet);
+    let filter = if args.filter.is_empty() { None } else { Some(args.filter.as_str()) };
     let result = match args.command {
         Some(SubArgs::Check) => {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
-            ws.first_walk()?;
+            ws.first_walk(filter)?;
             Ok(())
         }
         Some(SubArgs::Clear) => {
@@ -137,7 +138,7 @@ async fn main() -> XResult<()> {
         },
         Some(SubArgs::Info) => {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
-            ws.first_walk()?;
+            ws.first_walk(filter)?;
             println!("{}", ws.summary());
             Ok(())
         }
@@ -166,7 +167,7 @@ group = ["languagegroup"]
         }
         Some(SubArgs::List) => {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
-            ws.first_walk()?;
+            ws.first_walk(filter)?;
             let status = ws.status();
             println!("表格列表 (共 {} 个)", status.list_count + status.dict_count + status.class_count + status.enumerate_count);
             println!("{:-<60}", "");
@@ -199,7 +200,7 @@ group = ["languagegroup"]
             tracing::info!("生成器数量: {:?}", ws.config.generators.len());
             
             // 先进行首次遍历，加载表数据
-            ws.first_walk()?;
+            ws.first_walk(filter)?;
             
             // 然后使用 xcell-generator 模块进行代码生成
             let config = xcell_generator::config::GeneratorConfig::from_project_config(&ws.config);

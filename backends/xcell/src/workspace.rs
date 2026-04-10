@@ -1,6 +1,7 @@
 use super::*;
 
 impl XCellArgs {
+    /// 解析工作空间路径，支持相对路径和绝对路径
     pub fn resolve_workspace(&self) -> XResult<PathBuf> {
         if self.workspace.is_empty() {
             return Ok(current_dir()?);

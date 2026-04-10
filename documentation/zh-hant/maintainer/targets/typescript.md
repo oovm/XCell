@@ -6,19 +6,19 @@ XCell 支援生成 TypeScript 和 JavaScript 程式碼，用於前端和後端�
 
 ## 類型對應
 
-| XCell 類型 | TypeScript 類型 | 说明 |
+| XCell 類型 | TypeScript 類型 | 說明 |
 |-----------|----------------|------|
 | `bool` | `boolean` | 布爾值 |
-| `i8` | `number` | 8位有符號整数 |
-| `i16` | `number` | 16位有符號整数 |
-| `i32` | `number` | 32位有符號整数 |
-| `i64` | `number` | 64位有符號整数 |
-| `u8` | `number` | 8位无符號整数 |
-| `u16` | `number` | 16位无符號整数 |
-| `u32` | `number` | 32位无符號整数 |
-| `u64` | `number` | 64位无符號整数 |
-| `f32` | `number` | 32位浮点数 |
-| `f64` | `number` | 64位浮点数 |
+| `i8` | `number` | 8位有符號整數 |
+| `i16` | `number` | 16位有符號整數 |
+| `i32` | `number` | 32位有符號整數 |
+| `i64` | `number` | 64位有符號整數 |
+| `u8` | `number` | 8位无符號整數 |
+| `u16` | `number` | 16位无符號整數 |
+| `u32` | `number` | 32位无符號整數 |
+| `u64` | `number` | 64位无符號整數 |
+| `f32` | `number` | 32位浮點數 |
+| `f64` | `number` | 64位浮點數 |
 | `string` | `string` | 字串 |
 | `array<T>` | `T[]` | 陣列 |
 | `list<T>` | `T[]` | 串列 |
@@ -46,7 +46,7 @@ XCell 支援生成 TypeScript 和 JavaScript 程式碼，用於前端和後端�
 enable = true
 output = "src/generated"           # TypeScript 程式碼輸出目錄
 namespace = "DataTable.Generated"   # 命名空間
-manager_name = "DataTableManager"  # 管理器类名
+manager_name = "DataTableManager"  # 管理器類別名
 suffix_table = "Table"             # 資料表类後缀
 suffix_element = "Element"         # 元素类後缀
 
@@ -169,7 +169,7 @@ function loadJson<T>(filePath: string): T {
 }
 ```
 
-### 使用動態匯入（打套件工具）
+### 使用動態匯入（打包工具）
 
 ```typescript
 // 使用 Vite/Webpack 的動態匯入
@@ -185,9 +185,9 @@ const playerData = await import('./data/generated/Player.json');
 
 ## 最佳做法
 
-1. **類型安全**：使用生成的介面进行類型檢查，避免執行階段錯誤
+1. **類型安全**：使用生成的介面進行類型檢查，避免執行階段錯誤
 2. **延遲載入**：依需求載入資料，減少初始載入时间
-3. **快取**：快取已載入的資料，避免重復请求
+3. **快取**：快取已載入的資料，避免重復要求
 4. **錯誤處理**：新增适當的錯誤處理，處理載入失敗的情況
 
 ## 範例專案
@@ -195,7 +195,7 @@ const playerData = await import('./data/generated/Player.json');
 XCell 提供了 TypeScript 範例專案，展示了如何在實际專案中使用 XCell：
 
 - 基本設定資料表使用
-- 復杂資料結構
+- 複雜資料結構
 - 多語言支援
 - 前後端集成
 

@@ -1,6 +1,6 @@
 # 元屬性（Meta Data）
 
-元屬性用於為欄位新增额外的設定資訊，如驗證规則、預設值等。
+元屬性用於為欄位新增額外的設定資訊，如驗證規則、預設值等。
 
 ## 基本格式
 
@@ -18,7 +18,7 @@
 
 ### 欄位元屬性
 
-| 元屬性 | 说明 | 範例 |
+| 元屬性 | 說明 | 範例 |
 | ------ | ---- | ---- |
 | `@primary` | 主鍵 | `id @primary` |
 | `@default(value)` | 預設值 | `level @default(1)` |
@@ -26,7 +26,7 @@
 
 ### 類型元屬性
 
-| 元屬性 | 说明 | 範例 |
+| 元屬性 | 說明 | 範例 |
 | ------ | ---- | ---- |
 | `@min(value)` | 最小值 | `i32 @min(0)` |
 | `@max(value)` | 最大值 | `i32 @max(100)` |
@@ -48,7 +48,7 @@
 
 ### 範例
 
-| @dict | 名称 | 品質ID | 品质 |
+| @dict | 名稱 | 品質ID | 品質 |
 | ----- | ---- | ------ | ---- |
 | item_id | name | quality_id | quality @virtual |
 | string | string | &Quality | Quality |
@@ -56,21 +56,21 @@
 | sword_002 | 精钢劍 | rare | |
 
 - `quality_id` 是實际儲存的欄位，類型為 `&Quality`
-- `quality` 是虚擬欄位，通过 `@virtual` 標記，類型為目标資料表名 `Quality`
+- `quality` 是虚擬欄位，通过 `@virtual` 標記，類型為目標資料表名 `Quality`
 
-## 计算屬性
+## 計算屬性
 
-计算屬性是通过運算式计算得出的欄位，不需要儲存實际資料。
+計算屬性是通过運算式計算得出的欄位，不需要儲存實际資料。
 
 ### 範例
 
-| @dict | 基础攻擊 | 強化等级 | 總攻擊 |
+| @dict | 基礎攻擊 | 強化等级 | 總攻擊 |
 | ----- | -------- | -------- | ------ |
 | item_id | base_atk | enhance | total_atk @computed |
 | string | i32 | i32 | i32 |
 | sword_001 | 100 | 5 | base_atk * (1 + enhance * 0.1) |
 
-- `total_atk` 是计算屬性，通过 `@computed` 標記
+- `total_atk` 是計算屬性，通过 `@computed` 標記
 - 運算式可以參照同資料表中的其他欄位
 
 ## 範例
@@ -86,7 +86,7 @@
 
 ### 帶預設值的欄位
 
-| @dict | 名称 | 等级 |
+| @dict | 名稱 | 等级 |
 | ----- | ---- | ---- |
 | item_id | name | quality |
 | string | string | string @default(common) |

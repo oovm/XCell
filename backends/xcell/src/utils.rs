@@ -9,6 +9,7 @@ use tracing_subscriber::{
     fmt::{FmtContext, FormatEvent, FormatFields, format::Writer},
 };
 
+/// 在发布模式下暂停程序等待用户按键
 pub fn pause() {
     if cfg!(debug_assertions) {
         return;
@@ -21,6 +22,7 @@ pub fn pause() {
     }
 }
 
+/// 初始化日志系统，根据参数设置日志级别
 pub fn logger(verbose: bool, quiet: bool) {
     let level = if verbose {
         "trace"

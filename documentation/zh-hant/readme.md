@@ -10,17 +10,17 @@
 - Windows 作業系統
 - Rust 開發環境（如需從原始碼編譯）
 
-### 安装方式
+### 安裝方式
 
-#### 方式一：使用预編譯版本
+#### 方式一：使用預編譯版本
 
-1. 從專案發布页面下载最新的 `xcell.exe`
+1. 從專案發布页面下載最新的 `xcell.exe`
 2. 將 `xcell.exe` 放置到您的專案目錄中
 
 #### 方式二：從原始碼編譯
 
-1. 确保已安装 Rust 開發環境
-2. 複製或下载專案原始碼
+1. 確保已安裝 Rust 開發環境
+2. 複製或下載專案原始碼
 3. 在專案根目錄執行：
 
 ```bash
@@ -31,9 +31,9 @@ cargo build --release
 
 ## 專案初始化
 
-### 建立專案结构
+### 建立專案結構
 
-在您的工作目錄中建立以下结构：
+在您的工作目錄中建立以下結構：
 
 ```
 MyProject/
@@ -97,15 +97,15 @@ enable = false
 
 ## 建立第一個設定資料表
 
-### Excel 資料表格结构
+### Excel 資料表格結構
 
-XCell 使用特定的 Excel 資料表格结构，前 3 行為資料表頭，從第 4 行開始是資料：
+XCell 使用特定的 Excel 資料表格結構，前 3 行為資料表頭，從第 4 行開始是資料：
 
-| 行號 | 用途 | 说明 |
+| 行號 | 用途 | 說明 |
 |------|------|------|
 | 1 | 欄位名 | 設定資料表的欄位名稱 |
 | 2 | 資料類型 | 欄位的資料類型 |
-| 3 | 註解 | 欄位的说明文字 |
+| 3 | 註解 | 欄位的說明文字 |
 | 4+ | 資料行 | 實际的設定資料 |
 
 ### 範例資料表格
@@ -115,10 +115,10 @@ XCell 使用特定的 Excel 資料表格结构，前 3 行為資料表頭，從�
 | id | name | hp | attack | is_boss |
 |----|------|----|--------|---------|
 | int | string | int | int | bool |
-| 英雄ID | 英雄名称 | 生命值 | 攻擊力 | 是否Boss |
-| 1 | 骑士 | 1000 | 100 | false |
+| 英雄ID | 英雄名稱 | 生命值 | 攻擊力 | 是否Boss |
+| 1 | 騎士 | 1000 | 100 | false |
 | 2 | 法師 | 800 | 150 | false |
-| 3 | 巨龙 | 5000 | 500 | true |
+| 3 | 巨龍 | 5000 | 500 | true |
 
 ## 執行 XCell
 
@@ -149,7 +149,7 @@ xcell.exe [OPTIONS] [COMMAND]
 #### 選項
 
 - `--workspace <WORKSPACE>`: 手動設定工作目錄，不輸入資料表示目前目錄
-- `-w, --watch`: 啟用監聽模式，當有檔案修改时只更新對應檔案
+- `-w, --watch`: 啟用監聽模式，當有檔案修改時只更新對應檔案
 - `--disable-xml`: 強制關閉 xml 生成
 - `--disable-json`: 強制關閉 json 生成
 - `-h, --help`: 顯示說明
@@ -175,7 +175,7 @@ xcell.exe --watch
 xcell.exe clear
 ```
 
-## 查看生成结果
+## 查看生成結果
 
 執行成功後，您將看到以下生成的檔案：
 
@@ -191,7 +191,7 @@ MyProject/
 
 ### 生成的 C# 程式碼範例
 
-`HeroTable.cs` 將套件含类似以下內容：
+`HeroTable.cs` 將包含類似以下內容：
 
 ```csharp
 namespace DataTable.Generated
@@ -220,4 +220,4 @@ namespace DataTable.Generated
 ## 下一步
 
 - 查看 [使用場景索引](use-cases/index.md) 了解更多具體套用
-- Unity 使用者可以參考 [Unity 集成](use-cases/unity-integration.md) 文件
+- Unity 使用者可以參考 [Unity 集成](use-cases/unity-integration.md) 檔案

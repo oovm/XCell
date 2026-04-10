@@ -27,3 +27,12 @@ impl From<IOError> for XError {
         Self { kind: Box::new(XErrorKind::from(&e)), path: None, position: None, source: Some(Box::new(e)) }
     }
 }
+
+impl From<xcell_parser::ParseError> for XError {
+    fn from(e: xcell_parser::ParseError) -> Self {
+        XError::new(XErrorKind::ParseError {
+            message: e.message.clone(),
+            source: e.to_string(),
+        })
+    }
+}

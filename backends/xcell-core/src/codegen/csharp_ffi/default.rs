@@ -20,6 +20,8 @@ impl XCellTyped {
             }
             XCellTyped::Reference(v) => v.as_csharp_default(),
             XCellTyped::List(v) => v.as_csharp_default(),
+            XCellTyped::Map(_) => "new()".to_string(),
+            XCellTyped::Optional(v) => v.element_type.as_csharp_default(),
         }
     }
 }
@@ -70,6 +72,11 @@ impl XCellValue {
                 todo!()
             }
             XCellValue::Reference(v) => v.to_string(),
+            XCellValue::Map(v) => format!("{:?}", v),
+            XCellValue::Optional(v) => match v {
+                Some(inner) => inner.as_csharp_value(),
+                None => "null".to_string(),
+            },
         }
     }
 }
@@ -196,6 +203,17 @@ impl XCellTyped {
                     ..v.element_type.make_cs_binary_writer(field)
                 };
             }
+            XCellTyped::Map(_) => {
+                return CSharpWriter {
+                    is_vector: false,
+                    field: field.to_string(),
+                    cast: "".to_string(),
+                    properties: vec!["".to_string()],
+                };
+            }
+            XCellTyped::Optional(v) => {
+                return v.element_type.make_cs_binary_writer(field);
+            }
             _ => vec!["".to_string()],
         };
         CSharpWriter { is_vector: false, field: field.to_string(), cast: "".to_string(), properties }
@@ -212,6 +230,8 @@ impl XCellTyped {
         match self {
             XCellTyped::Vector(v) => CSharpReader { is_vector: true, ..v.get_type().make_cs_binary_reader(field) },
             XCellTyped::List(v) => CSharpReader { is_vector: true, ..v.element_type.make_cs_binary_reader(field) },
+            XCellTyped::Map(_) => CSharpReader { is_vector: false, function: "r.ReadString()".to_string(), field: field.to_string() },
+            XCellTyped::Optional(v) => v.element_type.make_cs_binary_reader(field),
             _ => CSharpReader { is_vector: false, function: self.as_csharp_reader(), field: field.to_string() },
         }
     }
@@ -242,6 +262,8 @@ impl XCellTyped {
             XCellTyped::Vector(_) => unreachable!(),
             XCellTyped::Reference(_) => "r.ReadInt32()",
             XCellTyped::List(_) => unreachable!(),
+            XCellTyped::Map(_) => unreachable!(),
+            XCellTyped::Optional(_) => unreachable!(),
         };
         str.to_string()
     }

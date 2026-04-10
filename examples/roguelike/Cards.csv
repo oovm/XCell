@@ -1,6 +1,5 @@
-@list,名称,描述,类型,消耗,伤害,格挡,效果列表,稀有度,角色ID
-id,name,description,type,cost,damage,block,effects,rarity,character_id
-i32,text,text,text,i32,i32,i32,"[&Effects]",Rarity,&Characters
+@list,name,description,type,cost,damage,block,effects,rarity,character_id
+id,text,text,text,i32,i32,i32,"[&Effects]",Rarity,&Characters
 1,斩击,基础攻击招式,攻击,1,6,0,"[]",Common,1
 2,重击,造成较高伤害,攻击,2,12,0,"[]",Common,1
 3,防御姿态,获得格挡值,防御,1,0,5,"[]",Common,1

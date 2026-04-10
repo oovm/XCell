@@ -5,7 +5,7 @@ use crate::for_3rd::{Datelike, Timelike, Utc, Zero};
 
 use crate::{
     ArrayDescription, ArrayKind, BooleanDescription, ColorDescription, DecimalDescription, DecimalKind, IntegerDescription,
-    IntegerKind, ListDescription, ReferenceDescription, StringDescription, TimeDescription, XCellTyped, XCellValue,
+    IntegerKind, ListDescription, MapDescription, ReferenceDescription, StringDescription, TimeDescription, XCellTyped, XCellValue,
 };
 
 mod default;
@@ -55,6 +55,8 @@ impl XCellTyped {
             XCellTyped::Vector(v) => format!("List<{}>", v.get_type().as_csharp_type()),
             XCellTyped::Reference(_) => "int".to_string(),
             XCellTyped::List(v) => v.as_csharp_type(),
+            XCellTyped::Map(v) => v.as_csharp_type(),
+            XCellTyped::Optional(v) => format!("{}?", v.element_type.as_csharp_type()),
         }
     }
 }
@@ -70,5 +72,12 @@ impl ListDescription {
     /// 返回列表类型对应的 C# 类型名称
     pub fn as_csharp_type(&self) -> String {
         format!("List<{}>", self.element_type.as_csharp_type())
+    }
+}
+
+impl MapDescription {
+    /// 返回映射类型对应的 C# 类型名称
+    pub fn as_csharp_type(&self) -> String {
+        format!("Dictionary<{}, {}>", self.key_type.as_csharp_type(), self.value_type.as_csharp_type())
     }
 }

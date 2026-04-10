@@ -1,5 +1,7 @@
 use super::*;
 use xcell_parser::{TypeExpr, PrimitiveType as ParserPrimitiveType};
+use crate::map::MapDescription;
+use crate::optional::OptionalDescription;
 
 impl XCellTyped {
     /// 使用 xcell-parser 解析类型表达式
@@ -47,6 +49,15 @@ impl XCellTyped {
             }
             TypeExpr::Named(name) => {
                 Self::from_named(&name, info)
+            }
+            TypeExpr::Map { key, value } => {
+                let key_type = Self::from_type_expr(*key, info);
+                let value_type = Self::from_type_expr(*value, info);
+                MapDescription { key_type, value_type, ..Default::default() }.into()
+            }
+            TypeExpr::Optional { element } => {
+                let element_type = Self::from_type_expr(*element, info);
+                OptionalDescription { element_type, ..Default::default() }.into()
             }
         }
     }

@@ -1,6 +1,6 @@
 use xcell_core::{
-    ListDescription, ReferenceDescription, StringDescription, TypeMetaInfo, VectorDescription,
-    XCellTyped, XCellValue,
+    ListDescription, MapDescription, OptionalDescription, ReferenceDescription, StringDescription,
+    TypeMetaInfo, VectorDescription, XCellTyped, XCellValue, XError, XErrorKind,
 };
 use xcell_core::for_3rd::Data;
 
@@ -188,6 +188,111 @@ fn test_vec_type_parsing() {
     let info = TypeMetaInfo::default();
 
     let vec_type = XCellTyped::parse("Vec<i32>", &info);
-    // Vec<T> 应该解析成功
     let _ = vec_type;
+}
+
+#[test]
+fn test_map_type_parsing() {
+    let info = TypeMetaInfo::default();
+
+    let map_type = XCellTyped::parse("Map<string, i32>", &info);
+    assert!(map_type.is_map());
+    let map_desc = map_type.as_map().unwrap();
+    assert!(map_desc.key_type.is_list() || map_desc.key_type.as_reference().is_none());
+}
+
+#[test]
+fn test_optional_type_parsing() {
+    let info = TypeMetaInfo::default();
+
+    let opt_type = XCellTyped::parse("i32?", &info);
+    assert!(opt_type.is_optional());
+    let opt_desc = opt_type.as_optional().unwrap();
+    assert!(matches!(opt_desc.element_type, XCellTyped::Integer(_)));
+}
+
+#[test]
+fn test_map_cell_parsing() {
+    let info = TypeMetaInfo::default();
+    let map_desc = MapDescription {
+        key_type: XCellTyped::parse("string", &info),
+        value_type: XCellTyped::parse("i32", &info),
+        ..Default::default()
+    };
+
+    let cell = Data::String("a:1,b:2".to_string());
+    let value = map_desc.parse_cell(&cell).unwrap();
+    match value {
+        XCellValue::Map(map) => {
+            assert_eq!(map.len(), 2);
+            assert!(map.contains_key("a"));
+            assert!(map.contains_key("b"));
+        }
+        _ => panic!("Expected Map"),
+    }
+}
+
+#[test]
+fn test_optional_cell_parsing_empty() {
+    let info = TypeMetaInfo::default();
+    let opt_desc = OptionalDescription {
+        element_type: XCellTyped::parse("i32", &info),
+        ..Default::default()
+    };
+
+    let cell = Data::Empty;
+    let value = opt_desc.parse_cell(&cell).unwrap();
+    match value {
+        XCellValue::Optional(inner) => {
+            assert!(inner.is_none());
+        }
+        _ => panic!("Expected Optional"),
+    }
+}
+
+#[test]
+fn test_optional_cell_parsing_value() {
+    let info = TypeMetaInfo::default();
+    let opt_desc = OptionalDescription {
+        element_type: XCellTyped::parse("i32", &info),
+        ..Default::default()
+    };
+
+    let cell = Data::String("42".to_string());
+    let value = opt_desc.parse_cell(&cell).unwrap();
+    match value {
+        XCellValue::Optional(Some(inner)) => {
+            assert!(matches!(*inner, XCellValue::Integer32(42)));
+        }
+        _ => panic!("Expected Optional(Some)"),
+    }
+}
+
+#[test]
+fn test_type_meta_info_complete() {
+    let info = TypeMetaInfo::default();
+    let _ = &info.boolean;
+    let _ = &info.string;
+    let _ = &info.vector;
+    let _ = &info.language;
+    let _ = &info.enumerate;
+    let _ = &info.decimal;
+    let _ = &info.time;
+    let _ = &info.color;
+    let _ = &info.reference;
+}
+
+#[test]
+fn test_parse_error_conversion() {
+    let parse_err = xcell_parser::ParseError::new(
+        xcell_parser::ParseErrorKind::InvalidTypeName("bad".to_string()),
+        0,
+    );
+    let xerror: XError = parse_err.into();
+    match &*xerror.kind {
+        XErrorKind::ParseError { message, .. } => {
+            assert!(!message.is_empty());
+        }
+        _ => panic!("Expected ParseError variant"),
+    }
 }

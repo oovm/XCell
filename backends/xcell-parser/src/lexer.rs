@@ -24,6 +24,10 @@ pub enum TokenKind {
     LeftParen,
     /// 右圆括号 `)`
     RightParen,
+    /// 左花括号 `{`
+    LeftBrace,
+    /// 右花括号 `}`
+    RightBrace,
     /// 逗号 `,`
     Comma,
     /// 分号 `;`
@@ -54,6 +58,8 @@ impl std::fmt::Display for TokenKind {
             TokenKind::RightAngle => write!(f, ">"),
             TokenKind::LeftParen => write!(f, "("),
             TokenKind::RightParen => write!(f, ")"),
+            TokenKind::LeftBrace => write!(f, "{{"),
+            TokenKind::RightBrace => write!(f, "}}"),
             TokenKind::Comma => write!(f, ","),
             TokenKind::Semicolon => write!(f, ";"),
             TokenKind::Colon => write!(f, ":"),
@@ -194,6 +200,8 @@ impl<'a> Lexer<'a> {
                     '>' => Ok(Token::new(TokenKind::RightAngle, ">".to_string(), start, self.position)),
                     '(' => Ok(Token::new(TokenKind::LeftParen, "(".to_string(), start, self.position)),
                     ')' => Ok(Token::new(TokenKind::RightParen, ")".to_string(), start, self.position)),
+                    '{' => Ok(Token::new(TokenKind::LeftBrace, "{".to_string(), start, self.position)),
+                    '}' => Ok(Token::new(TokenKind::RightBrace, "}".to_string(), start, self.position)),
                     ',' => Ok(Token::new(TokenKind::Comma, ",".to_string(), start, self.position)),
                     ';' => Ok(Token::new(TokenKind::Semicolon, ";".to_string(), start, self.position)),
                     ':' => Ok(Token::new(TokenKind::Colon, ":".to_string(), start, self.position)),

@@ -13,6 +13,8 @@ pub enum FileFormat {
     Csv,
     /// TSV 格式（.tsv）
     Tsv,
+    /// ODS 格式（.ods）
+    Ods,
     /// 未知格式
     Unknown,
 }
@@ -39,6 +41,7 @@ impl FileFormatDetector {
                 "xlsx" | "xls" => return Ok(FileFormat::Excel),
                 "csv" => return Ok(FileFormat::Csv),
                 "tsv" => return Ok(FileFormat::Tsv),
+                "ods" => return Ok(FileFormat::Ods),
                 _ => (),
             }
         }

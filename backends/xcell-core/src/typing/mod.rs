@@ -20,6 +20,8 @@ pub use crate::{
     enumerate::EnumerateDescription,
     integer::{IntegerDescription, IntegerKind},
     list::ListDescription,
+    map::MapDescription,
+    optional::OptionalDescription,
     reference::ReferenceDescription,
     string::StringDescription,
     value::{color::ColorDescription, time::TimeDescription},
@@ -44,6 +46,14 @@ pub struct TypeMetaInfo {
     pub language: LanguageDescription,
     /// 枚举类型描述
     pub enumerate: EnumerateDescription,
+    /// 小数类型描述
+    pub decimal: DecimalDescription,
+    /// 时间类型描述
+    pub time: TimeDescription,
+    /// 颜色类型描述
+    pub color: ColorDescription,
+    /// 引用类型描述
+    pub reference: ReferenceDescription,
 }
 
 /// XCell 类型枚举，支持多种数据类型。
@@ -71,6 +81,10 @@ pub enum XCellTyped {
     Reference(Box<ReferenceDescription>),
     /// 列表类型
     List(Box<ListDescription>),
+    /// 映射类型
+    Map(Box<MapDescription>),
+    /// 可选类型
+    Optional(Box<OptionalDescription>),
 }
 
 impl Default for XCellTyped {
@@ -101,6 +115,8 @@ impl XCellTyped {
             XCellTyped::Vector(typing) => typing.parse_cell(cell),
             XCellTyped::Reference(typing) => typing.parse_cell(cell),
             XCellTyped::List(typing) => typing.parse_cell(cell),
+            XCellTyped::Map(typing) => typing.parse_cell(cell),
+            XCellTyped::Optional(typing) => typing.parse_cell(cell),
         }
     }
 }

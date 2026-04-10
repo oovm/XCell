@@ -69,7 +69,16 @@ impl TypeParser {
 
     /// 解析类型
     fn parse_type(&mut self) -> ParseResult<TypeExpr> {
-        self.parse_primary_type()
+        let mut ty = self.parse_primary_type()?;
+
+        while self.current().kind == TokenKind::Question {
+            self.advance();
+            ty = TypeExpr::Optional {
+                element: Box::new(ty),
+            };
+        }
+
+        Ok(ty)
     }
 
     /// 解析基本类型
@@ -163,6 +172,16 @@ impl TypeParser {
             // 特殊处理 Vec<T>
             if name.eq_ignore_ascii_case("Vec") && args.len() == 1 {
                 return Ok(TypeExpr::Vec { element: Box::new(args.remove(0)) });
+            }
+
+            // 特殊处理 Map<K, V>
+            if name.eq_ignore_ascii_case("Map") && args.len() == 2 {
+                let value = args.remove(1);
+                let key = args.remove(0);
+                return Ok(TypeExpr::Map {
+                    key: Box::new(key),
+                    value: Box::new(value),
+                });
             }
             
             return Ok(TypeExpr::Generic { name, args });

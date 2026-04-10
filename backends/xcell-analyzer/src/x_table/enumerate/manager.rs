@@ -1,5 +1,7 @@
 use std::collections::BTreeSet;
 
+use crate::XLanguageData;
+
 use super::*;
 
 impl WorkspaceManager {
@@ -44,5 +46,20 @@ impl WorkspaceManager {
     }
     pub fn enumerates(&self) -> impl Iterator<Item = &XEnumerateData> {
         self.defines.enumerate.values()
+    }
+    pub fn get_list(&self, name: &str) -> Option<&XListData> {
+        self.defines.list.get(name)
+    }
+    pub fn get_dict(&self, name: &str) -> Option<&XDictData> {
+        self.defines.dict.get(name)
+    }
+    pub fn get_class(&self, name: &str) -> Option<&XClassData> {
+        self.defines.class.get(name)
+    }
+    pub fn get_enumerate(&self, name: &str) -> Option<&XEnumerateData> {
+        self.defines.enumerate.get(name)
+    }
+    pub fn get_language(&self, key: &str) -> Option<XLanguageData> {
+        self.languages.store.get(key).cloned()
     }
 }

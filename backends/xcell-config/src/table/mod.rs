@@ -1,12 +1,12 @@
 use std::path::Path;
 
 use serde::{Deserialize, Deserializer, Serialize};
-use oak_from_str;
+use oak_toml::from_str;
 
 use xcell_core::{TypeMetaInfo, XResult};
 
 use super::*;
-use crate::{project::ProjectConfig, unity::UnityCodegen};
+use crate::project::ProjectConfig;
 
 mod der;
 

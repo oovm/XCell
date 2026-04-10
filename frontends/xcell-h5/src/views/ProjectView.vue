@@ -7,30 +7,30 @@
         <el-card class="project-info-card" shadow="hover">
           <el-form label-width="150px" class="project-form">
             <el-form-item label="版本号">
-              <el-input v-model="projectConfig.version" placeholder="输入版本号" class="form-input" />
+              <el-input v-model="projectStore.projectConfig.version" placeholder="输入版本号" class="form-input" />
             </el-form-item>
             <el-form-item label="包含的 Excel 路径">
-              <el-input v-model="projectConfig.include" placeholder="输入包含的 Excel 路径" class="form-input" />
+              <el-input v-model="projectStore.projectConfig.include" placeholder="输入包含的 Excel 路径" class="form-input" />
             </el-form-item>
             <el-form-item label="排除的 Excel 模式">
-              <el-input v-model="projectConfig.exclude" placeholder="输入排除的 Excel 模式" class="form-input" />
+              <el-input v-model="projectStore.projectConfig.exclude" placeholder="输入排除的 Excel 模式" class="form-input" />
             </el-form-item>
             <el-form-item label="行列排序模式">
-              <el-select v-model="projectConfig.line" placeholder="选择行列排序模式" class="form-select">
+              <el-select v-model="projectStore.projectConfig.line" placeholder="选择行列排序模式" class="form-select">
                 <el-option label="按行" value="row" />
                 <el-option label="按列" value="column" />
               </el-select>
             </el-form-item>
             
             <el-form-item label="类型解析模式">
-              <el-select v-model="projectConfig.typing" placeholder="选择类型解析模式" class="form-select">
+              <el-select v-model="projectStore.projectConfig.typing" placeholder="选择类型解析模式" class="form-select">
                 <el-option label="严格" value="strict" />
                 <el-option label="宽松" value="relaxed" />
               </el-select>
             </el-form-item>
             
             <el-form-item label="合表模式">
-              <el-select v-model="projectConfig.merge" placeholder="选择合表模式" class="form-select">
+              <el-select v-model="projectStore.projectConfig.merge" placeholder="选择合表模式" class="form-select">
                 <el-option label="按目录" value="directory" />
                 <el-option label="按前缀" value="prefix" />
               </el-select>
@@ -43,14 +43,12 @@
         </el-card>
       </div>
       
-      <!-- 表头控制卡片 -->
       <div class="header-control-section">
         <h2>表头控制</h2>
         <el-card class="header-control-card" shadow="hover">
           <el-form label-width="150px" class="header-control-form">
-            <!-- 表头含义设置 -->
             <el-form-item label="第一行表头">
-              <el-select v-model="projectConfig.headers.firstRow" placeholder="选择第一行表头含义" class="form-select">
+              <el-select v-model="projectStore.projectConfig.headers.firstRow" placeholder="选择第一行表头含义" class="form-select">
                 <el-option label="字段" value="字段" />
                 <el-option label="类型" value="类型" />
                 <el-option label="注释" value="注释" />
@@ -58,7 +56,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="第二行表头">
-              <el-select v-model="projectConfig.headers.secondRow" placeholder="选择第二行表头含义" class="form-select">
+              <el-select v-model="projectStore.projectConfig.headers.secondRow" placeholder="选择第二行表头含义" class="form-select">
                 <el-option label="字段" value="字段" />
                 <el-option label="类型" value="类型" />
                 <el-option label="注释" value="注释" />
@@ -66,7 +64,7 @@
               </el-select>
             </el-form-item>
             <el-form-item label="第三行表头">
-              <el-select v-model="projectConfig.headers.thirdRow" placeholder="选择第三行表头含义" class="form-select">
+              <el-select v-model="projectStore.projectConfig.headers.thirdRow" placeholder="选择第三行表头含义" class="form-select">
                 <el-option label="字段" value="字段" />
                 <el-option label="类型" value="类型" />
                 <el-option label="注释" value="注释" />
@@ -74,14 +72,13 @@
               </el-select>
             </el-form-item>
             
-            <!-- 起始内容偏移量 -->
             <el-form-item label="起始内容偏移">
               <div class="offset-controls">
                 <el-form-item label="X (列)" class="offset-item">
-                  <el-input-number v-model="projectConfig.offset.x" :min="0" class="form-input" />
+                  <el-input-number v-model="projectStore.projectConfig.offset.x" :min="0" class="form-input" />
                 </el-form-item>
                 <el-form-item label="Y (行)" class="offset-item">
-                  <el-input-number v-model="projectConfig.offset.y" :min="0" class="form-input" />
+                  <el-input-number v-model="projectStore.projectConfig.offset.y" :min="0" class="form-input" />
                 </el-form-item>
               </div>
             </el-form-item>
@@ -89,7 +86,6 @@
         </el-card>
       </div>
       
-      <!-- 生成日志控制台 -->
       <div class="console-section" v-if="showConsole">
         <h2>生成日志</h2>
         <el-card class="console-card" shadow="hover">
@@ -111,58 +107,45 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import ProjectHeader from "../components/features/ProjectHeader.vue";
+import { useProjectStore } from "../stores/project";
 
-// 项目配置数据结构
-const projectConfig = ref({
-  version: '1.0.0',
-  include: 'excel/**/*.xlsx',
-  exclude: '**/temp/**',
-  line: 'row',
-  typing: 'strict',
-  merge: 'directory',
-  // 表头控制
-  headers: {
-    firstRow: '字段',
-    secondRow: '类型',
-    thirdRow: '注释'
-  },
-  // 起始内容偏移量
-  offset: {
-    x: 0, // 列偏移
-    y: 3  // 行偏移，默认跳过前3行表头
-  }
-});
+const projectStore = useProjectStore();
 
-// 控制台相关状态
+/** 控制台显示状态 */
 const showConsole = ref(false);
+
+/** 日志条目 */
 interface LogItem {
+  /** 日志时间 */
   time: string;
+  /** 日志内容 */
   content: string;
+  /** 日志类型 */
   type: string;
 }
+
+/** 日志列表 */
 const logs = ref<LogItem[]>([]);
 
-// 生成日志
+/** 添加日志 */
 function addLog(content: string, type: string = 'info') {
   const now = new Date();
   const time = now.toLocaleTimeString();
   logs.value.push({ time, content, type });
 }
 
-// 清空日志
+/** 清空日志 */
 function clearLogs() {
   logs.value = [];
 }
 
-// 一键生成处理
+/** 一键生成处理 */
 function handleGenerate() {
   showConsole.value = true;
   clearLogs();
   
-  // 模拟生成过程
   addLog('开始生成代码...', 'info');
   
-  // 模拟生成步骤
   setTimeout(() => {
     addLog('正在解析配置...', 'info');
   }, 500);

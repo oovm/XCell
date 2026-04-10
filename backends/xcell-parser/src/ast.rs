@@ -38,6 +38,18 @@ pub enum TypeExpr {
     Tuple(Vec<TypeExpr>),
     /// 命名类型（自定义类型名，如枚举、结构体）
     Named(String),
+    /// 映射类型 `Map<K, V>`
+    Map {
+        /// 键类型
+        key: Box<TypeExpr>,
+        /// 值类型
+        value: Box<TypeExpr>,
+    },
+    /// 可选类型 `T?`
+    Optional {
+        /// 元素类型
+        element: Box<TypeExpr>,
+    },
 }
 
 /// 原始类型
@@ -214,6 +226,8 @@ impl std::fmt::Display for TypeExpr {
                 write!(f, ")")
             }
             TypeExpr::Named(name) => write!(f, "{}", name),
+            TypeExpr::Map { key, value } => write!(f, "Map<{}, {}>", key, value),
+            TypeExpr::Optional { element } => write!(f, "{}?", element),
         }
     }
 }

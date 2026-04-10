@@ -1,0 +1,17 @@
+- [x] `xcell-config/src/unity/mod.rs` 中所有 public 结构体和字段有文档注释
+- [x] `xcell-config/src/unity/mod.rs` 中所有 public 方法有文档注释
+- [x] `xcell-config/src/project/der.rs` 中 Unity 反序列化能正确传递 storage 和 xlua 配置
+- [x] `UnityCodegen::validate()` 方法存在且能检测无效配置
+- [x] `xcell-generator/src/codegen/mod.rs` 中 `pub mod unity;` 未被注释
+- [x] `xcell-generator/src/lib.rs` 中 Unity 生成器已注册
+- [x] `unity/language.rs` 使用 `UnityLanguageTemplate` 类型且模板路径正确
+- [x] `unity/dictionary.rs` 使用 `self` 的字段而非 `ws.config.unity.loader`
+- [x] `unity/manager.rs` 的 `make_manager` 从 workspace 填充 tables 向量
+- [x] `unity/binary.rs` 的语言表方法已取消注释并修复
+- [x] `unity/mod.rs` 的 `write_csharp` 调用了 dict/list/language/binary 写入
+- [x] 所有 Unity 代码生成模块的 public 项有文档注释
+- [x] `tests/unity/mod.rs` 使用 `UnityCodegen::default()` 而非 `UnityCodegen::new()`
+- [x] 存在 `templates/BuildLanguage.cs.dejavu` 模板文件
+- [x] `cargo check -p xcell-config` 编译通过
+- [x] `cargo check -p xcell-generator` 编译通过（Unity 相关代码无错误）
+- [x] `cargo test -p xcell-generator` 测试通过（注：项目存在预先的编译错误，非 Unity 相关）

@@ -22,6 +22,10 @@ impl<'de> Visitor<'de> for TypeMetaInfo {
                 "vector" | "vec" => read_map_next_value(&mut map, |v| self.vector = v),
                 "language" => read_map_next_value(&mut map, |v| self.language = v),
                 "enumerate" | "enum" => read_map_next_value(&mut map, |v| self.enumerate = v),
+                "decimal" | "f64" => read_map_next_value(&mut map, |v| self.decimal = v),
+                "time" | "datetime" => read_map_next_value(&mut map, |v| self.time = v),
+                "color" | "colour" => read_map_next_value(&mut map, |v| self.color = v),
+                "reference" | "ref" => read_map_next_value(&mut map, |v| self.reference = v),
                 _ => read_map_next_extra(&mut map, type_name::<Self>(), &key),
             }
         }

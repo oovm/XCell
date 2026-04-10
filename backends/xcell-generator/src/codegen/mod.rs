@@ -11,7 +11,7 @@ pub mod json;
 // pub mod readable;
 // pub mod sql;
 // pub mod typescript;
-// pub mod unity;  // 暂时禁用，需要重构
+pub mod unity;
 // pub mod xlua;
 // pub mod xml;
 

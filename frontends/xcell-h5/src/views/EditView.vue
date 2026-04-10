@@ -1,6 +1,5 @@
 <template>
   <div class="edit-view">
-    <!-- 页面标题 -->
     <div class="page-header">
       <h1 class="page-title">{{ isCreating ? '创建表格' : '编辑表格' }}</h1>
       <el-button type="primary" @click="handleSave">
@@ -9,10 +8,9 @@
       </el-button>
     </div>
     
-    <!-- 表格编辑器 -->
     <div class="editor-container">
       <el-alert
-        v-if="!tableData"
+        v-if="!tableStore.currentTableDetail"
         :title="isCreating ? '创建新表格' : '加载表格中...'"
         type="info"
         :closable="false"
@@ -21,13 +19,12 @@
       
       <TableEditor
         v-else
-        :table-data="tableData"
+        :table-data="tableStore.currentTableDetail"
         @save="handleTableSave"
         @cell-select="handleCellSelect"
       />
     </div>
     
-    <!-- 单元格属性面板 -->
     <div class="properties-panel">
       <h3>单元格属性</h3>
       <div v-if="selectedCell" class="cell-properties">
@@ -66,35 +63,28 @@ import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Check, InfoFilled } from "@element-plus/icons-vue";
 import TableEditor from "../components/features/TableEditor.vue";
-import { apiService, TableDetail } from "../services/api";
+import { useTableStore } from "../stores/table";
+import { apiService, type TableDetail } from "../services/api";
 
 const route = useRoute();
 const router = useRouter();
+const tableStore = useTableStore();
 
-// 表格 ID
+/** 表格 ID */
 const tableId = computed(() => route.query.id as string | undefined);
 
-// 是否为创建模式
+/** 是否为创建模式 */
 const isCreating = computed(() => !tableId.value);
 
-// 表格数据
-const tableData = ref<TableDetail | null>(null);
-
-// 选中的单元格
+/** 选中的单元格 */
 const selectedCell = ref<any>(null);
 
-// 加载表格数据
+/** 加载表格数据 */
 const loadTableData = async () => {
   if (tableId.value) {
-    try {
-      const data = await apiService.getTableDetail(tableId.value);
-      tableData.value = data;
-    } catch (error) {
-      console.error('加载表格数据失败:', error);
-    }
+    await tableStore.loadTableDetail(tableId.value);
   } else {
-    // 创建新表格
-    tableData.value = {
+    tableStore.currentTableDetail = {
       id: Date.now().toString(),
       name: '新表格',
       columns: [
@@ -107,12 +97,11 @@ const loadTableData = async () => {
   }
 };
 
-// 处理表格保存
+/** 处理表格保存 */
 const handleTableSave = async (data: any[]) => {
   try {
-    if (tableData.value) {
-      await apiService.saveTableData(tableData.value.id, data);
-      // 保存成功后跳转到表格列表
+    if (tableStore.currentTableDetail) {
+      await apiService.saveTable(tableStore.currentTableDetail.id, data);
       router.push('/table');
     }
   } catch (error) {
@@ -120,18 +109,15 @@ const handleTableSave = async (data: any[]) => {
   }
 };
 
-// 处理保存按钮点击
+/** 处理保存按钮点击 */
 const handleSave = () => {
-  // 触发表格保存
-  // 这里可以添加额外的保存逻辑
 };
 
-// 处理单元格选择
+/** 处理单元格选择 */
 const handleCellSelect = (cellProps: any) => {
   selectedCell.value = cellProps;
 };
 
-// 组件挂载时加载数据
 onMounted(() => {
   loadTableData();
 });

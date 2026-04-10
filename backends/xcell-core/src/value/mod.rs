@@ -1,4 +1,5 @@
 use std::{
+    collections::BTreeMap,
     fmt::{Display, Formatter},
     str::FromStr,
 };
@@ -54,6 +55,10 @@ pub enum XCellValue {
     Enumerate(String),
     /// 引用类型，存储引用 ID
     Reference(i64),
+    /// 映射值
+    Map(BTreeMap<String, XCellValue>),
+    /// 可选值
+    Optional(Option<Box<XCellValue>>),
 }
 
 impl Default for XCellValue {

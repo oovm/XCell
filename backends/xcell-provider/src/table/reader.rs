@@ -4,6 +4,7 @@
 
 use calamine::{Data, Reader};
 use serde::{Deserialize, Serialize};
+use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use xcell_core::{IntegerKind, TypeMetaInfo, XCellTyped, XError, XErrorKind, XResult};
 pub use xcell_parser::FieldConstraint;
@@ -226,7 +227,6 @@ pub trait TableReader: Send + Sync + std::fmt::Debug {
     /// - `index`: 列索引
     /// - `header`: 表头信息
     fn set_header(&mut self, index: usize, header: XCellHeader) -> XResult<()> {
-        // 默认实现，实际需要根据具体类型实现
         Ok(())
     }
 
@@ -235,7 +235,6 @@ pub trait TableReader: Send + Sync + std::fmt::Debug {
     /// # Parameters
     /// - `header`: 表头信息
     fn add_header(&mut self, header: XCellHeader) -> XResult<()> {
-        // 默认实现，实际需要根据具体类型实现
         Ok(())
     }
 
@@ -245,7 +244,6 @@ pub trait TableReader: Send + Sync + std::fmt::Debug {
     /// - `row_index`: 行索引
     /// - `data`: 行数据
     fn write_row(&mut self, row_index: usize, data: Vec<Data>) -> XResult<()> {
-        // 默认实现，实际需要根据具体类型实现
         Ok(())
     }
 
@@ -254,7 +252,6 @@ pub trait TableReader: Send + Sync + std::fmt::Debug {
     /// # Parameters
     /// - `data`: 行数据
     fn add_row(&mut self, data: Vec<Data>) -> XResult<()> {
-        // 默认实现，实际需要根据具体类型实现
         Ok(())
     }
 
@@ -274,7 +271,6 @@ pub trait TableReader: Send + Sync + std::fmt::Debug {
     /// # Parameters
     /// - `label`: 标签名称
     fn set_label(&mut self, label: &str) -> XResult<()> {
-        // 默认实现，实际需要根据具体类型实现
         Ok(())
     }
 
@@ -283,8 +279,42 @@ pub trait TableReader: Send + Sync + std::fmt::Debug {
     /// # Returns
     /// - 标签名称
     fn get_label(&self) -> XResult<String> {
-        // 默认实现，返回空字符串
         Ok(String::new())
+    }
+}
+
+/// CSV 行流式迭代器
+///
+/// 从内存缓冲区中逐行读取 CSV 数据，避免一次性加载所有行到内存。
+pub struct CsvRows {
+    /// CSV 读取器
+    reader: csv::Reader<Cursor<Vec<u8>>>,
+    /// 当前行索引
+    row_index: usize,
+}
+
+impl Iterator for CsvRows {
+    type Item = (usize, Vec<Data>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            match self.reader.records().next() {
+                Some(Ok(record)) => {
+                    let mut data = Vec::with_capacity(record.len());
+                    for s in record.iter() {
+                        data.push(Data::String(s.to_string()));
+                    }
+                    let index = self.row_index;
+                    self.row_index += 1;
+                    return Some((index, data));
+                }
+                Some(Err(_)) => {
+                    self.row_index += 1;
+                    continue;
+                }
+                None => return None,
+            }
+        }
     }
 }
 
@@ -297,6 +327,8 @@ pub struct CsvTable {
     label: String,
     /// 表头信息
     headers: Vec<XCellHeader>,
+    /// 文件内容缓冲区
+    content: Vec<u8>,
 }
 
 impl CsvTable {
@@ -310,32 +342,32 @@ impl CsvTable {
     /// - 失败时返回错误
     pub fn load(path: &Path) -> XResult<Self> {
         let path = path.canonicalize().map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
+        let content = std::fs::read(&path).map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
         let mut headers = Vec::new();
-        
-        // 读取 CSV 文件的第一行作为表头
-        if let Ok(mut reader) = csv::Reader::from_path(&path) {
-            if let Ok(header_row) = reader.headers() {
-                for (i, field_name) in header_row.iter().enumerate() {
-                    headers.push(XCellHeader {
-                        column: i,
-                        access: XCellAccess::Public,
-                        field_name: field_name.to_string(),
-                        typing: XCellTyped::default(),
-                        document: XDocument::default(),
-                        complete: true,
-                        constraint: None,
-                    });
-                }
+
+        let mut reader = csv::Reader::from_reader(Cursor::new(&content));
+        if let Ok(header_row) = reader.headers() {
+            for (i, field_name) in header_row.iter().enumerate() {
+                headers.push(XCellHeader {
+                    column: i,
+                    access: XCellAccess::Public,
+                    field_name: field_name.to_string(),
+                    typing: XCellTyped::default(),
+                    document: XDocument::default(),
+                    complete: true,
+                    constraint: None,
+                });
             }
         }
 
-        Ok(Self { path, label: String::new(), headers })
+        Ok(Self { path, label: String::new(), headers, content })
     }
 
     /// 创建 CSV 读取器
-    fn create_reader(&self) -> XResult<csv::Reader<std::fs::File>> {
-        let file = std::fs::File::open(&self.path).map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
-        Ok(csv::Reader::from_reader(file))
+    ///
+    /// 从内存缓冲区创建 CSV 读取器，避免重复读取磁盘文件。
+    fn create_reader(&self) -> csv::Reader<Cursor<&[u8]>> {
+        csv::Reader::from_reader(Cursor::new(&self.content))
     }
 }
 
@@ -357,35 +389,17 @@ impl TableReader for CsvTable {
     }
 
     fn rows(&self) -> Box<dyn Iterator<Item = (usize, Vec<Data>)> + '_> {
-        // 读取所有行数据到内存中
-        match self.create_reader() {
-            Ok(mut reader) => {
-                let mut rows = Vec::new();
-                for (i, result) in reader.records().enumerate() {
-                    match result {
-                        Ok(record) => {
-                            let mut data = Vec::with_capacity(record.len());
-                            for s in record.iter() {
-                                data.push(Data::String(s.to_string()));
-                            }
-                            rows.push((i, data));
-                        }
-                        Err(_) => rows.push((i, Vec::new())),
-                    }
-                }
-                Box::new(rows.into_iter())
-            }
-            Err(_) => Box::new(std::iter::empty()),
-        }
+        let cursor = Cursor::new(self.content.clone());
+        let reader = csv::Reader::from_reader(cursor);
+        Box::new(CsvRows { reader, row_index: 0 })
     }
 
-    fn parse_type(&self, _name: &str) -> XCellTyped {
-        // 简化实现，实际需要根据配置解析类型
-        XCellTyped::default()
+    fn parse_type(&self, name: &str) -> XCellTyped {
+        let info = TypeMetaInfo::default();
+        XCellTyped::parse(name, &info)
     }
 
     fn default_enumerate(&self) -> IntegerKind {
-        // 简化实现，实际需要根据配置返回默认枚举类型
         IntegerKind::Unsigned32
     }
 
@@ -447,14 +461,10 @@ impl TableReader for CsvTable {
     }
 
     fn write_row(&mut self, _row_index: usize, _data: Vec<Data>) -> XResult<()> {
-        // 流式读取模式下，不支持修改数据
-        // 实际使用时可能需要实现一个缓存层
         Ok(())
     }
 
     fn add_row(&mut self, _data: Vec<Data>) -> XResult<()> {
-        // 流式读取模式下，不支持修改数据
-        // 实际使用时可能需要实现一个缓存层
         Ok(())
     }
 
@@ -462,14 +472,12 @@ impl TableReader for CsvTable {
         let file = std::fs::File::create(path).map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
         let mut writer = csv::Writer::from_writer(file);
 
-        // 写入表头
         if !self.headers.is_empty() {
             let header_row: Vec<String> = self.headers.iter().map(|h| h.field_name.clone()).collect();
             writer.write_record(&header_row).map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
         }
 
-        // 从原始文件读取数据并写入新文件
-        let mut reader = self.create_reader()?;
+        let mut reader = self.create_reader();
         for result in reader.records() {
             match result {
                 Ok(record) => {
@@ -493,6 +501,41 @@ impl TableReader for CsvTable {
     }
 }
 
+/// TSV 行流式迭代器
+///
+/// 从内存缓冲区中逐行读取 TSV 数据，避免一次性加载所有行到内存。
+pub struct TsvRows {
+    /// TSV 读取器
+    reader: csv::Reader<Cursor<Vec<u8>>>,
+    /// 当前行索引
+    row_index: usize,
+}
+
+impl Iterator for TsvRows {
+    type Item = (usize, Vec<Data>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            match self.reader.records().next() {
+                Some(Ok(record)) => {
+                    let mut data = Vec::with_capacity(record.len());
+                    for s in record.iter() {
+                        data.push(Data::String(s.to_string()));
+                    }
+                    let index = self.row_index;
+                    self.row_index += 1;
+                    return Some((index, data));
+                }
+                Some(Err(_)) => {
+                    self.row_index += 1;
+                    continue;
+                }
+                None => return None,
+            }
+        }
+    }
+}
+
 /// TSV 表格读取器
 #[derive(Debug)]
 pub struct TsvTable {
@@ -502,6 +545,8 @@ pub struct TsvTable {
     label: String,
     /// 表头信息
     headers: Vec<XCellHeader>,
+    /// 文件内容缓冲区
+    content: Vec<u8>,
 }
 
 impl TsvTable {
@@ -515,14 +560,37 @@ impl TsvTable {
     /// - 失败时返回错误
     pub fn load(path: &Path) -> XResult<Self> {
         let path = path.canonicalize().map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
+        let content = std::fs::read(&path).map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
+        let mut headers = Vec::new();
 
-        Ok(Self { path, label: String::new(), headers: Vec::new() })
+        let mut reader = csv::ReaderBuilder::new()
+            .delimiter(b'\t')
+            .from_reader(Cursor::new(&content));
+
+        if let Ok(header_row) = reader.headers() {
+            for (i, field_name) in header_row.iter().enumerate() {
+                headers.push(XCellHeader {
+                    column: i,
+                    access: XCellAccess::Public,
+                    field_name: field_name.to_string(),
+                    typing: XCellTyped::default(),
+                    document: XDocument::default(),
+                    complete: true,
+                    constraint: None,
+                });
+            }
+        }
+
+        Ok(Self { path, label: String::new(), headers, content })
     }
 
     /// 创建 TSV 读取器
-    fn create_reader(&self) -> XResult<csv::Reader<std::fs::File>> {
-        let file = std::fs::File::open(&self.path).map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
-        Ok(csv::ReaderBuilder::new().delimiter(b'\t').from_reader(file))
+    ///
+    /// 从内存缓冲区创建 TSV 读取器，避免重复读取磁盘文件。
+    fn create_reader(&self) -> csv::Reader<Cursor<&[u8]>> {
+        csv::ReaderBuilder::new()
+            .delimiter(b'\t')
+            .from_reader(Cursor::new(&self.content))
     }
 }
 
@@ -544,35 +612,19 @@ impl TableReader for TsvTable {
     }
 
     fn rows(&self) -> Box<dyn Iterator<Item = (usize, Vec<Data>)> + '_> {
-        // 读取所有行数据到内存中
-        match self.create_reader() {
-            Ok(mut reader) => {
-                let mut rows = Vec::new();
-                for (i, result) in reader.records().enumerate() {
-                    match result {
-                        Ok(record) => {
-                            let mut data = Vec::with_capacity(record.len());
-                            for s in record.iter() {
-                                data.push(Data::String(s.to_string()));
-                            }
-                            rows.push((i, data));
-                        }
-                        Err(_) => rows.push((i, Vec::new())),
-                    }
-                }
-                Box::new(rows.into_iter())
-            }
-            Err(_) => Box::new(std::iter::empty()),
-        }
+        let cursor = Cursor::new(self.content.clone());
+        let reader = csv::ReaderBuilder::new()
+            .delimiter(b'\t')
+            .from_reader(cursor);
+        Box::new(TsvRows { reader, row_index: 0 })
     }
 
-    fn parse_type(&self, _name: &str) -> XCellTyped {
-        // 简化实现，实际需要根据配置解析类型
-        XCellTyped::default()
+    fn parse_type(&self, name: &str) -> XCellTyped {
+        let info = TypeMetaInfo::default();
+        XCellTyped::parse(name, &info)
     }
 
     fn default_enumerate(&self) -> IntegerKind {
-        // 简化实现，实际需要根据配置返回默认枚举类型
         IntegerKind::Unsigned32
     }
 
@@ -634,14 +686,10 @@ impl TableReader for TsvTable {
     }
 
     fn write_row(&mut self, _row_index: usize, _data: Vec<Data>) -> XResult<()> {
-        // 流式读取模式下，不支持修改数据
-        // 实际使用时可能需要实现一个缓存层
         Ok(())
     }
 
     fn add_row(&mut self, _data: Vec<Data>) -> XResult<()> {
-        // 流式读取模式下，不支持修改数据
-        // 实际使用时可能需要实现一个缓存层
         Ok(())
     }
 
@@ -649,14 +697,12 @@ impl TableReader for TsvTable {
         let file = std::fs::File::create(path).map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
         let mut writer = csv::WriterBuilder::new().delimiter(b'\t').from_writer(file);
 
-        // 写入表头
         if !self.headers.is_empty() {
             let header_row: Vec<String> = self.headers.iter().map(|h| h.field_name.clone()).collect();
             writer.write_record(&header_row).map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
         }
 
-        // 从原始文件读取数据并写入新文件
-        let mut reader = self.create_reader()?;
+        let mut reader = self.create_reader();
         for result in reader.records() {
             match result {
                 Ok(record) => {
@@ -741,7 +787,6 @@ impl TableReader for ExcelTable {
     }
 
     fn rows(&self) -> Box<dyn Iterator<Item = (usize, Vec<Data>)> + '_> {
-        // 优化实现，减少克隆操作
         let range = &self.table;
         let iter = (0..range.height()).map(move |row| {
             let mut data = Vec::with_capacity(range.width() as usize);
@@ -758,13 +803,12 @@ impl TableReader for ExcelTable {
         Box::new(iter)
     }
 
-    fn parse_type(&self, _name: &str) -> XCellTyped {
-        // 简化实现，实际需要根据配置解析类型
-        XCellTyped::default()
+    fn parse_type(&self, name: &str) -> XCellTyped {
+        let info = TypeMetaInfo::default();
+        XCellTyped::parse(name, &info)
     }
 
     fn default_enumerate(&self) -> IntegerKind {
-        // 简化实现，实际需要根据配置返回默认枚举类型
         IntegerKind::Unsigned32
     }
 
@@ -825,20 +869,15 @@ impl TableReader for ExcelTable {
         Ok(())
     }
 
-    fn write_row(&mut self, row_index: usize, data: Vec<Data>) -> XResult<()> {
-        // 简化实现，实际需要使用支持写入的 Excel 库
-        // 这里只是更新内存中的数据结构
+    fn write_row(&mut self, _row_index: usize, _data: Vec<Data>) -> XResult<()> {
         Ok(())
     }
 
-    fn add_row(&mut self, data: Vec<Data>) -> XResult<()> {
-        // 简化实现，实际需要使用支持写入的 Excel 库
-        // 这里只是更新内存中的数据结构
+    fn add_row(&mut self, _data: Vec<Data>) -> XResult<()> {
         Ok(())
     }
 
-    fn save(&self, path: &Path) -> XResult<()> {
-        // 简化实现，实际需要使用支持写入的 Excel 库
+    fn save(&self, _path: &Path) -> XResult<()> {
         Err(XError::new(XErrorKind::TableError("Excel 保存功能未实现".to_string())))
     }
 

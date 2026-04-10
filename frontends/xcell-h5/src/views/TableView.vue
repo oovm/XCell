@@ -1,6 +1,5 @@
 <template>
   <div class="table-view">
-    <!-- 页面标题 -->
     <div class="page-header">
       <h1 class="page-title">表格管理</h1>
       <div class="header-actions">
@@ -22,10 +21,9 @@
       </div>
     </div>
     
-    <!-- 过滤器区域 -->
     <div class="filter-section">
       <el-input
-        v-model="filterText"
+        v-model="tableStore.filterText"
         placeholder="搜索表格"
         prefix-icon="Search"
         class="filter-input"
@@ -34,12 +32,11 @@
       <el-button type="primary" class="search-button" @click="handleSearch">搜索</el-button>
     </div>
     
-    <!-- 表格列表 -->
     <div class="table-container">
       <el-table
-        v-loading="loading"
+        v-loading="tableStore.isLoading"
         element-loading-text="加载中..."
-        :data="filteredTableData"
+        :data="paginatedTableData"
         style="width: 100%"
         class="table-list"
         :header-cell-style="{ backgroundColor: '#f8f9fa' }"
@@ -133,7 +130,6 @@
       </el-table>
     </div>
     
-    <!-- 分页区域 -->
     <div class="pagination-section">
       <div class="pagination-info">
         共 {{ total }} 个表格
@@ -150,7 +146,6 @@
       />
     </div>
     
-    <!-- 编辑元属性弹窗 -->
     <el-dialog
       v-model="dialogVisible"
       title="编辑表格属性"
@@ -198,19 +193,15 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { Folder, Edit, Delete, Plus, QuestionFilled, Loading, Upload, Download } from "@element-plus/icons-vue";
-import { apiService, TableData } from "../services/api";
+import { useTableStore } from "../stores/table";
+import { apiService, type TableData } from "../services/api";
 
 const router = useRouter();
+const tableStore = useTableStore();
 
-// 过滤器
-const filterText = ref("");
-
-// 分页
 const currentPage = ref(1);
 const pageSize = ref(10);
-const total = ref(0);
 
-// 编辑弹窗
 const dialogVisible = ref(false);
 const editForm = ref<TableData>({
   id: "",
@@ -223,13 +214,7 @@ const editForm = ref<TableData>({
 });
 const currentEditRow = ref<TableData | null>(null);
 
-// 加载状态
-const loading = ref(false);
-
-// 表格数据
-const tableData = ref<TableData[]>([]);
-
-// 获取表格类型对应的标签类型
+/** 获取表格类型对应的标签类型 */
 const getTypeTagType = (type: string): string => {
   switch (type) {
     case 'table': return 'primary';
@@ -240,182 +225,102 @@ const getTypeTagType = (type: string): string => {
   }
 };
 
-// 加载表格数据
-const loadTableData = async () => {
-  try {
-    loading.value = true;
-    const data = await apiService.getTableList();
-    // 为每个表格添加package字段，默认为DataTable
-    tableData.value = data.map((item: TableData) => ({
-      ...item,
-      package: item.package || 'DataTable'
-    }));
-  } catch (error) {
-    console.error('加载表格数据失败:', error);
-  } finally {
-    loading.value = false;
-  }
-};
+/** 计算过滤后的总数 */
+const total = computed(() => tableStore.filteredTableList.length);
 
-// 组件挂载时加载数据
-onMounted(() => {
-  loadTableData();
-});
-
-// 计算过滤后的数据
-const filteredTableData = computed(() => {
-  let filtered = tableData.value;
-  
-  // 应用搜索过滤
-  if (filterText.value) {
-    const searchText = filterText.value.toLowerCase();
-    filtered = filtered.filter(item => 
-      item.name.toLowerCase().includes(searchText) ||
-      item.type.toLowerCase().includes(searchText) ||
-      item.path.toLowerCase().includes(searchText) ||
-      (item.draft ? 'draft' : 'published').includes(searchText)
-    );
-  }
-  
-  // 更新总数
-  total.value = filtered.length;
-  
-  // 应用分页
+/** 分页后的表格数据 */
+const paginatedTableData = computed(() => {
+  const filtered = tableStore.filteredTableList;
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
   return filtered.slice(start, end);
 });
 
-// 搜索处理
+onMounted(() => {
+  tableStore.loadTableList();
+});
+
+/** 搜索处理 */
 const handleSearch = () => {
-  currentPage.value = 1; // 重置到第一页
+  currentPage.value = 1;
 };
 
-// 分页大小变化
+/** 分页大小变化 */
 const handleSizeChange = (size: number) => {
   pageSize.value = size;
-  currentPage.value = 1; // 重置到第一页
+  currentPage.value = 1;
 };
 
-// 当前页变化
+/** 当前页变化 */
 const handleCurrentChange = (current: number) => {
   currentPage.value = current;
 };
 
-// 编辑表格
-const handleEdit = (row: TableData) => {
-  // 导航到编辑页面，传递表格ID
-  router.push(`/edit?id=${row.id}`);
-};
-
-// 删除表格
+/** 删除表格 */
 const handleDelete = async (row: TableData) => {
-  try {
-    // 这里可以添加删除确认逻辑
-    const confirm = window.confirm(`确定要删除表格 ${row.name} 吗？`);
-    if (!confirm) return;
-    
-    loading.value = true;
-    await apiService.deleteTable(row.id);
-    // 从本地数据中删除
-    const index = tableData.value.findIndex(item => item.id === row.id);
-    if (index !== -1) {
-      tableData.value.splice(index, 1);
-    }
-  } catch (error) {
-    console.error('删除表格失败:', error);
-  } finally {
-    loading.value = false;
-  }
+  const confirm = window.confirm(`确定要删除表格 ${row.name} 吗？`);
+  if (!confirm) return;
+
+  await tableStore.deleteTable(row.id);
 };
 
-// 打开编辑弹窗
+/** 打开编辑弹窗 */
 const openEditDialog = (row: TableData) => {
-  // 保存当前编辑的行
   currentEditRow.value = row;
-  // 复制数据到编辑表单
   editForm.value = { 
     ...row,
-    package: row.package || 'DataTable' // 确保分包字段存在，默认为主包
+    package: row.package || 'DataTable'
   };
-  // 显示弹窗
   dialogVisible.value = true;
 };
 
-// 保存编辑
+/** 保存编辑 */
 const saveEdit = async () => {
   if (currentEditRow.value) {
-    try {
-      loading.value = true;
-      await apiService.updateTable(currentEditRow.value.id, editForm.value);
-      // 更新本地数据
-      Object.assign(currentEditRow.value, editForm.value);
-      // 关闭弹窗
-      dialogVisible.value = false;
-    } catch (error) {
-      console.error('保存表格失败:', error);
-    } finally {
-      loading.value = false;
-    }
+    await tableStore.updateTable(currentEditRow.value.id, editForm.value);
+    dialogVisible.value = false;
   }
 };
 
-// 处理草稿状态变更
+/** 处理草稿状态变更 */
 const handleDraftChange = async (row: TableData) => {
-  try {
-    await apiService.updateTable(row.id, { draft: row.draft });
-  } catch (error) {
-    console.error('更新草稿状态失败:', error);
-    // 恢复原始状态
+  const success = await tableStore.updateTable(row.id, { draft: row.draft });
+  if (!success) {
     row.draft = !row.draft;
   }
 };
 
-// 处理分包变更
+/** 处理分包变更 */
 const handlePackageChange = async (row: TableData) => {
-  try {
-    await apiService.updateTable(row.id, { package: row.package });
-  } catch (error) {
-    console.error('更新分包失败:', error);
-    // 恢复原始状态
-    // 这里可以添加恢复逻辑
-  }
+  await tableStore.updateTable(row.id, { package: row.package });
 };
 
-// 处理打开表格
+/** 处理打开表格 */
 const handleOpen = (row: TableData) => {
-  // 直接打开文件
   console.log("打开文件:", row.path);
-  // 这里可以添加打开文件的逻辑，例如使用系统默认应用打开文件
-  // 由于是前端环境，实际打开文件可能需要后端支持
   alert(`打开文件: ${row.path}`);
 };
 
-// 处理创建表格
+/** 处理创建表格 */
 const handleCreateTable = () => {
-  // 导航到编辑页面，不传递表格ID表示创建新表格
   router.push("/edit");
 };
 
-// 处理文件上传
+/** 处理文件上传 */
 const handleFileUpload = async (file: any) => {
   try {
-    loading.value = true;
     const table = await apiService.importTable(file.raw);
-    tableData.value.push(table);
+    tableStore.tableList.push(table);
   } catch (error) {
     console.error('导入表格失败:', error);
-  } finally {
-    loading.value = false;
   }
 };
 
-// 处理表格导出
+/** 处理表格导出 */
 const handleExportTable = async (row: TableData) => {
   try {
-    loading.value = true;
-    const blob = await apiService.exportTable(row.id);
-    // 创建下载链接
+    const content = await apiService.exportTable(row.id);
+    const blob = new Blob([content], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -426,20 +331,16 @@ const handleExportTable = async (row: TableData) => {
     URL.revokeObjectURL(url);
   } catch (error) {
     console.error('导出表格失败:', error);
-  } finally {
-    loading.value = false;
   }
 };
 
-// 导航到文档
+/** 导航到文档 */
 const navigateToDocs = (topic: string) => {
-  // 这里可以根据不同的主题导航到不同的文档页面
   console.log("导航到文档:", topic);
-  // 例如：window.open(`/docs#${topic}`, '_blank');
   alert(`导航到文档: ${topic}`);
 };
 
-// 格式化相对时间
+/** 格式化相对时间 */
 const formatRelativeTime = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();

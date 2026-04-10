@@ -1,8 +1,9 @@
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
-use oak_json::JsonValue;
-use oak_toml::{from_str, to_string};
+use oak_json::language::JsonValue;
+use oak_toml::from_str;
+use serde_json::to_string;
 
 use xcell_core::TypeMetaInfo;
 
@@ -12,7 +13,7 @@ use crate::{
     codegen::{json::JsonCodegen, sql::SqlCodegen, typescript::TypeScriptCodegen, xlua::XluaCodegen},
     merge_rules::MergeRules,
     table::TableLineMode,
-    unity::UnityCodegen,
+    unity::{UnityCodegen, UnityStorage, UnityXluaConfig},
 };
 
 mod der;

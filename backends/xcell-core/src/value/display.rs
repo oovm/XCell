@@ -64,6 +64,15 @@ impl Display for XCellValue {
             XCellValue::Reference(v) => {
                 write!(f, "{v}")
             }
+            XCellValue::Map(v) => {
+                write!(f, "{v:?}")
+            }
+            XCellValue::Optional(v) => {
+                match v {
+                    Some(inner) => write!(f, "Some({})", inner),
+                    None => write!(f, "None"),
+                }
+            }
         }
     }
 }

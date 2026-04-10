@@ -18,7 +18,7 @@ pub use self::{
         class::{XClassData, XClassItem, XClassTable},
         dictionary::{
             XDictTable, XListTable,
-            data::{XDictData, XListData},
+            data::{XDataLine, XDictData, XListData},
         },
         enumerate::{DefineManager, XEnumerateTable, data::XEnumerateData},
         language::{LanguageManager, XLanguageData, XLanguageID, XLanguageTable},

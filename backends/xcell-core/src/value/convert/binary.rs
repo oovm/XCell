@@ -66,6 +66,12 @@ impl StreamWriter for XCellValue {
             XCellValue::Reference(v) => {
                 v.write_to(buffer, order)?
             }
+            XCellValue::Map(_) => {
+                todo!()
+            }
+            XCellValue::Optional(_) => {
+                todo!()
+            }
         }
         Ok(())
     }

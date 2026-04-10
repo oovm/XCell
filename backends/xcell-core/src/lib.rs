@@ -90,6 +90,8 @@ pub use self::{
     integer::{IntegerDescription, IntegerKind},
     language::LanguageDescription,
     list::ListDescription,
+    map::MapDescription,
+    optional::OptionalDescription,
     reference::ReferenceDescription,
     string::StringDescription,
     typing::*,
@@ -115,6 +117,8 @@ pub mod for_3rd;
 mod integer;
 mod language;
 mod list;
+mod map;
+mod optional;
 mod reference;
 mod string;
 mod typing;

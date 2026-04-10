@@ -8,7 +8,7 @@ mod file_format;
 mod reader;
 
 pub use file_format::{FileFormat, FileFormatDetector};
-pub use reader::{CsvTable, ExcelTable, TableReader, TsvTable, XCellAccess, XCellHeader, XDocument};
+pub use reader::{CsvRows, CsvTable, ExcelTable, TableReader, TsvRows, TsvTable, XCellAccess, XCellHeader, XDocument};
 
 use xcell_core::{TypeMetaInfo, XError, XErrorKind, XResult};
 
@@ -49,6 +49,7 @@ pub fn load_table_with_config(path: &Path, config: &TypeMetaInfo) -> XResult<Box
             let table = TsvTable::load(path)?;
             Ok(Box::new(table))
         }
+        FileFormat::Ods => Err(XError::new(XErrorKind::TableError("ODS 格式暂不支持读取".to_string()))),
         FileFormat::Unknown => Err(XError::new(XErrorKind::TableError(format!("无法检测文件格式: {:?}", path)))),
     }
 }

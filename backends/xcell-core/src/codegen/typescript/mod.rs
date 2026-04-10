@@ -1,4 +1,4 @@
-use crate::{ListDescription, ReferenceDescription, XCellTyped};
+use crate::{ListDescription, MapDescription, ReferenceDescription, XCellTyped};
 use itertools::Itertools;
 
 impl XCellTyped {
@@ -16,6 +16,8 @@ impl XCellTyped {
             XCellTyped::Vector(v) => format!("Array<{}>", v.get_type().as_typescript_type()),
             XCellTyped::Reference(_) => "number".to_string(),
             XCellTyped::List(v) => v.as_typescript_type(),
+            XCellTyped::Map(v) => v.as_typescript_type(),
+            XCellTyped::Optional(v) => format!("{} | null", v.element_type.as_typescript_type()),
         }
     }
 
@@ -47,6 +49,8 @@ impl XCellTyped {
             XCellTyped::Vector(_) => "[]".to_string(),
             XCellTyped::Reference(v) => v.default.map_or("0".to_string(), |d| d.to_string()),
             XCellTyped::List(_) => "[]".to_string(),
+            XCellTyped::Map(_) => "{}".to_string(),
+            XCellTyped::Optional(_) => "null".to_string(),
         }
     }
 }
@@ -62,6 +66,13 @@ impl ListDescription {
     /// 返回列表类型对应的 TypeScript 类型名称
     pub fn as_typescript_type(&self) -> String {
         format!("{}[]", self.element_type.as_typescript_type())
+    }
+}
+
+impl MapDescription {
+    /// 返回映射类型对应的 TypeScript 类型名称
+    pub fn as_typescript_type(&self) -> String {
+        format!("Record<{}, {}>", self.key_type.as_typescript_type(), self.value_type.as_typescript_type())
     }
 }
 
@@ -116,6 +127,11 @@ impl crate::XCellValue {
                 format!("[{}]", v.iter().map(|x| x.as_typescript_value()).join(", "))
             }
             crate::XCellValue::Reference(v) => v.to_string(),
+            crate::XCellValue::Map(v) => format!("{:?}", v),
+            crate::XCellValue::Optional(v) => match v {
+                Some(inner) => inner.as_typescript_value(),
+                None => "null".to_string(),
+            },
         }
     }
 }

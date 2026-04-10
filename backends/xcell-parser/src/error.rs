@@ -29,11 +29,23 @@ pub struct ParseError {
     pub position: usize,
     /// 错误消息
     pub message: String,
+    /// 错误行号（从 1 开始，0 表示未计算）
+    pub line: usize,
+    /// 错误列号（从 1 开始，0 表示未计算）
+    pub column: usize,
 }
 
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "解析错误 (位置 {}): {}", self.position, self.message)
+        if self.line > 0 && self.column > 0 {
+            write!(
+                f,
+                "解析错误 ({}:{} 位置 {}): {}",
+                self.line, self.column, self.position, self.message
+            )
+        } else {
+            write!(f, "解析错误 (位置 {}): {}", self.position, self.message)
+        }
     }
 }
 
@@ -54,7 +66,34 @@ impl ParseError {
             ParseErrorKind::EmptyInput => "输入为空".to_string(),
             ParseErrorKind::InvalidSyntax(msg) => msg.clone(),
         };
-        Self { kind, position, message }
+        Self {
+            kind,
+            position,
+            message,
+            line: 0,
+            column: 0,
+        }
+    }
+
+    /// 根据位置和源输入计算行号和列号
+    pub fn from_position(kind: ParseErrorKind, position: usize, input: &str) -> Self {
+        let mut error = Self::new(kind, position);
+        let mut line = 1;
+        let mut col = 1;
+        for (i, ch) in input.char_indices() {
+            if i >= position {
+                break;
+            }
+            if ch == '\n' {
+                line += 1;
+                col = 1;
+            } else {
+                col += 1;
+            }
+        }
+        error.line = line;
+        error.column = col;
+        error
     }
 
     /// 创建意外的 token 错误

@@ -6,8 +6,8 @@ pub type XResult<T> = Result<T, XError>;
 pub use self::{
     standard::{StreamReader, StreamWriter},
     table::{
-        CsvTable, ExcelTable, FileFormat, FileFormatDetector, TableReader, TsvTable, XCellAccess, XCellHeader, XDocument,
-        load_table,
+        CsvRows, CsvTable, ExcelTable, FileFormat, FileFormatDetector, TableReader, TsvRows, TsvTable, XCellAccess,
+        XCellHeader, XDocument, load_table,
     },
 };
 

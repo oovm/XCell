@@ -209,7 +209,7 @@ XCell 支持通过插件系统扩展功能。插件可以添加新的表格类�
 [package]
 name = "xcell-my-plugin"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 xcell-core = { path = "../xcell-core" }

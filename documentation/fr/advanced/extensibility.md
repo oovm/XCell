@@ -209,7 +209,7 @@ Créez un nouveau projet Rust et ajoutez des dépendances sur `xcell-core` et `x
 [package]
 name = "xcell-my-plugin"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 xcell-core = { path = "../xcell-core" }

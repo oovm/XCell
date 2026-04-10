@@ -209,7 +209,7 @@ XCell 支援通过外掛程式系統擴充功能。外掛程式可以新增新�
 [package]
 name = "xcell-my-plugin"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 xcell-core = { path = "../xcell-core" }

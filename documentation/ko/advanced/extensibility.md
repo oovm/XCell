@@ -209,7 +209,7 @@ XCell은 플러그인 시스템을 통해 기능을 확장하는 것을 지원�
 [package]
 name = "xcell-my-plugin"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 xcell-core = { path = "../xcell-core" }

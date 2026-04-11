@@ -426,9 +426,7 @@ pub struct CocosCodegen {
     pub enum_suffixes: Option<Vec<String>>,
     /// 类型映射配置
     pub type_mappings: Option<Vec<TypeMapping>>,
-    /// CSV 文件缓存
-    #[serde(skip)]
-    pub(crate) cache: CsvCache,
+
 }
 
 /// Cocos JSON 配置
@@ -477,21 +475,11 @@ impl Default for CocosCodegen {
                 TypeMapping { rust_type: "string".to_string(), ts_type: "string".to_string() },
                 TypeMapping { rust_type: "any".to_string(), ts_type: "string".to_string() },
             ]),
-            cache: Default::default(),
         }
     }
 }
 
-/// CSV 文件缓存结构
-#[derive(Debug, Clone, Default)]
-pub struct CsvCache {
-    /// 字段信息缓存
-    pub fields_cache: std::collections::HashMap<PathBuf, Vec<CocosField>>,
-    /// 枚举数据缓存
-    pub enum_cache: std::collections::HashMap<PathBuf, Vec<(u32, String, String)>>,
-    /// CSV 文件列表缓存（存储路径而非 DirEntry，因为 DirEntry 不实现 Clone）
-    pub files_cache: Option<Vec<PathBuf>>,
-}
+
 
 /// Cocos 代码生成器
 ///
@@ -664,21 +652,24 @@ impl CocosCodegen {
             std::fs::create_dir_all(s)?;
         }
         
-        let csv_files = self.get_csv_files(root)?;
+        // 处理枚举表
+        for enum_table in ws.enumerates() {
+            self.process_enum_table(ws, enum_table)?;
+        }
         
-        for path in &csv_files {
-            let file_name = path.file_name()
-                .map(|n| n.to_string_lossy().to_string())
-                .unwrap_or_default();
-            let class_name = file_name.split('.').next().unwrap_or(&file_name);
-            
-            let is_enum = self.is_enum(class_name);
-            
-            if is_enum {
-                self.process_enum_file(ws, path, class_name)?;
-            } else {
-                self.process_table_file(ws, path, class_name)?;
-            }
+        // 处理类表
+        for class_table in ws.classes() {
+            self.process_class_table(ws, class_table)?;
+        }
+        
+        // 处理列表表
+        for list_table in ws.lists() {
+            self.process_list_table(ws, list_table)?;
+        }
+        
+        // 处理字典表
+        for dict_table in ws.dicts() {
+            self.process_dict_table(ws, dict_table)?;
         }
         
         self.write_data_table_manager(ws)?;
@@ -686,17 +677,17 @@ impl CocosCodegen {
         Ok(())
     }
     
-    /// 处理枚举文件
+    /// 处理枚举表
     ///
     /// # 参数
     /// * `ws` - 工作区管理器
-    /// * `path` - 文件路径
-    /// * `class_name` - 类名
+    /// * `enum_table` - 枚举表数据
     ///
     /// # 返回值
     /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    fn process_enum_file(&mut self, ws: &WorkspaceManager, path: &PathBuf, class_name: &str) -> XResult<()> {
+    fn process_enum_table(&mut self, ws: &WorkspaceManager, enum_table: &xcell_analyzer::XEnumerateData) -> XResult<()> {
         let root = &ws.config.root;
+        let class_name = &enum_table.name;
         let ts_path = self.cocos_typescript_path(root, class_name)?;
         
         tracing::info!("processing_enum: class_name={}, output_path={:?}", class_name, ts_path);
@@ -706,16 +697,14 @@ impl CocosCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let enum_data = self.read_enum_data(path)?;
-        
-        let items = enum_data.into_iter()
-            .map(|(id, name, description)| {
-                let key = name.to_uppercase().replace(" ", "_");
+        let items = enum_table.items.iter()
+            .map(|item| {
+                let key = item.key.to_uppercase().replace(" ", "_");
                 CocosEnumerateItem {
                     key,
-                    id,
-                    name,
-                    description,
+                    id: item.id, 
+                    name: item.key.clone(),
+                    description: item.value.clone(),
                 }
             })
             .collect::<Vec<_>>();
@@ -729,28 +718,56 @@ impl CocosCodegen {
         Ok(())
     }
     
-    /// 处理表格文件
+    /// 从表字段生成 CocosField 列表
     ///
     /// # 参数
-    /// * `ws` - 工作区管理器
-    /// * `path` - 文件路径
+    /// * `headers` - 表字段头部信息
     /// * `class_name` - 类名
     ///
     /// # 返回值
+    /// 返回 CocosField 列表
+    fn generate_fields_from_headers(&self, headers: &[xcell_analyzer::XHeader], class_name: &str) -> Vec<CocosField> {
+        headers.iter()
+            .map(|header| {
+                let ts_type = self.map_csv_type_to_typescript(&header.field_type, &header.field_name, class_name);
+                CocosField {
+                    name: header.field_name.clone(),
+                    r#type: ts_type,
+                }
+            })
+            .collect()
+    }
+    
+    /// 处理类表
+    ///
+    /// # 参数
+    /// * `ws` - 工作区管理器
+    /// * `class_table` - 类表数据
+    ///
+    /// # 返回值
     /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    fn process_table_file(&mut self, ws: &WorkspaceManager, path: &PathBuf, class_name: &str) -> XResult<()> {
+    fn process_class_table(&mut self, ws: &WorkspaceManager, class_table: &XClassData) -> XResult<()> {
         let root = &ws.config.root;
+        let class_name = &class_table.name;
         let table_class_name = format!("{}Table", class_name);
         let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
         
-        tracing::info!("processing_table: class_name={}, table_class_name={}, output_path={:?}", class_name, &table_class_name, ts_path);
+        tracing::info!("processing_class_table: class_name={}, table_class_name={}, output_path={:?}", class_name, &table_class_name, ts_path);
         
         if let Some(parent) = ts_path.parent() {
             std::fs::create_dir_all(parent)?;
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let fields = self.read_csv_fields(path, class_name)?;
+        // 类表没有 headers，我们需要从 items 中提取字段信息
+        let mut fields = Vec::new();
+        for item in &class_table.items {
+            let ts_type = self.map_csv_type_to_typescript(&item.r#type, &item.field, class_name);
+            fields.push(CocosField {
+                name: item.field.clone(),
+                r#type: ts_type,
+            });
+        }
         
         let content = render_class_template(self, class_name, &table_class_name, &fields)?;
         
@@ -761,259 +778,71 @@ impl CocosCodegen {
         Ok(())
     }
     
-    /// 获取 CSV 文件列表
+    /// 处理列表表
     ///
     /// # 参数
-    /// * `root` - 根目录路径
+    /// * `ws` - 工作区管理器
+    /// * `list_table` - 列表表数据
     ///
     /// # 返回值
-    /// 返回 CSV 文件路径列表，成功时返回 Ok(Vec<PathBuf>)，失败时返回 XError。
-    pub fn get_csv_files(&mut self, root: &Path) -> XResult<Vec<PathBuf>> {
-        if let Some(cache) = &self.cache.files_cache {
-            tracing::debug!("Using cached CSV files list");
-            return Ok(cache.clone());
+    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
+    fn process_list_table(&mut self, ws: &WorkspaceManager, list_table: &XListData) -> XResult<()> {
+        let root = &ws.config.root;
+        let class_name = &list_table.name;
+        let table_class_name = format!("{}Table", class_name);
+        let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
+        
+        tracing::info!("processing_list_table: class_name={}, table_class_name={}, output_path={:?}", class_name, &table_class_name, ts_path);
+        
+        if let Some(parent) = ts_path.parent() {
+            std::fs::create_dir_all(parent)?;
+            tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let csv_files: Vec<PathBuf> = std::fs::read_dir(root)?
-            .filter_map(|entry| entry.ok())
-            .filter(|entry| {
-                entry.path().is_file() && 
-                entry.path().extension().map(|ext| {
-                    let ext = ext.to_ascii_lowercase();
-                    ext == "csv" || ext == "xlsx"
-                }).unwrap_or(false)
-            })
-            .map(|entry| entry.path())
-            .collect();
+        let fields = self.generate_fields_from_headers(&list_table.headers, class_name);
         
-        self.cache.files_cache = Some(csv_files.clone());
-        Ok(csv_files)
+        let content = render_class_template(self, class_name, &table_class_name, &fields)?;
+        
+        let mut file = File::create(ts_path)?;
+        file.write_all(content.as_bytes())?;
+        
+        tracing::info!("created_typescript_file: class_name={}", class_name);
+        Ok(())
     }
     
-    /// 读取 CSV 文件的字段信息（带缓存）
+    /// 处理字典表
     ///
     /// # 参数
-    /// * `csv_path` - CSV 文件路径
-    /// * `class_name` - 类名
+    /// * `ws` - 工作区管理器
+    /// * `dict_table` - 字典表数据
     ///
     /// # 返回值
-    /// 返回字段信息列表，成功时返回 Ok(Vec<CocosField>)，失败时返回 XError。
-    pub fn read_csv_fields(&mut self, csv_path: &Path, class_name: &str) -> XResult<Vec<CocosField>> {
-        if let Some(cached) = self.cache.fields_cache.get(csv_path) {
-            tracing::debug!("Using cached fields for {:?}", csv_path);
-            return Ok(cached.clone());
+    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
+    fn process_dict_table(&mut self, ws: &WorkspaceManager, dict_table: &XDictData) -> XResult<()> {
+        let root = &ws.config.root;
+        let class_name = &dict_table.name;
+        let table_class_name = format!("{}Table", class_name);
+        let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
+        
+        tracing::info!("processing_dict_table: class_name={}, table_class_name={}, output_path={:?}", class_name, &table_class_name, ts_path);
+        
+        if let Some(parent) = ts_path.parent() {
+            std::fs::create_dir_all(parent)?;
+            tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let mut fields = Vec::new();
+        let fields = self.generate_fields_from_headers(&dict_table.headers, class_name);
         
-        let ext = csv_path.extension().unwrap_or_default().to_ascii_lowercase();
+        let content = render_class_template(self, class_name, &table_class_name, &fields)?;
         
-        if ext == "csv" {
-            let mut rdr = csv::ReaderBuilder::new()
-                .has_headers(false)
-                .from_path(csv_path)
-                .map_err(|e| XError::runtime_error(format!("CSV read error: {}", e)))?;
-            
-            let records: Vec<csv::StringRecord> = rdr.records()
-                .filter_map(|r| r.ok())
-                .collect();
-            
-            if records.len() >= 2 {
-                let headers = &records[0];
-                let type_row = &records[1];
-                
-                for (i, header) in headers.iter().enumerate() {
-                    if i < type_row.len() {
-                        let field_type = &type_row[i];
-                        let ts_type = self.map_csv_type_to_typescript(field_type, header, class_name);
-                        fields.push(CocosField {
-                            name: header.to_string(),
-                            r#type: ts_type,
-                        });
-                    }
-                }
-            }
-        } else if ext == "xlsx" {
-            use calamine::{open_workbook_auto, Reader, Data};
-            
-            let mut workbook = open_workbook_auto(csv_path)
-                .map_err(|e| XError::runtime_error(format!("XLSX read error: {}", e)))?;
-            
-            if let Some(Ok(worksheet)) = workbook.worksheet_range_at(0) {
-                let mut headers = Vec::new();
-                let mut type_row = Vec::new();
-                
-                for (row_idx, row) in worksheet.rows().enumerate() {
-                    if row_idx == 1 { // 字段名行
-                        for cell in row {
-                            if let Data::String(s) = cell {
-                                headers.push(s.to_string());
-                            } else {
-                                headers.push(String::new());
-                            }
-                        }
-                    } else if row_idx == 2 { // 类型行
-                        for cell in row {
-                            if let Data::String(s) = cell {
-                                type_row.push(s.to_string());
-                            } else {
-                                type_row.push(String::new());
-                            }
-                        }
-                        break;
-                    }
-                }
-                
-                for (i, header) in headers.iter().enumerate() {
-                    if i < type_row.len() {
-                        let field_type = &type_row[i];
-                        let ts_type = self.map_csv_type_to_typescript(field_type, header, class_name);
-                        fields.push(CocosField {
-                            name: header.to_string(),
-                            r#type: ts_type,
-                        });
-                    }
-                }
-            }
-        }
+        let mut file = File::create(ts_path)?;
+        file.write_all(content.as_bytes())?;
         
-        self.cache.fields_cache.insert(csv_path.to_path_buf(), fields.clone());
-        Ok(fields)
+        tracing::info!("created_typescript_file: class_name={}", class_name);
+        Ok(())
     }
     
-    /// 读取枚举类型的 CSV 文件数据（带缓存）
-    ///
-    /// # 参数
-    /// * `csv_path` - CSV 文件路径
-    ///
-    /// # 返回值
-    /// 返回枚举数据列表，每个元素包含 id、name 和 description，成功时返回 Ok(Vec<(u32, String, String)>)，失败时返回 XError。
-    pub fn read_enum_data(&mut self, csv_path: &Path) -> XResult<Vec<(u32, String, String)>> {
-        if let Some(cached) = self.cache.enum_cache.get(csv_path) {
-            tracing::debug!("Using cached enum data for {:?}", csv_path);
-            return Ok(cached.clone());
-        }
-        
-        let mut enum_data = Vec::new();
-        
-        let ext = csv_path.extension().unwrap_or_default().to_ascii_lowercase();
-        
-        if ext == "csv" {
-            let mut rdr = csv::ReaderBuilder::new()
-                .has_headers(false)
-                .from_path(csv_path)
-                .map_err(|e| XError::runtime_error(format!("CSV read error: {}", e)))?;
-            
-            let records: Vec<csv::StringRecord> = rdr.records()
-                .filter_map(|r| r.ok())
-                .collect();
-            
-            if records.len() >= 3 {
-                let headers = &records[0];
-                
-                let id_index = headers.iter().position(|h| config::is_id_field(h)).unwrap_or(0);
-                let name_index = headers.iter().position(|h| config::is_name_field(h)).unwrap_or(1);
-                let desc_index = headers.iter().position(|h| config::is_description_field(h)).unwrap_or_else(|| {
-                    name_index
-                });
-                
-                for record in records.iter().skip(2) {
-                    if record.len() > id_index && record.len() > name_index && record.len() > desc_index {
-                        if let Ok(id) = record[id_index].parse::<u32>() {
-                            let name = record[name_index].to_string();
-                            let description = record[desc_index].to_string();
-                            enum_data.push((id, name, description));
-                        }
-                    }
-                }
-            }
-        } else if ext == "xlsx" {
-            use calamine::{open_workbook_auto, Reader, Data};
-            
-            let mut workbook = open_workbook_auto(csv_path)
-                .map_err(|e| XError::runtime_error(format!("XLSX read error: {}", e)))?;
-            
-            if let Some(Ok(worksheet)) = workbook.worksheet_range_at(0) {
-                let mut headers = Vec::new();
-                let mut id_index = 0;
-                let mut name_index = 1;
-                let mut desc_index = 1;
-                
-                for (row_idx, row) in worksheet.rows().enumerate() {
-                    if row_idx == 1 { // 字段名行
-                        for (i, cell) in row.iter().enumerate() {
-                            if let Data::String(s) = cell {
-                                headers.push(s.to_string());
-                                if config::is_id_field(s) {
-                                    id_index = i;
-                                } else if config::is_name_field(s) {
-                                    name_index = i;
-                                    desc_index = i; // 默认描述字段与名称字段相同
-                                } else if config::is_description_field(s) {
-                                    desc_index = i;
-                                }
-                            }
-                        }
-                    } else if row_idx >= 5 { // 数据行（根据配置的 data = 6）
-                        if row.len() > id_index && row.len() > name_index && row.len() > desc_index {
-                            if let Some(id_cell) = row.get(id_index) {
-                                match id_cell {
-                                    Data::Float(f) => {
-                                        let id = *f as u32;
-                                        let name = if let Some(name_cell) = row.get(name_index) {
-                                            if let Data::String(s) = name_cell {
-                                                s.to_string()
-                                            } else {
-                                                String::new()
-                                            }
-                                        } else {
-                                            String::new()
-                                        };
-                                        let description = if let Some(desc_cell) = row.get(desc_index) {
-                                            if let Data::String(s) = desc_cell {
-                                                s.to_string()
-                                            } else {
-                                                String::new()
-                                            }
-                                        } else {
-                                            String::new()
-                                        };
-                                        enum_data.push((id, name, description));
-                                    }
-                                    Data::Int(i) => {
-                                        let id = *i as u32;
-                                        let name = if let Some(name_cell) = row.get(name_index) {
-                                            if let Data::String(s) = name_cell {
-                                                s.to_string()
-                                            } else {
-                                                String::new()
-                                            }
-                                        } else {
-                                            String::new()
-                                        };
-                                        let description = if let Some(desc_cell) = row.get(desc_index) {
-                                            if let Data::String(s) = desc_cell {
-                                                s.to_string()
-                                            } else {
-                                                String::new()
-                                            }
-                                        } else {
-                                            String::new()
-                                        };
-                                        enum_data.push((id, name, description));
-                                    }
-                                    _ => {}
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        self.cache.enum_cache.insert(csv_path.to_path_buf(), enum_data.clone());
-        Ok(enum_data)
-    }
+
     
     /// 获取类型映射
     fn get_type_mapping(&self, rust_type: &str) -> String {
@@ -1071,8 +900,6 @@ impl CocosCodegen {
     pub fn write_data_table_manager(&mut self, ws: &WorkspaceManager) -> XResult<()> {
         let root = &ws.config.root;
         
-        let csv_files = self.get_csv_files(root)?;
-        
         let manager_path = self.cocos_typescript_path(root, "DataTableManager")?;
         
         tracing::info!("generating_data_table_manager: output_path={:?}", manager_path);
@@ -1092,15 +919,44 @@ impl CocosCodegen {
         
         let mut tables = Vec::new();
         
-        for entry in &csv_files {
-            let file_name = entry.file_name()
-                .map(|n| n.to_string_lossy().to_string())
-                .unwrap_or_default();
-            let class_name = file_name.split('.').next().unwrap_or(&file_name);
-            
-            let is_enum = self.is_enum(class_name);
-            
-            if !is_enum {
+        // 处理类表
+        for class_table in ws.classes() {
+            let class_name = &class_table.name;
+            if !self.is_enum(class_name) {
+                let table_class_name = format!("{}Table", class_name);
+                let cache_name = format!("{}Table", class_name.to_lowercase());
+                let get_method_name = format!("get{}Table", class_name);
+                
+                tables.push(CocosDataTableItem {
+                    class_name: class_name.to_string(),
+                    table_name: table_class_name,
+                    cache_name,
+                    get_method_name,
+                });
+            }
+        }
+        
+        // 处理列表表
+        for list_table in ws.lists() {
+            let class_name = &list_table.name;
+            if !self.is_enum(class_name) {
+                let table_class_name = format!("{}Table", class_name);
+                let cache_name = format!("{}Table", class_name.to_lowercase());
+                let get_method_name = format!("get{}Table", class_name);
+                
+                tables.push(CocosDataTableItem {
+                    class_name: class_name.to_string(),
+                    table_name: table_class_name,
+                    cache_name,
+                    get_method_name,
+                });
+            }
+        }
+        
+        // 处理字典表
+        for dict_table in ws.dicts() {
+            let class_name = &dict_table.name;
+            if !self.is_enum(class_name) {
                 let table_class_name = format!("{}Table", class_name);
                 let cache_name = format!("{}Table", class_name.to_lowercase());
                 let get_method_name = format!("get{}Table", class_name);
@@ -1498,7 +1354,6 @@ impl super::Codegen for CocosCodegen {
                             TypeMapping { rust_type: "string".to_string(), ts_type: "string".to_string() },
                             TypeMapping { rust_type: "any".to_string(), ts_type: "string".to_string() },
                         ]),
-                        cache: Default::default(),
                     };
                     
                     tracing::info!("Cocos codegen enable: {}", cocos_codegen.enable);

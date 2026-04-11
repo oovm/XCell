@@ -16,6 +16,7 @@ xcell.exe
 target/
 sqlite/
 Cargo.lock
+.cargo/config.toml
 
 # Node
 node_modules/

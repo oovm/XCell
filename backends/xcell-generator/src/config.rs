@@ -172,6 +172,7 @@ impl GeneratorConfig {
                         options.insert("suffix_table".to_string(), cocos.suffix_table.clone());
                         options.insert("instance_name".to_string(), cocos.instance_name.clone());
                         options.insert("table_data_path".to_string(), cocos.table_data_path.clone());
+                        options.insert("loader_template".to_string(), cocos.loader_template.clone());
 
                         let output_dir = if !cocos.project.is_empty() {
                             format!("{}/{}", cocos.project, cocos.output)
@@ -179,8 +180,15 @@ impl GeneratorConfig {
                             cocos.output.clone()
                         };
 
+                        let product_type = if !cocos.loader_template.is_empty() {
+                            options.insert("template_dir".to_string(), cocos.loader_template.clone());
+                            ProductType::Dejavu
+                        } else {
+                            ProductType::Cocos
+                        };
+
                         products.push(ProductConfig {
-                            product_type: ProductType::Cocos,
+                            product_type,
                             output_dir,
                             options,
                             enabled: true,

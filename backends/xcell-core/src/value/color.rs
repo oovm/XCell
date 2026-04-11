@@ -11,7 +11,7 @@ impl ColorDescription {
     where
         F: Into<f64>,
     {
-        let c = color.into();
+        let c = color.into() as f32;
         Color::new(c, c, c, c)
     }
     pub fn parse<T>(&self, input: T) -> XResult<Color>

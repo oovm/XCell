@@ -53,6 +53,8 @@ pub struct CocosCodegen {
     pub storage: CocosStorage,
     /// 开发时用的储存格式
     pub storage_debug: Option<CocosStorage>,
+    /// 使用 dejavu 模板生成代码的模板目录，空字符串表示使用默认模板
+    pub loader_template: String,
 }
 
 impl Default for CocosCodegen {
@@ -67,6 +69,7 @@ impl Default for CocosCodegen {
             table_data_path: "tables".to_string(),
             storage: CocosStorage::default(),
             storage_debug: None,
+            loader_template: "".to_string(),
         }
     }
 }

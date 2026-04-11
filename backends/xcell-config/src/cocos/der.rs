@@ -66,6 +66,7 @@ impl<'de> Deserialize<'de> for CocosCodegen {
             suffix_table: loader.suffix_table.unwrap_or("Table".to_string()),
             instance_name: loader.instance_name.unwrap_or("DataTable".to_string()),
             table_data_path: loader.table_data_path.unwrap_or("tables".to_string()),
+            loader_template: "".to_string(),
         })
     }
 }

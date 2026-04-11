@@ -258,6 +258,9 @@ impl ProjectConfig {
                                 Generator::TypeScript(typescript) => {
                                     typescript.loader_template = template_str.to_string();
                                 }
+                                Generator::Cocos(cocos) => {
+                                    cocos.loader_template = template_str.to_string();
+                                }
                                 _ => {}
                             }
                         }

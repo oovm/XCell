@@ -1,5 +1,6 @@
 use xcell_analyzer::WorkspaceManager;
 use serde::{Serialize, Deserialize};
+use serde_json;
 use std::{
     fs::File,
     io::Write,
@@ -10,8 +11,6 @@ use xcell_analyzer::{XClassData, XListData, XDictData};
 use url::Url;
 use nargo_template::{DejaVuAdapter, UnifiedTemplateEngine};
 use nargo_types::NargoValue;
-use oak_json::language::JsonValue;
-use oak_json::language::value::{JsonArray, JsonObject};
 use crate::template::{TemplateLoader, TemplateType};
 
 mod config;
@@ -941,8 +940,14 @@ impl CocosCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let json_data = self.convert_class_data_to_json(table)?;
-        let json_string = oak_json::to_string(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
+        let json_data = table.items.iter().map(|item| {
+            serde_json::json!({
+                "field": item.field,
+                "default": item.default
+            })
+        }).collect::<Vec<_>>();
+        
+        let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
         
         let mut file = std::fs::File::create(json_path)?;
         file.write_all(json_string.as_bytes())?;
@@ -962,8 +967,22 @@ impl CocosCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let json_data = self.convert_list_data_to_json(table)?;
-        let json_string = oak_json::to_string(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
+        let json_data = table.mapping.values().map(|line| {
+            let mut record = serde_json::Map::new();
+            record.insert("id".to_string(), serde_json::json!(line.id.to_u64().unwrap_or(0)));
+            record.insert("key".to_string(), serde_json::json!(line.key));
+            
+            // 处理数据字段
+            for (i, header) in table.headers.iter().enumerate() {
+                if i < line.data.len() {
+                    record.insert(header.field_name.clone(), serde_json::to_value(&line.data[i]).unwrap());
+                }
+            }
+            
+            serde_json::Value::Object(record)
+        }).collect::<Vec<_>>();
+        
+        let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
         
         let mut file = std::fs::File::create(json_path)?;
         file.write_all(json_string.as_bytes())?;
@@ -983,8 +1002,22 @@ impl CocosCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let json_data = self.convert_dict_data_to_json(table)?;
-        let json_string = oak_json::to_string(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
+        let json_data = table.mapping.values().map(|line| {
+            let mut record = serde_json::Map::new();
+            record.insert("id".to_string(), serde_json::json!(line.id.to_u64().unwrap_or(0)));
+            record.insert("key".to_string(), serde_json::json!(line.key));
+            
+            // 处理数据字段
+            for (i, header) in table.headers.iter().enumerate() {
+                if i < line.data.len() {
+                    record.insert(header.field_name.clone(), serde_json::to_value(&line.data[i]).unwrap());
+                }
+            }
+            
+            serde_json::Value::Object(record)
+        }).collect::<Vec<_>>();
+        
+        let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
         
         let mut file = std::fs::File::create(json_path)?;
         file.write_all(json_string.as_bytes())?;
@@ -993,210 +1026,7 @@ impl CocosCodegen {
         Ok(())
     }
     
-    /// 将类表数据转换为 JSON
-    ///
-    /// # 参数
-    /// * `table` - 类表数据
-    ///
-    /// # 返回值
-    /// 返回 JSON 数据，成功时返回 Ok(JsonValue)，失败时返回 XError。
-    fn convert_class_data_to_json(&self, table: &XClassData) -> XResult<JsonValue> {
-        let mut records = Vec::new();
-        
-        for item in &table.items {
-            let mut record_map = std::collections::HashMap::new();
-            record_map.insert("field".to_string(), JsonValue::String(item.field.clone()));
-            record_map.insert("default".to_string(), self.convert_xcell_value_to_json(&item.default));
-            
-            records.push(JsonValue::Object(JsonObject { dict: record_map }));
-        }
-        
-        Ok(JsonValue::Array(JsonArray { list: records }))
-    }
-    
-    /// 将列表数据转换为 JSON
-    ///
-    /// # 参数
-    /// * `table` - 列表数据
-    ///
-    /// # 返回值
-    /// 返回 JSON 数据，成功时返回 Ok(JsonValue)，失败时返回 XError。
-    fn convert_list_data_to_json(&self, table: &XListData) -> XResult<JsonValue> {
-        let mut records = Vec::new();
-        
-        for line in table.mapping.values() {
-            let mut record_map = std::collections::HashMap::new();
-            record_map.insert("id".to_string(), JsonValue::Integer(line.id.to_u64().unwrap_or(0) as i64));
-            record_map.insert("key".to_string(), JsonValue::String(line.key.clone()));
-            
-            // 处理数据字段
-            for (i, header) in table.headers.iter().enumerate() {
-                if i < line.data.len() {
-                    let json_value = self.convert_xcell_value_to_json(&line.data[i]);
-                    record_map.insert(header.field_name.clone(), json_value);
-                }
-            }
-            
-            records.push(JsonValue::Object(JsonObject { dict: record_map }));
-        }
-        
-        Ok(JsonValue::Array(JsonArray { list: records }))
-    }
-    
-    /// 将字典数据转换为 JSON
-    ///
-    /// # 参数
-    /// * `table` - 字典数据
-    ///
-    /// # 返回值
-    /// 返回 JSON 数据，成功时返回 Ok(JsonValue)，失败时返回 XError。
-    fn convert_dict_data_to_json(&self, table: &XDictData) -> XResult<JsonValue> {
-        let mut records = Vec::new();
-        
-        for line in table.mapping.values() {
-            let mut record_map = std::collections::HashMap::new();
-            record_map.insert("id".to_string(), JsonValue::Integer(line.id.to_u64().unwrap_or(0) as i64));
-            record_map.insert("key".to_string(), JsonValue::String(line.key.clone()));
-            
-            // 处理数据字段
-            for (i, header) in table.headers.iter().enumerate() {
-                if i < line.data.len() {
-                    let json_value = self.convert_xcell_value_to_json(&line.data[i]);
-                    record_map.insert(header.field_name.clone(), json_value);
-                }
-            }
-            
-            records.push(JsonValue::Object(JsonObject { dict: record_map }));
-        }
-        
-        Ok(JsonValue::Array(JsonArray { list: records }))
-    }
-    
-    /// 将 XCellValue 转换为 JSON 值
-    ///
-    /// # 参数
-    /// * `value` - XCellValue 值
-    ///
-    /// # 返回值
-    /// 返回对应的 JSON 值
-    fn convert_xcell_value_to_json(&self, value: &XCellValue) -> JsonValue {
-        match value {
-            XCellValue::Boolean(b) => self.convert_boolean_to_json(*b),
-            XCellValue::Integer8(i) => self.convert_integer_to_json(*i),
-            XCellValue::Integer16(i) => self.convert_integer_to_json(*i),
-            XCellValue::Integer32(i) => self.convert_integer_to_json(*i),
-            XCellValue::Integer64(i) => self.convert_integer_to_json(*i),
-            XCellValue::Unsigned8(u) => self.convert_unsigned_to_json(*u),
-            XCellValue::Unsigned16(u) => self.convert_unsigned_to_json(*u),
-            XCellValue::Unsigned32(u) => self.convert_unsigned_to_json(*u),
-            XCellValue::Unsigned64(u) => self.convert_unsigned_to_json(*u),
-            XCellValue::Float32(f) => self.convert_float_to_json(*f as f64),
-            XCellValue::Float64(f) => self.convert_float_to_json(*f),
-            XCellValue::String(s) => self.convert_string_to_json(s),
-            XCellValue::Vector2(v) => self.convert_vector2_to_json(v),
-            XCellValue::Vector3(v) => self.convert_vector3_to_json(v),
-            XCellValue::Vector4(v) => self.convert_vector4_to_json(v),
-            XCellValue::Quaternion4(v) => self.convert_quaternion4_to_json(v),
-            XCellValue::Color(c) => self.convert_color_to_json(c),
-            XCellValue::Vector(v) => self.convert_vector_to_json(v),
-            XCellValue::Enumerate(s) => self.convert_enumerate_to_json(s),
-            _ => JsonValue::Null,
-        }
-    }
-    
-    /// 将布尔值转换为 JSON
-    fn convert_boolean_to_json(&self, value: bool) -> JsonValue {
-        JsonValue::Boolean(value)
-    }
-    
-    /// 将整数转换为 JSON
-    fn convert_integer_to_json<T: Into<i64>>(&self, value: T) -> JsonValue {
-        JsonValue::Integer(value.into())
-    }
-    
-    /// 将无符号整数转换为 JSON
-    fn convert_unsigned_to_json<T: Into<u64>>(&self, value: T) -> JsonValue {
-        JsonValue::Integer(value.into() as i64)
-    }
-    
-    /// 将浮点数转换为 JSON
-    fn convert_float_to_json(&self, value: f64) -> JsonValue {
-        JsonValue::Float(value)
-    }
-    
-    /// 将字符串转换为 JSON
-    fn convert_string_to_json(&self, value: &str) -> JsonValue {
-        JsonValue::String(value.to_string())
-    }
-    
-    /// 将 Vector2 转换为 JSON
-    fn convert_vector2_to_json(&self, value: &[f32; 2]) -> JsonValue {
-        JsonValue::Array(JsonArray {
-            list: vec![
-                self.convert_float_to_json(value[0] as f64),
-                self.convert_float_to_json(value[1] as f64)
-            ]
-        })
-    }
-    
-    /// 将 Vector3 转换为 JSON
-    fn convert_vector3_to_json(&self, value: &[f32; 3]) -> JsonValue {
-        JsonValue::Array(JsonArray {
-            list: vec![
-                self.convert_float_to_json(value[0] as f64),
-                self.convert_float_to_json(value[1] as f64),
-                self.convert_float_to_json(value[2] as f64)
-            ]
-        })
-    }
-    
-    /// 将 Vector4 转换为 JSON
-    fn convert_vector4_to_json(&self, value: &[f32; 4]) -> JsonValue {
-        JsonValue::Array(JsonArray {
-            list: vec![
-                self.convert_float_to_json(value[0] as f64),
-                self.convert_float_to_json(value[1] as f64),
-                self.convert_float_to_json(value[2] as f64),
-                self.convert_float_to_json(value[3] as f64)
-            ]
-        })
-    }
-    
-    /// 将 Quaternion4 转换为 JSON
-    fn convert_quaternion4_to_json(&self, value: &[f32; 4]) -> JsonValue {
-        JsonValue::Array(JsonArray {
-            list: vec![
-                self.convert_float_to_json(value[0] as f64),
-                self.convert_float_to_json(value[1] as f64),
-                self.convert_float_to_json(value[2] as f64),
-                self.convert_float_to_json(value[3] as f64)
-            ]
-        })
-    }
-    
-    /// 将 Color 转换为 JSON
-    fn convert_color_to_json(&self, value: &xcell_core::for_3rd::Color) -> JsonValue {
-        JsonValue::Object(JsonObject {
-            dict: std::collections::HashMap::from([
-                ("r".to_string(), self.convert_float_to_json(value.r as f64)),
-                ("g".to_string(), self.convert_float_to_json(value.g as f64)),
-                ("b".to_string(), self.convert_float_to_json(value.b as f64)),
-                ("a".to_string(), self.convert_float_to_json(value.a as f64))
-            ])
-        })
-    }
-    
-    /// 将 Vector 转换为 JSON
-    fn convert_vector_to_json(&self, value: &Vec<XCellValue>) -> JsonValue {
-        JsonValue::Array(JsonArray {
-            list: value.iter().map(|item| self.convert_xcell_value_to_json(item)).collect()
-        })
-    }
-    
-    /// 将 Enumerate 转换为 JSON
-    fn convert_enumerate_to_json(&self, value: &str) -> JsonValue {
-        JsonValue::String(value.to_string())
-    }
+
     
 
 

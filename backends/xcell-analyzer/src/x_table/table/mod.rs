@@ -3,7 +3,8 @@ use calamine::Data;
 use std::{path::Path, sync::Arc};
 use xcell_parser::{parse_field, parse_meta, FieldConstraint, TableKind};
 use xcell_provider::{TableReader as XCellTableReader, XCellAccess, XCellHeader, load_table as load_table_reader};
-use xcell_core::{ByteOrder, IntegerKind, StreamReader, XCellTyped, XDocument, XErrorKind};
+use xcell_core::{IntegerKind, XCellTyped, XDocument, XErrorKind};
+use xcell_provider::{ByteOrder, StreamReader};
 
 use super::*;
 

@@ -1,5 +1,6 @@
 use xcell_provider::TableReader as XCellTableReader;
-use xcell_core::{ByteOrder, IntegerDescription, IntegerKind};
+use xcell_core::{IntegerDescription, IntegerKind};
+use xcell_provider::ByteOrder;
 
 use crate::{
     utils::first_not_nil,

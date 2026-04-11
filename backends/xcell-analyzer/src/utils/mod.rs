@@ -17,7 +17,6 @@ pub use self::workspace::*;
 mod watcher;
 
 pub mod comment;
-pub mod file_format;
 mod workspace;
 
 
@@ -88,4 +87,18 @@ pub fn split_namespace(s: &str) -> Vec<&str> {
     all
 }
 
-pub use xcell_parser::norm_string;
+pub fn norm_string(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for char in s.chars() {
+        if char == '-' || char == '_' || char == ' ' {
+            continue;
+        }
+        if char.is_ascii() {
+            out.push(char.to_ascii_lowercase());
+        }
+        else {
+            out.push(char);
+        }
+    }
+    out
+}

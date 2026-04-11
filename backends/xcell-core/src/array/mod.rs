@@ -27,9 +27,4 @@ impl ArrayDescription {
         Self { kind, default: vec![] }
     }
 
-    #[cfg(feature = "typescript")]
-    /// 返回当前数组描述对应的 TypeScript 类型名称
-    pub fn as_typescript_type(&self) -> &'static str {
-        self.kind.as_typescript_type()
-    }
 }

@@ -6,23 +6,6 @@ impl Default for IntegerKind {
     }
 }
 
-#[cfg(feature = "typescript")]
-impl IntegerKind {
-    /// 返回当前整数类型对应的 TypeScript 类型名称
-    pub fn as_typescript_type(&self) -> &'static str {
-        match self {
-            IntegerKind::Integer8 => "number",
-            IntegerKind::Integer16 => "number",
-            IntegerKind::Integer32 => "number",
-            IntegerKind::Integer64 => "number",
-            IntegerKind::Unsigned8 => "number",
-            IntegerKind::Unsigned16 => "number",
-            IntegerKind::Unsigned32 => "number",
-            IntegerKind::Unsigned64 => "number",
-        }
-    }
-}
-
 impl IntegerKind {
     pub fn unsigned(&self) -> bool {
         !self.signed()

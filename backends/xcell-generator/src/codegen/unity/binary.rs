@@ -5,7 +5,8 @@ use std::{
 };
 use url::Url;
 use xcell_analyzer::{WorkspaceManager, XClassData, XDictData, XLanguageData, XListData};
-use xcell_core::{ByteOrder, StreamWriter, XCellValue, XResult};
+use xcell_core::{XCellValue, XResult};
+use xcell_provider::{ByteOrder, StreamWriter};
 
 impl UnityGenerator {
     /// 获取二进制产物文件路径

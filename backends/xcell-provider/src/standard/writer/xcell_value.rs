@@ -1,8 +1,6 @@
+use super::*;
 use std::io::Write;
-
-use crate::ByteOrder;
-
-use crate::{StreamWriter, XCellValue};
+use xcell_core::XCellValue;
 
 impl StreamWriter for XCellValue {
     fn write_to<W: Write>(&self, buffer: &mut W, order: ByteOrder) -> std::io::Result<()> {
@@ -41,7 +39,6 @@ impl StreamWriter for XCellValue {
                     item.write_to(buffer, order)?;
                 }
             }
-            // https://en.wikipedia.org/wiki/Variable-length_quantity
             XCellValue::String(v) => {
                 write_7_bit(v.len(), buffer, order)?;
                 for item in v.bytes() {
@@ -77,6 +74,7 @@ impl StreamWriter for XCellValue {
     }
 }
 
+/// 使用 7 位编码写入长度值
 pub fn write_7_bit<W: Write>(length: usize, buffer: &mut W, order: ByteOrder) -> std::io::Result<()> {
     let mut value = length as u32;
     while value >= 0x80 {

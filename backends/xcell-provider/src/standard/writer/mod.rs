@@ -3,6 +3,8 @@ use std::collections::VecDeque;
 
 use concat_idents::concat_idents;
 
+mod xcell_value;
+
 #[allow(unused_variables)]
 impl StreamWriter for u8 {
     fn write_to<W: Write>(&self, buffer: &mut W, order: ByteOrder) -> Result<()> {

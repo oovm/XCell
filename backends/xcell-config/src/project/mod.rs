@@ -5,14 +5,13 @@ use oak_json::language::JsonValue;
 use oak_toml::from_str;
 use oak_json::to_string;
 
-use xcell_core::TypeMetaInfo;
+use xcell_core::{TableLineMode, TypeMetaInfo};
 
 use super::*;
 use crate::{
     cocos::{CocosCodegen, CocosJsonConfig, CocosStorage},
     codegen::{json::JsonCodegen, sql::SqlCodegen, typescript::TypeScriptCodegen, xlua::XluaCodegen},
     merge_rules::MergeRules,
-    table::TableLineMode,
     unity::{UnityCodegen, UnityStorage, UnityXluaConfig},
 };
 

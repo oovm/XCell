@@ -20,16 +20,18 @@ regex = { workspace = true }
 twox-hash = { workspace = true }
 serde = { workspace = true }
 csv = { workspace = true }
-#futures = "0.3.17"
 tokio = { workspace = true }
 integer-encoding = { workspace = true }
-# dejavu-core = { path = "../../../dejavu-engine/projects/dejavu-core" }
+globset = { workspace = true, features = ["serde"] }
+notify = { workspace = true, features = ["serde"] }
+walkdir = { workspace = true }
+async-walkdir = { workspace = true }
 
 
 
 [dependencies.xcell-core]
 workspace = true
-features = ["csharp", "typescript", "globset", "notify", "walkdir", "async-walkdir"]
+features = ["num", "bigdecimal", "chrono", "csscolorparser", "oak-json"]
 
 [dependencies.xcell-provider]
 workspace = true

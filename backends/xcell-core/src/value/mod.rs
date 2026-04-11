@@ -17,7 +17,6 @@ use crate::{
 };
 
 pub mod color;
-pub mod convert;
 pub mod document;
 mod display;
 pub mod time;

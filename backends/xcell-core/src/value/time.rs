@@ -24,7 +24,7 @@ impl TimeDescription {
     fn parse_value(&self, cell: &Data) -> XResult<DateTime> {
         match cell {
             Data::DateTime(time) => {
-                let ntv = time.as_datetime().unwrap_or_default();
+                let ntv = crate::for_3rd::excel_serial_to_naive_datetime(*time).unwrap_or_default();
                 let utc = Utc.from_utc_datetime(&ntv);
                 Ok(utc)
             }

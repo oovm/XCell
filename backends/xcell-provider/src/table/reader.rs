@@ -3,6 +3,7 @@
 //! 提供统一的表格读取接口和各种格式的表格读取器实现。
 
 use calamine::{Data, Reader};
+use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use xcell_core::{IntegerKind, TypeMetaInfo, XCellAccess, XCellTyped, XDocument, XError, XErrorKind, XResult};

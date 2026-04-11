@@ -20,9 +20,10 @@ pub use self::{
     generator::{GeneratorConfig, GlobalConfig, ProductConfig, ProductType},
     merge_rules::{MergeRules, MergeStep},
     project::{ExportCondition, ProjectConfig},
-    table::{FieldConfig, TableConfig, TableLineMode},
+    table::TableConfig,
     unity::{UnityBinaryConfig, UnityCodegen},
 };
+pub use xcell_core::{FieldConfig, TableLineMode};
 
 /// 默认的全局项目设置
 pub const PROJECT_CONFIG: &str = include_str!("../ProjectConfig.toml");

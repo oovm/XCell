@@ -108,7 +108,6 @@ pub(crate) mod utils;
 
 mod array;
 mod boolean;
-pub mod codegen;
 mod custom;
 mod decimal;
 pub mod enumerate;

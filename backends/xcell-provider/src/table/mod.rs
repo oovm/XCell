@@ -53,3 +53,21 @@ pub fn load_table_with_config(path: &Path, config: &TypeMetaInfo) -> XResult<Box
         FileFormat::Unknown => Err(XError::new(XErrorKind::TableError(format!("无法检测文件格式: {:?}", path)))),
     }
 }
+
+/// 读取 Excel 文件里的第一张表
+///
+/// # Parameters
+/// - `path`: 表格文件的路径
+///
+/// # Returns
+/// - 成功时返回 Excel 表格的范围
+/// - 失败时返回错误
+pub fn find_first_table(path: &Path) -> XResult<calamine::Range<calamine::Data>> {
+    use calamine::Reader;
+    let mut workbook = calamine::open_workbook_auto(path).map_err(|e| XError::new(XErrorKind::IOError(format!("{:?}", e))))?;
+    let ranges = match workbook.worksheet_range_at(0) {
+        None => return Err(XError::new(XErrorKind::TableError("找不到配置表, 文件是空的, 或者表格式非法".to_string()))),
+        Some(s) => s.map_err(|e| XError::new(XErrorKind::IOError(format!("{:?}", e)))),
+    }?;
+    Ok(ranges)
+}

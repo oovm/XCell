@@ -6,6 +6,7 @@ use xcell_core::XResult;
 /// 支持多种格式的代码和数据生成
 pub mod binary;
 pub mod cocos;
+pub mod core;
 pub mod dejavu;
 pub mod json;
 // pub mod readable;

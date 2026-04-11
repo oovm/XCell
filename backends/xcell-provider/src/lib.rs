@@ -7,7 +7,7 @@ pub use self::{
     standard::{StreamReader, StreamWriter},
     table::{
         CsvRows, CsvTable, ExcelTable, FileFormat, FileFormatDetector, TableReader, TsvRows, TsvTable, XCellAccess,
-        XCellHeader, XDocument, load_table,
+        XCellHeader, XDocument, load_table, find_first_table,
     },
 };
 

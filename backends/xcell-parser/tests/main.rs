@@ -1,29 +1,8 @@
 use xcell_parser::{
     TypeExpr, FieldExpr, MetaExpr, FieldConstraint, TableKind, PrimitiveType,
-    Lexer, Token, TypeParser,
+    parse_type, parse_field, parse_meta,
     ParseResult, ParseError, ParseErrorKind,
 };
-
-fn parse_type(input: &str) -> ParseResult<TypeExpr> {
-    let lexer = Lexer::new(input);
-    let tokens: Vec<Token> = lexer.collect::<Result<_, _>>()?;
-    let mut parser = TypeParser::new(tokens);
-    parser.parse_type_expr()
-}
-
-fn parse_field(input: &str) -> ParseResult<FieldExpr> {
-    let lexer = Lexer::new(input);
-    let tokens: Vec<Token> = lexer.collect::<Result<_, _>>()?;
-    let mut parser = TypeParser::new(tokens);
-    parser.parse_field_expr()
-}
-
-fn parse_meta(input: &str) -> ParseResult<MetaExpr> {
-    let lexer = Lexer::new(input);
-    let tokens: Vec<Token> = lexer.collect::<Result<_, _>>()?;
-    let mut parser = TypeParser::new(tokens);
-    parser.parse_meta_expr()
-}
 
 #[test]
 fn test_primitive_types() {

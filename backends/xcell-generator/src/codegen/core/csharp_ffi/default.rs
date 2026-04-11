@@ -16,7 +16,12 @@ impl XCellTyped {
                 if v.default.is_empty() {
                     return "new()".to_string();
                 }
-                format!("new () {{{}}}", v.default.iter().map(|v| v.as_csharp_value()).join(", "))
+                let mut result = String::new();
+                result.push_str("new () {");
+                let joined = v.default.iter().map(|v| v.as_csharp_value()).join(", ");
+                result.push_str(&joined);
+                result.push_str("}");
+                result
             }
             XCellTyped::Reference(v) => v.as_csharp_default(),
             XCellTyped::List(v) => v.as_csharp_default(),
@@ -55,7 +60,11 @@ impl XCellValue {
                 todo!()
             }
             XCellValue::String(s) => {
-                format!("\"{}\"", s)
+                let mut result = String::new();
+                result.push('"');
+                result.push_str(s);
+                result.push('"');
+                result
             }
             XCellValue::Color(c) => {
                 format!(
@@ -121,7 +130,14 @@ impl StringDescription {
     /// # 返回值
     /// 返回 C# 默认值字符串
     pub fn as_csharp_default(&self) -> String {
-        if self.default.is_empty() { "\"\"".to_string() } else { format!("{:?}", self.default) }
+        if self.default.is_empty() {
+            let mut result = String::new();
+            result.push('"');
+            result.push('"');
+            result
+        } else {
+            format!("{:?}", self.default)
+        }
     }
 }
 
@@ -179,8 +195,19 @@ impl XCellTyped {
     /// 返回 CSharpWriter 配置结构体
     pub fn make_cs_binary_writer(&self, field: &str) -> CSharpWriter {
         let properties = match self {
-            XCellTyped::Time(_) => vec![".Ticks".to_string()],
-            XCellTyped::Color(_) => vec![".r".to_string(), ".g".to_string(), ".b".to_string(), ".a".to_string()],
+            XCellTyped::Time(_) => {
+                let mut v = Vec::new();
+                v.push(".Ticks".to_string());
+                v
+            }
+            XCellTyped::Color(_) => {
+                let mut v = Vec::new();
+                v.push(".r".to_string());
+                v.push(".g".to_string());
+                v.push(".b".to_string());
+                v.push(".a".to_string());
+                v
+            }
             XCellTyped::Enumerate(_) => {
                 return CSharpWriter {
                     is_vector: false,
@@ -362,11 +389,14 @@ impl ListDescription {
     /// 返回列表类型对应的 C# 默认值字符串
     pub fn as_csharp_default(&self) -> String {
         if self.default.is_empty() {
-            return "new()".to_string();
+            "new()".to_string()
+        } else {
+            let mut result = String::new();
+            result.push_str("new () {");
+            let joined = self.default.iter().map(|v| v.as_csharp_value()).join(", ");
+            result.push_str(&joined);
+            result.push_str("}");
+            result
         }
-        format!(
-            "new () {{ {} }}",
-            self.default.iter().map(|v| v.as_csharp_value()).join(", ")
-        )
     }
 }

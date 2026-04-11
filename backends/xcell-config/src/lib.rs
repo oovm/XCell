@@ -6,6 +6,8 @@
 
 pub mod cocos;
 pub mod codegen;
+pub mod config;
+pub mod generator;
 pub mod merge_rules;
 pub mod project;
 pub mod table;
@@ -14,6 +16,8 @@ pub mod unity;
 pub use self::{
     cocos::{CocosCodegen, CocosJsonConfig},
     codegen::{json::JsonCodegen, sql::SqlCodegen, typescript::TypeScriptCodegen, xlua::XluaCodegen},
+    config::ConfigManager,
+    generator::{GeneratorConfig, GlobalConfig, ProductConfig, ProductType},
     merge_rules::{MergeRules, MergeStep},
     project::{ExportCondition, ProjectConfig},
     table::{FieldConfig, TableConfig, TableLineMode},

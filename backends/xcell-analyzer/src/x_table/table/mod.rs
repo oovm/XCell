@@ -735,7 +735,7 @@ impl CalamineTable {
 impl TableReader for CalamineTable {
     fn load(path: &Path, config: &crate::ProjectConfig) -> XResult<Self> {
         let path = path.canonicalize()?;
-        let table = find_first_table(&path)?;
+        let table = xcell_provider::find_first_table(&path)?;
         let config = Self::try_load_config(&path, config)?;
         Ok(Self { path, table, config })
     }

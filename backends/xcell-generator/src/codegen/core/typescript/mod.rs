@@ -1,4 +1,4 @@
-use crate::{ListDescription, MapDescription, ReferenceDescription, XCellTyped};
+use xcell_core::{ListDescription, MapDescription, ReferenceDescription, XCellTyped, XCellValue};
 use itertools::Itertools;
 
 impl XCellTyped {
@@ -37,7 +37,7 @@ impl XCellTyped {
             XCellTyped::Decimal(_) => "".to_string(),
             XCellTyped::String(v) => {
                 if v.default.is_empty() {
-                    "\"\"".to_string()
+                    "\"\""".to_string()
                 }
                 else {
                     format!("{:?}", v.default)
@@ -78,10 +78,10 @@ impl MapDescription {
     }
 }
 
-impl crate::XCellValue {
+impl XCellValue {
     /// 返回当前时间的 TypeScript Date 初始化字符串
     pub fn typescript_now() -> String {
-        use crate::for_3rd::{Datelike, Timelike, Utc};
+        use xcell_core::for_3rd::{Datelike, Timelike, Utc};
         let now = Utc::now();
         format!(
             "new Date({year}, {month}, {day}, {hour}, {minute}, {second})",
@@ -97,25 +97,25 @@ impl crate::XCellValue {
     /// 返回当前 XCell 值对应的 TypeScript 值字符串
     pub fn as_typescript_value(&self) -> String {
         match self {
-            crate::XCellValue::Boolean(v) => v.to_string(),
-            crate::XCellValue::Integer8(v) => v.to_string(),
-            crate::XCellValue::Integer16(v) => v.to_string(),
-            crate::XCellValue::Integer32(v) => v.to_string(),
-            crate::XCellValue::Integer64(v) => v.to_string(),
-            crate::XCellValue::Unsigned8(v) => v.to_string(),
-            crate::XCellValue::Unsigned16(v) => v.to_string(),
-            crate::XCellValue::Unsigned32(v) => v.to_string(),
-            crate::XCellValue::Unsigned64(v) => v.to_string(),
-            crate::XCellValue::Float32(v) => v.to_string(),
-            crate::XCellValue::Float64(v) => v.to_string(),
-            crate::XCellValue::Vector2(v) => format!("[{}, {}]", v[0], v[1]),
-            crate::XCellValue::Vector3(v) => format!("[{}, {}, {}]", v[0], v[1], v[2]),
-            crate::XCellValue::Vector4(v) => format!("[{}, {}, {}, {}]", v[0], v[1], v[2], v[3]),
-            crate::XCellValue::Quaternion4(v) => format!("[{}, {}, {}, {}]", v[0], v[1], v[2], v[3]),
-            crate::XCellValue::String(s) => {
+            XCellValue::Boolean(v) => v.to_string(),
+            XCellValue::Integer8(v) => v.to_string(),
+            XCellValue::Integer16(v) => v.to_string(),
+            XCellValue::Integer32(v) => v.to_string(),
+            XCellValue::Integer64(v) => v.to_string(),
+            XCellValue::Unsigned8(v) => v.to_string(),
+            XCellValue::Unsigned16(v) => v.to_string(),
+            XCellValue::Unsigned32(v) => v.to_string(),
+            XCellValue::Unsigned64(v) => v.to_string(),
+            XCellValue::Float32(v) => v.to_string(),
+            XCellValue::Float64(v) => v.to_string(),
+            XCellValue::Vector2(v) => format!("[{}, {}]", v[0], v[1]),
+            XCellValue::Vector3(v) => format!("[{}, {}, {}]", v[0], v[1], v[2]),
+            XCellValue::Vector4(v) => format!("[{}, {}, {}, {}]", v[0], v[1], v[2], v[3]),
+            XCellValue::Quaternion4(v) => format!("[{}, {}, {}, {}]", v[0], v[1], v[2], v[3]),
+            XCellValue::String(s) => {
                 format!("\"{}\"", s)
             }
-            crate::XCellValue::Color(c) => {
+            XCellValue::Color(c) => {
                 format!(
                     "{{ r: {}, g: {}, b: {}, a: {} }}",
                     (c.r * 255.0) as u8,
@@ -124,13 +124,13 @@ impl crate::XCellValue {
                     (c.a * 255.0) as u8
                 )
             }
-            crate::XCellValue::Enumerate(_) => "0".to_string(),
-            crate::XCellValue::Vector(v) => {
+            XCellValue::Enumerate(_) => "0".to_string(),
+            XCellValue::Vector(v) => {
                 format!("[{}]", v.iter().map(|x| x.as_typescript_value()).join(", "))
             }
-            crate::XCellValue::Reference(v) => v.to_string(),
-            crate::XCellValue::Map(v) => format!("{:?}", v),
-            crate::XCellValue::Optional(v) => match v {
+            XCellValue::Reference(v) => v.to_string(),
+            XCellValue::Map(v) => format!("{:?}", v),
+            XCellValue::Optional(v) => match v {
                 Some(inner) => inner.as_typescript_value(),
                 None => "null".to_string(),
             },

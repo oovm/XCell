@@ -15,7 +15,14 @@ impl XLanguageTable {
         let mut out = Self::new(table.clone());
         for header in table.headers() {
             if crate::x_table::table::TableReader::is_language_value(&table, &header.field_name) {
-                out.language = header.typing.as_csharp_type();
+                // Extract language name from field name
+                // For example, "LanguageValue_English" becomes "English"
+                let language_name = header.field_name
+                    .trim_start_matches(|c: char| !c.is_alphabetic())
+                    .trim_start_matches("LanguageValue")
+                    .trim_start_matches('_')
+                    .trim_start_matches(|c: char| !c.is_alphabetic());
+                out.language = if language_name.is_empty() { "Unknown".to_string() } else { language_name.to_string() };
                 out.value_column = header.column;
             }
             if crate::x_table::table::TableReader::is_group(&table, &header.field_name) {

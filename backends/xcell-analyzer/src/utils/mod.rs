@@ -1,5 +1,5 @@
 use crate::{XError, XResult};
-use calamine::{Data, Reader, open_workbook_auto};
+use calamine::{Data, Reader};
 use pathdiff::diff_paths;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -20,27 +20,7 @@ pub mod comment;
 pub mod file_format;
 mod workspace;
 
-/// 读取 Excel 文件里的第一张表
-///
-/// # Arguments
-///
-/// * `path`:
-///
-/// returns: Result<Range<Data>, XError>
-///
-/// # Examples
-///
-/// ```
-/// use xcell_core;
-/// ```
-pub fn find_first_table(path: &Path) -> XResult<calamine::Range<Data>> {
-    let mut workbook = open_workbook_auto(path)?;
-    let ranges = match workbook.worksheet_range_at(0) {
-        None => return Err(XError::table_error("找不到配置表, 文件是空的, 或者表格式非法")),
-        Some(s) => s?,
-    };
-    Ok(ranges)
-}
+
 
 /// 确保第一行的 id 不是空的
 ///

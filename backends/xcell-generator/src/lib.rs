@@ -20,9 +20,12 @@ use logging::init_logging;
 pub mod codegen;
 use codegen::CodegenContext;
 
-/// 配置模块
-pub mod config;
-use config::GeneratorConfig;
+/// 核心代码生成工具
+///
+/// 包含从 xcell-core 迁移过来的代码生成相关功能
+pub use codegen::core;
+
+use xcell_config::GeneratorConfig;
 
 /// 模板模块
 pub mod template;
@@ -64,7 +67,9 @@ impl Generator {
     /// 生成代码和数据
     pub fn generate(&self, workspace: &WorkspaceManager) -> XResult<()> {
         // 验证配置
-        self.config.validate()?;
+        if let Err(err) = self.config.validate() {
+            return Err(GeneratorErrorExt::config_error(&err));
+        }
 
         let enabled_products = self.config.enabled_products();
         info!("开始生成代码和数据，共 {} 个启用的产物", enabled_products.len());

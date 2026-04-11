@@ -212,7 +212,7 @@ group = ["languagegroup"]
             ws.first_walk(filter)?;
             
             // 然后使用 xcell-generator 模块进行代码生成
-            let config = xcell_generator::config::GeneratorConfig::from_project_config(&ws.config);
+            let config = xcell_config::GeneratorConfig::from_project_config(&ws.config);
             tracing::info!("生成产物数量: {:?}", config.products.len());
             
             for product in &config.products {

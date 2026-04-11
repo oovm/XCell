@@ -108,7 +108,9 @@ impl TypeScriptCodegen {
 
 impl super::Codegen for TypeScriptCodegen {
     fn generate(&self, context: &super::CodegenContext) -> XResult<()> {
-        // TODO: Implement TypeScript code generation
+        if let Some(workspace) = &context.workspace {
+            self.write_typescript(workspace)?;
+        }
         Ok(())
     }
 

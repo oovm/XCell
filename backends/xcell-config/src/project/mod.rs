@@ -89,6 +89,9 @@ pub struct ProjectConfig {
     /// 当前版本号
     #[serde(default = "default_version")]
     pub version: String,
+    /// 数据路径
+    #[serde(default = "default_project")]
+    pub project: String,
     /// 包含的 excel 路径, 优先级最高
     #[serde(default = "default_include")]
     pub include: String,
@@ -114,6 +117,10 @@ pub struct ProjectConfig {
 
 fn default_version() -> String {
     "0.0.0".to_string()
+}
+
+fn default_project() -> String {
+    "sheets".to_string()
 }
 
 fn default_include() -> String {
@@ -153,6 +160,8 @@ impl ProjectConfig {
                 let lines: Vec<&str> = content.lines().collect();
                 let mut generators = Vec::new();
                 let mut current_generator = None;
+                let mut project = default_project();
+                let mut include = default_include();
                 
                 for line in lines {
                     let line = line.trim();
@@ -194,6 +203,7 @@ impl ProjectConfig {
                     } else if line.starts_with("project = ") {
                         // 解析 project 字段
                         if let Some(generator) = &mut current_generator {
+                            // 生成器内部的 project 字段
                             let project_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
                             match generator {
                                 Generator::Cocos(cocos) => {
@@ -201,7 +211,15 @@ impl ProjectConfig {
                                 }
                                 _ => {}
                             }
+                        } else {
+                            // 全局的 project 字段
+                            let project_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                            project = project_str.to_string();
                         }
+                    } else if line.starts_with("include = ") {
+                        // 解析 include 字段
+                        let include_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                        include = include_str.to_string();
                     } else if line.starts_with("loader = ") {
                         // 解析 loader 字段
                         if let Some(generator) = &mut current_generator {
@@ -231,6 +249,10 @@ impl ProjectConfig {
                         }
                     }
                 }
+                
+                // 更新 project 和 include 字段
+                config.project = project;
+                config.include = include;
                 
                 // 添加最后一个生成器
                 if let Some(generator) = current_generator {

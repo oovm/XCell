@@ -777,7 +777,11 @@ impl CocosCodegen {
         let csv_files: Vec<PathBuf> = std::fs::read_dir(root)?
             .filter_map(|entry| entry.ok())
             .filter(|entry| {
-                entry.path().is_file() && entry.path().extension().map(|ext| ext == "csv").unwrap_or(false)
+                entry.path().is_file() && 
+                entry.path().extension().map(|ext| {
+                    let ext = ext.to_ascii_lowercase();
+                    ext == "csv" || ext == "xlsx"
+                }).unwrap_or(false)
             })
             .map(|entry| entry.path())
             .collect();
@@ -802,27 +806,73 @@ impl CocosCodegen {
         
         let mut fields = Vec::new();
         
-        let mut rdr = csv::ReaderBuilder::new()
-            .has_headers(false)
-            .from_path(csv_path)
-            .map_err(|e| XError::runtime_error(format!("CSV read error: {}", e)))?;
+        let ext = csv_path.extension().unwrap_or_default().to_ascii_lowercase();
         
-        let records: Vec<csv::StringRecord> = rdr.records()
-            .filter_map(|r| r.ok())
-            .collect();
-        
-        if records.len() >= 2 {
-            let headers = &records[0];
-            let type_row = &records[1];
+        if ext == "csv" {
+            let mut rdr = csv::ReaderBuilder::new()
+                .has_headers(false)
+                .from_path(csv_path)
+                .map_err(|e| XError::runtime_error(format!("CSV read error: {}", e)))?;
             
-            for (i, header) in headers.iter().enumerate() {
-                if i < type_row.len() {
-                    let field_type = &type_row[i];
-                    let ts_type = self.map_csv_type_to_typescript(field_type, header, class_name);
-                    fields.push(CocosField {
-                        name: header.to_string(),
-                        r#type: ts_type,
-                    });
+            let records: Vec<csv::StringRecord> = rdr.records()
+                .filter_map(|r| r.ok())
+                .collect();
+            
+            if records.len() >= 2 {
+                let headers = &records[0];
+                let type_row = &records[1];
+                
+                for (i, header) in headers.iter().enumerate() {
+                    if i < type_row.len() {
+                        let field_type = &type_row[i];
+                        let ts_type = self.map_csv_type_to_typescript(field_type, header, class_name);
+                        fields.push(CocosField {
+                            name: header.to_string(),
+                            r#type: ts_type,
+                        });
+                    }
+                }
+            }
+        } else if ext == "xlsx" {
+            use calamine::{open_workbook_auto, Reader, Data};
+            
+            let mut workbook = open_workbook_auto(csv_path)
+                .map_err(|e| XError::runtime_error(format!("XLSX read error: {}", e)))?;
+            
+            if let Some(Ok(worksheet)) = workbook.worksheet_range_at(0) {
+                let mut headers = Vec::new();
+                let mut type_row = Vec::new();
+                
+                for (row_idx, row) in worksheet.rows().enumerate() {
+                    if row_idx == 1 { // 字段名行
+                        for cell in row {
+                            if let Data::String(s) = cell {
+                                headers.push(s.to_string());
+                            } else {
+                                headers.push(String::new());
+                            }
+                        }
+                    } else if row_idx == 2 { // 类型行
+                        for cell in row {
+                            if let Data::String(s) = cell {
+                                type_row.push(s.to_string());
+                            } else {
+                                type_row.push(String::new());
+                            }
+                        }
+                        break;
+                    }
+                }
+                
+                for (i, header) in headers.iter().enumerate() {
+                    if i < type_row.len() {
+                        let field_type = &type_row[i];
+                        let ts_type = self.map_csv_type_to_typescript(field_type, header, class_name);
+                        fields.push(CocosField {
+                            name: header.to_string(),
+                            r#type: ts_type,
+                        });
+                    }
                 }
             }
         }
@@ -846,30 +896,116 @@ impl CocosCodegen {
         
         let mut enum_data = Vec::new();
         
-        let mut rdr = csv::ReaderBuilder::new()
-            .has_headers(false)
-            .from_path(csv_path)
-            .map_err(|e| XError::runtime_error(format!("CSV read error: {}", e)))?;
+        let ext = csv_path.extension().unwrap_or_default().to_ascii_lowercase();
         
-        let records: Vec<csv::StringRecord> = rdr.records()
-            .filter_map(|r| r.ok())
-            .collect();
-        
-        if records.len() >= 3 {
-            let headers = &records[0];
+        if ext == "csv" {
+            let mut rdr = csv::ReaderBuilder::new()
+                .has_headers(false)
+                .from_path(csv_path)
+                .map_err(|e| XError::runtime_error(format!("CSV read error: {}", e)))?;
             
-            let id_index = headers.iter().position(|h| config::is_id_field(h)).unwrap_or(0);
-            let name_index = headers.iter().position(|h| config::is_name_field(h)).unwrap_or(1);
-            let desc_index = headers.iter().position(|h| config::is_description_field(h)).unwrap_or_else(|| {
-                name_index
-            });
+            let records: Vec<csv::StringRecord> = rdr.records()
+                .filter_map(|r| r.ok())
+                .collect();
             
-            for record in records.iter().skip(2) {
-                if record.len() > id_index && record.len() > name_index && record.len() > desc_index {
-                    if let Ok(id) = record[id_index].parse::<u32>() {
-                        let name = record[name_index].to_string();
-                        let description = record[desc_index].to_string();
-                        enum_data.push((id, name, description));
+            if records.len() >= 3 {
+                let headers = &records[0];
+                
+                let id_index = headers.iter().position(|h| config::is_id_field(h)).unwrap_or(0);
+                let name_index = headers.iter().position(|h| config::is_name_field(h)).unwrap_or(1);
+                let desc_index = headers.iter().position(|h| config::is_description_field(h)).unwrap_or_else(|| {
+                    name_index
+                });
+                
+                for record in records.iter().skip(2) {
+                    if record.len() > id_index && record.len() > name_index && record.len() > desc_index {
+                        if let Ok(id) = record[id_index].parse::<u32>() {
+                            let name = record[name_index].to_string();
+                            let description = record[desc_index].to_string();
+                            enum_data.push((id, name, description));
+                        }
+                    }
+                }
+            }
+        } else if ext == "xlsx" {
+            use calamine::{open_workbook_auto, Reader, Data};
+            
+            let mut workbook = open_workbook_auto(csv_path)
+                .map_err(|e| XError::runtime_error(format!("XLSX read error: {}", e)))?;
+            
+            if let Some(Ok(worksheet)) = workbook.worksheet_range_at(0) {
+                let mut headers = Vec::new();
+                let mut id_index = 0;
+                let mut name_index = 1;
+                let mut desc_index = 1;
+                
+                for (row_idx, row) in worksheet.rows().enumerate() {
+                    if row_idx == 1 { // 字段名行
+                        for (i, cell) in row.iter().enumerate() {
+                            if let Data::String(s) = cell {
+                                headers.push(s.to_string());
+                                if config::is_id_field(s) {
+                                    id_index = i;
+                                } else if config::is_name_field(s) {
+                                    name_index = i;
+                                    desc_index = i; // 默认描述字段与名称字段相同
+                                } else if config::is_description_field(s) {
+                                    desc_index = i;
+                                }
+                            }
+                        }
+                    } else if row_idx >= 5 { // 数据行（根据配置的 data = 6）
+                        if row.len() > id_index && row.len() > name_index && row.len() > desc_index {
+                            if let Some(id_cell) = row.get(id_index) {
+                                match id_cell {
+                                    Data::Float(f) => {
+                                        let id = *f as u32;
+                                        let name = if let Some(name_cell) = row.get(name_index) {
+                                            if let Data::String(s) = name_cell {
+                                                s.to_string()
+                                            } else {
+                                                String::new()
+                                            }
+                                        } else {
+                                            String::new()
+                                        };
+                                        let description = if let Some(desc_cell) = row.get(desc_index) {
+                                            if let Data::String(s) = desc_cell {
+                                                s.to_string()
+                                            } else {
+                                                String::new()
+                                            }
+                                        } else {
+                                            String::new()
+                                        };
+                                        enum_data.push((id, name, description));
+                                    }
+                                    Data::Int(i) => {
+                                        let id = *i as u32;
+                                        let name = if let Some(name_cell) = row.get(name_index) {
+                                            if let Data::String(s) = name_cell {
+                                                s.to_string()
+                                            } else {
+                                                String::new()
+                                            }
+                                        } else {
+                                            String::new()
+                                        };
+                                        let description = if let Some(desc_cell) = row.get(desc_index) {
+                                            if let Data::String(s) = desc_cell {
+                                                s.to_string()
+                                            } else {
+                                                String::new()
+                                            }
+                                        } else {
+                                            String::new()
+                                        };
+                                        enum_data.push((id, name, description));
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
                     }
                 }
             }

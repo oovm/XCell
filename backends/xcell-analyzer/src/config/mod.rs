@@ -97,7 +97,9 @@ impl WorkspaceManager {
     pub fn first_walk(&mut self, filter: Option<&str>) -> XResult<()> {
         let glob = build_glob_set(&self.config.include).result(|e| tracing::error!("{e}"))?;
         let filter_glob = filter.and_then(|f| build_glob_set(f).result(|e| tracing::error!("{e}")).ok());
-        let entries = xcell_core::for_3rd::SyncWalkDir::new(&self.config.root);
+        // 使用 project 字段作为文件遍历的根目录
+        let project_path = self.config.root.join(&self.config.project);
+        let entries = xcell_core::for_3rd::SyncWalkDir::new(&project_path);
         for entry in entries {
             match entry {
                 Ok(o) => {
@@ -111,7 +113,7 @@ impl WorkspaceManager {
                         continue;
                     }
                     let file = o.path();
-                    let normed = get_relative(&self.config.root, file)?;
+                    let normed = get_relative(&project_path, file)?;
                     if glob.is_match(&normed) {
                         if let Some(ref fg) = filter_glob {
                             if !fg.is_match(&normed) {

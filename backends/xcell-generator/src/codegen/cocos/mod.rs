@@ -13,262 +13,13 @@ use nargo_template::{DejaVuAdapter, UnifiedTemplateEngine};
 use nargo_types::NargoValue;
 use crate::template::{TemplateLoader, TemplateType};
 
-mod config;
+mod typing;
+mod enumerate;
+mod class;
+mod dictionary;
+mod manager;
 
-/// 枚举项数据结构
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CocosEnumerateItem {
-    /// 枚举键
-    pub key: String,
-    /// 枚举ID
-    pub id: u32,
-    /// 枚举名称
-    pub name: String,
-    /// 枚举描述
-    pub description: String,
-}
 
-/// 字段数据结构
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CocosField {
-    /// 字段名
-    pub name: String,
-    /// 字段类型
-    pub r#type: String,
-}
-
-/// 数据表项数据结构
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CocosDataTableItem {
-    /// 类名
-    pub class_name: String,
-    /// 表名
-    pub table_name: String,
-    /// 缓存名称
-    pub cache_name: String,
-    /// 获取方法名
-    pub get_method_name: String,
-}
-
-/// 枚举键值对
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EnumeratePair {
-    /// 键
-    pub key: String,
-    /// 值
-    pub value: String,
-    /// 文档
-    pub document: Vec<String>,
-}
-
-/// Cocos 枚举模板数据
-pub struct CocosEnumerateTemplate {
-    /// 编译器版本
-    compiler_version: &'static str,
-    /// 类名
-    class_name: String,
-    /// ID 类型
-    id_type: String,
-    /// 命名空间
-    namespace: String,
-    /// 枚举 ID 列表
-    enumerate_ids: Vec<EnumeratePair>,
-    /// 类文档
-    class_document: Vec<String>,
-}
-
-/// Cocos 类模板数据
-pub struct CocosClassTemplate {
-    /// 编译器版本
-    pub compiler_version: &'static str,
-    /// 类名
-    pub class_name: String,
-    /// 表名
-    pub table_name: String,
-    /// ID 类型
-    pub id_type: String,
-    /// 命名空间
-    pub namespace: String,
-    /// 键名
-    pub key_name: String,
-    /// 类文档
-    pub class_document: Vec<String>,
-    /// 类字段
-    pub class_fields: Vec<ClassFieldTemplate>,
-}
-
-/// 类字段模板数据
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ClassFieldTemplate {
-    /// 字段文档
-    pub document: Vec<String>,
-    /// 字段名
-    pub name: String,
-    /// 字段类型
-    pub typing: String,
-    /// 是否有默认值
-    pub has_default: bool,
-    /// 默认值
-    pub default: String,
-}
-
-/// Cocos 管理器模板数据
-pub struct CocosManagerTemplate {
-    /// 编译器版本
-    pub compiler_version: &'static str,
-    /// 管理器名称
-    pub class_name: String,
-    /// 实例名称
-    pub instance_name: String,
-    /// 命名空间
-    pub namespace: String,
-    /// 管理器名称
-    pub manager_name: String,
-    /// 数据版本
-    pub data_version: String,
-    /// 编辑时间
-    pub edit_time: String,
-    /// 表列表
-    pub tables: Vec<TableItem>,
-}
-
-/// 表项数据
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct TableItem {
-    /// 私有名称
-    pub private_name: String,
-    /// 公共名称
-    pub public_name: String,
-    /// 类型
-    pub typing: String,
-}
-
-// 使用 nargo template 动态渲染 dejavu 模板
-fn render_enumerate_template(config: &CocosCodegen, class_name: &str, items: &[CocosEnumerateItem]) -> XResult<String> {
-    let enumerate_ids: Vec<EnumeratePair> = items.iter().map(|item| EnumeratePair {
-        key: item.key.clone(),
-        value: item.id.to_string(),
-        document: vec![item.description.clone()],
-    }).collect();
-    
-    // 创建 NargoValue 上下文
-    let mut context_data = std::collections::HashMap::new();
-    context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
-    context_data.insert("class_name".to_string(), NargoValue::String(class_name.to_string()));
-    context_data.insert("id_type".to_string(), NargoValue::String("number".to_string()));
-    context_data.insert("namespace".to_string(), NargoValue::String(config.namespace.clone()));
-    
-    // 处理 enumerate_ids
-    let enumerate_ids_value: Vec<NargoValue> = enumerate_ids.iter().map(|pair| {
-        let mut pair_data = std::collections::HashMap::new();
-        pair_data.insert("key".to_string(), NargoValue::String(pair.key.clone()));
-        pair_data.insert("value".to_string(), NargoValue::String(pair.value.clone()));
-        pair_data.insert("document".to_string(), NargoValue::Array(
-            pair.document.iter().map(|doc| NargoValue::String(doc.clone())).collect()
-        ));
-        NargoValue::Object(pair_data)
-    }).collect();
-    context_data.insert("enumerate_ids".to_string(), NargoValue::Array(enumerate_ids_value));
-    context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
-    
-    let context = NargoValue::Object(context_data);
-    
-    // 创建模板加载器
-    let template_dir = config.template_dir.as_deref().map(Path::new);
-    let loader = TemplateLoader::new(template_dir)?;
-    
-    // 使用模板加载器渲染模板
-    loader.render_template(TemplateType::Enumerate.file_name(), &context)
-}
-
-fn render_class_template(config: &CocosCodegen, class_name: &str, table_name: &str, fields: &[CocosField]) -> XResult<String> {
-    let class_fields: Vec<ClassFieldTemplate> = fields.iter().map(|field| ClassFieldTemplate {
-        document: vec![],
-        name: field.name.clone(),
-        typing: field.r#type.clone(),
-        has_default: false,
-        default: String::new(),
-    }).collect();
-    
-    // 创建 NargoValue 上下文
-    let mut context_data = std::collections::HashMap::new();
-    context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
-    context_data.insert("class_name".to_string(), NargoValue::String(class_name.to_string()));
-    context_data.insert("table_name".to_string(), NargoValue::String(table_name.to_string()));
-    context_data.insert("id_type".to_string(), NargoValue::String("number".to_string()));
-    context_data.insert("namespace".to_string(), NargoValue::String(config.namespace.clone()));
-    context_data.insert("key_name".to_string(), NargoValue::String("id".to_string()));
-    context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
-    
-    // 处理 class_fields
-    let class_fields_value: Vec<NargoValue> = class_fields.iter().map(|field| {
-        let mut field_data = std::collections::HashMap::new();
-        field_data.insert("document".to_string(), NargoValue::Array(
-            field.document.iter().map(|doc| NargoValue::String(doc.clone())).collect()
-        ));
-        field_data.insert("name".to_string(), NargoValue::String(field.name.clone()));
-        field_data.insert("typing".to_string(), NargoValue::String(field.typing.clone()));
-        field_data.insert("has_default".to_string(), NargoValue::Bool(field.has_default));
-        field_data.insert("default".to_string(), NargoValue::String(field.default.clone()));
-        NargoValue::Object(field_data)
-    }).collect();
-    context_data.insert("class_fields".to_string(), NargoValue::Array(class_fields_value));
-    
-    let context = NargoValue::Object(context_data);
-    
-    // 创建模板加载器
-    let template_dir = config.template_dir.as_deref().map(Path::new);
-    let loader = TemplateLoader::new(template_dir)?;
-    
-    // 使用模板加载器渲染模板
-    loader.render_template(TemplateType::Class.file_name(), &context)
-}
-
-fn render_manager_template(config: &CocosCodegen, tables: &[CocosDataTableItem]) -> XResult<String> {
-    let table_items: Vec<TableItem> = tables.iter().map(|table| TableItem {
-        private_name: table.cache_name.clone(),
-        public_name: table.get_method_name.clone(),
-        typing: table.table_name.clone(),
-    }).collect();
-    
-    // 创建 NargoValue 上下文
-    let mut context_data = std::collections::HashMap::new();
-    context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
-    context_data.insert("class_name".to_string(), NargoValue::String(config.manager_name.clone()));
-    context_data.insert("instance_name".to_string(), NargoValue::String(config.instance_name.clone()));
-    context_data.insert("namespace".to_string(), NargoValue::String(config.namespace.clone()));
-    context_data.insert("manager_name".to_string(), NargoValue::String(config.manager_name.clone()));
-    context_data.insert("data_version".to_string(), NargoValue::String("1.0.0".to_string()));
-    context_data.insert("edit_time".to_string(), NargoValue::String(chrono::Utc::now().to_rfc3339()));
-    // 添加 table_data_path
-    let table_data_path = if config.table_data_path.is_empty() {
-        "tables/"
-    } else if config.table_data_path.ends_with('/') || config.table_data_path.ends_with('\\') {
-        &config.table_data_path
-    } else {
-        &format!("{}/", config.table_data_path)
-    };
-    context_data.insert("table_data_path".to_string(), NargoValue::String(table_data_path.to_string()));
-    
-    // 处理 tables
-    let tables_value: Vec<NargoValue> = table_items.iter().map(|table| {
-        let mut table_data = std::collections::HashMap::new();
-        table_data.insert("private_name".to_string(), NargoValue::String(table.private_name.clone()));
-        table_data.insert("public_name".to_string(), NargoValue::String(table.public_name.clone()));
-        table_data.insert("typing".to_string(), NargoValue::String(table.typing.clone()));
-        NargoValue::Object(table_data)
-    }).collect();
-    context_data.insert("tables".to_string(), NargoValue::Array(tables_value));
-    
-    let context = NargoValue::Object(context_data);
-    
-    // 创建模板加载器
-    let template_dir = config.template_dir.as_deref().map(Path::new);
-    let loader = TemplateLoader::new(template_dir)?;
-    
-    // 使用模板加载器渲染模板
-    loader.render_template(TemplateType::Manager.file_name(), &context)
-}
 
 /// Cocos 存储格式配置
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -378,8 +129,8 @@ impl Default for CocosCodegen {
             instance_name: "dataTableManager".to_string(),
             table_data_path: "tables".to_string(),
             template_dir: None,
-            special_fields: Some(vec!["type".to_string(), "level".to_string(), "level_requirement".to_string(), "drop_items".to_string(), "skills".to_string(), "unlock_skills".to_string()]),
-            special_classes: Some(vec!["Monster".to_string(), "Skill".to_string()]),
+            special_fields: None,
+            special_classes: None,
             enum_suffixes: Some(vec!["Type".to_string(), "Kind".to_string()]),
             type_mappings: Some(vec![
                 TypeMapping { rust_type: "i32".to_string(), ts_type: "number".to_string() },
@@ -542,7 +293,7 @@ impl CocosCodegen {
         if let Some(fields) = &self.special_fields {
             fields.contains(&field_name.to_string())
         } else {
-            config::is_special_field(field_name)
+            typing::is_special_field(field_name)
         }
     }
     
@@ -551,7 +302,7 @@ impl CocosCodegen {
         if let Some(classes) = &self.special_classes {
             classes.contains(&class_name.to_string())
         } else {
-            config::is_special_class(class_name)
+            typing::is_special_class(class_name)
         }
     }
     
@@ -573,331 +324,30 @@ impl CocosCodegen {
         
         // 处理枚举表
         for enum_table in ws.enumerates() {
-            self.process_enum_table(ws, enum_table)?;
+            self.write_enumerate(ws, enum_table)?;
         }
         
         // 处理类表
         for class_table in ws.classes() {
-            self.process_class_table(ws, class_table)?;
+            self.write_class(ws, class_table)?;
         }
         
         // 处理列表表
         for list_table in ws.lists() {
-            self.process_list_table(ws, list_table)?;
+            self.write_list(ws, list_table)?;
         }
         
         // 处理字典表
         for dict_table in ws.dicts() {
-            self.process_dict_table(ws, dict_table)?;
+            self.write_dict(ws, dict_table)?;
         }
         
-        self.write_data_table_manager(ws)?;
+        self.write_manager(ws)?;
         
-        Ok(())
-    }
-    
-    /// 处理枚举表
-    ///
-    /// # 参数
-    /// * `ws` - 工作区管理器
-    /// * `enum_table` - 枚举表数据
-    ///
-    /// # 返回值
-    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    fn process_enum_table(&mut self, ws: &WorkspaceManager, enum_table: &xcell_analyzer::XEnumerateData) -> XResult<()> {
-        let root = &ws.config.root;
-        let class_name = &enum_table.name;
-        let ts_path = self.cocos_typescript_path(root, class_name)?;
-        
-        tracing::info!("processing_enum: class_name={}, output_path={:?}", class_name, ts_path);
-        
-        if let Some(parent) = ts_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        let items = enum_table.lines.iter()
-            .map(|line| {
-                let key = line.key.to_uppercase().replace(" ", "_");
-                CocosEnumerateItem {
-                    key,
-                    id: 0, 
-                    name: line.key.clone(),
-                    description: String::new(),
-                }
-            })
-            .collect::<Vec<_>>();
-        
-        let content = render_enumerate_template(self, class_name, &items)?;
-        
-        let mut file = File::create(ts_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_typescript_enum: class_name={}", class_name);
-        Ok(())
-    }
-    
-    /// 从表字段生成 CocosField 列表
-    ///
-    /// # 参数
-    /// * `headers` - 表字段头部信息
-    /// * `class_name` - 类名
-    ///
-    /// # 返回值
-    /// 返回 CocosField 列表
-    fn generate_fields_from_headers(&self, headers: &[xcell_analyzer::XCellHeader], class_name: &str) -> Vec<CocosField> {
-        headers.iter()
-            .map(|header| {
-                let ts_type = "any"; // 简化处理，使用默认类型
-                CocosField {
-                    name: header.field_name.clone(),
-                    r#type: ts_type.to_string(),
-                }
-            })
-            .collect()
-    }
-    
-    /// 处理类表
-    ///
-    /// # 参数
-    /// * `ws` - 工作区管理器
-    /// * `class_table` - 类表数据
-    ///
-    /// # 返回值
-    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    fn process_class_table(&mut self, ws: &WorkspaceManager, class_table: &XClassData) -> XResult<()> {
-        let root = &ws.config.root;
-        let class_name = &class_table.name;
-        let table_class_name = format!("{}Table", class_name);
-        let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
-        
-        tracing::info!("processing_class_table: class_name={}, table_class_name={}, output_path={:?}", class_name, &table_class_name, ts_path);
-        
-        if let Some(parent) = ts_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        // 类表没有 headers，我们需要从 items 中提取字段信息
-        let mut fields = Vec::new();
-        for item in &class_table.items {
-            let ts_type = item.typing.as_typescript_type().to_string();
-            fields.push(CocosField {
-                name: item.field.clone(),
-                r#type: ts_type,
-            });
-        }
-        
-        let content = render_class_template(self, class_name, &table_class_name, &fields)?;
-        
-        let mut file = File::create(ts_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_typescript_file: class_name={}", class_name);
-        Ok(())
-    }
-    
-    /// 处理列表表
-    ///
-    /// # 参数
-    /// * `ws` - 工作区管理器
-    /// * `list_table` - 列表表数据
-    ///
-    /// # 返回值
-    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    fn process_list_table(&mut self, ws: &WorkspaceManager, list_table: &XListData) -> XResult<()> {
-        let root = &ws.config.root;
-        let class_name = &list_table.name;
-        let table_class_name = format!("{}Table", class_name);
-        let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
-        
-        tracing::info!("processing_list_table: class_name={}, table_class_name={}, output_path={:?}", class_name, &table_class_name, ts_path);
-        
-        if let Some(parent) = ts_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        let fields = self.generate_fields_from_headers(&list_table.headers, class_name);
-        
-        let content = render_class_template(self, class_name, &table_class_name, &fields)?;
-        
-        let mut file = File::create(ts_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_typescript_file: class_name={}", class_name);
-        Ok(())
-    }
-    
-    /// 处理字典表
-    ///
-    /// # 参数
-    /// * `ws` - 工作区管理器
-    /// * `dict_table` - 字典表数据
-    ///
-    /// # 返回值
-    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    fn process_dict_table(&mut self, ws: &WorkspaceManager, dict_table: &XDictData) -> XResult<()> {
-        let root = &ws.config.root;
-        let class_name = &dict_table.name;
-        let table_class_name = format!("{}Table", class_name);
-        let ts_path = self.cocos_typescript_path(root, &table_class_name)?;
-        
-        tracing::info!("processing_dict_table: class_name={}, table_class_name={}, output_path={:?}", class_name, &table_class_name, ts_path);
-        
-        if let Some(parent) = ts_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        let fields = self.generate_fields_from_headers(&dict_table.headers, class_name);
-        
-        let content = render_class_template(self, class_name, &table_class_name, &fields)?;
-        
-        let mut file = File::create(ts_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_typescript_file: class_name={}", class_name);
         Ok(())
     }
     
 
-    
-    /// 获取类型映射
-    fn get_type_mapping(&self, rust_type: &str) -> String {
-        if let Some(mappings) = &self.type_mappings {
-            for mapping in mappings {
-                if mapping.rust_type == rust_type {
-                    return mapping.ts_type.clone();
-                }
-            }
-        }
-        config::get_type_mapping(rust_type).to_string()
-    }
-    
-    /// 将 CSV 类型映射为 TypeScript 类型
-    ///
-    /// # 参数
-    /// * `csv_type` - CSV 中的类型字符串
-    /// * `field_name` - 字段名
-    /// * `class_name` - 类名
-    ///
-    /// # 返回值
-    /// 返回对应的 TypeScript 类型字符串。
-    pub fn map_csv_type_to_typescript(&self, csv_type: &str, field_name: &str, class_name: &str) -> String {
-        let trimmed_type = csv_type.trim();
-        
-        // 检查是否是数组类型
-        if trimmed_type == "string[]" {
-            return "number[]".to_string();
-        }
-        
-        // 检查是否是需要特殊处理的字段
-        let special_array_fields = vec!["drop_items", "skills", "unlock_skills"];
-        if (trimmed_type == "text" || trimmed_type == "string") && special_array_fields.contains(&field_name) {
-            return "number[]".to_string();
-        }
-        
-        // 检查是否是类型字段且是特殊类
-        if trimmed_type == "text" || trimmed_type == "string" {
-            if field_name == "type" && self.is_special_class(class_name) {
-                return format!("{}Type", class_name).to_string();
-            }
-        }
-        
-        // 使用配置的类型映射
-        self.get_type_mapping(trimmed_type)
-    }
-    
-    /// 写入 DataTableManager.ts
-    ///
-    /// # 参数
-    /// * `ws` - 工作区管理器
-    ///
-    /// # 返回值
-    /// 返回操作结果，成功时返回 Ok(())，失败时返回 XError。
-    pub fn write_data_table_manager(&mut self, ws: &WorkspaceManager) -> XResult<()> {
-        let root = &ws.config.root;
-        
-        let manager_path = self.cocos_typescript_path(root, "DataTableManager")?;
-        
-        tracing::info!("generating_data_table_manager: output_path={:?}", manager_path);
-        
-        if let Some(parent) = manager_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        let table_data_path = if self.table_data_path.is_empty() {
-            "tables/"
-        } else if self.table_data_path.ends_with('/') || self.table_data_path.ends_with('\\') {
-            &self.table_data_path
-        } else {
-            &format!("{}/", self.table_data_path)
-        };
-        
-        let mut tables = Vec::new();
-        
-        // 处理类表
-        for class_table in ws.classes() {
-            let class_name = &class_table.name;
-            if !self.is_enum(class_name) {
-                let table_class_name = format!("{}Table", class_name);
-                let cache_name = format!("{}Table", class_name.to_lowercase());
-                let get_method_name = format!("get{}Table", class_name);
-                
-                tables.push(CocosDataTableItem {
-                    class_name: class_name.to_string(),
-                    table_name: table_class_name,
-                    cache_name,
-                    get_method_name,
-                });
-            }
-        }
-        
-        // 处理列表表
-        for list_table in ws.lists() {
-            let class_name = &list_table.name;
-            if !self.is_enum(class_name) {
-                let table_class_name = format!("{}Table", class_name);
-                let cache_name = format!("{}Table", class_name.to_lowercase());
-                let get_method_name = format!("get{}Table", class_name);
-                
-                tables.push(CocosDataTableItem {
-                    class_name: class_name.to_string(),
-                    table_name: table_class_name,
-                    cache_name,
-                    get_method_name,
-                });
-            }
-        }
-        
-        // 处理字典表
-        for dict_table in ws.dicts() {
-            let class_name = &dict_table.name;
-            if !self.is_enum(class_name) {
-                let table_class_name = format!("{}Table", class_name);
-                let cache_name = format!("{}Table", class_name.to_lowercase());
-                let get_method_name = format!("get{}Table", class_name);
-                
-                tables.push(CocosDataTableItem {
-                    class_name: class_name.to_string(),
-                    table_name: table_class_name,
-                    cache_name,
-                    get_method_name,
-                });
-            }
-        }
-        
-        let content = render_manager_template(self, &tables)?;
-        
-        let mut file = File::create(manager_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_data_table_manager");
-        
-        Ok(())
-    }
 
     /// 写入 JSON 数据
     ///
@@ -1091,8 +541,8 @@ impl super::Codegen for CocosCodegen {
                         instance_name: cocos_config.instance_name.clone(),
                         table_data_path: cocos_config.table_data_path.clone(),
                         template_dir: context.options.get("loader_template").cloned(),
-                        special_fields: Some(vec!["type".to_string(), "level".to_string(), "level_requirement".to_string(), "drop_items".to_string(), "skills".to_string(), "unlock_skills".to_string()]),
-                        special_classes: Some(vec!["Monster".to_string(), "Skill".to_string()]),
+                        special_fields: None,
+                        special_classes: None,
                         enum_suffixes: Some(vec!["Type".to_string(), "Kind".to_string()]),
                         type_mappings: Some(vec![
                             TypeMapping { rust_type: "i32".to_string(), ts_type: "number".to_string() },

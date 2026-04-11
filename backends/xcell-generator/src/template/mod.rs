@@ -8,13 +8,13 @@ static DEFAULT_TEMPLATES: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(
     let mut templates = HashMap::new();
     
     // 默认枚举模板
-    templates.insert("enumerate.ts", include_str!("templates/enumerate.ts.dejavu"));
+    templates.insert("BuildEnumerate.ts.dejavu", include_str!("../../templates/BuildEnumerate.ts.dejavu"));
     
     // 默认类模板
-    templates.insert("class.ts", include_str!("templates/class.ts.dejavu"));
+    templates.insert("BuildClass.ts.dejavu", include_str!("../../templates/BuildClass.ts.dejavu"));
     
     // 默认管理器模板
-    templates.insert("manager.ts", include_str!("templates/manager.ts.dejavu"));
+    templates.insert("BuildManager.ts.dejavu", include_str!("../../templates/BuildManager.ts.dejavu"));
     
     templates
 });
@@ -116,9 +116,9 @@ impl TemplateType {
     /// 获取模板文件名
     pub fn file_name(&self) -> &'static str {
         match self {
-            TemplateType::Enumerate => "enumerate.ts",
-            TemplateType::Class => "class.ts",
-            TemplateType::Manager => "manager.ts",
+            TemplateType::Enumerate => "BuildEnumerate.ts.dejavu",
+            TemplateType::Class => "BuildClass.ts.dejavu",
+            TemplateType::Manager => "BuildManager.ts.dejavu",
         }
     }
 }

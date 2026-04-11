@@ -192,20 +192,7 @@ impl ProjectConfig {
                         continue;
                     }
 
-                    if line.starts_with("type = ") {
-                        if let Some(generator) = &mut current_generator {
-                            let type_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
-                            match type_str.to_ascii_lowercase().as_str() {
-                                "cocos" => {
-                                    *generator = Generator::Cocos(CocosCodegen::default());
-                                }
-                                "typescript" => {
-                                    *generator = Generator::TypeScript(TypeScriptCodegen::default());
-                                }
-                                _ => {}
-                            }
-                        }
-                    } else if line.starts_with("enable = ") {
+                    if line.starts_with("enable = ") {
                         if let Some(generator) = &mut current_generator {
                             let enable_str = line.split('=').nth(1).unwrap().trim();
                             let enable = enable_str == "true";
@@ -218,6 +205,35 @@ impl ProjectConfig {
                                 }
                                 _ => {}
                             }
+                        }
+                    } else if line.starts_with("type = ") {
+                        if let Some(generator) = &mut current_generator {
+                            let type_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                            let mut new_generator = match type_str.to_ascii_lowercase().as_str() {
+                                "cocos" => Generator::Cocos(CocosCodegen::default()),
+                                "typescript" => Generator::TypeScript(TypeScriptCodegen::default()),
+                                _ => continue,
+                            };
+                            
+                            // 保留之前的 enable 值
+                            let old_enable = match generator {
+                                Generator::Cocos(old_cocos) => old_cocos.enable,
+                                Generator::TypeScript(old_ts) => old_ts.enable,
+                                _ => false,
+                            };
+                            
+                            // 设置新生成器的 enable 值
+                            match &mut new_generator {
+                                Generator::Cocos(new_cocos) => {
+                                    new_cocos.enable = old_enable;
+                                }
+                                Generator::TypeScript(new_ts) => {
+                                    new_ts.enable = old_enable;
+                                }
+                                _ => {}
+                            }
+                            
+                            *generator = new_generator;
                         }
                     } else if line.starts_with("project = ") {
                         if let Some(generator) = &mut current_generator {

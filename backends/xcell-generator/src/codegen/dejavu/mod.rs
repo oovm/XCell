@@ -219,8 +219,9 @@ impl Codegen for DynamicDejavuCodegen {
 
         if template_files.is_empty() {
             let error_msg = format!("模板目录中没有找到 .dejavu 或 .dj 文件: {:?}", template_dir_path);
-            error!("{}", error_msg);
-            return Err(XError::new(XErrorKind::RuntimeError { message: error_msg }));
+            info!("{}", error_msg);
+            info!("跳过 dejavu 代码生成");
+            return Ok(());
         }
 
         info!("找到 {} 个模板文件", template_files.len());

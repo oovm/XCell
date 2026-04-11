@@ -609,8 +609,9 @@ impl CalamineTable {
     }
 
     pub fn is_dict(&self) -> bool {
-        let head = self.get_header(0);
-        head.field_name.eq_ignore_ascii_case("key")
+        // 根据 dict.md 文档，默认即为 Dict 类型，无需显式标记
+        // 只要不是 list 表，就默认是 dict 表
+        !self.is_list()
     }
 
     pub fn is_group(&self, name: &str) -> bool {
@@ -696,9 +697,8 @@ impl CalamineTable {
                 return Some((field.name.clone(), None));
             }
         }
-        // 如果 TOML 配置文件中没有字段名，则从 CSV 文件的第一行获取
-        // 对于 CSV 文件，字段名总是在第一行
-        let field_row = 0; // CSV 文件的第一行（0-based）
+        // 如果 TOML 配置文件中没有字段名，则从表格的 field 行获取
+        let field_row = self.config.line.field as u32 - 1; // 转换为 0-based
         if let Some(value) = self.table.get_value((field_row, index as u32)) {
             if let Data::String(s) = value {
                 // 使用 xcell-parser 解析字段名
@@ -718,9 +718,8 @@ impl CalamineTable {
                 return Some(XCellTyped::parse(&field.r#type, &self.config.typing));
             }
         }
-        // 如果 TOML 配置文件中没有字段类型，则从 CSV 文件的第二行获取
-        // 对于 CSV 文件，字段类型总是在第二行
-        let type_row = 1; // CSV 文件的第二行（0-based）
+        // 如果 TOML 配置文件中没有字段类型，则从表格的 type 行获取
+        let type_row = self.config.line.r#type as u32 - 1; // 转换为 0-based
         if let Some(value) = self.table.get_value((type_row, index as u32)) {
             if let Data::String(s) = value {
                 if !s.is_empty() {

@@ -13,6 +13,11 @@ use nargo_types::NargoValue;
 use crate::template::{TemplateLoader, TemplateType};
 use chrono;
 
+mod enumerate;
+mod class;
+mod dictionary;
+mod manager;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TypeScriptCodegen {
     /// Whether to generate TypeScript code
@@ -117,187 +122,37 @@ impl TypeScriptCodegen {
 
         // 处理枚举表
         for enum_table in ws.enumerates() {
-            self.process_enum_table(ws, enum_table)?;
+            self.write_enumerate(ws, enum_table)?;
         }
 
         // 处理类表
         for class_table in ws.classes() {
-            self.process_class_table(ws, class_table)?;
+            self.write_class(ws, class_table)?;
         }
 
         // 处理列表表
         for list_table in ws.lists() {
-            self.process_list_table(ws, list_table)?;
+            self.write_list(ws, list_table)?;
         }
 
         // 处理字典表
         for dict_table in ws.dicts() {
-            self.process_dict_table(ws, dict_table)?;
+            self.write_dict(ws, dict_table)?;
         }
 
         self.write_manager(ws)?;
         Ok(())
     }
 
-    /// 处理枚举表
-    fn process_enum_table(&self, ws: &WorkspaceManager, table: &XEnumerateData) -> XResult<()> {
-        let root = &ws.config.root;
-        let ts_path = self.ts_path(root, &table.name)?;
-        
-        tracing::info!("processing_enum: class_name={}, output_path={:?}", &table.name, ts_path);
-        
-        if let Some(parent) = ts_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        let items = table.lines.iter().map(|line| {
-            let key = line.key.to_uppercase().replace(" ", "_");
-            (key, line.id.to_u32().unwrap_or(0), line.key.clone(), String::new())
-        }).collect::<Vec<_>>();
-        
-        let content = self.render_enumerate_template(&table.name, &items)?;
-        
-        let mut file = File::create(ts_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_typescript_enum: class_name={}", &table.name);
-        Ok(())
-    }
 
-    /// 处理类表
-    fn process_class_table(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
-        let root = &ws.config.root;
-        let table_class_name = format!("{}{}", table.name, self.suffix_table);
-        let ts_path = self.ts_path(root, &table_class_name)?;
-        
-        tracing::info!("processing_class: class_name={}, table_class_name={}, output_path={:?}", &table.name, &table_class_name, ts_path);
-        
-        if let Some(parent) = ts_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        let fields = table.items.iter().map(|item| {
-            let ts_type = self.map_xcell_type_to_typescript(&item.default);
-            (item.field.clone(), ts_type)
-        }).collect::<Vec<_>>();
-        
-        let content = self.render_class_template(&table.name, &table_class_name, &fields)?;
-        
-        let mut file = File::create(ts_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_typescript_class: class_name={}", &table.name);
-        Ok(())
-    }
 
-    /// 处理列表表
-    fn process_list_table(&self, ws: &WorkspaceManager, table: &XListData) -> XResult<()> {
-        let root = &ws.config.root;
-        let table_class_name = format!("{}{}", table.name, self.suffix_table);
-        let ts_path = self.ts_path(root, &table_class_name)?;
-        
-        tracing::info!("processing_list: class_name={}, table_class_name={}, output_path={:?}", &table.name, &table_class_name, ts_path);
-        
-        if let Some(parent) = ts_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        let fields = table.headers.iter().map(|header| {
-            let ts_type = "any"; // 简化处理，实际应该根据类型信息映射
-            (header.field_name.clone(), ts_type.to_string())
-        }).collect::<Vec<_>>();
-        
-        let content = self.render_class_template(&table.name, &table_class_name, &fields)?;
-        
-        let mut file = File::create(ts_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_typescript_list: class_name={}", &table.name);
-        Ok(())
-    }
 
-    /// 处理字典表
-    fn process_dict_table(&self, ws: &WorkspaceManager, table: &XDictData) -> XResult<()> {
-        let root = &ws.config.root;
-        let table_class_name = format!("{}{}", table.name, self.suffix_table);
-        let ts_path = self.ts_path(root, &table_class_name)?;
-        
-        tracing::info!("processing_dict: class_name={}, table_class_name={}, output_path={:?}", &table.name, &table_class_name, ts_path);
-        
-        if let Some(parent) = ts_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        let fields = table.headers.iter().map(|header| {
-            let ts_type = "any"; // 简化处理，实际应该根据类型信息映射
-            (header.field_name.clone(), ts_type.to_string())
-        }).collect::<Vec<_>>();
-        
-        let content = self.render_class_template(&table.name, &table_class_name, &fields)?;
-        
-        let mut file = File::create(ts_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_typescript_dict: class_name={}", &table.name);
-        Ok(())
-    }
 
-    /// 写入管理器文件
-    fn write_manager(&self, ws: &WorkspaceManager) -> XResult<()> {
-        let root = &ws.config.root;
-        let manager_path = self.ts_manager_path(root)?;
-        
-        tracing::info!("writing_manager: output_path={:?}", manager_path);
-        
-        if let Some(parent) = manager_path.parent() {
-            std::fs::create_dir_all(parent)?;
-            tracing::debug!("created_directory: path={:?}", parent);
-        }
-        
-        let mut tables = Vec::new();
-        
-        // 处理类表
-        for class_table in ws.classes() {
-            let class_name = &class_table.name;
-            let table_class_name = format!("{}{}", class_name, self.suffix_table);
-            let cache_name = format!("{}Table", class_name.to_lowercase());
-            let get_method_name = format!("get{}Table", class_name);
-            
-            tables.push((class_name.to_string(), table_class_name, cache_name, get_method_name));
-        }
-        
-        // 处理列表表
-        for list_table in ws.lists() {
-            let class_name = &list_table.name;
-            let table_class_name = format!("{}{}", class_name, self.suffix_table);
-            let cache_name = format!("{}Table", class_name.to_lowercase());
-            let get_method_name = format!("get{}Table", class_name);
-            
-            tables.push((class_name.to_string(), table_class_name, cache_name, get_method_name));
-        }
-        
-        // 处理字典表
-        for dict_table in ws.dicts() {
-            let class_name = &dict_table.name;
-            let table_class_name = format!("{}{}", class_name, self.suffix_table);
-            let cache_name = format!("{}Table", class_name.to_lowercase());
-            let get_method_name = format!("get{}Table", class_name);
-            
-            tables.push((class_name.to_string(), table_class_name, cache_name, get_method_name));
-        }
-        
-        let content = self.render_manager_template(&tables)?;
-        
-        let mut file = File::create(manager_path)?;
-        file.write_all(content.as_bytes())?;
-        
-        tracing::info!("created_data_table_manager");
-        Ok(())
-    }
+
+
+
+
+
 
     /// 写入 JSON 数据
     pub fn write_json(&self, ws: &WorkspaceManager) -> XResult<()> {
@@ -571,8 +426,18 @@ impl TypeScriptCodegen {
 impl super::Codegen for TypeScriptCodegen {
     fn generate(&self, context: &super::CodegenContext) -> XResult<()> {
         if let Some(workspace) = &context.workspace {
-            let mut ts_codegen = self.clone();
-            ts_codegen.template_dir = context.options.get("loader_template").cloned();
+            let mut ts_codegen = TypeScriptCodegen {
+                enable: true,
+                project: context.options.get("project").cloned().unwrap_or("..".to_string()),
+                output: context.options.get("output").cloned().unwrap_or("typescript".to_string()),
+                manager_name: context.options.get("manager_name").cloned().unwrap_or("XCellManager".to_string()),
+                suffix_table: context.options.get("suffix_table").cloned().unwrap_or("Table".to_string()),
+                instance_name: context.options.get("instance_name").cloned().unwrap_or("xcell".to_string()),
+                storage: context.options.get("storage").cloned().unwrap_or("".to_string()),
+                storage_type: context.options.get("storage_type").cloned().unwrap_or("json".to_string()),
+                loader_template: context.options.get("loader_template").cloned().unwrap_or("".to_string()),
+                template_dir: context.options.get("loader_template").cloned(),
+            };
             ts_codegen.write_typescript(workspace)?;
             ts_codegen.write_json(workspace)?;
         }

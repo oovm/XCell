@@ -1,4 +1,6 @@
 use super::*;
+use xcell_analyzer::XClassItem;
+use convert_case::{Case, Casing};
 use xcell_types::codegen::TypeScriptWriter;
 use crate::template::{TemplateLoader, TemplateType};
 
@@ -60,7 +62,15 @@ impl TypeScriptCodegen {
         context_data.insert("key_name".to_string(), NargoValue::String("key".to_string()));
         
         // 处理 class_fields
-        let class_fields: Vec<ClassField> = table.items.iter().map(|s| s.as_dict()).collect();
+        let class_fields: Vec<ClassField> = table.items.iter().map(|item| ClassField {
+            document: vec![],
+            name: item.field.clone(),
+            typing: item.typing.as_typescript_type(),
+            has_default: !item.typing.as_typescript_default().is_empty(),
+            default: item.typing.as_typescript_default(),
+            getter: format!("get{}", item.field.to_case(Case::Pascal)),
+            writer: TypeScriptWriter::default()
+        }).collect();
         let class_fields_value: Vec<NargoValue> = class_fields.iter().map(|field| {
             let mut field_data = std::collections::HashMap::new();
             field_data.insert("document".to_string(), NargoValue::Array(

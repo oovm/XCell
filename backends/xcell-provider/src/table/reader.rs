@@ -765,7 +765,32 @@ impl ExcelTable {
             .worksheet_range(first_sheet)
             .map_err(|_| XError::new(XErrorKind::TableError(format!("无法读取工作表: {}", first_sheet))))?;
 
-        Ok(Self { path, table: range.clone(), label: String::new(), headers: Vec::new(), sheet_name: first_sheet.to_string() })
+        // 解析表头信息，默认从第 2 行开始（1-based）
+        let mut headers = Vec::new();
+        let field_row: u32 = 1; // 0-based，对应 1-based 的第 2 行
+        
+        if (range.height() as u32) > field_row {
+            for col in 0..(range.width() as u32) {
+                if let Some(value) = range.get_value((field_row, col)) {
+                    let field_name = match value {
+                        Data::String(s) => s.to_string(),
+                        _ => String::new(),
+                    };
+                    
+                    headers.push(XCellHeader {
+                        column: col as usize,
+                        access: XCellAccess::Public,
+                        field_name,
+                        typing: XCellTyped::default(),
+                        document: XDocument::default(),
+                        complete: true,
+                        constraint: None,
+                    });
+                }
+            }
+        }
+
+        Ok(Self { path, table: range.clone(), label: String::new(), headers, sheet_name: first_sheet.to_string() })
     }
 }
 

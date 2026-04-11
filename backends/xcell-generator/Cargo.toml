@@ -19,6 +19,7 @@ tracing-subscriber = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 oak-toml = { workspace = true, features = ["serde"] }
 oak-json = { workspace = true }
+oak-dejavu = { workspace = true }
 convert_case = { workspace = true }
 url = { workspace = true }
 csv = { workspace = true }

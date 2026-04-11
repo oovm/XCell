@@ -99,7 +99,16 @@ impl WorkspaceManager {
         let filter_glob = filter.and_then(|f| build_glob_set(f).result(|e| tracing::error!("{e}")).ok());
         // 使用 project 字段作为文件遍历的根目录
         let project_path = self.config.root.join(&self.config.project);
-        let entries = xcell_core::for_3rd::SyncWalkDir::new(&project_path);
+        tracing::info!("开始遍历目录: {:?}", project_path);
+        tracing::info!("Include 模式: {:?}", self.config.include);
+        
+        let entries = xcell_core::for_3rd::SyncWalkDir::new(&project_path)
+            .follow_links(true)
+            .into_iter();
+        
+        let mut file_count = 0;
+        let mut matched_count = 0;
+        
         for entry in entries {
             match entry {
                 Ok(o) => {
@@ -112,9 +121,14 @@ impl WorkspaceManager {
                     if file_name.starts_with("~") {
                         continue;
                     }
+                    file_count += 1;
+                    
                     let file = o.path();
-                    let normed = get_relative(&project_path, file)?;
+                    let normed = get_relative(file, &project_path)?;
+                    tracing::debug!("检查文件: {:?}, 相对路径: {:?}", file, normed);
+                    
                     if glob.is_match(&normed) {
+                        matched_count += 1;
                         if let Some(ref fg) = filter_glob {
                             if !fg.is_match(&normed) {
                                 continue;
@@ -129,9 +143,15 @@ impl WorkspaceManager {
                         }
                     }
                 }
-                _ => continue,
+                Err(e) => {
+                    tracing::error!("遍历文件错误: {}", e);
+                    continue;
+                }
             }
         }
+        
+        tracing::info!("遍历完成: 共 {} 个文件, 匹配 {} 个文件", file_count, matched_count);
+        
         self.link_enumerate();
         Ok(())
     }
@@ -253,12 +273,6 @@ impl WorkspaceManager {
             tracing::debug!("XListTable::perform 完成, 列表数量 = {}", self.defines.list.len());
             Ok(())
         }
-        else if let Ok(s) = XDictTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
-            for error in s.perform(self) {
-                tracing::error!("{}", error.with_path(file));
-            }
-            Ok(())
-        }
         else if let Ok(s) = XEnumerateTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
             for error in s.perform(self) {
                 tracing::error!("{}", error.with_path(file));
@@ -276,6 +290,12 @@ impl WorkspaceManager {
             Ok(())
         }
         else if let Ok(s) = XLanguageID::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+            for error in s.perform(self) {
+                tracing::error!("{}", error.with_path(file));
+            }
+            Ok(())
+        }
+        else if let Ok(s) = XDictTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
             for error in s.perform(self) {
                 tracing::error!("{}", error.with_path(file));
             }

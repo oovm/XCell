@@ -1,4 +1,6 @@
 use super::*;
+use xcell_analyzer::{XCellHeader, XDataLine};
+use convert_case::{Case, Casing};
 use crate::template::{TemplateLoader, TemplateType};
 
 #[derive(Template)]
@@ -60,7 +62,11 @@ impl TypeScriptCodegen {
         context_data.insert("class_name".to_string(), NargoValue::String(table.name.clone()));
         
         // 处理 enumerate_ids
-        let enumerate_ids = table.lines.iter().map(|data| data.as_enumerate()).collect::<Vec<EnumeratePair>>();
+        let enumerate_ids: Vec<EnumeratePair> = table.lines.iter().map(|line| EnumeratePair {
+            key: line.key.clone(),
+            value: line.id.to_string(),
+            document: vec![]
+        }).collect();
         let enumerate_ids_value: Vec<NargoValue> = enumerate_ids.iter().map(|pair| {
             let mut pair_data = std::collections::HashMap::new();
             pair_data.insert("key".to_string(), NargoValue::String(pair.key.clone()));

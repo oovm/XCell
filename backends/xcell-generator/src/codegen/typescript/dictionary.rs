@@ -1,5 +1,7 @@
 use super::*;
-use crate::x_table::header::XCellAccess;
+use xcell_analyzer::XCellHeader;
+use xcell_provider::XCellAccess;
+use convert_case::{Case, Casing};
 use xcell_types::codegen::TypeScriptWriter;
 use crate::template::{TemplateLoader, TemplateType};
 

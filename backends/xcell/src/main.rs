@@ -3,7 +3,7 @@ use xcell::{SubArgs, TomlSubArgs, XCellArgs, logger, pause};
 use xcell_analyzer::{WorkspaceManager, XResult, XError};
 use xcell_config::project::Generator;
 use std::path::PathBuf;
-use oak_toml::{TomlValue, TomlTable, TomlArray, to_string, from_str};
+use oak_toml::language::{TomlValue, TomlTable, TomlArray, from_str, to_string};
 
 #[tokio::main]
 async fn main() -> XResult<()> {
@@ -105,7 +105,7 @@ async fn main() -> XResult<()> {
                 if let Some(fields) = table.get_mut("fields").and_then(|v| v.as_array_mut()) {
                     let mut found = false;
                     for field in fields {
-                        if let TomlValue::Table(ref mut field_table) = field {
+                        if let TomlValue::Table(field_table) = field {
                             if field_table.dict.get("name").and_then(|v| v.as_str()) == Some(&name) {
                                 if let Some(r#type) = r#type {
                                     field_table.dict.insert("type".to_string(), TomlValue::String(r#type));

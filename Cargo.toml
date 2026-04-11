@@ -71,8 +71,10 @@ xcell-parser = { path = "backends/xcell-parser", version = "0.2.0" }
 
 
 oak-json = { path = "../oaks/examples/oak-json" }
-oak-toml = { path = "../oaks/examples/oak-toml" }
+oak-toml = { path = "../oaks/examples/oak-toml", features = ["serde"] }
+oak-dejavu = { path = "../oaks/examples/oak-dejavu" }
 nargo-template = { path = "../nargo/compilers/nargo-template" }
+nargo-types = { path = "../nargo/compilers/nargo-types" }
 
 
 tempfile = "3.10.1"

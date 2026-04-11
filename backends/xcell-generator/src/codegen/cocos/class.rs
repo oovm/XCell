@@ -1,49 +1,8 @@
 use super::*;
 use convert_case::{Case, Casing};
 use serde::{Deserialize, Serialize};
-use dejavu_macros::Template;
-use dejavu::Template;
-use xcell_analyzer::XClassItem;
-use xcell_types::codegen::TypeScriptWriter;
-
-#[derive(Template)]
-#[template(path = "BuildClass.ts.dejavu")]
-pub struct CocosClass {
-    /// Compiler version
-    compiler_version: &'static str,
-    /// Class name
-    class_name: String,
-    /// Table name
-    table_name: String,
-    /// ID type
-    id_type: &'static str,
-    /// Namespace
-    namespace: String,
-    /// Key name
-    key_name: String,
-    /// Class documentation
-    class_document: Vec<String>,
-    /// Class fields
-    class_fields: Vec<ClassField>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ClassField {
-    /// Field documentation
-    document: Vec<String>,
-    /// Field name
-    name: String,
-    /// Field type
-    typing: String,
-    /// Getter method
-    getter: String,
-    /// Whether the field has a default value
-    has_default: bool,
-    /// Default value
-    default: String,
-    /// TypeScript writer code
-    writer: TypeScriptWriter,
-}
+use xcell_analyzer::XClassData;
+use crate::template::{TemplateLoader, TemplateType};
 
 impl CocosCodegen {
     /// Writes Cocos class code

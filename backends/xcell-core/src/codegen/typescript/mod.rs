@@ -18,6 +18,7 @@ impl XCellTyped {
             XCellTyped::List(v) => v.as_typescript_type(),
             XCellTyped::Map(v) => v.as_typescript_type(),
             XCellTyped::Optional(v) => format!("{} | null", v.element_type.as_typescript_type()),
+            XCellTyped::Unknown => "any".to_string(),
         }
     }
 
@@ -51,6 +52,7 @@ impl XCellTyped {
             XCellTyped::List(_) => "[]".to_string(),
             XCellTyped::Map(_) => "{}".to_string(),
             XCellTyped::Optional(_) => "null".to_string(),
+            XCellTyped::Unknown => "null".to_string(),
         }
     }
 }

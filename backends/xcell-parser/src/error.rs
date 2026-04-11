@@ -1,4 +1,5 @@
 use std::fmt;
+use nom::error::{ParseError as NomParseError, ContextError, ErrorKind};
 
 /// 解析错误类型
 #[derive(Debug, Clone, PartialEq)]
@@ -18,6 +19,8 @@ pub enum ParseErrorKind {
     EmptyInput,
     /// 无效的语法
     InvalidSyntax(String),
+    /// Nom 错误
+    NomError(ErrorKind),
 }
 
 /// 解析错误
@@ -65,6 +68,7 @@ impl ParseError {
             ParseErrorKind::InvalidNumberLiteral(s) => format!("无效的数字字面量: {}", s),
             ParseErrorKind::EmptyInput => "输入为空".to_string(),
             ParseErrorKind::InvalidSyntax(msg) => msg.clone(),
+            ParseErrorKind::NomError(kind) => format!("解析错误: {:?}", kind),
         };
         Self {
             kind,
@@ -110,6 +114,25 @@ impl ParseError {
     /// 创建无效类型名错误
     pub fn invalid_type_name(name: &str, position: usize) -> Self {
         Self::new(ParseErrorKind::InvalidTypeName(name.to_string()), position)
+    }
+}
+
+/// 实现 nom 的 ParseError trait
+impl<'a> NomParseError<&'a str> for ParseError {
+    fn from_error_kind(input: &'a str, kind: ErrorKind) -> Self {
+        Self::new(ParseErrorKind::NomError(kind), input.len())
+    }
+
+    fn append(input: &'a str, kind: ErrorKind, other: Self) -> Self {
+        other
+    }
+}
+
+/// 实现 nom 的 ContextError trait
+impl<'a> ContextError<&'a str> for ParseError {
+    fn add_context(input: &'a str, ctx: &'static str, other: Self) -> Self {
+        let new_kind = ParseErrorKind::InvalidSyntax(format!("{}: {}", ctx, other.message));
+        Self::new(new_kind, other.position)
     }
 }
 

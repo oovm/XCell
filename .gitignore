@@ -22,6 +22,7 @@ Cargo.lock
 node_modules/
 cache/
 dist/
+package-lock.json
 pnpm-lock.yaml
 *.log
 *.txt

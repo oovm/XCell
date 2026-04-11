@@ -34,12 +34,16 @@ pub struct TableConfig {
 #[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
 pub struct TableLineMode {
     /// 字段名写在表格的第几行, 默认第一行
+    #[serde(default = "default_field_line")]
     pub field: usize,
     /// 类型写在表格的第几行, 默认第二行
+    #[serde(default = "default_type_line")]
     pub r#type: usize,
     /// 注释写在表格的第几行, 默认第三行
+    #[serde(default = "default_comment_line")]
     pub comment: usize,
     /// 数据从表格第几行开始, 默认第四行
+    #[serde(default = "default_data_line")]
     pub data: usize,
 }
 
@@ -65,4 +69,24 @@ impl From<&ProjectConfig> for TableConfig {
     fn from(project: &ProjectConfig) -> Self {
         TableConfig { line: project.line, typing: project.typing.clone(), fields: Vec::new() }
     }
+}
+
+/// 默认字段行号（1-based）
+fn default_field_line() -> usize {
+    1
+}
+
+/// 默认类型行号（1-based）
+fn default_type_line() -> usize {
+    2
+}
+
+/// 默认注释行号（1-based）
+fn default_comment_line() -> usize {
+    3
+}
+
+/// 默认数据行号（1-based）
+fn default_data_line() -> usize {
+    4
 }

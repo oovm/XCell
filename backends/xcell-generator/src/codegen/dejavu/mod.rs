@@ -113,54 +113,90 @@ impl DynamicDejavuCodegen {
     fn build_render_context(&self, context: &CodegenContext) -> NargoValue {
         let mut root_obj = HashMap::new();
 
-        // 添加配置选项
-        let mut options_obj = HashMap::new();
-        for (key, value) in &context.options {
-            options_obj.insert(key.clone(), NargoValue::String(value.clone()));
-        }
-        root_obj.insert("options".to_string(), NargoValue::Object(options_obj));
-
-        // 添加全局配置
-        let mut global_obj = HashMap::new();
-        for (key, value) in &context.global_options {
-            global_obj.insert(key.clone(), NargoValue::String(value.clone()));
-        }
-        root_obj.insert("global".to_string(), NargoValue::Object(global_obj));
+        // 添加编译器版本
+        root_obj.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
 
         // 如果存在工作区管理器，添加表数据
         if let Some(workspace) = context.workspace {
-            let mut tables_obj = HashMap::new();
+            // 处理类表数据
+            let class_items = workspace.classes()
+                .map(|t| format!("{}{}", t.name, context.get_option("suffix_table", "Table")))
+                .chain(workspace.dicts().map(|t| format!("{}{}", t.name, context.get_option("suffix_table", "Table"))))
+                .chain(workspace.lists().map(|t| format!("{}{}", t.name, context.get_option("suffix_table", "Table"))))
+                .collect::<Vec<String>>();
+            
+            let tables_value: Vec<NargoValue> = class_items.iter().map(|table| {
+                let mut table_data = HashMap::new();
+                table_data.insert("typing".to_string(), NargoValue::String(table.clone()));
+                table_data.insert("private_name".to_string(), NargoValue::String(table.to_lowercase()));
+                table_data.insert("public_name".to_string(), NargoValue::String(format!("get{}", table)));
+                NargoValue::Object(table_data)
+            }).collect();
+            root_obj.insert("tables".to_string(), NargoValue::Array(tables_value));
 
-            // 添加类表数据
-            let mut classes = Vec::new();
+            // 为每个类表构建单独的上下文
             for class_data in workspace.classes() {
-                classes.push(self.class_data_to_value(class_data));
+                let class_name = class_data.name.clone();
+                let table_name = format!("{}{}", class_name, context.get_option("suffix_table", "Table"));
+                
+                // 构建类字段
+                let class_fields_value: Vec<NargoValue> = class_data.items.iter().map(|item| {
+                    let default = item.typing.as_typescript_default();
+                    let mut field_data = HashMap::new();
+                    field_data.insert("document".to_string(), NargoValue::Array(
+                        item.document.lines().into_iter().map(|doc| NargoValue::String(doc)).collect()
+                    ));
+                    field_data.insert("name".to_string(), NargoValue::String(item.field.clone()));
+                    field_data.insert("typing".to_string(), NargoValue::String(item.typing.as_typescript_type()));
+                    field_data.insert("has_default".to_string(), NargoValue::Bool(!default.is_empty()));
+                    field_data.insert("default".to_string(), NargoValue::String(default));
+                    NargoValue::Object(field_data)
+                }).collect();
+                
+                // 添加类相关的上下文
+                root_obj.insert(format!("{}_class_name", class_name).to_string(), NargoValue::String(class_name.clone()));
+                root_obj.insert(format!("{}_table_name", class_name).to_string(), NargoValue::String(table_name));
+                root_obj.insert(format!("{}_class_fields", class_name).to_string(), NargoValue::Array(class_fields_value));
             }
-            tables_obj.insert("classes".to_string(), NargoValue::Array(classes));
 
-            // 添加字典表数据
-            let mut dicts = Vec::new();
-            for dict_data in workspace.dicts() {
-                dicts.push(self.dict_data_to_value(dict_data));
-            }
-            tables_obj.insert("dicts".to_string(), NargoValue::Array(dicts));
-
-            // 添加枚举表数据
-            let mut enums = Vec::new();
+            // 处理枚举表数据
             for enum_data in workspace.enumerates() {
-                enums.push(self.enumerate_data_to_value(enum_data));
+                let enum_name = enum_data.name.clone();
+                
+                // 构建枚举项
+                let enumerate_ids_value: Vec<NargoValue> = enum_data.lines.iter().map(|line| {
+                    let mut item_data = HashMap::new();
+                    item_data.insert("key".to_string(), NargoValue::String(line.key.clone()));
+                    item_data.insert("value".to_string(), NargoValue::String(line.id.to_string()));
+                    item_data.insert("document".to_string(), NargoValue::Array(
+                        vec![NargoValue::String(String::new())]
+                    ));
+                    NargoValue::Object(item_data)
+                }).collect();
+                
+                // 添加枚举相关的上下文
+                root_obj.insert(format!("{}_class_name", enum_name).to_string(), NargoValue::String(enum_name.clone()));
+                root_obj.insert(format!("{}_enumerate_ids", enum_name).to_string(), NargoValue::Array(enumerate_ids_value));
             }
-            tables_obj.insert("enums".to_string(), NargoValue::Array(enums));
-
-            // 添加列表表数据
-            let mut lists = Vec::new();
-            for list_data in workspace.lists() {
-                lists.push(self.list_data_to_value(list_data));
-            }
-            tables_obj.insert("lists".to_string(), NargoValue::Array(lists));
-
-            root_obj.insert("tables".to_string(), NargoValue::Object(tables_obj));
         }
+
+        // 添加配置选项
+        let manager_name = context.get_option("manager_name", "XCellManager");
+        let instance_name = context.get_option("instance_name", "xcell");
+        root_obj.insert("class_name".to_string(), NargoValue::String(manager_name.clone()));
+        root_obj.insert("instance_name".to_string(), NargoValue::String(instance_name));
+        root_obj.insert("manager_name".to_string(), NargoValue::String(manager_name));
+
+        // 添加数据路径
+        let storage = context.get_option("storage", "src/table/data");
+        let table_data_path = if storage.is_empty() {
+            "src/table/data/".to_string()
+        } else if storage.ends_with('/') || storage.ends_with('\\') {
+            storage
+        } else {
+            format!("{}/", storage)
+        };
+        root_obj.insert("table_data_path".to_string(), NargoValue::String(table_data_path));
 
         NargoValue::Object(root_obj)
     }
@@ -226,8 +262,11 @@ impl Codegen for DynamicDejavuCodegen {
 
         info!("找到 {} 个模板文件", template_files.len());
 
-        // 加载所有模板到适配器
-        for entry in &template_files {
+        // 构建渲染上下文
+        let render_context = self.build_render_context(context);
+
+        // 为每个模板文件渲染并输出
+        for entry in template_files {
             let template_path = entry.path();
             let template_name = template_path
                 .file_stem()
@@ -235,7 +274,7 @@ impl Codegen for DynamicDejavuCodegen {
                 .to_str()
                 .unwrap_or("template");
 
-            info!("加载模板文件: {:?}", template_path);
+            info!("处理模板文件: {:?}", template_path);
 
             // 读取模板内容
             let template_content = fs::read_to_string(&template_path).map_err(|e| {
@@ -251,31 +290,23 @@ impl Codegen for DynamicDejavuCodegen {
                     error!("{}", error_msg);
                     XError::new(XErrorKind::RuntimeError { message: error_msg })
                 })?;
-        }
 
-        // 构建渲染上下文
-        let render_context = self.build_render_context(context);
-
-        // 为每个模板文件渲染并输出
-        for entry in template_files {
-            let template_path = entry.path();
-            let template_stem = template_path
-                .file_stem()
-                .unwrap_or_default()
-                .to_str()
-                .unwrap_or("template");
-
-            // 处理带点的文件名，比如 hello.rs.dejavu 应该生成 hello.rs
-            let output_filename = if template_stem.contains('.') {
-                template_stem.to_string()
+            // 处理带点的文件名，比如 BuildClass.ts.dejavu 应该生成 BuildClass.ts
+            let output_filename = if template_name.contains('.') {
+                template_name.to_string()
             } else {
-                format!("{}.rs", template_stem)
+                // 根据模板名称判断输出文件类型
+                if template_name.contains("Class") || template_name.contains("Enumerate") || template_name.contains("Manager") {
+                    format!("{}.ts", template_name)
+                } else {
+                    format!("{}.rs", template_name)
+                }
             };
 
             info!("处理模板文件: {:?}", template_path);
 
             // 渲染模板
-            let rendered_content = adapter.render(template_stem, &render_context)
+            let rendered_content = adapter.render(template_name, &render_context)
                 .map_err(|e| {
                     let error_msg = format!("模板渲染失败: {}", e);
                     error!("{}", error_msg);

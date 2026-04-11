@@ -85,12 +85,14 @@ pub enum XCellTyped {
     Map(Box<MapDescription>),
     /// 可选类型
     Optional(Box<OptionalDescription>),
+    /// 未知类型
+    Unknown,
 }
 
 impl Default for XCellTyped {
-    /// 返回默认的 XCellTyped 实例，默认为 Boolean 类型。
+    /// 返回默认的 XCellTyped 实例，默认为 Unknown 类型。
     fn default() -> Self {
-        Self::Boolean(Box::default())
+        Self::Unknown
     }
 }
 
@@ -117,6 +119,8 @@ impl XCellTyped {
             XCellTyped::List(typing) => typing.parse_cell(cell),
             XCellTyped::Map(typing) => typing.parse_cell(cell),
             XCellTyped::Optional(typing) => typing.parse_cell(cell),
+            XCellTyped::Unknown => Err(crate::XError::runtime_error("Unknown type")),
+
         }
     }
 }

@@ -263,14 +263,14 @@ impl WorkspaceManager {
             }
         }
 
-        // 尝试解析为 XListTable
-        tracing::debug!("尝试解析为 XListTable");
-        let result = if let Ok(s) = XListTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
-            tracing::debug!("XListTable::confirm 成功, 调用 perform");
+        // 尝试解析为 XDictTable
+        tracing::debug!("尝试解析为 XDictTable");
+        let result = if let Ok(s) = XDictTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+            tracing::debug!("XDictTable::confirm 成功, 调用 perform");
             for error in s.perform(self) {
                 tracing::error!("{}", error.with_path(file));
             }
-            tracing::debug!("XListTable::perform 完成, 列表数量 = {}", self.defines.list.len());
+            tracing::debug!("XDictTable::perform 完成, 字典表数量 = {}", self.defines.dict.len());
             Ok(())
         }
         else if let Ok(s) = XEnumerateTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
@@ -295,10 +295,12 @@ impl WorkspaceManager {
             }
             Ok(())
         }
-        else if let Ok(s) = XDictTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+        else if let Ok(s) = XListTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+            tracing::debug!("XListTable::confirm 成功, 调用 perform");
             for error in s.perform(self) {
                 tracing::error!("{}", error.with_path(file));
             }
+            tracing::debug!("XListTable::perform 完成, 列表数量 = {}", self.defines.list.len());
             Ok(())
         }
         else {

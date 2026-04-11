@@ -1,25 +1,7 @@
 use super::*;
-use xcell_analyzer::XClassItem;
+use xcell_analyzer::{XClassData, XClassItem};
 use convert_case::{Case, Casing};
-use xcell_types::codegen::TypeScriptWriter;
 use crate::template::{TemplateLoader, TemplateType};
-
-#[derive(Template)]
-#[template(path = "BuildClass.ts", ext = "txt", escape = "none")]
-pub struct TypeScriptClass {
-    /// Compiler version
-    compiler_version: &'static str,
-    /// Class name
-    class_name: String,
-    /// Table name
-    table_name: String,
-    /// TypeScript codegen configuration
-    config: TypeScriptCodegen,
-    /// Key name
-    key_name: String,
-    /// Class fields
-    class_fields: Vec<ClassField>,
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ClassField {
@@ -35,8 +17,6 @@ pub struct ClassField {
     has_default: bool,
     /// Default value
     default: String,
-    /// TypeScript writer code
-    writer: TypeScriptWriter,
 }
 
 impl TypeScriptCodegen {
@@ -49,43 +29,34 @@ impl TypeScriptCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_class(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
-        use nargo_types::NargoValue;
-        
         let table_name = format!("{}{}", table.name, self.suffix_table);
         let mut file = self.log_typescript(ws, &table_name)?;
         
-        // 创建 NargoValue 上下文
-        let mut context_data = std::collections::HashMap::new();
-        context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
-        context_data.insert("class_name".to_string(), NargoValue::String(table.name.clone()));
-        context_data.insert("table_name".to_string(), NargoValue::String(table_name.clone()));
-        context_data.insert("key_name".to_string(), NargoValue::String("key".to_string()));
+        // 创建 serde_json::Value 上下文
+        let mut context_data = serde_json::Map::new();
+        context_data.insert("compiler_version".to_string(), serde_json::Value::String(env!("CARGO_PKG_VERSION").to_string()));
+        context_data.insert("class_name".to_string(), serde_json::Value::String(table.name.clone()));
+        context_data.insert("table_name".to_string(), serde_json::Value::String(table_name.clone()));
+        context_data.insert("key_name".to_string(), serde_json::Value::String("key".to_string()));
+        context_data.insert("class_document".to_string(), serde_json::Value::Array(vec![]));
         
         // 处理 class_fields
-        let class_fields: Vec<ClassField> = table.items.iter().map(|item| ClassField {
-            document: vec![],
-            name: item.field.clone(),
-            typing: item.typing.as_typescript_type(),
-            has_default: !item.typing.as_typescript_default().is_empty(),
-            default: item.typing.as_typescript_default(),
-            getter: format!("get{}", item.field.to_case(Case::Pascal)),
-            writer: TypeScriptWriter::default()
-        }).collect();
-        let class_fields_value: Vec<NargoValue> = class_fields.iter().map(|field| {
-            let mut field_data = std::collections::HashMap::new();
-            field_data.insert("document".to_string(), NargoValue::Array(
-                field.document.iter().map(|doc| NargoValue::String(doc.clone())).collect()
+        let class_fields_value: Vec<serde_json::Value> = table.items.iter().map(|item| {
+            let default = item.typing.as_typescript_default();
+            let mut field_data = serde_json::Map::new();
+            field_data.insert("document".to_string(), serde_json::Value::Array(
+                item.document.lines().into_iter().map(|doc| serde_json::Value::String(doc)).collect()
             ));
-            field_data.insert("name".to_string(), NargoValue::String(field.name.clone()));
-            field_data.insert("typing".to_string(), NargoValue::String(field.typing.clone()));
-            field_data.insert("getter".to_string(), NargoValue::String(field.getter.clone()));
-            field_data.insert("has_default".to_string(), NargoValue::Bool(field.has_default));
-            field_data.insert("default".to_string(), NargoValue::String(field.default.clone()));
-            NargoValue::Object(field_data)
+            field_data.insert("name".to_string(), serde_json::Value::String(item.field.clone()));
+            field_data.insert("typing".to_string(), serde_json::Value::String(item.typing.as_typescript_type()));
+            field_data.insert("getter".to_string(), serde_json::Value::String(format!("get{}", item.field.to_case(Case::Pascal))));
+            field_data.insert("has_default".to_string(), serde_json::Value::Bool(!default.is_empty()));
+            field_data.insert("default".to_string(), serde_json::Value::String(default));
+            serde_json::Value::Object(field_data)
         }).collect();
-        context_data.insert("class_fields".to_string(), NargoValue::Array(class_fields_value));
+        context_data.insert("class_fields".to_string(), serde_json::Value::Array(class_fields_value));
         
-        let context = NargoValue::Object(context_data);
+        let context = serde_json::Value::Object(context_data);
         
         // 创建模板加载器
         let template_dir = self.template_dir.as_deref().map(Path::new);
@@ -98,21 +69,4 @@ impl TypeScriptCodegen {
     }
 }
 
-impl XClassItem {
-    /// Converts XClassItem to ClassField
-    ///
-    /// # Returns
-    /// ClassField representation
-    fn as_dict(&self) -> ClassField {
-        let default = self.typing.as_typescript_default();
-        ClassField {
-            document: self.document.lines(),
-            name: self.field.clone(),
-            typing: self.typing.as_typescript_type(),
-            has_default: !default.is_empty(),
-            default,
-            getter: format!("get{}", self.field.to_case(Case::Pascal)),
-            writer: self.typing.make_ts_writer(&self.field),
-        }
-    }
-}
+

@@ -8,9 +8,10 @@ impl XCellTyped {
     pub fn parse(input: &str, info: &TypeMetaInfo) -> Self {
         match xcell_parser::parse_type(input) {
             Ok(expr) => Self::from_type_expr(expr, info),
-            Err(_) => {
-                // 回退到旧的解析逻辑，处理一些特殊情况
-                Self::parse_fallback(input, info)
+            Err(e) => {
+                // 解析失败，返回 Unknown 类型
+                eprintln!("类型解析失败: '{}' 被解析为 Unknown 类型，错误: {}", input, e);
+                Self::Unknown
             }
         }
     }

@@ -57,6 +57,7 @@ impl XCellTyped {
             XCellTyped::List(v) => v.as_csharp_type(),
             XCellTyped::Map(v) => v.as_csharp_type(),
             XCellTyped::Optional(v) => format!("{}?", v.element_type.as_csharp_type()),
+            XCellTyped::Unknown => "object".to_string(),
         }
     }
 }

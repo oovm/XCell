@@ -7,8 +7,6 @@ use serde::{Serialize, Deserialize};
 use serde_json;
 use xcell_core::{XError, XResult, XCellValue, for_3rd::ToPrimitive};
 use xcell_analyzer::{WorkspaceManager, XClassData, XListData, XDictData, XEnumerateData};
-use nargo_template::{DejaVuAdapter, UnifiedTemplateEngine};
-use nargo_types::NargoValue;
 
 use crate::template::{TemplateLoader, TemplateType};
 use chrono;
@@ -220,7 +218,9 @@ impl TypeScriptCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let json_data = table.mapping.values().map(|line| {
+        let mut json_data = serde_json::Map::new();
+        
+        for (key, line) in &table.mapping {
             let mut record = serde_json::Map::new();
             record.insert("id".to_string(), serde_json::json!(line.id.to_u64().unwrap_or(0)));
             record.insert("key".to_string(), serde_json::json!(line.key));
@@ -232,8 +232,8 @@ impl TypeScriptCodegen {
                 }
             }
             
-            serde_json::Value::Object(record)
-        }).collect::<Vec<_>>();
+            json_data.insert(key.to_string(), serde_json::Value::Object(record));
+        }
         
         let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
         
@@ -255,7 +255,9 @@ impl TypeScriptCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let json_data = table.mapping.values().map(|line| {
+        let mut json_data = serde_json::Map::new();
+        
+        for (key, line) in &table.mapping {
             let mut record = serde_json::Map::new();
             record.insert("id".to_string(), serde_json::json!(line.id.to_u64().unwrap_or(0)));
             record.insert("key".to_string(), serde_json::json!(line.key));
@@ -267,8 +269,8 @@ impl TypeScriptCodegen {
                 }
             }
             
-            serde_json::Value::Object(record)
-        }).collect::<Vec<_>>();
+            json_data.insert(key.clone(), serde_json::Value::Object(record));
+        }
         
         let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
         
@@ -285,26 +287,26 @@ impl TypeScriptCodegen {
             (key.clone(), id.to_string(), description.clone())
         }).collect::<Vec<_>>();
         
-        // 创建 NargoValue 上下文
-        let mut context_data = std::collections::HashMap::new();
-        context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
-        context_data.insert("class_name".to_string(), NargoValue::String(class_name.to_string()));
-        context_data.insert("id_type".to_string(), NargoValue::String("number".to_string()));
+        // 创建 serde_json::Value 上下文
+        let mut context_data = serde_json::Map::new();
+        context_data.insert("compiler_version".to_string(), serde_json::Value::String(env!("CARGO_PKG_VERSION").to_string()));
+        context_data.insert("class_name".to_string(), serde_json::Value::String(class_name.to_string()));
+        context_data.insert("id_type".to_string(), serde_json::Value::String("number".to_string()));
         
         // 处理 enumerate_ids
-        let enumerate_ids_value: Vec<NargoValue> = enumerate_ids.iter().map(|(key, value, document)| {
-            let mut pair_data = std::collections::HashMap::new();
-            pair_data.insert("key".to_string(), NargoValue::String(key.clone()));
-            pair_data.insert("value".to_string(), NargoValue::String(value.clone()));
-            pair_data.insert("document".to_string(), NargoValue::Array(
-                vec![NargoValue::String(document.clone())]
+        let enumerate_ids_value: Vec<serde_json::Value> = enumerate_ids.iter().map(|(key, value, document)| {
+            let mut pair_data = serde_json::Map::new();
+            pair_data.insert("key".to_string(), serde_json::Value::String(key.clone()));
+            pair_data.insert("value".to_string(), serde_json::Value::String(value.clone()));
+            pair_data.insert("document".to_string(), serde_json::Value::Array(
+                vec![serde_json::Value::String(document.clone())]
             ));
-            NargoValue::Object(pair_data)
+            serde_json::Value::Object(pair_data)
         }).collect();
-        context_data.insert("enumerate_ids".to_string(), NargoValue::Array(enumerate_ids_value));
-        context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
+        context_data.insert("enumerate_ids".to_string(), serde_json::Value::Array(enumerate_ids_value));
+        context_data.insert("class_document".to_string(), serde_json::Value::Array(vec![]));
         
-        let context = NargoValue::Object(context_data);
+        let context = serde_json::Value::Object(context_data);
         
         // 创建模板加载器
         let template_dir = self.template_dir.as_deref().map(Path::new);
@@ -316,34 +318,30 @@ impl TypeScriptCodegen {
 
     /// 渲染类模板
     fn render_class_template(&self, class_name: &str, table_name: &str, fields: &[(String, String)]) -> XResult<String> {
-        let class_fields: Vec<(Vec<String>, String, String, bool, String)> = fields.iter().map(|(name, typing)| {
-            (vec![], name.clone(), typing.clone(), false, String::new())
-        }).collect();
-        
-        // 创建 NargoValue 上下文
-        let mut context_data = std::collections::HashMap::new();
-        context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
-        context_data.insert("class_name".to_string(), NargoValue::String(class_name.to_string()));
-        context_data.insert("table_name".to_string(), NargoValue::String(table_name.to_string()));
-        context_data.insert("id_type".to_string(), NargoValue::String("number".to_string()));
-        context_data.insert("key_name".to_string(), NargoValue::String("id".to_string()));
-        context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
+        // 创建 serde_json::Value 上下文
+        let mut context_data = serde_json::Map::new();
+        context_data.insert("compiler_version".to_string(), serde_json::Value::String(env!("CARGO_PKG_VERSION").to_string()));
+        context_data.insert("class_name".to_string(), serde_json::Value::String(class_name.to_string()));
+        context_data.insert("table_name".to_string(), serde_json::Value::String(table_name.to_string()));
+        context_data.insert("id_type".to_string(), serde_json::Value::String("number".to_string()));
+        context_data.insert("key_name".to_string(), serde_json::Value::String("id".to_string()));
+        context_data.insert("class_document".to_string(), serde_json::Value::Array(vec![]));
         
         // 处理 class_fields
-        let class_fields_value: Vec<NargoValue> = class_fields.iter().map(|(document, name, typing, has_default, default)| {
-            let mut field_data = std::collections::HashMap::new();
-            field_data.insert("document".to_string(), NargoValue::Array(
-                vec![NargoValue::String(String::new())]
+        let class_fields_value: Vec<serde_json::Value> = fields.iter().map(|(name, typing)| {
+            let mut field_data = serde_json::Map::new();
+            field_data.insert("document".to_string(), serde_json::Value::Array(
+                vec![serde_json::Value::String(String::new())]
             ));
-            field_data.insert("name".to_string(), NargoValue::String(name.clone()));
-            field_data.insert("typing".to_string(), NargoValue::String(typing.clone()));
-            field_data.insert("has_default".to_string(), NargoValue::Bool(*has_default));
-            field_data.insert("default".to_string(), NargoValue::String(default.clone()));
-            NargoValue::Object(field_data)
+            field_data.insert("name".to_string(), serde_json::Value::String(name.clone()));
+            field_data.insert("typing".to_string(), serde_json::Value::String(typing.clone()));
+            field_data.insert("has_default".to_string(), serde_json::Value::Bool(false));
+            field_data.insert("default".to_string(), serde_json::Value::String(String::new()));
+            serde_json::Value::Object(field_data)
         }).collect();
-        context_data.insert("class_fields".to_string(), NargoValue::Array(class_fields_value));
+        context_data.insert("class_fields".to_string(), serde_json::Value::Array(class_fields_value));
         
-        let context = NargoValue::Object(context_data);
+        let context = serde_json::Value::Object(context_data);
         
         // 创建模板加载器
         let template_dir = self.template_dir.as_deref().map(Path::new);
@@ -359,14 +357,14 @@ impl TypeScriptCodegen {
             (cache_name.clone(), get_method_name.clone(), table_name.clone())
         }).collect::<Vec<_>>();
         
-        // 创建 NargoValue 上下文
-        let mut context_data = std::collections::HashMap::new();
-        context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
-        context_data.insert("class_name".to_string(), NargoValue::String(self.manager_name.clone()));
-        context_data.insert("instance_name".to_string(), NargoValue::String(self.instance_name.clone()));
-        context_data.insert("manager_name".to_string(), NargoValue::String(self.manager_name.clone()));
-        context_data.insert("data_version".to_string(), NargoValue::String("1.0.0".to_string()));
-        context_data.insert("edit_time".to_string(), NargoValue::String(chrono::Utc::now().to_rfc3339()));
+        // 创建 serde_json::Value 上下文
+        let mut context_data = serde_json::Map::new();
+        context_data.insert("compiler_version".to_string(), serde_json::Value::String(env!("CARGO_PKG_VERSION").to_string()));
+        context_data.insert("class_name".to_string(), serde_json::Value::String(self.manager_name.clone()));
+        context_data.insert("instance_name".to_string(), serde_json::Value::String(self.instance_name.clone()));
+        context_data.insert("manager_name".to_string(), serde_json::Value::String(self.manager_name.clone()));
+        context_data.insert("data_version".to_string(), serde_json::Value::String("1.0.0".to_string()));
+        context_data.insert("edit_time".to_string(), serde_json::Value::String(chrono::Utc::now().to_rfc3339()));
         
         // 添加 table_data_path
         let table_data_path = if self.storage.is_empty() {
@@ -376,19 +374,19 @@ impl TypeScriptCodegen {
         } else {
             format!("{}/", self.storage)
         };
-        context_data.insert("table_data_path".to_string(), NargoValue::String(table_data_path.to_string()));
+        context_data.insert("table_data_path".to_string(), serde_json::Value::String(table_data_path.to_string()));
         
         // 处理 tables
-        let tables_value: Vec<NargoValue> = table_items.iter().map(|(private_name, public_name, typing)| {
-            let mut table_data = std::collections::HashMap::new();
-            table_data.insert("private_name".to_string(), NargoValue::String(private_name.clone()));
-            table_data.insert("public_name".to_string(), NargoValue::String(public_name.clone()));
-            table_data.insert("typing".to_string(), NargoValue::String(typing.clone()));
-            NargoValue::Object(table_data)
+        let tables_value: Vec<serde_json::Value> = table_items.iter().map(|(private_name, public_name, typing)| {
+            let mut table_data = serde_json::Map::new();
+            table_data.insert("private_name".to_string(), serde_json::Value::String(private_name.clone()));
+            table_data.insert("public_name".to_string(), serde_json::Value::String(public_name.clone()));
+            table_data.insert("typing".to_string(), serde_json::Value::String(typing.clone()));
+            serde_json::Value::Object(table_data)
         }).collect();
-        context_data.insert("tables".to_string(), NargoValue::Array(tables_value));
+        context_data.insert("tables".to_string(), serde_json::Value::Array(tables_value));
         
-        let context = NargoValue::Object(context_data);
+        let context = serde_json::Value::Object(context_data);
         
         // 创建模板加载器
         let template_dir = self.template_dir.as_deref().map(Path::new);

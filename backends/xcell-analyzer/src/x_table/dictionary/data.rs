@@ -51,8 +51,13 @@ impl XDataLine {
         Ok(out)
     }
     fn check_parse_key(&self, data: &[Data]) -> XResult<String> {
-        match data.get(0).and_then(|s| s.as_string()) {
-            Some(s) => Ok(s.to_string()),
+        match data.get(0) {
+            Some(cell) => match cell {
+                Data::String(str) => Ok(str.to_string()),
+                Data::Int(int) => Ok(int.to_string()),
+                Data::Float(float) => Ok(float.to_string()),
+                _ => Err(XError::runtime_error(format!("key 必须是字符串或数字类型, 实际为 {:?}", cell)).with_x(0))?,
+            },
             None => Err(XError::runtime_error("key 不能为空").with_x(0))?,
         }
     }
@@ -75,6 +80,11 @@ impl XDataLine {
 impl XDataLine {
     fn try_parse_data(&mut self, data: &[Data], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) {
         for header in headers {
+            // 跳过 Unknown 类型的列
+            if let xcell_core::XCellTyped::Unknown = header.typing {
+                continue;
+            }
+            
             let data = data.get(header.column).unwrap_or(&Data::Empty);
             match header.typing.parse_cell(data) {
                 Ok(o) => self.data.push(o),

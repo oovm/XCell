@@ -13,5 +13,10 @@
         "msvc": "cargo +nightly-x86_64-pc-windows-msvc build --release",
         "check:27": "cargo run -- --workspace examples/real-project-27 check",
         "build:27": "cargo run -- --workspace examples/real-project-27"
+    },
+    "devDependencies": {
+        "@types/node": "^25.6.0",
+        "@types/vscode": "^1.115.0",
+        "typescript": "^6.0.2"
     }
 }

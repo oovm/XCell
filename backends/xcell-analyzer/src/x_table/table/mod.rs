@@ -387,8 +387,9 @@ impl TableReader for WrappedTableReader {
     }
 
     fn is_dict(&self) -> bool {
-        let head = self.get_header(0);
-        head.field_name.eq_ignore_ascii_case("key")
+        // 根据 dict.md 文档，默认即为 Dict 类型，无需显式标记
+        // 只要不是 list 表，就默认是 dict 表
+        !crate::x_table::table::TableReader::is_list(self)
     }
 
     fn is_group(&self, name: &str) -> bool {
@@ -408,20 +409,6 @@ impl TableReader for WrappedTableReader {
     }
 }
 
-/// 根据文件路径自动检测文件格式并加载表格
-///
-/// # Parameters
-/// - `path`: 表格文件的路径
-/// - `config`: 项目配置
-///
-/// # Returns
-/// - 成功时返回实现了 `TableReader` trait 的实例
-/// - 失败时返回错误
-pub fn load_table(path: &Path, config: &crate::ProjectConfig) -> XResult<Arc<dyn TableReader>> {
-    let table = WrappedTableReader::new(path, config)?;
-    Ok(Arc::new(table))
-}
-
 /// 为 `Arc<dyn TableReader>` 实现 `TableReader` trait
 use std::path::PathBuf;
 
@@ -436,7 +423,7 @@ pub struct CalamineTable {
 }
 
 impl XCellTableReader for CalamineTable {
-    fn load(path: &Path) -> XResult<Self> {
+    fn load(_path: &Path) -> XResult<Self> {
         Err(XError::new(XErrorKind::TableError("CalamineTable::load not implemented".to_string())))
     }
 
@@ -611,7 +598,7 @@ impl CalamineTable {
     pub fn is_dict(&self) -> bool {
         // 根据 dict.md 文档，默认即为 Dict 类型，无需显式标记
         // 只要不是 list 表，就默认是 dict 表
-        !self.is_list()
+        !<Self as TableReader>::is_list(self)
     }
 
     pub fn is_group(&self, name: &str) -> bool {
@@ -635,20 +622,9 @@ impl CalamineTable {
     }
 }
 
-impl CalamineTable {
-    pub fn parse_type(&self, name: &str) -> XCellTyped {
-        XCellTyped::parse(name, &self.config.typing)
-    }
-}
+
 
 impl CalamineTable {
-    pub fn load(path: &Path, config: &ProjectConfig) -> XResult<Self> {
-        let path = path.canonicalize()?;
-        let table = find_first_table(&path)?;
-        let config = Self::try_load_config(&path, config)?;
-        // let toml = config.get_table_config(&table)?;
-        Ok(Self { path, table, config })
-    }
     fn try_load_config(path: &Path, global: &ProjectConfig) -> XResult<TableConfig> {
         let file = path.with_extension("toml");
         let file = if file.exists() { Some(file.as_path()) } else { None };
@@ -680,7 +656,13 @@ impl CalamineTable {
     
     /// 获取表格类型
     pub fn table_kind(&self) -> Option<TableKind> {
-        if let Some(value) = self.table.get_value((0, 0)) {
+        // 表格类型标记通常在第一行第一列
+        let meta_row_worksheet = 0; // 0-based worksheet row
+        let meta_row_range = match self.table.start() {
+            Some((start_row, _)) => meta_row_worksheet - start_row,
+            None => meta_row_worksheet,
+        };
+        if let Some(value) = self.table.get_value((meta_row_range, 0)) {
             if let Data::String(s) = value {
                 if let Ok(meta) = parse_meta(s) {
                     return Some(meta.kind);
@@ -698,8 +680,12 @@ impl CalamineTable {
             }
         }
         // 如果 TOML 配置文件中没有字段名，则从表格的 field 行获取
-        let field_row = self.config.line.field as u32 - 1; // 转换为 0-based
-        if let Some(value) = self.table.get_value((field_row, index as u32)) {
+        let field_row_worksheet = self.config.line.field as u32 - 1; // 转换为 0-based worksheet row
+        let field_row_range = match self.table.start() {
+            Some((start_row, _)) => field_row_worksheet - start_row,
+            None => field_row_worksheet,
+        };
+        if let Some(value) = self.table.get_value((field_row_range, index as u32)) {
             if let Data::String(s) = value {
                 // 使用 xcell-parser 解析字段名
                 if let Ok(field_expr) = parse_field(s) {
@@ -719,12 +705,24 @@ impl CalamineTable {
             }
         }
         // 如果 TOML 配置文件中没有字段类型，则从表格的 type 行获取
-        let type_row = self.config.line.r#type as u32 - 1; // 转换为 0-based
-        if let Some(value) = self.table.get_value((type_row, index as u32)) {
-            if let Data::String(s) = value {
-                if !s.is_empty() {
-                    return Some(XCellTyped::parse(s, &self.config.typing));
-                }
+        let type_row_worksheet = self.config.line.r#type as u32 - 1; // 转换为 0-based worksheet row
+        let type_row_range = match self.table.start() {
+            Some((start_row, _)) => type_row_worksheet - start_row,
+            None => type_row_worksheet,
+        };
+        if let Some(value) = self.table.get_value((type_row_range, index as u32)) {
+            let type_str = match value {
+                Data::String(s) => s.to_string(),
+                Data::Int(i) => i.to_string(),
+                Data::Float(f) => f.to_string(),
+                Data::Bool(b) => b.to_string(),
+                Data::DateTime(dt) => dt.to_string(),
+                Data::DateTimeIso(dt) => dt.to_string(),
+                Data::DurationIso(dur) => dur.to_string(),
+                _ => return None,
+            };
+            if !type_str.is_empty() {
+                return Some(XCellTyped::parse(&type_str, &self.config.typing));
             }
         }
         None
@@ -797,4 +795,17 @@ impl TableReader for CalamineTable {
     fn is_document(&self, name: &str) -> bool {
         name == "document"
     }
+}
+
+/// 加载表格文件
+///
+/// # Arguments
+/// * `path` - 表格文件路径
+/// * `config` - 项目配置
+///
+/// # Returns
+/// 表格读取器
+pub fn load_table(path: &Path, config: &crate::ProjectConfig) -> XResult<Arc<dyn TableReader>> {
+    let table = <CalamineTable as TableReader>::load(path, config)?;
+    Ok(Arc::new(table))
 }

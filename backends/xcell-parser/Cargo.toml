@@ -10,6 +10,7 @@ edition = { workspace = true }
 
 [dependencies]
 serde = { workspace = true }
+nom = "7.1.3"
 
 [dev-dependencies]
 

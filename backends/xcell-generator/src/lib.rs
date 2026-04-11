@@ -1,6 +1,7 @@
 #![warn(missing_docs)]
 
 use std::collections::HashMap;
+use std::path::PathBuf;
 use tracing::{error, info};
 use xcell_analyzer::{WorkspaceManager, XClassData, XDictData, XEnumerateData, XListData};
 use xcell_core::XResult;
@@ -52,10 +53,8 @@ impl Generator {
         // 初始化各种代码生成器
         generators.insert("json".to_string(), Box::new(codegen::json::JsonCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("binary".to_string(), Box::new(codegen::binary::BinaryCodegen::default()) as Box<dyn codegen::Codegen>);
-        generators.insert("cocos".to_string(), Box::new(codegen::cocos::CocosCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("typescript".to_string(), Box::new(codegen::typescript::TypeScriptCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("unity".to_string(), Box::new(codegen::unity::UnityGenerator::default_generator()) as Box<dyn codegen::Codegen>);
-        generators.insert("dejavu".to_string(), Box::new(codegen::dejavu::DynamicDejavuCodegen::new()) as Box<dyn codegen::Codegen>);
 
         info!("生成器实例创建完成，注册了 {} 个代码生成器", generators.len());
 
@@ -77,8 +76,11 @@ impl Generator {
 
             if let Some(generator) = self.generators.get(&product_type_str) {
                 // 创建代码生成上下文
+                // 输出目录相对于工作空间根目录
+                let output_dir = workspace.config.root.join(&product.output_dir);
+                
                 let context = CodegenContext::new_with_workspace(
-                    &product.output_dir,
+                    output_dir.to_str().unwrap_or(&product.output_dir),
                     product.options.clone(),
                     self.config.global.options.clone(),
                     workspace

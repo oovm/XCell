@@ -27,8 +27,6 @@ chrono = { workspace = true }
 calamine = { workspace = true }
 
 # 代码生成依赖
-nargo-template = { workspace = true }
-nargo-types = { workspace = true }
 tempfile = { workspace = true }
 serde_json = { workspace = true }
 once_cell = { workspace = true }

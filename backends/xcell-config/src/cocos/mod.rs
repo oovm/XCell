@@ -92,11 +92,11 @@ impl CocosCodegen {
     }
 
     /// Cocos 项目文件夹
-    pub fn cocos_path(&self, root: &Path) -> XResult<PathBuf> {
+    pub fn cocos_path(&self, _root: &Path) -> XResult<PathBuf> {
         let project = PathBuf::from(&self.project);
         let project = match project.is_absolute() {
             true => project,
-            false => root.join(project),
+            false => std::env::current_dir()?.join(project),
         };
         Ok(project.canonicalize()?)
     }

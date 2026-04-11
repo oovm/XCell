@@ -22,6 +22,7 @@ impl XCellTyped {
             XCellTyped::List(v) => v.as_csharp_default(),
             XCellTyped::Map(_) => "new()".to_string(),
             XCellTyped::Optional(v) => v.element_type.as_csharp_default(),
+            XCellTyped::Unknown => "null".to_string(),
         }
     }
 }
@@ -264,6 +265,7 @@ impl XCellTyped {
             XCellTyped::List(_) => unreachable!(),
             XCellTyped::Map(_) => unreachable!(),
             XCellTyped::Optional(_) => unreachable!(),
+            XCellTyped::Unknown => "null",
         };
         str.to_string()
     }

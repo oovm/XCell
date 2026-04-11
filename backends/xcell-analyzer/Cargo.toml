@@ -16,7 +16,6 @@ convert_case = { workspace = true }
 oak-toml = { workspace = true, features = ["serde"] }
 oak-json = { workspace = true }
 pathdiff = { workspace = true }
-nargo-template = { workspace = true }
 regex = { workspace = true }
 twox-hash = { workspace = true }
 serde = { workspace = true }

@@ -45,6 +45,16 @@ impl ListDescription {
     /// 返回分割后的字符串切片列表
     pub fn split<'i>(&self, s: &'i str) -> Vec<&'i str> {
         let mut out = Vec::new();
+        // 去除首尾的数组符号
+        let s = s.trim();
+        let s = if s.starts_with('[') && s.ends_with(']') {
+            &s[1..s.len()-1]
+        } else if s.starts_with('【') && s.ends_with('】') {
+            &s[1..s.len()-1]
+        } else {
+            s
+        };
+        // 使用分隔符分割字符串
         for item in s.split(self.delimiter) {
             let item = item.trim();
             if item.is_empty() {

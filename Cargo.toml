@@ -1,14 +1,33 @@
 [workspace]
 resolver = "3"
 members = [
-    "backends/*",
+    "backends/xcell",
+    "backends/xcell-core",
+    "backends/xcell-analyzer",
+    "backends/xcell-provider",
+    "backends/xcell-generator",
+    "backends/xcell-plugin",
+    "backends/xcell-config",
+    "backends/xcell-parser",
+    "backends/xcell-wasi",
+    "backends/xcell-macros",
     "frontends/xcell-desktop",
 ]
 default-members = [
-    "backends/*",
+    "backends/xcell",
+    "backends/xcell-core",
+    "backends/xcell-analyzer",
+    "backends/xcell-provider",
+    "backends/xcell-generator",
+    "backends/xcell-plugin",
+    "backends/xcell-config",
+    "backends/xcell-parser",
+    "backends/xcell-wasi",
+    "backends/xcell-macros",
 ]
 exclude = [
     "projects/.DS_Store",
+    "backends/.trae",
 ]
 
 
@@ -71,14 +90,13 @@ xcell-config = { path = "backends/xcell-config", version = "0.2.0" }
 xcell-parser = { path = "backends/xcell-parser", version = "0.2.0" }
 
 # oak parsers
-oak-csv = { path = "../oaks/examples/oak-csv" }
-oak-json = { path = "../oaks/examples/oak-json" }
-oak-toml = { path = "../oaks/examples/oak-toml", features = ["serde"] }
-oak-dejavu = { path = "../oaks/examples/oak-dejavu" }
+oak-core = { git = "https://github.com/ygg-lang/oaks.git", branch = "dev", version = "0.0.12" }
+oak-json = { git = "https://github.com/ygg-lang/oaks.git", branch = "dev", version = "0.0.12" }
+oak-toml = { git = "https://github.com/ygg-lang/oaks.git", branch = "dev", version = "0.0.12", features = ["serde"] }
+oak-dejavu = { git = "https://github.com/ygg-lang/oaks.git", branch = "dev", version = "0.0.12" }
+oak-yaml = { git = "https://github.com/ygg-lang/oaks.git", branch = "dev", version = "0.0.12" }
 
-# nargo template engine
-nargo-template = { path = "../nargo/compilers/nargo-template" }
-nargo-types = { path = "../nargo/compilers/nargo-types" }
+
 
 [profile.release]
 lto = true

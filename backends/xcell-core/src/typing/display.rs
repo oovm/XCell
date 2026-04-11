@@ -16,6 +16,7 @@ impl Debug for XCellTyped {
             XCellTyped::List(v) => Debug::fmt(v, f),
             XCellTyped::Map(v) => Debug::fmt(v, f),
             XCellTyped::Optional(v) => Debug::fmt(v, f),
+            XCellTyped::Unknown => write!(f, "Unknown"),
         }
     }
 }

@@ -1,36 +1,7 @@
 use super::*;
-use xcell_analyzer::{XCellHeader, XDataLine};
+use xcell_analyzer::{XEnumerateData};
 use convert_case::{Case, Casing};
 use crate::template::{TemplateLoader, TemplateType};
-
-#[derive(Template)]
-#[template(path = "BuildEnumerate.ts", ext = "txt", escape = "none")]
-pub struct TypeScriptEnumerate {
-    /// Compiler version
-    compiler_version: &'static str,
-    /// Class name
-    class_name: String,
-    /// TypeScript codegen configuration
-    config: TypeScriptCodegen,
-    /// Enumerate IDs
-    enumerate_ids: Vec<EnumeratePair>,
-    /// Enumerate fields
-    enumerate_fields: Vec<EnumerateField>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EnumerateField {
-    /// Field documentation
-    document: Vec<String>,
-    /// Switch cases
-    switch: Vec<EnumeratePair>,
-    /// Field name
-    name: String,
-    /// Field type
-    typing: String,
-    /// Getter method
-    getter: String,
-}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EnumeratePair {
@@ -52,33 +23,31 @@ impl TypeScriptCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_enumerate(&self, ws: &WorkspaceManager, table: &XEnumerateData) -> XResult<()> {
-        use nargo_types::NargoValue;
-        
         let mut file = self.log_typescript(ws, &table.name)?;
         
-        // 创建 NargoValue 上下文
-        let mut context_data = std::collections::HashMap::new();
-        context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
-        context_data.insert("class_name".to_string(), NargoValue::String(table.name.clone()));
+        // 创建 serde_json::Value 上下文
+        let mut context_data = serde_json::Map::new();
+        context_data.insert("compiler_version".to_string(), serde_json::Value::String(env!("CARGO_PKG_VERSION").to_string()));
+        context_data.insert("class_name".to_string(), serde_json::Value::String(table.name.clone()));
         
         // 处理 enumerate_ids
         let enumerate_ids: Vec<EnumeratePair> = table.lines.iter().map(|line| EnumeratePair {
             key: line.key.clone(),
             value: line.id.to_string(),
-            document: vec![]
+            document: vec![],
         }).collect();
-        let enumerate_ids_value: Vec<NargoValue> = enumerate_ids.iter().map(|pair| {
-            let mut pair_data = std::collections::HashMap::new();
-            pair_data.insert("key".to_string(), NargoValue::String(pair.key.clone()));
-            pair_data.insert("value".to_string(), NargoValue::String(pair.value.clone()));
-            pair_data.insert("document".to_string(), NargoValue::Array(
-                pair.document.iter().map(|doc| NargoValue::String(doc.clone())).collect()
+        let enumerate_ids_value: Vec<serde_json::Value> = enumerate_ids.iter().map(|pair| {
+            let mut pair_data = serde_json::Map::new();
+            pair_data.insert("key".to_string(), serde_json::Value::String(pair.key.clone()));
+            pair_data.insert("value".to_string(), serde_json::Value::String(pair.value.clone()));
+            pair_data.insert("document".to_string(), serde_json::Value::Array(
+                pair.document.iter().map(|doc| serde_json::Value::String(doc.clone())).collect()
             ));
-            NargoValue::Object(pair_data)
+            serde_json::Value::Object(pair_data)
         }).collect();
-        context_data.insert("enumerate_ids".to_string(), NargoValue::Array(enumerate_ids_value));
+        context_data.insert("enumerate_ids".to_string(), serde_json::Value::Array(enumerate_ids_value));
         
-        let context = NargoValue::Object(context_data);
+        let context = serde_json::Value::Object(context_data);
         
         // 创建模板加载器
         let template_dir = self.template_dir.as_deref().map(Path::new);
@@ -91,45 +60,4 @@ impl TypeScriptCodegen {
     }
 }
 
-impl XCellHeader {
-    /// Converts XCellHeader to EnumerateField
-    ///
-    /// # Arguments
-    /// * `values` - Data lines
-    /// * `index` - Field index
-    ///
-    /// # Returns
-    /// EnumerateField representation
-    fn as_enumerate(&self, values: &[XDataLine], index: usize) -> EnumerateField {
-        EnumerateField {
-            name: self.field_name.clone(),
-            typing: self.typing.as_typescript_type(),
-            getter: format!("get{}", self.field_name.to_case(Case::Pascal)),
-            document: self.document.lines(),
-            switch: values.iter().map(|data| data.as_pair(index)).collect(),
-        }
-    }
-}
 
-impl XDataLine {
-    /// Converts XDataLine to EnumeratePair for IDs
-    ///
-    /// # Returns
-    /// EnumeratePair representation
-    fn as_enumerate(&self) -> EnumeratePair {
-        EnumeratePair { key: self.key.clone(), value: self.id.to_string(), document: self.comment.lines() }
-    }
-
-    /// Converts XDataLine to EnumeratePair for field values
-    ///
-    /// # Arguments
-    /// * `index` - Field index
-    ///
-    /// # Returns
-    /// EnumeratePair representation
-    fn as_pair(&self, index: usize) -> EnumeratePair {
-        // 枚举和字段一样长, 必定存在
-        let data = self.data.get(index).unwrap();
-        EnumeratePair { key: self.key.clone(), value: data.as_typescript_value(), document: self.comment.lines() }
-    }
-}

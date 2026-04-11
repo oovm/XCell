@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs::File, io::Read, path::Path};
-use xcell_config::project::Generator;
 
 use crate::error::{GeneratorError, GeneratorErrorExt, GeneratorResult};
 
@@ -167,10 +166,22 @@ impl GeneratorConfig {
                     if cocos.enable {
                         let mut options = std::collections::HashMap::new();
                         options.insert("output".to_string(), cocos.output.clone());
-                        
+                        options.insert("project".to_string(), cocos.project.clone());
+                        options.insert("storage".to_string(), cocos.storage.output_path().to_string());
+                        options.insert("manager_name".to_string(), cocos.manager_name.clone());
+                        options.insert("suffix_table".to_string(), cocos.suffix_table.clone());
+                        options.insert("instance_name".to_string(), cocos.instance_name.clone());
+                        options.insert("table_data_path".to_string(), cocos.table_data_path.clone());
+
+                        let output_dir = if !cocos.project.is_empty() {
+                            format!("{}/{}", cocos.project, cocos.output)
+                        } else {
+                            cocos.output.clone()
+                        };
+
                         products.push(ProductConfig {
                             product_type: ProductType::Cocos,
-                            output_dir: cocos.output.clone(),
+                            output_dir,
                             options,
                             enabled: true,
                         });
@@ -189,9 +200,40 @@ impl GeneratorConfig {
                         });
                     }
                 }
-                _ => {
-                    // 处理其他类型的生成器
+                xcell_config::project::Generator::TypeScript(typescript) => {
+                    if typescript.enable {
+                        let mut options = std::collections::HashMap::new();
+                        options.insert("output".to_string(), typescript.output.clone());
+                        options.insert("project".to_string(), typescript.project.clone());
+                        options.insert("storage".to_string(), typescript.storage.clone());
+                        options.insert("storage_type".to_string(), typescript.storage_type.clone());
+                        options.insert("loader_template".to_string(), typescript.loader_template.clone());
+                        options.insert("manager_name".to_string(), typescript.manager_name.clone());
+                        options.insert("suffix_table".to_string(), typescript.suffix_table.clone());
+                        options.insert("instance_name".to_string(), typescript.instance_name.clone());
+
+                        let output_dir = if !typescript.project.is_empty() {
+                            format!("{}/{}", typescript.project, typescript.output)
+                        } else {
+                            typescript.output.clone()
+                        };
+
+                        let product_type = if !typescript.loader_template.is_empty() {
+                            options.insert("template_dir".to_string(), typescript.loader_template.clone());
+                            ProductType::Dejavu
+                        } else {
+                            ProductType::TypeScript
+                        };
+
+                        products.push(ProductConfig {
+                            product_type,
+                            output_dir,
+                            options,
+                            enabled: true,
+                        });
+                    }
                 }
+                _ => {}
             }
         }
 

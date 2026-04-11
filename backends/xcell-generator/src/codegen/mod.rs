@@ -10,7 +10,7 @@ pub mod dejavu;
 pub mod json;
 // pub mod readable;
 // pub mod sql;
-// pub mod typescript;
+pub mod typescript;
 pub mod unity;
 // pub mod xlua;
 // pub mod xml;

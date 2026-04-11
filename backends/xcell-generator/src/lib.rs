@@ -50,6 +50,7 @@ impl Generator {
         generators.insert("json".to_string(), Box::new(codegen::json::JsonCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("binary".to_string(), Box::new(codegen::binary::BinaryCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("cocos".to_string(), Box::new(codegen::cocos::CocosCodegen::default()) as Box<dyn codegen::Codegen>);
+        generators.insert("typescript".to_string(), Box::new(codegen::typescript::TypeScriptCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("unity".to_string(), Box::new(codegen::unity::UnityGenerator::default_generator()) as Box<dyn codegen::Codegen>);
         generators.insert("dejavu".to_string(), Box::new(codegen::dejavu::DynamicDejavuCodegen::new()) as Box<dyn codegen::Codegen>);
 

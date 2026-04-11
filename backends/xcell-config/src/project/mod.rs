@@ -9,7 +9,7 @@ use xcell_core::TypeMetaInfo;
 
 use super::*;
 use crate::{
-    cocos::{CocosCodegen, CocosStorage},
+    cocos::{CocosCodegen, CocosJsonConfig, CocosStorage},
     codegen::{json::JsonCodegen, sql::SqlCodegen, typescript::TypeScriptCodegen, xlua::XluaCodegen},
     merge_rules::MergeRules,
     table::TableLineMode,
@@ -149,30 +149,50 @@ impl ProjectConfig {
         let xcell_config_path = root.join("xcell.config.toml");
         
         if xcell_config_path.exists() {
-            // 如果文件存在，从文件中加载配置
             if let Ok(content) = std::fs::read_to_string(&xcell_config_path) {
-                println!("Reading configuration from xcell.config.toml");
-                println!("Configuration content: {}", content);
-                // 手动解析配置文件
                 let mut config = Self { root: root.to_path_buf(), ..from_str(PROJECT_CONFIG).unwrap() };
-                
-                // 解析 generators 部分
+
                 let lines: Vec<&str> = content.lines().collect();
                 let mut generators = Vec::new();
                 let mut current_generator = None;
                 let mut project = default_project();
                 let mut include = default_include();
-                
+                let mut in_line_section = false;
+
                 for line in lines {
                     let line = line.trim();
+                    if line.is_empty() || line.starts_with('#') {
+                        continue;
+                    }
+
+                    if line == "[line]" {
+                        in_line_section = true;
+                        continue;
+                    }
+
                     if line.starts_with("[[generators]]") {
-                        // 开始一个新的生成器
+                        in_line_section = false;
                         if let Some(generator) = current_generator {
                             generators.push(generator);
                         }
                         current_generator = Some(Generator::Cocos(CocosCodegen::default()));
-                    } else if line.starts_with("type = ") {
-                        // 解析生成器类型
+                        continue;
+                    }
+
+                    if in_line_section {
+                        if line.starts_with("comment = ") {
+                            config.line.comment = line.split('=').nth(1).unwrap().trim().parse().unwrap_or(0);
+                        } else if line.starts_with("field = ") {
+                            config.line.field = line.split('=').nth(1).unwrap().trim().parse().unwrap_or(0);
+                        } else if line.starts_with("type = ") {
+                            config.line.r#type = line.split('=').nth(1).unwrap().trim().parse().unwrap_or(0);
+                        } else if line.starts_with("data = ") {
+                            config.line.data = line.split('=').nth(1).unwrap().trim().parse().unwrap_or(0);
+                        }
+                        continue;
+                    }
+
+                    if line.starts_with("type = ") {
                         if let Some(generator) = &mut current_generator {
                             let type_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
                             match type_str.to_ascii_lowercase().as_str() {
@@ -186,7 +206,6 @@ impl ProjectConfig {
                             }
                         }
                     } else if line.starts_with("enable = ") {
-                        // 解析 enable 字段
                         if let Some(generator) = &mut current_generator {
                             let enable_str = line.split('=').nth(1).unwrap().trim();
                             let enable = enable_str == "true";
@@ -201,27 +220,25 @@ impl ProjectConfig {
                             }
                         }
                     } else if line.starts_with("project = ") {
-                        // 解析 project 字段
                         if let Some(generator) = &mut current_generator {
-                            // 生成器内部的 project 字段
                             let project_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
                             match generator {
                                 Generator::Cocos(cocos) => {
                                     cocos.project = project_str.to_string();
                                 }
+                                Generator::TypeScript(typescript) => {
+                                    typescript.project = project_str.to_string();
+                                }
                                 _ => {}
                             }
                         } else {
-                            // 全局的 project 字段
                             let project_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
                             project = project_str.to_string();
                         }
                     } else if line.starts_with("include = ") {
-                        // 解析 include 字段
                         let include_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
                         include = include_str.to_string();
                     } else if line.starts_with("loader = ") {
-                        // 解析 loader 字段
                         if let Some(generator) = &mut current_generator {
                             let loader_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
                             match generator {
@@ -234,8 +251,45 @@ impl ProjectConfig {
                                 _ => {}
                             }
                         }
+                    } else if line.starts_with("loader_template = ") {
+                        if let Some(generator) = &mut current_generator {
+                            let template_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                            match generator {
+                                Generator::TypeScript(typescript) => {
+                                    typescript.loader_template = template_str.to_string();
+                                }
+                                _ => {}
+                            }
+                        }
+                    } else if line.starts_with("storage_debug_type = ") {
+                        if let Some(generator) = &mut current_generator {
+                            let debug_type_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                            match generator {
+                                Generator::Cocos(cocos) => {
+                                    match debug_type_str.to_ascii_lowercase().as_str() {
+                                        "json" => {
+                                            cocos.storage_debug = Some(CocosStorage::Json(CocosJsonConfig {
+                                                enable: true,
+                                                output: String::new(),
+                                            }));
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                    } else if line.starts_with("storage_type = ") {
+                        if let Some(generator) = &mut current_generator {
+                            let storage_type_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                            match generator {
+                                Generator::TypeScript(typescript) => {
+                                    typescript.storage_type = storage_type_str.to_string();
+                                }
+                                _ => {}
+                            }
+                        }
                     } else if line.starts_with("storage = ") {
-                        // 解析 storage 字段
                         if let Some(generator) = &mut current_generator {
                             let storage_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
                             match generator {
@@ -244,27 +298,26 @@ impl ProjectConfig {
                                         json_config.output = storage_str.to_string();
                                     }
                                 }
+                                Generator::TypeScript(typescript) => {
+                                    typescript.storage = storage_str.to_string();
+                                }
                                 _ => {}
                             }
                         }
                     }
                 }
-                
-                // 更新 project 和 include 字段
+
                 config.project = project;
                 config.include = include;
-                
-                // 添加最后一个生成器
+
                 if let Some(generator) = current_generator {
                     generators.push(generator);
                 }
-                
-                // 更新配置
+
                 if !generators.is_empty() {
                     config.generators = generators;
                 }
-                
-                println!("Generators count: {}", config.generators.len());
+
                 return config;
             }
         } else {
@@ -283,9 +336,7 @@ impl ProjectConfig {
                 // 如果文件不存在，创建一个默认的配置文件
                 let basic: Self = from_str(PROJECT_CONFIG).unwrap();
                 if let Ok(config_str) = to_string(&basic) {
-                    if std::fs::write(&xcell_config_path, config_str).is_ok() {
-                        println!("Created xcell.config.toml with default configuration");
-                    }
+                    if std::fs::write(&xcell_config_path, config_str).is_ok() {}
                 }
             }
         }

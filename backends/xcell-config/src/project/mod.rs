@@ -9,7 +9,7 @@ use xcell_core::TypeMetaInfo;
 
 use super::*;
 use crate::{
-    cocos::CocosCodegen,
+    cocos::{CocosCodegen, CocosStorage},
     codegen::{json::JsonCodegen, sql::SqlCodegen, typescript::TypeScriptCodegen, xlua::XluaCodegen},
     merge_rules::MergeRules,
     table::TableLineMode,
@@ -105,7 +105,7 @@ pub struct ProjectConfig {
     #[serde(default)]
     pub merge: MergeRules,
     /// 生成器列表（新格式）
-    #[serde(default)]
+    #[serde(default = "default_generators")]
     pub generators: Vec<Generator>,
     /// 导出条件
     #[serde(default)]
@@ -122,6 +122,11 @@ fn default_include() -> String {
 
 fn default_exclude() -> String {
     "".to_string()
+}
+
+fn default_generators() -> Vec<Generator> {
+    // 返回一个默认的生成器列表，包含一个 Cocos 生成器
+    vec![Generator::Cocos(CocosCodegen::default())]
 }
 
 impl ProjectConfig {
@@ -141,18 +146,104 @@ impl ProjectConfig {
             if let Ok(content) = std::fs::read_to_string(&xcell_config_path) {
                 println!("Reading configuration from xcell.config.toml");
                 println!("Configuration content: {}", content);
-                match from_str::<Self>(&content) {
-                    Ok(config) => {
-                        let config = Self { root: root.to_path_buf(), ..config };
-                        println!("Generators count: {}", config.generators.len());
-                        return config;
-                    }
-                    Err(e) => {
-                        println!("Error parsing xcell.config.toml: {}", e);
-                        // 直接返回错误，而不是使用默认配置
-                        panic!("Failed to parse xcell.config.toml: {}", e);
+                // 手动解析配置文件
+                let mut config = Self { root: root.to_path_buf(), ..from_str(PROJECT_CONFIG).unwrap() };
+                
+                // 解析 generators 部分
+                let lines: Vec<&str> = content.lines().collect();
+                let mut generators = Vec::new();
+                let mut current_generator = None;
+                
+                for line in lines {
+                    let line = line.trim();
+                    if line.starts_with("[[generators]]") {
+                        // 开始一个新的生成器
+                        if let Some(generator) = current_generator {
+                            generators.push(generator);
+                        }
+                        current_generator = Some(Generator::Cocos(CocosCodegen::default()));
+                    } else if line.starts_with("type = ") {
+                        // 解析生成器类型
+                        if let Some(generator) = &mut current_generator {
+                            let type_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                            match type_str.to_ascii_lowercase().as_str() {
+                                "cocos" => {
+                                    *generator = Generator::Cocos(CocosCodegen::default());
+                                }
+                                "typescript" => {
+                                    *generator = Generator::TypeScript(TypeScriptCodegen::default());
+                                }
+                                _ => {}
+                            }
+                        }
+                    } else if line.starts_with("enable = ") {
+                        // 解析 enable 字段
+                        if let Some(generator) = &mut current_generator {
+                            let enable_str = line.split('=').nth(1).unwrap().trim();
+                            let enable = enable_str == "true";
+                            match generator {
+                                Generator::Cocos(cocos) => {
+                                    cocos.enable = enable;
+                                }
+                                Generator::TypeScript(typescript) => {
+                                    typescript.enable = enable;
+                                }
+                                _ => {}
+                            }
+                        }
+                    } else if line.starts_with("project = ") {
+                        // 解析 project 字段
+                        if let Some(generator) = &mut current_generator {
+                            let project_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                            match generator {
+                                Generator::Cocos(cocos) => {
+                                    cocos.project = project_str.to_string();
+                                }
+                                _ => {}
+                            }
+                        }
+                    } else if line.starts_with("loader = ") {
+                        // 解析 loader 字段
+                        if let Some(generator) = &mut current_generator {
+                            let loader_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                            match generator {
+                                Generator::Cocos(cocos) => {
+                                    cocos.output = loader_str.to_string();
+                                }
+                                Generator::TypeScript(typescript) => {
+                                    typescript.output = loader_str.to_string();
+                                }
+                                _ => {}
+                            }
+                        }
+                    } else if line.starts_with("storage = ") {
+                        // 解析 storage 字段
+                        if let Some(generator) = &mut current_generator {
+                            let storage_str = line.split('=').nth(1).unwrap().trim().trim_matches('"');
+                            match generator {
+                                Generator::Cocos(cocos) => {
+                                    if let CocosStorage::Json(json_config) = &mut cocos.storage {
+                                        json_config.output = storage_str.to_string();
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
                     }
                 }
+                
+                // 添加最后一个生成器
+                if let Some(generator) = current_generator {
+                    generators.push(generator);
+                }
+                
+                // 更新配置
+                if !generators.is_empty() {
+                    config.generators = generators;
+                }
+                
+                println!("Generators count: {}", config.generators.len());
+                return config;
             }
         } else {
             // 尝试从项目根目录读取 ProjectSettings.toml 文件

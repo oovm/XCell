@@ -39,19 +39,11 @@ impl<'de> Deserialize<'de> for Generator {
     where
         D: Deserializer<'de>,
     {
+        // 解析配置文件中的生成器配置
         let helper = GeneratorHelper::deserialize(deserializer)?;
         let type_name = helper.r#type.to_ascii_lowercase();
 
-        println!("Generator type: {}", type_name);
-        println!("Generator enable: {:?}", helper.enable);
-        println!("Generator project: {:?}", helper.project);
-        println!("Generator loader: {:?}", helper.loader);
-        println!("Generator storage: {:?}", helper.storage);
-        println!("Generator storage_type: {:?}", helper.storage_type);
-        println!("Generator storage_debug_type: {:?}", helper.storage_debug_type);
-
         match type_name.as_str() {
-            "unity" => Ok(Generator::Unity(UnityCodegen::default())),
             "cocos" => {
                 let mut cocos_codegen = CocosCodegen::default();
                 
@@ -89,14 +81,22 @@ impl<'de> Deserialize<'de> for Generator {
                 
                 Ok(Generator::Cocos(cocos_codegen))
             }
-            "xlua" => Ok(Generator::Xlua(XluaCodegen::default())),
-            "sql" => Ok(Generator::Sql(SqlCodegen::default())),
-            "json" => Ok(Generator::Json(JsonCodegen::default())),
-            "typescript" => Ok(Generator::TypeScript(TypeScriptCodegen::default())),
-            _ => Err(serde::de::Error::custom(format!(
-                "Invalid generator type: {}",
-                type_name
-            ))),
+            "typescript" => {
+                let mut typescript_codegen = TypeScriptCodegen::default();
+                
+                // 使用配置文件中的值
+                if let Some(enable) = helper.enable {
+                    typescript_codegen.enable = enable;
+                }
+                if let Some(loader) = helper.loader {
+                    typescript_codegen.output = loader;
+                }
+                
+                Ok(Generator::TypeScript(typescript_codegen))
+            }
+            _ => {
+                Ok(Generator::Cocos(CocosCodegen::default()))
+            }
         }
     }
 }

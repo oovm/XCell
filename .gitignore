@@ -6,8 +6,9 @@ xcell.exe
 
 # IDE
 .vscode/
-.vs/
 .idea/
+.trae/
+.vs/
 *.iml
 *.xlsx
 

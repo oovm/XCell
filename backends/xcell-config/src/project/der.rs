@@ -24,22 +24,14 @@ struct CocosLoaderHelper {
 
 #[derive(Deserialize)]
 struct GeneratorHelper {
-    #[serde(rename = "type")]
-    r#type: String,
     enable: Option<bool>,
     project: Option<String>,
-    output: Option<String>,
-    namespace: Option<String>,
-    manager: Option<String>,
-    suffix_table: Option<String>,
-    suffix_element: Option<String>,
-    support_clone: Option<bool>,
-    legacy_using: Option<bool>,
-    legacy_null_null: Option<bool>,
-    xlua: Option<UnityXluaConfig>,
-    storage: Option<UnityStorage>,
-    development: Option<UnityStorage>,
-    cocos: Option<CocosHelper>,
+    loader: Option<String>,
+    storage: Option<String>,
+    storage_type: Option<String>,
+    storage_debug_type: Option<String>,
+    #[serde(rename = "type")]
+    r#type: String,
 }
 
 impl<'de> Deserialize<'de> for Generator {
@@ -53,45 +45,45 @@ impl<'de> Deserialize<'de> for Generator {
         println!("Generator type: {}", type_name);
         println!("Generator enable: {:?}", helper.enable);
         println!("Generator project: {:?}", helper.project);
-        println!("Generator output: {:?}", helper.output);
-        println!("Generator cocos: {:?}", helper.cocos);
+        println!("Generator loader: {:?}", helper.loader);
+        println!("Generator storage: {:?}", helper.storage);
+        println!("Generator storage_type: {:?}", helper.storage_type);
+        println!("Generator storage_debug_type: {:?}", helper.storage_debug_type);
 
         match type_name.as_str() {
-            "unity" => Ok(Generator::Unity(UnityCodegen {
-                enable: helper.enable.unwrap_or(true),
-                project: helper.project.unwrap_or(".".to_string()),
-                output: helper.output
-                    .unwrap_or("Assets/Scripts/DataTable/Generated".to_string()),
-                namespace: helper.namespace.unwrap_or("DataTable".to_string()),
-                manager: helper.manager.unwrap_or("DataTableManager".to_string()),
-                suffix_table: helper.suffix_table.unwrap_or("Table".to_string()),
-                suffix_element: helper.suffix_element.unwrap_or_default(),
-                support_clone: helper.support_clone.unwrap_or(false),
-                legacy_using: helper.legacy_using.unwrap_or(false),
-                legacy_null_null: helper.legacy_null_null.unwrap_or(false),
-                xlua: helper.xlua.unwrap_or_default(),
-                storage: helper.storage.unwrap_or_default(),
-                storage_debug: helper.development,
-            })),
+            "unity" => Ok(Generator::Unity(UnityCodegen::default())),
             "cocos" => {
                 let mut cocos_codegen = CocosCodegen::default();
                 
-                // 使用默认配置
-                cocos_codegen.enable = helper.enable.unwrap_or(true);
-                cocos_codegen.project = helper.project.unwrap_or("..".to_string());
-                cocos_codegen.output = helper.output
-                    .unwrap_or("assets/scripts/dataTable/generated".to_string());
+                // 使用配置文件中的值
+                if let Some(enable) = helper.enable {
+                    cocos_codegen.enable = enable;
+                }
+                if let Some(project) = helper.project {
+                    cocos_codegen.project = project;
+                }
+                if let Some(loader) = helper.loader {
+                    cocos_codegen.output = loader;
+                }
                 
-                // 处理 Cocos 特定配置
-                if let Some(cocos_helper) = &helper.cocos {
-                    // 处理存储配置
-                    if let Some(storage) = &cocos_helper.storage {
-                        cocos_codegen.storage = storage.clone();
-                    }
-                    
-                    // 处理开发时存储配置
-                    if let Some(development) = &cocos_helper.development {
-                        cocos_codegen.storage_debug = Some(development.clone());
+                // 处理存储配置
+                let storage_path = helper.storage.unwrap_or("assets/table/data".to_string());
+                let storage_type = helper.storage_type.unwrap_or("json".to_string());
+                
+                if storage_type == "json" {
+                    cocos_codegen.storage = CocosStorage::Json(CocosJsonConfig {
+                        enable: true,
+                        output: storage_path.clone(),
+                    });
+                }
+                
+                // 处理调试存储配置
+                if let Some(storage_debug_type) = helper.storage_debug_type {
+                    if storage_debug_type == "json" {
+                        cocos_codegen.storage_debug = Some(CocosStorage::Json(CocosJsonConfig {
+                            enable: true,
+                            output: storage_path,
+                        }));
                     }
                 }
                 

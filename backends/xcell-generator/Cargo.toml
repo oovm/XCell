@@ -29,3 +29,5 @@ calamine = { workspace = true }
 nargo-template = { workspace = true }
 nargo-types = { workspace = true }
 tempfile = { workspace = true }
+serde_json = { workspace = true }
+once_cell = { workspace = true }

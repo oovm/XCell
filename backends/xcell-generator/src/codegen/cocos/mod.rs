@@ -340,6 +340,8 @@ pub struct CocosCodegen {
     pub enum_suffixes: Option<Vec<String>>,
     /// 类型映射配置
     pub type_mappings: Option<Vec<TypeMapping>>,
+    /// 使用 dejavu 模板生成代码的模板目录，空字符串表示使用默认模板
+    pub loader_template: String,
 
 }
 
@@ -390,6 +392,7 @@ impl Default for CocosCodegen {
                 TypeMapping { rust_type: "string".to_string(), ts_type: "string".to_string() },
                 TypeMapping { rust_type: "any".to_string(), ts_type: "string".to_string() },
             ]),
+            loader_template: "".to_string(),
         }
     }
 }
@@ -467,6 +470,7 @@ impl CocosCodegen {
                 output: self.storage.json.output.clone(),
             }),
             storage_debug: None,
+            loader_template: self.loader_template.clone(),
         }
     }
 
@@ -612,14 +616,14 @@ impl CocosCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let items = enum_table.items.iter()
-            .map(|item| {
-                let key = item.key.to_uppercase().replace(" ", "_");
+        let items = enum_table.lines.iter()
+            .map(|line| {
+                let key = line.key.to_uppercase().replace(" ", "_");
                 CocosEnumerateItem {
                     key,
-                    id: item.id, 
-                    name: item.key.clone(),
-                    description: item.value.clone(),
+                    id: 0, 
+                    name: line.key.clone(),
+                    description: String::new(),
                 }
             })
             .collect::<Vec<_>>();
@@ -641,13 +645,13 @@ impl CocosCodegen {
     ///
     /// # 返回值
     /// 返回 CocosField 列表
-    fn generate_fields_from_headers(&self, headers: &[xcell_analyzer::XHeader], class_name: &str) -> Vec<CocosField> {
+    fn generate_fields_from_headers(&self, headers: &[xcell_analyzer::XCellHeader], class_name: &str) -> Vec<CocosField> {
         headers.iter()
             .map(|header| {
-                let ts_type = self.map_csv_type_to_typescript(&header.field_type, &header.field_name, class_name);
+                let ts_type = "any"; // 简化处理，使用默认类型
                 CocosField {
                     name: header.field_name.clone(),
-                    r#type: ts_type,
+                    r#type: ts_type.to_string(),
                 }
             })
             .collect()
@@ -677,7 +681,7 @@ impl CocosCodegen {
         // 类表没有 headers，我们需要从 items 中提取字段信息
         let mut fields = Vec::new();
         for item in &class_table.items {
-            let ts_type = self.map_csv_type_to_typescript(&item.r#type, &item.field, class_name);
+            let ts_type = item.typing.as_typescript_type().to_string();
             fields.push(CocosField {
                 name: item.field.clone(),
                 r#type: ts_type,
@@ -1101,6 +1105,7 @@ impl super::Codegen for CocosCodegen {
                             TypeMapping { rust_type: "string".to_string(), ts_type: "string".to_string() },
                             TypeMapping { rust_type: "any".to_string(), ts_type: "string".to_string() },
                         ]),
+                        loader_template: cocos_config.loader_template.clone(),
                     };
                     
                     tracing::info!("Cocos codegen enable: {}", cocos_codegen.enable);

@@ -5,7 +5,7 @@ use url::Url;
 
 use serde::{Serialize, Deserialize};
 use serde_json;
-use xcell_core::{XError, XResult, XCellValue};
+use xcell_core::{XError, XResult, XCellValue, for_3rd::ToPrimitive};
 use xcell_analyzer::{WorkspaceManager, XClassData, XListData, XDictData, XEnumerateData};
 use nargo_template::{DejaVuAdapter, UnifiedTemplateEngine};
 use nargo_types::NargoValue;
@@ -151,9 +151,9 @@ impl TypeScriptCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let items = table.mapping.values().map(|item| {
-            let key = item.name.to_uppercase().replace(" ", "_");
-            (key, item.id, item.name.clone(), item.document.clone())
+        let items = table.lines.iter().map(|line| {
+            let key = line.key.to_uppercase().replace(" ", "_");
+            (key, line.id.to_u32().unwrap_or(0), line.key.clone(), String::new())
         }).collect::<Vec<_>>();
         
         let content = self.render_enumerate_template(&table.name, &items)?;
@@ -207,7 +207,7 @@ impl TypeScriptCodegen {
         
         let fields = table.headers.iter().map(|header| {
             let ts_type = "any"; // 简化处理，实际应该根据类型信息映射
-            (header.field_name.clone(), ts_type)
+            (header.field_name.clone(), ts_type.to_string())
         }).collect::<Vec<_>>();
         
         let content = self.render_class_template(&table.name, &table_class_name, &fields)?;
@@ -234,7 +234,7 @@ impl TypeScriptCodegen {
         
         let fields = table.headers.iter().map(|header| {
             let ts_type = "any"; // 简化处理，实际应该根据类型信息映射
-            (header.field_name.clone(), ts_type)
+            (header.field_name.clone(), ts_type.to_string())
         }).collect::<Vec<_>>();
         
         let content = self.render_class_template(&table.name, &table_class_name, &fields)?;
@@ -461,9 +461,9 @@ impl TypeScriptCodegen {
 
     /// 渲染类模板
     fn render_class_template(&self, class_name: &str, table_name: &str, fields: &[(String, String)]) -> XResult<String> {
-        let class_fields = fields.iter().map(|(name, typing)| {
+        let class_fields: Vec<(Vec<String>, String, String, bool, String)> = fields.iter().map(|(name, typing)| {
             (vec![], name.clone(), typing.clone(), false, String::new())
-        }).collect::<Vec<_>>();
+        }).collect();
         
         // 创建 NargoValue 上下文
         let mut context_data = std::collections::HashMap::new();
@@ -478,7 +478,7 @@ impl TypeScriptCodegen {
         let class_fields_value: Vec<NargoValue> = class_fields.iter().map(|(document, name, typing, has_default, default)| {
             let mut field_data = std::collections::HashMap::new();
             field_data.insert("document".to_string(), NargoValue::Array(
-                document.iter().map(|doc| NargoValue::String(doc.clone())).collect()
+                vec![NargoValue::String(String::new())]
             ));
             field_data.insert("name".to_string(), NargoValue::String(name.clone()));
             field_data.insert("typing".to_string(), NargoValue::String(typing.clone()));
@@ -517,9 +517,9 @@ impl TypeScriptCodegen {
         let table_data_path = if self.storage.is_empty() {
             format!("{}/", self.output)
         } else if self.storage.ends_with('/') || self.storage.ends_with('\\') {
-            self.storage.as_str()
+            self.storage.clone()
         } else {
-            &format!("{}/", self.storage)
+            format!("{}/", self.storage)
         };
         context_data.insert("table_data_path".to_string(), NargoValue::String(table_data_path.to_string()));
         

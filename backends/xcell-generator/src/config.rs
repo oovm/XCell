@@ -176,6 +176,19 @@ impl GeneratorConfig {
                         });
                     }
                 }
+                xcell_config::project::Generator::Json(json) => {
+                    if json.enable {
+                        let mut options = std::collections::HashMap::new();
+                        options.insert("output".to_string(), json.output.clone());
+                        
+                        products.push(ProductConfig {
+                            product_type: ProductType::Json,
+                            output_dir: json.output.clone(),
+                            options,
+                            enabled: true,
+                        });
+                    }
+                }
                 _ => {
                     // 处理其他类型的生成器
                 }

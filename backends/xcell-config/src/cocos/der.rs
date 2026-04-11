@@ -4,6 +4,7 @@ use serde::{Deserialize, Deserializer};
 
 #[derive(Deserialize)]
 struct CocosStorageHelper {
+    #[serde(rename = "type")]
     r#type: String,
     enable: Option<bool>,
     output: Option<String>,

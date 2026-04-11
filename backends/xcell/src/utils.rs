@@ -22,8 +22,8 @@ pub fn pause() {
     }
 }
 
-/// 初始化日志系统，根据参数设置日志级别
-pub fn logger(verbose: bool, quiet: bool) {
+/// 初始化日志系统，根据参数设置日志级别和输出文件
+pub fn logger(verbose: bool, quiet: bool, log_file: &str) {
     let level = if verbose {
         "trace"
     } else if quiet {
@@ -32,10 +32,23 @@ pub fn logger(verbose: bool, quiet: bool) {
         "info"
     };
     let filter = EnvFilter::try_new(level).unwrap_or_else(|_| EnvFilter::from_default_env());
-    let _ = tracing_subscriber::fmt()
-        .event_format(XCellFormat {})
-        .with_env_filter(filter)
-        .try_init();
+    
+    if !log_file.is_empty() {
+        // 输出到文件
+        let file_appender = tracing_appender::rolling::never(".", log_file);
+        let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+        let _ = tracing_subscriber::fmt()
+            .event_format(XCellFormat {})
+            .with_env_filter(filter)
+            .with_writer(non_blocking)
+            .try_init();
+    } else {
+        // 输出到控制台
+        let _ = tracing_subscriber::fmt()
+            .event_format(XCellFormat {})
+            .with_env_filter(filter)
+            .try_init();
+    }
 }
 
 struct XCellFormat {}

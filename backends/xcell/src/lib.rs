@@ -38,6 +38,9 @@ pub struct XCellArgs {
     /// 通过 glob 模式过滤需要处理的表格文件
     #[arg(long, default_value_t = String::new())]
     pub filter: String,
+    /// 生成日志文件，默认为 xcell.log
+    #[arg(long, default_value_t = String::new())]
+    pub log: String,
     /// TOML 配置文件子命令
     #[command(subcommand)]
     pub command: Option<SubArgs>,

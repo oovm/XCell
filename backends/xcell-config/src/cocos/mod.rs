@@ -33,7 +33,7 @@ impl CocosStorage {
 /// Cocos 代码生成配置
 ///
 /// 用于配置 Cocos 平台的代码生成
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct CocosCodegen {
     /// 是否要生成 cocos 代码
     pub enable: bool,
@@ -53,6 +53,22 @@ pub struct CocosCodegen {
     pub storage: CocosStorage,
     /// 开发时用的储存格式
     pub storage_debug: Option<CocosStorage>,
+}
+
+impl Default for CocosCodegen {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            project: "..".to_string(),
+            output: "assets/scripts/dataTable/generated".to_string(),
+            manager_name: "DataTableManager".to_string(),
+            suffix_table: "Table".to_string(),
+            instance_name: "DataTable".to_string(),
+            table_data_path: "tables".to_string(),
+            storage: CocosStorage::default(),
+            storage_debug: None,
+        }
+    }
 }
 
 /// Cocos JSON 配置

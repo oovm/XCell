@@ -87,10 +87,13 @@ pub struct ProjectConfig {
     #[serde(skip)]
     pub root: PathBuf,
     /// 当前版本号
+    #[serde(default = "default_version")]
     pub version: String,
     /// 包含的 excel 路径, 优先级最高
+    #[serde(default = "default_include")]
     pub include: String,
     /// 排除的 excel 模式, 优先级低于 include
+    #[serde(default = "default_exclude")]
     pub exclude: String,
     /// 行列排序模式
     #[serde(default)]
@@ -109,6 +112,18 @@ pub struct ProjectConfig {
     pub export_conditions: Vec<ExportCondition>,
 }
 
+fn default_version() -> String {
+    "0.0.0".to_string()
+}
+
+fn default_include() -> String {
+    "*.csv".to_string()
+}
+
+fn default_exclude() -> String {
+    "".to_string()
+}
+
 impl ProjectConfig {
     /// 创建一个新的项目配置实例。
     ///
@@ -118,23 +133,46 @@ impl ProjectConfig {
     /// # Returns
     /// - 项目配置实例
     pub fn new(root: &Path) -> Self {
-        // 尝试从项目根目录读取 ProjectSettings.toml 文件
-        let settings_path = root.join("ProjectSettings.toml");
+        // 尝试从项目根目录读取 xcell.config.toml 文件
+        let xcell_config_path = root.join("xcell.config.toml");
         
-        if settings_path.exists() {
+        if xcell_config_path.exists() {
             // 如果文件存在，从文件中加载配置
-            if let Ok(content) = std::fs::read_to_string(&settings_path) {
-                if let Ok(config) = from_str::<Self>(&content) {
-                    let config = Self { root: root.to_path_buf(), ..config };
-                    return config;
+            if let Ok(content) = std::fs::read_to_string(&xcell_config_path) {
+                println!("Reading configuration from xcell.config.toml");
+                println!("Configuration content: {}", content);
+                match from_str::<Self>(&content) {
+                    Ok(config) => {
+                        let config = Self { root: root.to_path_buf(), ..config };
+                        println!("Generators count: {}", config.generators.len());
+                        return config;
+                    }
+                    Err(e) => {
+                        println!("Error parsing xcell.config.toml: {}", e);
+                        // 直接返回错误，而不是使用默认配置
+                        panic!("Failed to parse xcell.config.toml: {}", e);
+                    }
                 }
             }
         } else {
-            // 如果文件不存在，创建一个默认的配置文件
-            let basic: Self = from_str(PROJECT_CONFIG).unwrap();
-            if let Ok(config_str) = to_string(&basic) {
-                if std::fs::write(&settings_path, config_str).is_ok() {
-                    println!("Created ProjectSettings.toml with default configuration");
+            // 尝试从项目根目录读取 ProjectSettings.toml 文件
+            let settings_path = root.join("ProjectSettings.toml");
+            
+            if settings_path.exists() {
+                // 如果文件存在，从文件中加载配置
+                if let Ok(content) = std::fs::read_to_string(&settings_path) {
+                    if let Ok(config) = from_str::<Self>(&content) {
+                        let config = Self { root: root.to_path_buf(), ..config };
+                        return config;
+                    }
+                }
+            } else {
+                // 如果文件不存在，创建一个默认的配置文件
+                let basic: Self = from_str(PROJECT_CONFIG).unwrap();
+                if let Ok(config_str) = to_string(&basic) {
+                    if std::fs::write(&xcell_config_path, config_str).is_ok() {
+                        println!("Created xcell.config.toml with default configuration");
+                    }
                 }
             }
         }

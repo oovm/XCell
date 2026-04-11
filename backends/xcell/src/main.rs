@@ -8,12 +8,21 @@ use oak_toml::language::{TomlValue, TomlTable, TomlArray, from_str, to_string};
 #[tokio::main]
 async fn main() -> XResult<()> {
     let args = XCellArgs::parse();
-    logger(args.verbose, args.quiet);
+    logger(args.verbose, args.quiet, &args.log);
     let filter = if args.filter.is_empty() { None } else { Some(args.filter.as_str()) };
     let result = match args.command {
         Some(SubArgs::Check) => {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
             ws.first_walk(filter)?;
+            // 检查枚举链接错误
+            let errors = ws.link_enumerate();
+            if !errors.is_empty() {
+                for error in &errors {
+                    tracing::error!("{}", error);
+                }
+                return Err(XError::runtime_error("ID 检查发现错误"));
+            }
+            tracing::info!("ID 检查完成，未发现错误");
             Ok(())
         }
         Some(SubArgs::Clear) => {

@@ -1,4 +1,5 @@
 use super::*;
+use crate::template::{TemplateLoader, TemplateType};
 
 #[derive(Template)]
 #[template(path = "BuildEnumerate.ts", ext = "txt", escape = "none")]
@@ -49,30 +50,38 @@ impl TypeScriptCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_enumerate(&self, ws: &WorkspaceManager, table: &XEnumerateData) -> XResult<()> {
-        let out = match self.make_enumerate(table).render() {
-            Ok(o) => o,
-            Err(e) => Err(XError::runtime_error(format!("生成TypeScript枚举失败: {}", e)))?,
-        };
+        use nargo_types::NargoValue;
+        
         let mut file = self.log_typescript(ws, &table.name)?;
+        
+        // 创建 NargoValue 上下文
+        let mut context_data = std::collections::HashMap::new();
+        context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
+        context_data.insert("class_name".to_string(), NargoValue::String(table.name.clone()));
+        
+        // 处理 enumerate_ids
+        let enumerate_ids = table.lines.iter().map(|data| data.as_enumerate()).collect::<Vec<EnumeratePair>>();
+        let enumerate_ids_value: Vec<NargoValue> = enumerate_ids.iter().map(|pair| {
+            let mut pair_data = std::collections::HashMap::new();
+            pair_data.insert("key".to_string(), NargoValue::String(pair.key.clone()));
+            pair_data.insert("value".to_string(), NargoValue::String(pair.value.clone()));
+            pair_data.insert("document".to_string(), NargoValue::Array(
+                pair.document.iter().map(|doc| NargoValue::String(doc.clone())).collect()
+            ));
+            NargoValue::Object(pair_data)
+        }).collect();
+        context_data.insert("enumerate_ids".to_string(), NargoValue::Array(enumerate_ids_value));
+        
+        let context = NargoValue::Object(context_data);
+        
+        // 创建模板加载器
+        let template_dir = self.template_dir.as_deref().map(Path::new);
+        let loader = TemplateLoader::new(template_dir)?;
+        
+        // 使用模板加载器渲染模板
+        let out = loader.render_template(TemplateType::Enumerate.file_name(), &context)?;
         file.write_all(out.as_bytes())?;
         Ok(())
-    }
-
-    /// Creates TypeScript enumerate template data
-    ///
-    /// # Arguments
-    /// * `table` - Enumerate data table
-    ///
-    /// # Returns
-    /// TypeScript enumerate template data
-    fn make_enumerate(&self, table: &XEnumerateData) -> TypeScriptEnumerate {
-        TypeScriptEnumerate {
-            compiler_version: env!("CARGO_PKG_VERSION"),
-            config: self.clone(),
-            class_name: table.name.clone(),
-            enumerate_ids: table.lines.iter().map(|data| data.as_enumerate()).collect(),
-            enumerate_fields: table.headers.iter().enumerate().map(|(id, data)| data.as_enumerate(&table.lines, id)).collect(),
-        }
     }
 }
 

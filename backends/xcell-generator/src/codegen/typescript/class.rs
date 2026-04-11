@@ -1,5 +1,6 @@
 use super::*;
 use xcell_types::codegen::TypeScriptWriter;
+use crate::template::{TemplateLoader, TemplateType};
 
 #[derive(Template)]
 #[template(path = "BuildClass.ts", ext = "txt", escape = "none")]
@@ -46,30 +47,44 @@ impl TypeScriptCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_class(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
+        use nargo_types::NargoValue;
+        
         let table_name = format!("{}{}", table.name, self.suffix_table);
         let mut file = self.log_typescript(ws, &table_name)?;
-        let out = self.make_class(table, table_name).render()?;
+        
+        // 创建 NargoValue 上下文
+        let mut context_data = std::collections::HashMap::new();
+        context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
+        context_data.insert("class_name".to_string(), NargoValue::String(table.name.clone()));
+        context_data.insert("table_name".to_string(), NargoValue::String(table_name.clone()));
+        context_data.insert("key_name".to_string(), NargoValue::String("key".to_string()));
+        
+        // 处理 class_fields
+        let class_fields: Vec<ClassField> = table.items.iter().map(|s| s.as_dict()).collect();
+        let class_fields_value: Vec<NargoValue> = class_fields.iter().map(|field| {
+            let mut field_data = std::collections::HashMap::new();
+            field_data.insert("document".to_string(), NargoValue::Array(
+                field.document.iter().map(|doc| NargoValue::String(doc.clone())).collect()
+            ));
+            field_data.insert("name".to_string(), NargoValue::String(field.name.clone()));
+            field_data.insert("typing".to_string(), NargoValue::String(field.typing.clone()));
+            field_data.insert("getter".to_string(), NargoValue::String(field.getter.clone()));
+            field_data.insert("has_default".to_string(), NargoValue::Bool(field.has_default));
+            field_data.insert("default".to_string(), NargoValue::String(field.default.clone()));
+            NargoValue::Object(field_data)
+        }).collect();
+        context_data.insert("class_fields".to_string(), NargoValue::Array(class_fields_value));
+        
+        let context = NargoValue::Object(context_data);
+        
+        // 创建模板加载器
+        let template_dir = self.template_dir.as_deref().map(Path::new);
+        let loader = TemplateLoader::new(template_dir)?;
+        
+        // 使用模板加载器渲染模板
+        let out = loader.render_template(TemplateType::Class.file_name(), &context)?;
         file.write_all(out.as_bytes())?;
         Ok(())
-    }
-
-    /// Creates TypeScript class template data
-    ///
-    /// # Arguments
-    /// * `table` - Class data table
-    /// * `table_name` - Table name
-    ///
-    /// # Returns
-    /// TypeScript class template data
-    fn make_class(&self, table: &XClassData, table_name: String) -> TypeScriptClass {
-        TypeScriptClass {
-            compiler_version: env!("CARGO_PKG_VERSION"),
-            config: self.clone(),
-            table_name,
-            class_name: table.name.clone(),
-            key_name: "key".to_string(),
-            class_fields: table.items.iter().map(|s| s.as_dict()).collect(),
-        }
     }
 }
 

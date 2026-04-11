@@ -22,6 +22,8 @@ pub struct TypeScriptCodegen {
     pub instance_name: String,
     /// Data format (json, csv)
     pub format: String,
+    /// Template directory path
+    pub template_dir: Option<String>,
 }
 
 impl Default for TypeScriptCodegen {
@@ -33,6 +35,7 @@ impl Default for TypeScriptCodegen {
             suffix_table: "Table".to_string(),
             instance_name: "xcell".to_string(),
             format: "json".to_string(),
+            template_dir: None,
         }
     }
 }
@@ -109,7 +112,9 @@ impl TypeScriptCodegen {
 impl super::Codegen for TypeScriptCodegen {
     fn generate(&self, context: &super::CodegenContext) -> XResult<()> {
         if let Some(workspace) = &context.workspace {
-            self.write_typescript(workspace)?;
+            let mut ts_codegen = self.clone();
+            ts_codegen.template_dir = context.options.get("loader_template").cloned();
+            ts_codegen.write_typescript(workspace)?;
         }
         Ok(())
     }

@@ -23,6 +23,9 @@ use codegen::CodegenContext;
 pub mod config;
 use config::GeneratorConfig;
 
+/// 模板模块
+pub mod template;
+
 // 从 xcell-analyzer 重新导出的类型
 // pub use xcell_analyzer::{WorkspaceManager, XClassData, XDictData, XEnumerateData, XListData};
 

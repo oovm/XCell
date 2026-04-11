@@ -1,6 +1,7 @@
 use super::*;
 use crate::x_table::header::XCellAccess;
 use xcell_types::codegen::TypeScriptWriter;
+use crate::template::{TemplateLoader, TemplateType};
 
 #[derive(Template)]
 #[template(path = "BuildDictionary.ts", ext = "txt", escape = "none")]

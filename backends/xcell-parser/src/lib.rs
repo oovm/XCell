@@ -5,6 +5,9 @@
 mod error;
 mod ast;
 mod parser;
+mod utils;
+
+pub use utils::norm_string;
 
 pub use error::{ParseError, ParseErrorKind, ParseResult};
 pub use ast::{

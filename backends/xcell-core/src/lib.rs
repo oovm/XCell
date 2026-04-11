@@ -95,7 +95,7 @@ pub use self::{
     reference::ReferenceDescription,
     string::StringDescription,
     typing::*,
-    value::{XCellValue, color::ColorDescription, time::TimeDescription},
+    value::{XCellValue, color::ColorDescription, document::XDocument, time::TimeDescription},
     vector::VectorDescription,
 };
 pub use itertools::Itertools;

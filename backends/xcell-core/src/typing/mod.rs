@@ -33,6 +33,18 @@ mod display;
 mod parser;
 mod ser;
 
+/// 表格访问权限枚举
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub enum XCellAccess {
+    /// 默认访问权限
+    #[default]
+    Default,
+    /// 公共访问权限
+    Public,
+    /// 私有访问权限
+    Private,
+}
+
 /// 类型元信息结构体，包含各种类型的描述信息。
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct TypeMetaInfo {

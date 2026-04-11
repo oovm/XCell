@@ -1,3 +1,4 @@
+use crate::utils::comment::XComment;
 use super::*;
 use calamine::DataType;
 
@@ -9,7 +10,7 @@ impl XClassItem {
         if let Ok(o) = item.parse_default(data, cfg) {
             item.default = o
         };
-        item.document = XDocument::read_non_zero(data, cfg.comment_column);
+        item.document = XComment::read_non_zero(data, cfg.comment_column);
         Ok(item)
     }
 

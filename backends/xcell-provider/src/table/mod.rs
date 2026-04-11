@@ -8,7 +8,8 @@ mod file_format;
 mod reader;
 
 pub use file_format::{FileFormat, FileFormatDetector};
-pub use reader::{CsvRows, CsvTable, ExcelTable, TableReader, TsvRows, TsvTable, XCellAccess, XCellHeader, XDocument};
+pub use reader::{CsvRows, CsvTable, ExcelTable, TableReader, TsvRows, TsvTable, XCellHeader};
+pub use xcell_core::{XCellAccess, XDocument};
 
 use xcell_core::{TypeMetaInfo, XError, XErrorKind, XResult};
 
@@ -34,7 +35,7 @@ pub fn load_table(path: &Path) -> XResult<Box<dyn TableReader>> {
 /// - 成功时返回实现了 `TableReader` trait 的实例
 /// - 失败时返回错误
 pub fn load_table_with_config(path: &Path, config: &TypeMetaInfo) -> XResult<Box<dyn TableReader>> {
-    let format = FileFormatDetector::detect(path).map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
+    let format = FileFormatDetector::detect(path)?;
 
     match format {
         FileFormat::Excel => {

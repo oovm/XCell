@@ -3,7 +3,7 @@
 #![feature(type_alias_impl_trait)]
 #![feature(path_file_prefix)]
 
-pub use utils::comment::XDocument;
+pub use xcell_core::XDocument;
 pub use xcell_core::{XError, XErrorKind};
 pub type XResult<T> = Result<T, XError>;
 

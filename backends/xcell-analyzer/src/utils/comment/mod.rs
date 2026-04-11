@@ -1,20 +1,26 @@
 use super::*;
 use calamine::DataType;
 
+/// 代码注释类型，包含摘要和详细说明
 #[derive(Debug, Clone, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct XDocument {
+pub struct XComment {
+    /// 摘要内容
     pub summary: String,
+    /// 详细说明
     pub detail: String,
 }
 
+/// C# 风格注释
 pub struct CsComment {
+    /// 摘要内容
     pub summary: String,
+    /// 详细说明
     pub detail: String,
 }
 
-impl From<&Data> for XDocument {
+impl From<&Data> for XComment {
     fn from(value: &Data) -> Self {
-        let mut out = XDocument::default();
+        let mut out = XComment::default();
         if let Some(s) = value.get_string() {
             out.summary = s.to_string()
         }
@@ -22,16 +28,21 @@ impl From<&Data> for XDocument {
     }
 }
 
-impl XDocument {
+impl XComment {
+    /// 从行数据中读取文档注释
     pub fn read_document(row: &[Data], id: usize) -> Self {
-        row.get(id).map(XDocument::from).unwrap_or_default()
+        row.get(id).map(XComment::from).unwrap_or_default()
     }
+
+    /// 从行数据中读取非零列的文档注释
     pub fn read_non_zero(row: &[Data], id: usize) -> Self {
         if id == 0 {
-            return XDocument::default();
+            return XComment::default();
         }
-        row.get(id).map(XDocument::from).unwrap_or_default()
+        row.get(id).map(XComment::from).unwrap_or_default()
     }
+
+    /// 按行分割注释内容，生成 XML 标签格式
     pub fn lines(&self) -> Vec<String> {
         let mut out = String::new();
         if !self.summary.trim().is_empty() {

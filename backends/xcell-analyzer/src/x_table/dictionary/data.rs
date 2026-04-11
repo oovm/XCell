@@ -1,7 +1,8 @@
 use calamine::{Data, DataType};
 use std::str::FromStr;
 
-use crate::{XCellHeader, XDocument};
+use crate::utils::comment::XComment;
+use crate::XCellHeader;
 use xcell_core::{
     IntegerKind, XCellValue, XError, XResult,
     for_3rd::{BigInt, FromPrimitive},
@@ -32,7 +33,7 @@ pub struct XDataLine {
     /// 该表单数据的键
     pub key: String,
     /// 该表单数据的注释
-    pub comment: XDocument,
+    pub comment: XComment,
     /// 该表单数据的有效值
     pub data: Vec<XCellValue>,
 }

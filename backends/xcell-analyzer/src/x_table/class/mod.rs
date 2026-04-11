@@ -1,3 +1,4 @@
+use crate::utils::comment::XComment;
 use super::*;
 use crate::x_table::table::ArcTableReader;
 use xcell_provider::TableReader;
@@ -24,10 +25,14 @@ pub struct XClassData {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XClassItem {
+    /// 字段名
     pub field: String,
+    /// 字段类型
     pub typing: XCellTyped,
+    /// 默认值
     pub default: XCellValue,
-    pub document: XDocument,
+    /// 文档注释
+    pub document: XComment,
 }
 
 impl XClassTable {

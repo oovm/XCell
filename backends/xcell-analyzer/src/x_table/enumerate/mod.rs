@@ -6,6 +6,7 @@ use xcell_core::{
     for_3rd::{BigInt, Zero},
 };
 
+use crate::utils::comment::XComment;
 use crate::{
     utils::first_not_nil,
     x_table::{
@@ -93,7 +94,7 @@ impl XEnumerateTable {
                 None => unreachable!(),
             };
             let value = self.read_id(&data, &mut available_id);
-            let comment = XDocument::read_document(&data, self.doc_column);
+            let comment = XComment::read_document(&data, self.doc_column);
             let mut line_items = vec![];
             for header in &self.headers {
                 let cell = data.get(header.column).unwrap_or(&Data::Empty);
@@ -128,8 +129,8 @@ impl XEnumerateTable {
         self.table.get_name()
     }
 
-    pub fn enumerate_document(&self) -> XDocument {
-        XDocument::default()
+    pub fn enumerate_document(&self) -> XComment {
+        XComment::default()
     }
     fn read_id(&self, row: &[Data], default_id: &mut BigInt) -> BigInt {
         match self.try_read_id(row) {

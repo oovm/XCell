@@ -40,8 +40,6 @@ pub struct TypeScriptCodegen {
     pub loader_template: String,
     /// 模板目录路径
     pub template_dir: Option<String>,
-    /// 是否跳过 Manager 生成
-    pub skip_manager: bool,
 }
 
 impl Default for TypeScriptCodegen {
@@ -57,7 +55,6 @@ impl Default for TypeScriptCodegen {
             storage_type: "json".to_string(),
             loader_template: "".to_string(),
             template_dir: None,
-            skip_manager: false,
         }
     }
 }
@@ -143,9 +140,6 @@ impl TypeScriptCodegen {
             self.write_dict(ws, dict_table)?;
         }
 
-        if !self.skip_manager {
-            self.write_manager(ws)?;
-        }
         Ok(())
     }
 
@@ -435,7 +429,6 @@ impl super::Codegen for TypeScriptCodegen {
                 storage_type: context.options.get("storage_type").cloned().unwrap_or("json".to_string()),
                 loader_template: loader_template,
                 template_dir: template_dir,
-                skip_manager: context.options.get("skip_manager").and_then(|v| v.parse().ok()).unwrap_or(false),
             };
             ts_codegen.write_typescript(workspace)?;
             ts_codegen.write_json(workspace)?;

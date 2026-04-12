@@ -30,9 +30,6 @@ pub struct TypeScriptCodegen {
     pub instance_name: String,
     /// 使用 dejavu 模板生成代码的模板目录，空字符串表示使用默认模板
     pub loader_template: String,
-    /// 是否跳过 Manager 生成
-    #[serde(default)]
-    pub skip_manager: bool,
 }
 
 impl TypeScriptCodegen {

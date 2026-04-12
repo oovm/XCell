@@ -1,4 +1,5 @@
 use calamine::{Data, DataType};
+use std::path::PathBuf;
 use std::str::FromStr;
 
 use crate::utils::comment::XComment;
@@ -13,6 +14,7 @@ use super::*;
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XListData {
     pub name: String,
+    pub path: PathBuf,
     pub id_type: IntegerKind,
     pub headers: Vec<XCellHeader>,
     pub mapping: BTreeMap<BigInt, XDataLine>,
@@ -21,6 +23,7 @@ pub struct XListData {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct XDictData {
     pub name: String,
+    pub path: PathBuf,
     pub headers: Vec<XCellHeader>,
     pub mapping: BTreeMap<String, XDataLine>,
 }
@@ -41,12 +44,14 @@ pub struct XDataLine {
 impl XDataLine {
     pub fn parse_key_cell(data: &[Data], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
+        out.row = row;
         out.key = out.check_parse_key(data)?;
         out.try_parse_data(data, row, headers, errors);
         Ok(out)
     }
     pub fn parse_id_cell(data: &[Data], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) -> XResult<Self> {
         let mut out = Self::default();
+        out.row = row;
         out.id = out.check_parse_id(data)?;
         out.try_parse_data(data, row, headers, errors);
         Ok(out)

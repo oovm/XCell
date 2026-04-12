@@ -6,7 +6,7 @@ pub type XResult<T> = Result<T, XError>;
 pub use self::{
     standard::{StreamReader, StreamWriter},
     table::{
-        ArcTableReader, CalamineTable, CsvRows, CsvTable, FileFormat, FileFormatDetector, TableReader, TsvRows,
+        ArcTableReader, CalamineTable, CsvRows, CsvTable, FileFormat, FileFormatDetector, FieldConstraint, TableReader, TsvRows,
         TsvTable, XCellAccess, XCellHeader, XDocument, convert_data, find_first_table, load_table,
         load_table_with_config, load_table_with_full_config,
     },

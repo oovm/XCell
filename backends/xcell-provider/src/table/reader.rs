@@ -824,7 +824,25 @@ impl CalamineTable {
     }
 
     /// 读取第 `index` 列的注释详情
-    fn read_comment_details(&self, _index: usize) -> XDocument {
+    fn read_comment_details(&self, index: usize) -> XDocument {
+        let comment_row = self.line.comment;
+        if comment_row == 0 {
+            return XDocument::default();
+        }
+        let row_index = comment_row - 1;
+        if let Some(value) = self.table.get_value((row_index as u32, index as u32)) {
+            let comment = match value {
+                Data::String(s) => s.clone(),
+                Data::Int(i) => i.to_string(),
+                Data::Float(f) => f.to_string(),
+                Data::Bool(b) => b.to_string(),
+                Data::DateTime(dt) => dt.to_string(),
+                _ => String::new(),
+            };
+            if !comment.is_empty() {
+                return XDocument::new(comment);
+            }
+        }
         XDocument::default()
     }
 }

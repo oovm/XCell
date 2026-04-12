@@ -290,15 +290,17 @@ impl Codegen for DynamicDejavuCodegen {
 
         if let Some(workspace) = context.workspace {
             let classes: Vec<_> = workspace.classes().collect();
+            let dicts: Vec<_> = workspace.dicts().collect();
             let enumerates: Vec<_> = workspace.enumerates().collect();
-            info!("工作区中有 {} 个类和 {} 个枚举", classes.len(), enumerates.len());
+            info!("工作区中有 {} 个类, {} 个字典和 {} 个枚举", classes.len(), dicts.len(), enumerates.len());
             
-            for class_data in classes {
+            for class_data in &classes {
                 let class_name = class_data.name.clone();
                 let table_name = format!("{}{}", class_name, suffix_table);
                 
-                let class_fields_value: Vec<NargoValue> = class_data.items.iter().map(|item| {
+                let class_fields_value: Vec<NargoValue> = class_data.items.iter().enumerate().map(|(index, item)| {
                     let default = item.typing.as_typescript_default();
+                    let is_key = index == 0;
                     let mut field_data = HashMap::new();
                     field_data.insert("document".to_string(), NargoValue::Array(
                         item.document.lines().into_iter().map(|doc| NargoValue::String(doc)).collect()
@@ -307,6 +309,7 @@ impl Codegen for DynamicDejavuCodegen {
                     field_data.insert("typing".to_string(), NargoValue::String(item.typing.as_typescript_type()));
                     field_data.insert("has_default".to_string(), NargoValue::Bool(!default.is_empty()));
                     field_data.insert("default".to_string(), NargoValue::String(default));
+                    field_data.insert("is_key".to_string(), NargoValue::Bool(is_key));
                     NargoValue::Object(field_data)
                 }).collect();
 
@@ -322,6 +325,74 @@ impl Codegen for DynamicDejavuCodegen {
                 let output_filename = format!("{}{}.ts", class_name, suffix_table);
                 let output_path = context.output_dir.join(&output_filename);
                 info!("生成类文件: {:?}", output_path);
+
+                if let Some(parent) = output_path.parent() {
+                    if !parent.exists() {
+                        fs::create_dir_all(parent).map_err(|e| {
+                            let error_msg = format!("创建输出目录失败: {}", e);
+                            error!("{}", error_msg);
+                            XError::new(XErrorKind::RuntimeError { message: error_msg })
+                        })?;
+                    }
+                }
+
+                let rendered_content = adapter.render("BuildClass.ts", &NargoValue::Object(render_context))
+                    .map_err(|e| {
+                        let error_msg = format!("模板渲染失败: {}", e);
+                        error!("{}", error_msg);
+                        XError::new(XErrorKind::RuntimeError { message: error_msg })
+                    })?;
+
+                fs::write(&output_path, rendered_content).map_err(|e| {
+                    let error_msg = format!("写入输出文件失败: {}", e);
+                    error!("{}", error_msg);
+                    XError::new(XErrorKind::RuntimeError { message: error_msg })
+                })?;
+            }
+
+            for dict_data in &dicts {
+                let class_name = dict_data.name.clone();
+                let table_name = format!("{}{}", class_name, suffix_table);
+                
+                let class_fields_value: Vec<NargoValue> = dict_data.headers.iter().enumerate().map(|(index, header)| {
+                    let mut default = header.typing.as_typescript_default();
+                    let is_key = index == 0;
+                    
+                    // 对于主键字段，如果默认值为空，则设置类型默认值
+                    if is_key && default.is_empty() {
+                        let type_str = header.typing.as_typescript_type();
+                        default = match type_str.as_str() {
+                            "number" => "0".to_string(),
+                            "string" => "\"\"".to_string(),
+                            "boolean" => "false".to_string(),
+                            _ => "null".to_string(),
+                        };
+                    }
+                    
+                    let mut field_data = HashMap::new();
+                    field_data.insert("document".to_string(), NargoValue::Array(
+                        header.document.lines().into_iter().map(|doc| NargoValue::String(doc)).collect()
+                    ));
+                    field_data.insert("name".to_string(), NargoValue::String(header.field_name.clone()));
+                    field_data.insert("typing".to_string(), NargoValue::String(header.typing.as_typescript_type()));
+                    field_data.insert("has_default".to_string(), NargoValue::Bool(!default.is_empty()));
+                    field_data.insert("default".to_string(), NargoValue::String(default));
+                    field_data.insert("is_key".to_string(), NargoValue::Bool(is_key));
+                    NargoValue::Object(field_data)
+                }).collect();
+
+                let class_document: Vec<NargoValue> = vec![NargoValue::String(format!("{} 表数据类", class_name))];
+
+                let mut render_context = HashMap::new();
+                render_context.insert("class_name".to_string(), NargoValue::String(class_name.clone()));
+                render_context.insert("table_name".to_string(), NargoValue::String(table_name.clone()));
+                render_context.insert("class_fields".to_string(), NargoValue::Array(class_fields_value));
+                render_context.insert("class_document".to_string(), NargoValue::Array(class_document));
+                render_context.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
+
+                let output_filename = format!("{}{}.ts", class_name, suffix_table);
+                let output_path = context.output_dir.join(&output_filename);
+                info!("生成字典文件: {:?}", output_path);
 
                 if let Some(parent) = output_path.parent() {
                     if !parent.exists() {

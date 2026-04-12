@@ -10,6 +10,7 @@ mod reader;
 pub use file_format::{FileFormat, FileFormatDetector};
 pub use reader::{convert_data, ArcTableReader, CalamineTable, CsvRows, CsvTable, TableReader, TsvRows, TsvTable, XCellHeader};
 pub use xcell_core::{XCellAccess, XDocument};
+pub use xcell_parser::FieldConstraint;
 
 use xcell_core::{FieldConfig, TableLineMode, TypeMetaInfo, XError, XErrorKind, XResult};
 

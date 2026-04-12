@@ -1,5 +1,5 @@
 use clap::Parser;
-use xcell::{SubArgs, TomlSubArgs, XCellArgs, logger, pause};
+use xcell::{SubArgs, TomlSubArgs, XCellArgs, logger};
 use xcell_analyzer::{WorkspaceManager, XResult, XError};
 use xcell_config::project::Generator;
 use std::path::PathBuf;
@@ -10,7 +10,7 @@ async fn main() -> XResult<()> {
     let args = XCellArgs::parse();
     logger(args.verbose, args.quiet, &args.log);
     let filter = if args.filter.is_empty() { None } else { Some(args.filter.as_str()) };
-    let result = match args.command {
+    match args.command {
         Some(SubArgs::Check) => {
             let mut ws = WorkspaceManager::new(args.resolve_workspace()?)?;
             ws.first_walk(filter)?;
@@ -231,7 +231,5 @@ group = ["languagegroup"]
             }
             Ok(())
         }
-    };
-    pause();
-    result
+    }
 }

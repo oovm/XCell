@@ -44,8 +44,21 @@ impl TypeScriptCodegen {
         context_data.insert("table_name".to_string(), NargoValue::String(table_name.clone()));
         context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
 
-        let class_fields_value: Vec<NargoValue> = table.headers.iter().map(|header| {
-            let default = header.typing.as_typescript_default();
+        let class_fields_value: Vec<NargoValue> = table.headers.iter().enumerate().map(|(index, header)| {
+            let mut default = header.typing.as_typescript_default();
+            let is_key = index == 0;
+            
+            // 对于主键字段，如果默认值为空，则设置类型默认值
+            if is_key && default.is_empty() {
+                let type_str = header.typing.as_typescript_type();
+                default = match type_str.as_str() {
+                    "number" => "0".to_string(),
+                    "string" => "\"\"".to_string(),
+                    "boolean" => "false".to_string(),
+                    _ => "null".to_string(),
+                };
+            }
+            
             let mut field_data = std::collections::HashMap::new();
             field_data.insert("document".to_string(), NargoValue::Array(
                 header.document.lines().into_iter().map(|doc| NargoValue::String(doc)).collect()
@@ -55,6 +68,7 @@ impl TypeScriptCodegen {
             field_data.insert("getter".to_string(), NargoValue::String(format!("get{}", header.field_name.to_case(Case::Pascal))));
             field_data.insert("has_default".to_string(), NargoValue::Bool(!default.is_empty()));
             field_data.insert("default".to_string(), NargoValue::String(default));
+            field_data.insert("is_key".to_string(), NargoValue::Bool(is_key));
             NargoValue::Object(field_data)
         }).collect();
         context_data.insert("class_fields".to_string(), NargoValue::Array(class_fields_value));
@@ -64,7 +78,13 @@ impl TypeScriptCodegen {
         let template_dir = self.template_dir.as_deref().map(Path::new);
         let loader = TemplateLoader::new(template_dir)?;
 
-        let out = loader.render_with_dejavu(TemplateType::DictTable.file_name(), &context)?;
+        // 如果有自定义模板目录，使用 BuildClass.ts.dejavu，否则使用 BuildDictTable.ts.dejavu
+        let template_name = if self.template_dir.is_some() {
+            TemplateType::Class.file_name()
+        } else {
+            TemplateType::DictTable.file_name()
+        };
+        let out = loader.render_with_dejavu(template_name, &context)?;
         table_file.write_all(out.as_bytes())?;
         
         Ok(())
@@ -90,8 +110,21 @@ impl TypeScriptCodegen {
         context_data.insert("table_name".to_string(), NargoValue::String(table_name.clone()));
         context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
 
-        let class_fields_value: Vec<NargoValue> = table.headers.iter().map(|header| {
-            let default = header.typing.as_typescript_default();
+        let class_fields_value: Vec<NargoValue> = table.headers.iter().enumerate().map(|(index, header)| {
+            let mut default = header.typing.as_typescript_default();
+            let is_key = index == 0;
+            
+            // 对于主键字段，如果默认值为空，则设置类型默认值
+            if is_key && default.is_empty() {
+                let type_str = header.typing.as_typescript_type();
+                default = match type_str.as_str() {
+                    "number" => "0".to_string(),
+                    "string" => "\"\"".to_string(),
+                    "boolean" => "false".to_string(),
+                    _ => "null".to_string(),
+                };
+            }
+            
             let mut field_data = std::collections::HashMap::new();
             field_data.insert("document".to_string(), NargoValue::Array(
                 header.document.lines().into_iter().map(|doc| NargoValue::String(doc)).collect()
@@ -101,6 +134,7 @@ impl TypeScriptCodegen {
             field_data.insert("getter".to_string(), NargoValue::String(format!("get{}", header.field_name.to_case(Case::Pascal))));
             field_data.insert("has_default".to_string(), NargoValue::Bool(!default.is_empty()));
             field_data.insert("default".to_string(), NargoValue::String(default));
+            field_data.insert("is_key".to_string(), NargoValue::Bool(is_key));
             NargoValue::Object(field_data)
         }).collect();
         context_data.insert("class_fields".to_string(), NargoValue::Array(class_fields_value));
@@ -110,7 +144,13 @@ impl TypeScriptCodegen {
         let template_dir = self.template_dir.as_deref().map(Path::new);
         let loader = TemplateLoader::new(template_dir)?;
 
-        let out = loader.render_with_dejavu(TemplateType::DictTable.file_name(), &context)?;
+        // 如果有自定义模板目录，使用 BuildClass.ts.dejavu，否则使用 BuildDictTable.ts.dejavu
+        let template_name = if self.template_dir.is_some() {
+            TemplateType::Class.file_name()
+        } else {
+            TemplateType::DictTable.file_name()
+        };
+        let out = loader.render_with_dejavu(template_name, &context)?;
         table_file.write_all(out.as_bytes())?;
         
         Ok(())

@@ -112,6 +112,7 @@ impl XEnumerateTable {
         }
         ws.add_enumerate(XEnumerateData {
             name: define.name.clone(),
+            path: self.table.get_path(),
             typing: self.id_type.clone(),
             comment: self.enumerate_document(),
             headers: self.headers.clone(),

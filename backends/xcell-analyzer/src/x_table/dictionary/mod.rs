@@ -51,6 +51,7 @@ impl XListTable {
         }
         ws.add_list(XListData {
             name: self.table.get_name(),
+            path: self.table.get_path(),
             id_type: self.id_type.kind,
             headers: self.headers.clone(),
             mapping: values,

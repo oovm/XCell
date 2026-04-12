@@ -96,7 +96,10 @@ impl XDataLine {
             let xdata = xcell_provider::convert_data(data);
             match header.typing.parse_cell(&xdata) {
                 Ok(o) => self.data.push(o),
-                Err(e) => errors.push(e.with_xy(header.column, row)),
+                Err(e) => {
+                    errors.push(e.with_xy(header.column, row));
+                    self.data.push(XCellValue::default());
+                }
             }
         }
     }

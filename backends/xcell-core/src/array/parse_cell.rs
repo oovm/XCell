@@ -21,6 +21,9 @@ impl ArrayDescription {
             Data::Int(i) => Ok(vec![*i as f64]),
             Data::Float(f) => Ok(vec![*f]),
             Data::String(s) => {
+                let s = s.trim();
+                let s = s.trim_start_matches('[').trim_end_matches(']');
+                let s = s.trim_start_matches('(').trim_end_matches(')');
                 let mut out = vec![];
                 for item in s.split(',').map(|s| s.trim()) {
                     if item.is_empty() {

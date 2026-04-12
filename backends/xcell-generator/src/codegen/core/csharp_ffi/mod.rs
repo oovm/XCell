@@ -415,7 +415,7 @@ impl AsCSharpDefault for ArrayDescription {
 
 impl AsCSharpDefault for ReferenceDescription {
     fn as_csharp_default(&self) -> String {
-        match self.default {
+        match &self.default {
             Some(v) => v.to_string(),
             None => "0".to_string(),
         }

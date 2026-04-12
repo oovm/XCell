@@ -127,7 +127,7 @@ impl AsTypeScriptDefault for XCellTyped {
             XCellTyped::Enumerate(v) => v.default.to_string(),
             XCellTyped::Array(_) => "[]".to_string(),
             XCellTyped::Vector(_) => "[]".to_string(),
-            XCellTyped::Reference(v) => v.default.map_or("0".to_string(), |d| d.to_string()),
+            XCellTyped::Reference(v) => v.default.clone().unwrap_or_else(|| "0".to_string()),
             XCellTyped::List(_) => "[]".to_string(),
             XCellTyped::Map(_) => "{}".to_string(),
             XCellTyped::Optional(_) => "null".to_string(),

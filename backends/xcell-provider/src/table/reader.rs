@@ -831,7 +831,12 @@ impl CalamineTable {
                 _ => return None,
             };
             if !type_str.is_empty() {
-                return Some(XCellTyped::parse(&type_str, &self.typing));
+                let parsed = XCellTyped::parse(&type_str, &self.typing);
+                tracing::debug!(
+                    "解析类型: 列={}, 类型行={}, 类型字符串='{}', 解析结果={:?}",
+                    index, type_row_range, type_str, parsed
+                );
+                return Some(parsed);
             }
         }
         None
@@ -843,8 +848,12 @@ impl CalamineTable {
         if comment_row == 0 {
             return XDocument::default();
         }
-        let row_index = comment_row - 1;
-        if let Some(value) = self.table.get_value((row_index as u32, index as u32)) {
+        let comment_row_worksheet = comment_row as u32 - 1;
+        let comment_row_range = match self.table.start() {
+            Some((start_row, _)) => comment_row_worksheet - start_row,
+            None => comment_row_worksheet,
+        };
+        if let Some(value) = self.table.get_value((comment_row_range, index as u32)) {
             let comment = match value {
                 Data::String(s) => s.clone(),
                 Data::Int(i) => i.to_string(),

@@ -44,7 +44,71 @@ fn type_expr_to_typed(expr: TypeExpr, info: &TypeMetaInfo) -> XCellTyped {
             if elements.is_empty() {
                 info.string.clone().into()
             } else {
-                type_expr_to_typed(elements.into_iter().next().unwrap(), info)
+                let len = elements.len();
+                match len {
+                    2 => {
+                        let mut iter = elements.into_iter();
+                        let first = type_expr_to_typed(iter.next().unwrap(), info);
+                        let second = type_expr_to_typed(iter.next().unwrap(), info);
+                        if matches!(first, XCellTyped::Decimal(_)) && matches!(second, XCellTyped::Decimal(_)) {
+                            ArrayDescription::new(ArrayKind::Vector2).into()
+                        } else {
+                            ListDescription {
+                                element_type: first,
+                                fixed_length: Some(2),
+                                ..Default::default()
+                            }.into()
+                        }
+                    }
+                    3 => {
+                        let mut all_decimal = true;
+                        for elem in elements.iter() {
+                            let t = type_expr_to_typed(elem.clone(), info);
+                            if !matches!(t, XCellTyped::Decimal(_)) {
+                                all_decimal = false;
+                                break;
+                            }
+                        }
+                        if all_decimal {
+                            ArrayDescription::new(ArrayKind::Vector3).into()
+                        } else {
+                            let first = type_expr_to_typed(elements.into_iter().next().unwrap(), info);
+                            ListDescription {
+                                element_type: first,
+                                fixed_length: Some(3),
+                                ..Default::default()
+                            }.into()
+                        }
+                    }
+                    4 => {
+                        let mut all_decimal = true;
+                        for elem in elements.iter() {
+                            let t = type_expr_to_typed(elem.clone(), info);
+                            if !matches!(t, XCellTyped::Decimal(_)) {
+                                all_decimal = false;
+                                break;
+                            }
+                        }
+                        if all_decimal {
+                            ArrayDescription::new(ArrayKind::Vector4).into()
+                        } else {
+                            let first = type_expr_to_typed(elements.into_iter().next().unwrap(), info);
+                            ListDescription {
+                                element_type: first,
+                                fixed_length: Some(4),
+                                ..Default::default()
+                            }.into()
+                        }
+                    }
+                    _ => {
+                        let first = type_expr_to_typed(elements.into_iter().next().unwrap(), info);
+                        ListDescription {
+                            element_type: first,
+                            fixed_length: Some(len),
+                            ..Default::default()
+                        }.into()
+                    }
+                }
             }
         }
         TypeExpr::Named(name) => {

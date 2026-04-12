@@ -322,6 +322,17 @@ impl ProjectConfig {
                                 _ => {}
                             }
                         }
+                    } else if line.starts_with("skip_manager = ") {
+                        if let Some(generator) = &mut current_generator {
+                            let skip_str = line.split('=').nth(1).unwrap().trim();
+                            let skip = skip_str == "true";
+                            match generator {
+                                Generator::TypeScript(typescript) => {
+                                    typescript.skip_manager = skip;
+                                }
+                                _ => {}
+                            }
+                        }
                     }
                 }
 

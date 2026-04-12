@@ -740,6 +740,16 @@ impl CalamineTable {
         })
     }
 
+    /// 获取内部表格数据的引用
+    pub fn inner_table(&self) -> &calamine::Range<Data> {
+        &self.table
+    }
+
+    /// 获取行模式配置
+    pub fn line_config(&self) -> &TableLineMode {
+        &self.line
+    }
+
     /// 获取表格类型
     ///
     /// # Returns

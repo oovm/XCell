@@ -211,22 +211,24 @@ impl Default for DynamicDejavuCodegen {
 
 impl Codegen for DynamicDejavuCodegen {
     /// 生成代码
-    ///
-    /// # Arguments
-    /// * `context` - 代码生成上下文
-    ///
-    /// # Returns
-    /// 生成结果
     fn generate(&self, context: &CodegenContext) -> XResult<()> {
         info!("开始动态 DejaVu 代码生成");
         tracing_debug!("输出目录: {:?}", context.output_dir);
 
-        // 确定模板目录
         let template_dir: String = context.get_option("template_dir", "templates").into();
-        let template_dir_path = PathBuf::from(&template_dir);
+        
+        let template_dir_path = if let Some(workspace) = context.workspace {
+            let path = std::path::PathBuf::from(&template_dir);
+            if path.is_absolute() {
+                path
+            } else {
+                workspace.config.root.join(&template_dir)
+            }
+        } else {
+            PathBuf::from(&template_dir)
+        };
         info!("模板目录: {:?}", template_dir_path);
 
-        // 如果模板目录不存在，则创建
         if !template_dir_path.exists() {
             info!("模板目录不存在，正在创建...");
             fs::create_dir_all(&template_dir_path).map_err(|e| {
@@ -236,10 +238,8 @@ impl Codegen for DynamicDejavuCodegen {
             })?;
         }
 
-        // 创建新的 DejaVu 适配器实例
         let mut adapter = DejaVuAdapter::new(DejaVuFrontend::new());
 
-        // 查找所有模板文件
         let template_files: Vec<_> = fs::read_dir(&template_dir_path)
             .map_err(|e| {
                 let error_msg = format!("读取模板目录失败: {}", e);
@@ -263,62 +263,172 @@ impl Codegen for DynamicDejavuCodegen {
 
         info!("找到 {} 个模板文件", template_files.len());
 
-        // 构建渲染上下文
-        let render_context = self.build_render_context(context);
-
-        // 为每个模板文件渲染并输出
-        for entry in template_files {
+        for entry in &template_files {
             let template_path = entry.path();
             let template_name = template_path
                 .file_stem()
                 .unwrap_or_default()
                 .to_str()
-                .unwrap_or("template");
+                .unwrap_or("template")
+                .to_string();
 
-            info!("处理模板文件: {:?}", template_path);
-
-            // 读取模板内容
             let template_content = fs::read_to_string(&template_path).map_err(|e| {
                 let error_msg = format!("读取模板文件失败: {}", e);
                 error!("{}", error_msg);
                 XError::new(XErrorKind::RuntimeError { message: error_msg })
             })?;
 
-            // 注册模板到适配器
-            adapter.register_template(template_name, &template_content)
+            adapter.register_template(&template_name, &template_content)
                 .map_err(|e| {
                     let error_msg = format!("注册模板失败: {}", e);
                     error!("{}", error_msg);
                     XError::new(XErrorKind::RuntimeError { message: error_msg })
                 })?;
+        }
 
-            // 处理带点的文件名，比如 BuildClass.ts.dejavu 应该生成 BuildClass.ts
-            let output_filename = if template_name.contains('.') {
-                template_name.to_string()
-            } else {
-                // 根据模板名称判断输出文件类型
-                if template_name.contains("Class") || template_name.contains("Enumerate") || template_name.contains("Manager") {
-                    format!("{}.ts", template_name)
-                } else {
-                    format!("{}.rs", template_name)
+        let suffix_table = context.get_option("suffix_table", "Table");
+
+        if let Some(workspace) = context.workspace {
+            let classes: Vec<_> = workspace.classes().collect();
+            let enumerates: Vec<_> = workspace.enumerates().collect();
+            info!("工作区中有 {} 个类和 {} 个枚举", classes.len(), enumerates.len());
+            
+            for class_data in classes {
+                let class_name = class_data.name.clone();
+                let table_name = format!("{}{}", class_name, suffix_table);
+                
+                let class_fields_value: Vec<NargoValue> = class_data.items.iter().map(|item| {
+                    let default = item.typing.as_typescript_default();
+                    let mut field_data = HashMap::new();
+                    field_data.insert("document".to_string(), NargoValue::Array(
+                        item.document.lines().into_iter().map(|doc| NargoValue::String(doc)).collect()
+                    ));
+                    field_data.insert("name".to_string(), NargoValue::String(item.field.clone()));
+                    field_data.insert("typing".to_string(), NargoValue::String(item.typing.as_typescript_type()));
+                    field_data.insert("has_default".to_string(), NargoValue::Bool(!default.is_empty()));
+                    field_data.insert("default".to_string(), NargoValue::String(default));
+                    NargoValue::Object(field_data)
+                }).collect();
+
+                let class_document: Vec<NargoValue> = vec![NargoValue::String(format!("{} 表数据类", class_name))];
+
+                let mut render_context = HashMap::new();
+                render_context.insert("class_name".to_string(), NargoValue::String(class_name.clone()));
+                render_context.insert("table_name".to_string(), NargoValue::String(table_name.clone()));
+                render_context.insert("class_fields".to_string(), NargoValue::Array(class_fields_value));
+                render_context.insert("class_document".to_string(), NargoValue::Array(class_document));
+                render_context.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
+
+                let output_filename = format!("{}{}.ts", class_name, suffix_table);
+                let output_path = context.output_dir.join(&output_filename);
+                info!("生成类文件: {:?}", output_path);
+
+                if let Some(parent) = output_path.parent() {
+                    if !parent.exists() {
+                        fs::create_dir_all(parent).map_err(|e| {
+                            let error_msg = format!("创建输出目录失败: {}", e);
+                            error!("{}", error_msg);
+                            XError::new(XErrorKind::RuntimeError { message: error_msg })
+                        })?;
+                    }
                 }
-            };
 
-            info!("处理模板文件: {:?}", template_path);
+                let rendered_content = adapter.render("BuildClass.ts", &NargoValue::Object(render_context))
+                    .map_err(|e| {
+                        let error_msg = format!("模板渲染失败: {}", e);
+                        error!("{}", error_msg);
+                        XError::new(XErrorKind::RuntimeError { message: error_msg })
+                    })?;
 
-            // 渲染模板
-            let rendered_content = adapter.render(template_name, &render_context)
-                .map_err(|e| {
-                    let error_msg = format!("模板渲染失败: {}", e);
+                fs::write(&output_path, rendered_content).map_err(|e| {
+                    let error_msg = format!("写入输出文件失败: {}", e);
                     error!("{}", error_msg);
                     XError::new(XErrorKind::RuntimeError { message: error_msg })
                 })?;
+            }
 
-            // 生成输出路径
-            let output_path = context.output_dir.join(output_filename);
-            info!("生成代码文件: {:?}", output_path);
+            for enum_data in workspace.enumerates() {
+                let enum_name = enum_data.name.clone();
+                
+                let enumerate_ids_value: Vec<NargoValue> = enum_data.lines.iter().map(|line| {
+                    let mut item_data = HashMap::new();
+                    item_data.insert("key".to_string(), NargoValue::String(line.key.clone()));
+                    item_data.insert("value".to_string(), NargoValue::String(line.id.to_string()));
+                    item_data.insert("document".to_string(), NargoValue::Array(
+                        vec![NargoValue::String(String::new())]
+                    ));
+                    NargoValue::Object(item_data)
+                }).collect();
 
-            // 确保输出目录存在
+                let mut render_context = HashMap::new();
+                render_context.insert("class_name".to_string(), NargoValue::String(enum_name.clone()));
+                render_context.insert("enumerate_ids".to_string(), NargoValue::Array(enumerate_ids_value));
+                render_context.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
+
+                let output_filename = format!("{}{}.ts", enum_name, suffix_table);
+                let output_path = context.output_dir.join(&output_filename);
+                info!("生成枚举文件: {:?}", output_path);
+
+                if let Some(parent) = output_path.parent() {
+                    if !parent.exists() {
+                        fs::create_dir_all(parent).map_err(|e| {
+                            let error_msg = format!("创建输出目录失败: {}", e);
+                            error!("{}", error_msg);
+                            XError::new(XErrorKind::RuntimeError { message: error_msg })
+                        })?;
+                    }
+                }
+
+                let rendered_content = adapter.render("BuildEnumerate.ts", &NargoValue::Object(render_context))
+                    .map_err(|e| {
+                        let error_msg = format!("模板渲染失败: {}", e);
+                        error!("{}", error_msg);
+                        XError::new(XErrorKind::RuntimeError { message: error_msg })
+                    })?;
+
+                fs::write(&output_path, rendered_content).map_err(|e| {
+                    let error_msg = format!("写入输出文件失败: {}", e);
+                    error!("{}", error_msg);
+                    XError::new(XErrorKind::RuntimeError { message: error_msg })
+                })?;
+            }
+
+            let manager_name = context.get_option("manager_name", "XCellManager");
+            let instance_name = context.get_option("instance_name", "xcell");
+            let storage = context.get_option("storage", "src/table/data");
+            let table_data_path = if storage.is_empty() {
+                "src/table/data/".to_string()
+            } else if storage.ends_with('/') || storage.ends_with('\\') {
+                storage
+            } else {
+                format!("{}/", storage)
+            };
+
+            let class_items: Vec<String> = workspace.classes()
+                .map(|t| format!("{}{}", t.name, suffix_table))
+                .chain(workspace.dicts().map(|t| format!("{}{}", t.name, suffix_table)))
+                .chain(workspace.lists().map(|t| format!("{}{}", t.name, suffix_table)))
+                .collect();
+
+            let tables_value: Vec<NargoValue> = class_items.iter().map(|table| {
+                let mut table_data = HashMap::new();
+                table_data.insert("typing".to_string(), NargoValue::String(table.clone()));
+                table_data.insert("private_name".to_string(), NargoValue::String(table.to_lowercase()));
+                table_data.insert("public_name".to_string(), NargoValue::String(format!("get{}", table)));
+                NargoValue::Object(table_data)
+            }).collect();
+
+            let mut render_context = HashMap::new();
+            render_context.insert("manager_name".to_string(), NargoValue::String(manager_name.clone()));
+            render_context.insert("instance_name".to_string(), NargoValue::String(instance_name));
+            render_context.insert("table_data_path".to_string(), NargoValue::String(table_data_path));
+            render_context.insert("tables".to_string(), NargoValue::Array(tables_value));
+            render_context.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
+
+            let output_filename = format!("{}.ts", manager_name);
+            let output_path = context.output_dir.join(&output_filename);
+            info!("生成管理器文件: {:?}", output_path);
+
             if let Some(parent) = output_path.parent() {
                 if !parent.exists() {
                     fs::create_dir_all(parent).map_err(|e| {
@@ -329,21 +439,24 @@ impl Codegen for DynamicDejavuCodegen {
                 }
             }
 
-            // 写入渲染后的内容
+            let rendered_content = adapter.render("BuildManager.ts", &NargoValue::Object(render_context))
+                .map_err(|e| {
+                    let error_msg = format!("模板渲染失败: {}", e);
+                    error!("{}", error_msg);
+                    XError::new(XErrorKind::RuntimeError { message: error_msg })
+                })?;
+
             fs::write(&output_path, rendered_content).map_err(|e| {
                 let error_msg = format!("写入输出文件失败: {}", e);
                 error!("{}", error_msg);
                 XError::new(XErrorKind::RuntimeError { message: error_msg })
             })?;
-
-            info!("模板 {} 处理完成", template_name);
         }
 
         info!("动态 DejaVu 代码生成完成");
         Ok(())
     }
 
-    /// 获取生成器名称
     fn name(&self) -> &'static str {
         "dejavu"
     }

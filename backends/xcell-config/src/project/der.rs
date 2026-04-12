@@ -27,6 +27,7 @@ struct GeneratorHelper {
     enable: Option<bool>,
     project: Option<String>,
     loader: Option<String>,
+    loader_template: Option<String>,
     storage: Option<String>,
     storage_type: Option<String>,
     storage_debug_type: Option<String>,
@@ -56,6 +57,9 @@ impl<'de> Deserialize<'de> for Generator {
                 }
                 if let Some(loader) = helper.loader {
                     cocos_codegen.output = loader;
+                }
+                if let Some(loader_template) = helper.loader_template {
+                    cocos_codegen.loader_template = loader_template;
                 }
                 
                 // 处理存储配置
@@ -88,8 +92,20 @@ impl<'de> Deserialize<'de> for Generator {
                 if let Some(enable) = helper.enable {
                     typescript_codegen.enable = enable;
                 }
+                if let Some(project) = helper.project {
+                    typescript_codegen.project = project;
+                }
                 if let Some(loader) = helper.loader {
                     typescript_codegen.output = loader;
+                }
+                if let Some(loader_template) = helper.loader_template {
+                    typescript_codegen.loader_template = loader_template;
+                }
+                if let Some(storage) = helper.storage {
+                    typescript_codegen.storage = storage;
+                }
+                if let Some(storage_type) = helper.storage_type {
+                    typescript_codegen.storage_type = storage_type;
                 }
                 
                 Ok(Generator::TypeScript(typescript_codegen))

@@ -2,6 +2,7 @@ use super::*;
 use xcell_analyzer::{XDictData, XListData};
 use convert_case::{Case, Casing};
 use crate::template::{TemplateLoader, TemplateType};
+use crate::codegen::core::typescript::AsTypeScriptType;
 use nargo_types::NargoValue;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -33,13 +34,14 @@ impl TypeScriptCodegen {
     /// Result of the operation
     pub(super) fn write_dict(&self, ws: &WorkspaceManager, table: &XDictData) -> XResult<()> {
         let table_name = format!("{}{}", table.name, self.suffix_table);
-        let mut file = self.log_typescript(ws, &table_name)?;
-
+        
+        // 生成单个 Table 文件 (包含 Item 和 Table 类)
+        let mut table_file = self.log_typescript(ws, &table_name)?;
+        
         let mut context_data = std::collections::HashMap::new();
         context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
         context_data.insert("class_name".to_string(), NargoValue::String(table.name.clone()));
         context_data.insert("table_name".to_string(), NargoValue::String(table_name.clone()));
-        context_data.insert("key_name".to_string(), NargoValue::String("key".to_string()));
         context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
 
         let class_fields_value: Vec<NargoValue> = table.headers.iter().map(|header| {
@@ -62,8 +64,9 @@ impl TypeScriptCodegen {
         let template_dir = self.template_dir.as_deref().map(Path::new);
         let loader = TemplateLoader::new(template_dir)?;
 
-        let out = loader.render_with_dejavu(TemplateType::Class.file_name(), &context)?;
-        file.write_all(out.as_bytes())?;
+        let out = loader.render_with_dejavu(TemplateType::DictTable.file_name(), &context)?;
+        table_file.write_all(out.as_bytes())?;
+        
         Ok(())
     }
 
@@ -77,13 +80,14 @@ impl TypeScriptCodegen {
     /// Result of the operation
     pub(super) fn write_list(&self, ws: &WorkspaceManager, table: &XListData) -> XResult<()> {
         let table_name = format!("{}{}", table.name, self.suffix_table);
-        let mut file = self.log_typescript(ws, &table_name)?;
-
+        
+        // 生成单个 Table 文件 (包含 Item 和 Table 类)
+        let mut table_file = self.log_typescript(ws, &table_name)?;
+        
         let mut context_data = std::collections::HashMap::new();
         context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
         context_data.insert("class_name".to_string(), NargoValue::String(table.name.clone()));
         context_data.insert("table_name".to_string(), NargoValue::String(table_name.clone()));
-        context_data.insert("key_name".to_string(), NargoValue::String("id".to_string()));
         context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
 
         let class_fields_value: Vec<NargoValue> = table.headers.iter().map(|header| {
@@ -106,10 +110,9 @@ impl TypeScriptCodegen {
         let template_dir = self.template_dir.as_deref().map(Path::new);
         let loader = TemplateLoader::new(template_dir)?;
 
-        let out = loader.render_with_dejavu(TemplateType::Class.file_name(), &context)?;
-        file.write_all(out.as_bytes())?;
+        let out = loader.render_with_dejavu(TemplateType::DictTable.file_name(), &context)?;
+        table_file.write_all(out.as_bytes())?;
+        
         Ok(())
     }
 }
-
-

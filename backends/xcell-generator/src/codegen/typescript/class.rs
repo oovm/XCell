@@ -30,13 +30,13 @@ impl TypeScriptCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_class(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
-        let table_name = format!("{}{}", table.name, self.suffix_table);
-        let mut file = self.log_typescript(ws, &table_name)?;
+        let data_name = format!("{}Data", table.name);
+        let mut file = self.log_typescript(ws, &data_name)?;
 
         let mut context_data = std::collections::HashMap::new();
         context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
         context_data.insert("class_name".to_string(), NargoValue::String(table.name.clone()));
-        context_data.insert("table_name".to_string(), NargoValue::String(table_name.clone()));
+        context_data.insert("table_name".to_string(), NargoValue::String(data_name.clone()));
         context_data.insert("key_name".to_string(), NargoValue::String("key".to_string()));
         context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
 
@@ -60,7 +60,7 @@ impl TypeScriptCodegen {
         let template_dir = self.template_dir.as_deref().map(Path::new);
         let loader = TemplateLoader::new(template_dir)?;
 
-        let out = loader.render_with_dejavu(TemplateType::Class.file_name(), &context)?;
+        let out = loader.render_with_dejavu(TemplateType::Data.file_name(), &context)?;
         file.write_all(out.as_bytes())?;
         Ok(())
     }

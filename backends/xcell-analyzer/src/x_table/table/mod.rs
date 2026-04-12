@@ -164,7 +164,15 @@ impl XCellTableReader for CalamineTableAdapter {
     }
 
     fn rows(&self) -> Box<dyn Iterator<Item = (usize, Vec<calamine::Data>)> + '_> {
-        self.inner.rows()
+        let data_start = self.config.line.data;
+        let rows = self.inner.inner_table().rows();
+        Box::new(rows.enumerate().filter_map(move |(idx, row)| {
+            if idx >= data_start - 1 {
+                Some((idx, row.to_vec()))
+            } else {
+                None
+            }
+        }))
     }
 
     fn parse_type(&self, name: &str) -> xcell_core::XCellTyped {

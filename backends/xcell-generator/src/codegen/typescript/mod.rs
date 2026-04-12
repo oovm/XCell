@@ -40,6 +40,8 @@ pub struct TypeScriptCodegen {
     pub loader_template: String,
     /// 模板目录路径
     pub template_dir: Option<String>,
+    /// 是否跳过 Manager 生成
+    pub skip_manager: bool,
 }
 
 impl Default for TypeScriptCodegen {
@@ -55,6 +57,7 @@ impl Default for TypeScriptCodegen {
             storage_type: "json".to_string(),
             loader_template: "".to_string(),
             template_dir: None,
+            skip_manager: false,
         }
     }
 }
@@ -140,7 +143,9 @@ impl TypeScriptCodegen {
             self.write_dict(ws, dict_table)?;
         }
 
-        self.write_manager(ws)?;
+        if !self.skip_manager {
+            self.write_manager(ws)?;
+        }
         Ok(())
     }
 
@@ -195,7 +200,7 @@ impl TypeScriptCodegen {
         
         let mut json_data = serde_json::Map::new();
         for item in &table.items {
-            json_data.insert(item.field.clone(), serde_json::to_value(&item.default).unwrap());
+            json_data.insert(item.field.clone(), item.default.to_json_value());
         }
         
         let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
@@ -227,7 +232,7 @@ impl TypeScriptCodegen {
             
             for (i, header) in table.headers.iter().enumerate() {
                 if i < line.data.len() {
-                    record.insert(header.field_name.clone(), serde_json::to_value(&line.data[i]).unwrap());
+                    record.insert(header.field_name.clone(), line.data[i].to_json_value());
                 }
             }
             
@@ -262,7 +267,7 @@ impl TypeScriptCodegen {
 
             for (i, header) in table.headers.iter().enumerate() {
                 if i < line.data.len() {
-                    record.insert(header.field_name.clone(), serde_json::to_value(&line.data[i]).unwrap());
+                    record.insert(header.field_name.clone(), line.data[i].to_json_value());
                 }
             }
 
@@ -408,6 +413,17 @@ impl TypeScriptCodegen {
 impl super::Codegen for TypeScriptCodegen {
     fn generate(&self, context: &super::CodegenContext) -> XResult<()> {
         if let Some(workspace) = &context.workspace {
+            let loader_template = context.options.get("loader_template").cloned().unwrap_or("".to_string());
+            let template_dir = if loader_template.is_empty() {
+                None
+            } else {
+                let path = PathBuf::from(&loader_template);
+                if path.is_absolute() {
+                    Some(path.to_string_lossy().to_string())
+                } else {
+                    Some(workspace.config.root.join(&loader_template).to_string_lossy().to_string())
+                }
+            };
             let ts_codegen = TypeScriptCodegen {
                 enable: true,
                 project: context.options.get("project").cloned().unwrap_or("..".to_string()),
@@ -417,8 +433,9 @@ impl super::Codegen for TypeScriptCodegen {
                 instance_name: context.options.get("instance_name").cloned().unwrap_or("xcell".to_string()),
                 storage: context.options.get("storage").cloned().unwrap_or("".to_string()),
                 storage_type: context.options.get("storage_type").cloned().unwrap_or("json".to_string()),
-                loader_template: context.options.get("loader_template").cloned().unwrap_or("".to_string()),
-                template_dir: context.options.get("loader_template").cloned().and_then(|s| if s.is_empty() { None } else { Some(s) }),
+                loader_template: loader_template,
+                template_dir: template_dir,
+                skip_manager: context.options.get("skip_manager").and_then(|v| v.parse().ok()).unwrap_or(false),
             };
             ts_codegen.write_typescript(workspace)?;
             ts_codegen.write_json(workspace)?;

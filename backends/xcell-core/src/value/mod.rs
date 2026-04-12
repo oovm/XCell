@@ -85,4 +85,61 @@ impl XCellValue {
         }
         Ok(())
     }
+
+    /// 将 XCellValue 转换为 serde_json::Value，直接输出值而非 { type: value } 格式
+    pub fn to_json_value(&self) -> serde_json::Value {
+        match self {
+            XCellValue::Boolean(v) => serde_json::Value::Bool(*v),
+            XCellValue::Integer8(v) => serde_json::Value::Number((*v).into()),
+            XCellValue::Integer16(v) => serde_json::Value::Number((*v).into()),
+            XCellValue::Integer32(v) => serde_json::Value::Number((*v).into()),
+            XCellValue::Integer64(v) => serde_json::Value::Number((*v).into()),
+            XCellValue::Unsigned8(v) => serde_json::Value::Number((*v).into()),
+            XCellValue::Unsigned16(v) => serde_json::Value::Number((*v).into()),
+            XCellValue::Unsigned32(v) => serde_json::Value::Number((*v).into()),
+            XCellValue::Unsigned64(v) => {
+                if let Some(n) = serde_json::Number::from(*v).as_i64() {
+                    serde_json::Value::Number(n.into())
+                } else {
+                    serde_json::Value::String(v.to_string())
+                }
+            }
+            XCellValue::Float32(v) => {
+                if let Some(n) = serde_json::Number::from_f64(*v as f64) {
+                    serde_json::Value::Number(n)
+                } else {
+                    serde_json::Value::Null
+                }
+            }
+            XCellValue::Float64(v) => {
+                if let Some(n) = serde_json::Number::from_f64(*v) {
+                    serde_json::Value::Number(n)
+                } else {
+                    serde_json::Value::Null
+                }
+            }
+            XCellValue::Vector2(v) => serde_json::json!([v[0], v[1]]),
+            XCellValue::Vector3(v) => serde_json::json!([v[0], v[1], v[2]]),
+            XCellValue::Vector4(v) => serde_json::json!([v[0], v[1], v[2], v[3]]),
+            XCellValue::Quaternion4(v) => serde_json::json!([v[0], v[1], v[2], v[3]]),
+            XCellValue::String(v) => serde_json::Value::String(v.clone()),
+            XCellValue::Color(v) => serde_json::Value::String(v.to_string()),
+            XCellValue::Vector(v) => serde_json::Value::Array(v.iter().map(|x| x.to_json_value()).collect()),
+            XCellValue::Enumerate(v) => serde_json::Value::String(v.clone()),
+            XCellValue::Reference(v) => serde_json::Value::Number((*v).into()),
+            XCellValue::Map(m) => {
+                let mut map = serde_json::Map::new();
+                for (k, v) in m {
+                    map.insert(k.clone(), v.to_json_value());
+                }
+                serde_json::Value::Object(map)
+            }
+            XCellValue::Optional(v) => {
+                match v {
+                    Some(inner) => inner.to_json_value(),
+                    None => serde_json::Value::Null,
+                }
+            }
+        }
+    }
 }

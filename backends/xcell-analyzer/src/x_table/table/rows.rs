@@ -1,8 +1,8 @@
 use super::*;
 
-impl CalamineTable {
+impl CalamineTableAdapter {
     pub fn rows(&self) -> CalamineTableRows<'_> {
-        let mut out = CalamineTableRows { rows: self.table.rows(), this: 0 };
+        let mut out = CalamineTableRows { rows: self.inner.inner_table().rows(), this: 0 };
         for _ in 1..self.config.line.data {
             out.next();
         }

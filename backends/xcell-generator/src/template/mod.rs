@@ -11,7 +11,16 @@ static DEFAULT_TEMPLATES: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(
     // 默认枚举模板
     templates.insert("BuildEnumerate.ts.dejavu", include_str!("../../templates/BuildEnumerate.ts.dejavu"));
     
-    // 默认类模板
+    // 默认数据接口模板
+    templates.insert("BuildData.ts.dejavu", include_str!("../../templates/BuildData.ts.dejavu"));
+    
+    // 默认表加载器模板
+    templates.insert("BuildTable.ts.dejavu", include_str!("../../templates/BuildTable.ts.dejavu"));
+    
+    // 默认字典表模板 (Item + Table 静态格式)
+    templates.insert("BuildDictTable.ts.dejavu", include_str!("../../templates/BuildDictTable.ts.dejavu"));
+    
+    // 默认类模板 (保留向后兼容)
     templates.insert("BuildClass.ts.dejavu", include_str!("../../templates/BuildClass.ts.dejavu"));
     
     // 默认管理器模板
@@ -151,7 +160,13 @@ impl TemplateLoader {
 pub enum TemplateType {
     /// 枚举模板
     Enumerate,
-    /// 类模板
+    /// 数据接口模板
+    Data,
+    /// 表加载器模板
+    Table,
+    /// 字典表模板 (Item + Table 静态格式)
+    DictTable,
+    /// 类模板 (保留向后兼容)
     Class,
     /// 管理器模板
     Manager,
@@ -162,6 +177,9 @@ impl TemplateType {
     pub fn file_name(&self) -> &'static str {
         match self {
             TemplateType::Enumerate => "BuildEnumerate.ts.dejavu",
+            TemplateType::Data => "BuildData.ts.dejavu",
+            TemplateType::Table => "BuildTable.ts.dejavu",
+            TemplateType::DictTable => "BuildDictTable.ts.dejavu",
             TemplateType::Class => "BuildClass.ts.dejavu",
             TemplateType::Manager => "BuildManager.ts.dejavu",
         }

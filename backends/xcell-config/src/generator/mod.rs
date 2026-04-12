@@ -223,7 +223,7 @@ impl GeneratorConfig {
 
                         let product_type = if !typescript.loader_template.is_empty() {
                             options.insert("template_dir".to_string(), typescript.loader_template.clone());
-                            ProductType::TypeScript
+                            ProductType::Dejavu
                         } else {
                             ProductType::TypeScript
                         };

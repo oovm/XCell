@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::utils::comment::XComment;
 
 use super::*;
@@ -7,6 +9,8 @@ use super::*;
 pub struct XEnumerateData {
     /// 该枚举的名称
     pub name: String,
+    /// 该枚举的路径
+    pub path: PathBuf,
     /// 该枚举的类型
     pub typing: IntegerDescription,
     /// 该枚举的注释

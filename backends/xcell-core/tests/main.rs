@@ -77,27 +77,32 @@ fn test_nested_list_type_parsing() {
 #[test]
 fn test_reference_cell_parsing() {
     let ref_desc = ReferenceDescription::new("Item");
+    
     let cell = Data::Int(5);
     let value = ref_desc.parse_cell(&cell).unwrap();
-    assert!(matches!(value, XCellValue::Reference(5)));
+    assert!(matches!(value, XCellValue::Reference(s) if s == "5"));
 
     let cell_str = Data::String("10".to_string());
     let value_str = ref_desc.parse_cell(&cell_str).unwrap();
-    assert!(matches!(value_str, XCellValue::Reference(10)));
+    assert!(matches!(value_str, XCellValue::Reference(s) if s == "10"));
+
+    let cell_str_key = Data::String("item_sword_001".to_string());
+    let value_str_key = ref_desc.parse_cell(&cell_str_key).unwrap();
+    assert!(matches!(value_str_key, XCellValue::Reference(s) if s == "item_sword_001"));
 
     let cell_empty = Data::Empty;
-    let value_empty = ref_desc.parse_cell(&cell_empty);
-    assert!(value_empty.is_err());
+    let value_empty = ref_desc.parse_cell(&cell_empty).unwrap();
+    assert!(matches!(value_empty, XCellValue::Reference(s) if s.is_empty()));
 }
 
 #[test]
 fn test_reference_cell_parsing_with_default() {
     let mut ref_desc = ReferenceDescription::new("Item");
-    ref_desc.default = Some(0);
+    ref_desc.default = Some("0".to_string());
 
     let cell_empty = Data::Empty;
     let value = ref_desc.parse_cell(&cell_empty).unwrap();
-    assert!(matches!(value, XCellValue::Reference(0)));
+    assert!(matches!(value, XCellValue::Reference(s) if s == "0"));
 }
 
 #[test]
@@ -175,9 +180,30 @@ fn test_list_cell_parsing_reference_elements() {
     match value {
         XCellValue::Vector(items) => {
             assert_eq!(items.len(), 3);
-            assert!(matches!(items[0], XCellValue::Reference(1)));
-            assert!(matches!(items[1], XCellValue::Reference(2)));
-            assert!(matches!(items[2], XCellValue::Reference(3)));
+            assert!(matches!(&items[0], XCellValue::Reference(s) if s == "1"));
+            assert!(matches!(&items[1], XCellValue::Reference(s) if s == "2"));
+            assert!(matches!(&items[2], XCellValue::Reference(s) if s == "3"));
+        }
+        _ => panic!("Expected Vector"),
+    }
+}
+
+#[test]
+fn test_list_cell_parsing_string_reference_elements() {
+    let info = TypeMetaInfo::default();
+    let list_desc = ListDescription {
+        element_type: XCellTyped::parse("&Language", &info),
+        ..Default::default()
+    };
+
+    let cell = Data::String("ui/start,ui/settings,ui/exit".to_string());
+    let value = list_desc.parse_cell(&cell).unwrap();
+    match value {
+        XCellValue::Vector(items) => {
+            assert_eq!(items.len(), 3);
+            assert!(matches!(&items[0], XCellValue::Reference(s) if s == "ui/start"));
+            assert!(matches!(&items[1], XCellValue::Reference(s) if s == "ui/settings"));
+            assert!(matches!(&items[2], XCellValue::Reference(s) if s == "ui/exit"));
         }
         _ => panic!("Expected Vector"),
     }

@@ -87,7 +87,7 @@ impl XDictTable {
                 }
             }
         }
-        ws.add_dict(XDictData { name: self.table.get_name(), headers: self.headers.clone(), mapping: values });
+        ws.add_dict(XDictData { name: self.table.get_name(), path: self.table.get_path(), headers: self.headers.clone(), mapping: values });
         errors
     }
 }

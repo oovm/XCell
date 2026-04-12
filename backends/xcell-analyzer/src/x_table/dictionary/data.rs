@@ -35,6 +35,8 @@ pub struct XDataLine {
     pub id: BigInt,
     /// 该表单数据的键
     pub key: String,
+    /// 该表单数据的行号
+    pub row: usize,
     /// 该表单数据的注释
     pub comment: XComment,
     /// 该表单数据的有效值

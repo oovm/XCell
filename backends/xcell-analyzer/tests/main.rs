@@ -7,7 +7,6 @@ use xcell_analyzer::{
     PROJECT_CONFIG, ProjectConfig,
 };
 use xcell_analyzer::validation::{RefValidator, ValidationResult};
-use xcell_core::for_3rd::BigInt;
 use xcell_core::XError;
 
 mod test_buffer;
@@ -54,39 +53,39 @@ fn test_project_settings_creation() {
 
 #[test]
 fn test_ref_validator_collect_all_ids() {
-    let mut all_ids: BTreeMap<String, BTreeSet<BigInt>> = BTreeMap::new();
+    let mut all_ids: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
 
     let mut item_ids = BTreeSet::new();
-    item_ids.insert(BigInt::from(1));
-    item_ids.insert(BigInt::from(2));
-    item_ids.insert(BigInt::from(3));
+    item_ids.insert("1".to_string());
+    item_ids.insert("2".to_string());
+    item_ids.insert("3".to_string());
     all_ids.insert("Item".to_string(), item_ids);
 
     let mut monster_ids = BTreeSet::new();
-    monster_ids.insert(BigInt::from(100));
-    monster_ids.insert(BigInt::from(200));
+    monster_ids.insert("100".to_string());
+    monster_ids.insert("200".to_string());
     all_ids.insert("Monster".to_string(), monster_ids);
 
     assert!(all_ids.contains_key("Item"));
     assert!(all_ids.contains_key("Monster"));
 
     let item_ids = all_ids.get("Item").unwrap();
-    assert!(item_ids.contains(&BigInt::from(1)));
-    assert!(item_ids.contains(&BigInt::from(2)));
-    assert!(!item_ids.contains(&BigInt::from(999)));
+    assert!(item_ids.contains("1"));
+    assert!(item_ids.contains("2"));
+    assert!(!item_ids.contains("999"));
 }
 
 #[test]
 fn test_ref_validator_validate_reference_valid() {
-    let mut all_ids: BTreeMap<String, BTreeSet<BigInt>> = BTreeMap::new();
+    let mut all_ids: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     let mut item_ids = BTreeSet::new();
-    item_ids.insert(BigInt::from(1));
-    item_ids.insert(BigInt::from(5));
-    item_ids.insert(BigInt::from(10));
+    item_ids.insert("1".to_string());
+    item_ids.insert("5".to_string());
+    item_ids.insert("10".to_string());
     all_ids.insert("Item".to_string(), item_ids);
 
     let result = RefValidator::validate_reference(
-        5,
+        "5",
         "Item",
         &all_ids,
         "TestTable",
@@ -97,7 +96,7 @@ fn test_ref_validator_validate_reference_valid() {
     assert!(result.is_none(), "Valid reference should not return error");
 
     let result_zero = RefValidator::validate_reference(
-        0,
+        "0",
         "Item",
         &all_ids,
         "TestTable",
@@ -110,13 +109,13 @@ fn test_ref_validator_validate_reference_valid() {
 
 #[test]
 fn test_ref_validator_validate_reference_invalid_id() {
-    let mut all_ids: BTreeMap<String, BTreeSet<BigInt>> = BTreeMap::new();
+    let mut all_ids: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     let mut item_ids = BTreeSet::new();
-    item_ids.insert(BigInt::from(1));
+    item_ids.insert("1".to_string());
     all_ids.insert("Item".to_string(), item_ids);
 
     let result = RefValidator::validate_reference(
-        999,
+        "999",
         "Item",
         &all_ids,
         "TestTable",
@@ -132,10 +131,10 @@ fn test_ref_validator_validate_reference_invalid_id() {
 
 #[test]
 fn test_ref_validator_validate_reference_invalid_table() {
-    let all_ids: BTreeMap<String, BTreeSet<BigInt>> = BTreeMap::new();
+    let all_ids: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
 
     let result = RefValidator::validate_reference(
-        1,
+        "1",
         "NonExistentTable",
         &all_ids,
         "TestTable",
@@ -146,6 +145,38 @@ fn test_ref_validator_validate_reference_invalid_table() {
     assert!(result.is_some(), "Reference to non-existent table should return error");
     let error = result.unwrap();
     assert!(error.to_string().contains("NonExistentTable"));
+}
+
+#[test]
+fn test_ref_validator_validate_string_reference() {
+    let mut all_ids: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    let mut language_ids = BTreeSet::new();
+    language_ids.insert("ui/start".to_string());
+    language_ids.insert("ui/settings".to_string());
+    language_ids.insert("ui/exit".to_string());
+    all_ids.insert("Language".to_string(), language_ids);
+
+    let result = RefValidator::validate_reference(
+        "ui/start",
+        "Language",
+        &all_ids,
+        "TestTable",
+        "text_ref",
+        0,
+        0,
+    );
+    assert!(result.is_none(), "Valid string reference should not return error");
+
+    let result_invalid = RefValidator::validate_reference(
+        "ui/invalid",
+        "Language",
+        &all_ids,
+        "TestTable",
+        "text_ref",
+        0,
+        0,
+    );
+    assert!(result_invalid.is_some(), "Invalid string reference should return error");
 }
 
 #[test]
@@ -176,14 +207,4 @@ fn test_validation_result_merge() {
 
     result1.merge(result2);
     assert_eq!(result1.errors.len(), 3);
-}
-
-#[test]
-fn test_bigint_from_str() {
-    use std::str::FromStr;
-    let id = BigInt::from_str("12345").unwrap();
-    assert_eq!(id, BigInt::from(12345));
-
-    let id_from_int = BigInt::from(42i64);
-    assert_eq!(id_from_int, BigInt::from(42));
 }

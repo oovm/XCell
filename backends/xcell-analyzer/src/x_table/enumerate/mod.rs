@@ -104,7 +104,7 @@ impl XEnumerateTable {
                     }
                 };
             }
-            data_items.push(XDataLine { id: value.clone(), key: key.clone(), comment, data: line_items });
+            data_items.push(XDataLine { id: value.clone(), key: key.clone(), row, comment, data: line_items });
             if let Err(e) = define.add_mapping(&key, value) {
                 errors.push(e.with_y(row));
                 return errors;

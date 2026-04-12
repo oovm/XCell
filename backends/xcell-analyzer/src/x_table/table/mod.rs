@@ -98,6 +98,10 @@ impl XCellTableReader for ArcTableReader {
     fn is_document(&self, name: &str) -> bool {
         XCellTableReader::is_document(&*self.inner, name)
     }
+
+    fn get_path(&self) -> std::path::PathBuf {
+        XCellTableReader::get_path(&*self.inner)
+    }
 }
 
 impl XTableReader for ArcTableReader {
@@ -233,6 +237,10 @@ impl XCellTableReader for CalamineTableAdapter {
 
     fn is_document(&self, name: &str) -> bool {
         name == "document"
+    }
+
+    fn get_path(&self) -> std::path::PathBuf {
+        self.inner.get_path()
     }
 }
 

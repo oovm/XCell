@@ -14,31 +14,37 @@ impl DefineManager {
         for item in self.enumerate.values_mut() {
             for define in item.headers.iter_mut() {
                 if let Err(e) = EnumerateLink::link_enumerate(define, &self.define) {
-                    errors.push(e);
+                    errors.push(e.with_path(&item.path));
                 }
             }
             for define in item.lines.iter_mut() {
-                errors.extend(define.link_enumerate(&item.headers))
+                for e in define.link_enumerate(&item.headers) {
+                    errors.push(e.with_path(&item.path));
+                }
             }
         }
         for item in self.list.values_mut() {
             for define in item.headers.iter_mut() {
                 if let Err(e) = EnumerateLink::link_enumerate(define, &self.define) {
-                    errors.push(e);
+                    errors.push(e.with_path(&item.path));
                 }
             }
             for define in item.mapping.values_mut() {
-                errors.extend(define.link_enumerate(&item.headers))
+                for e in define.link_enumerate(&item.headers) {
+                    errors.push(e.with_path(&item.path));
+                }
             }
         }
         for item in self.dict.values_mut() {
             for define in item.headers.iter_mut() {
                 if let Err(e) = EnumerateLink::link_enumerate(define, &self.define) {
-                    errors.push(e);
+                    errors.push(e.with_path(&item.path));
                 }
             }
             for define in item.mapping.values_mut() {
-                errors.extend(define.link_enumerate(&item.headers))
+                for e in define.link_enumerate(&item.headers) {
+                    errors.push(e.with_path(&item.path));
+                }
             }
         }
         errors
@@ -73,13 +79,14 @@ impl EnumerateLink for XCellHeader {
 
 impl XDataLine {
     pub fn link_enumerate(&mut self, headers: &[XCellHeader]) -> Vec<XError> {
-        if self.data.len() != headers.len() {
-            return vec![XError::runtime_error(format!("字段数量和类型数量不一致"))];
+        let valid_headers: Vec<_> = headers.iter().filter(|h| !matches!(h.typing, xcell_core::XCellTyped::Unknown)).collect();
+        if self.data.len() != valid_headers.len() {
+            return vec![XError::runtime_error(format!("字段数量和类型数量不一致: data={}, headers={}", self.data.len(), valid_headers.len())).with_y(self.row)];
         }
         let mut errors = vec![];
-        for (value, typing) in self.data.iter_mut().zip(headers.iter()) {
+        for (value, typing) in self.data.iter_mut().zip(valid_headers.iter()) {
             if let Err(e) = value.link_enumerate(&typing.typing) {
-                errors.push(e);
+                errors.push(e.with_xy(typing.column, self.row));
             }
         }
         errors

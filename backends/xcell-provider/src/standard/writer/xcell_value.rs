@@ -61,7 +61,11 @@ impl StreamWriter for XCellValue {
                 panic!("无法写入二进制 `{}`", v)
             }
             XCellValue::Reference(v) => {
-                v.write_to(buffer, order)?
+                if let Ok(n) = v.parse::<i64>() {
+                    n.write_to(buffer, order)?
+                } else {
+                    panic!("无法写入非整数引用 `{}`", v)
+                }
             }
             XCellValue::Map(_) => {
                 todo!()

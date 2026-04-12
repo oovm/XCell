@@ -14,8 +14,8 @@ mod der;
 pub struct ReferenceDescription {
     /// 目标表名
     pub target_table: String,
-    /// 默认值（空引用为 None 或 0）
-    pub default: Option<i64>,
+    /// 默认值（空引用为 None 或空字符串）
+    pub default: Option<String>,
 }
 
 impl From<ReferenceDescription> for XCellTyped {
@@ -39,30 +39,36 @@ impl ReferenceDescription {
         Self { target_table: target_table.into(), default: None }
     }
 
-    /// 从单元格中解析引用 ID（整数或字符串）
+    /// 从单元格中解析引用 ID（支持整数和字符串主键）
     ///
     /// # 参数
     /// * `cell` - 要解析的单元格数据
     ///
     /// # 返回值
-    /// 返回解析的结果，成功时返回 XCellValue，失败时返回 XError
+    /// 返回解析的结果，成功时返回 XCellValue::Reference(String)，失败时返回 XError
     pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
-        let value = match cell {
-            Data::Int(v) => v.to_i64(),
-            Data::Float(v) => v.to_i64(),
-            Data::String(v) => v.parse::<i64>().ok(),
-            Data::Bool(v) => Some(if *v { 1 } else { 0 }),
-            Data::Empty => self.default,
+        let value: Option<String> = match cell {
+            Data::Int(v) => v.to_i64().map(|n| n.to_string()),
+            Data::Float(v) => v.to_i64().map(|n| n.to_string()),
+            Data::String(v) => {
+                if v.trim().is_empty() {
+                    None
+                } else {
+                    Some(v.clone())
+                }
+            }
+            Data::Bool(v) => Some(if *v { "1" } else { "0" }.to_string()),
+            Data::Empty => None,
             Data::Error(e) => return syntax_error(format!("未知错误 {e}")),
-            Data::DateTime(_) => None,
-            Data::DateTimeIso(v) => v.parse::<i64>().ok(),
-            Data::DurationIso(v) => v.parse::<i64>().ok(),
+            Data::DateTime(dt) => Some(dt.to_string()),
+            Data::DateTimeIso(v) => Some(v.clone()),
+            Data::DurationIso(v) => Some(v.clone()),
         };
         match value {
             Some(v) => Ok(XCellValue::Reference(v)),
-            None => match self.default {
-                Some(v) => Ok(XCellValue::Reference(v)),
-                None => syntax_error(format!("无法解析引用 ID: {cell}")),
+            None => match &self.default {
+                Some(v) => Ok(XCellValue::Reference(v.clone())),
+                None => Ok(XCellValue::Reference(String::new())),
             },
         }
     }

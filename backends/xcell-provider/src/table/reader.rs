@@ -230,6 +230,12 @@ pub trait TableReader: Send + Sync + std::fmt::Debug {
     fn get_label(&self) -> XResult<String> {
         Ok(String::new())
     }
+
+    /// 获取表格文件路径
+    ///
+    /// # Returns
+    /// - 表格文件的路径
+    fn get_path(&self) -> PathBuf;
 }
 
 /// CSV 行流式迭代器
@@ -447,6 +453,10 @@ impl TableReader for CsvTable {
 
     fn get_label(&self) -> XResult<String> {
         Ok(self.label.clone())
+    }
+
+    fn get_path(&self) -> PathBuf {
+        self.path.clone()
     }
 }
 
@@ -672,6 +682,10 @@ impl TableReader for TsvTable {
 
     fn get_label(&self) -> XResult<String> {
         Ok(self.label.clone())
+    }
+
+    fn get_path(&self) -> PathBuf {
+        self.path.clone()
     }
 }
 
@@ -1003,6 +1017,10 @@ impl TableReader for CalamineTable {
     fn get_label(&self) -> XResult<String> {
         Ok(String::new())
     }
+
+    fn get_path(&self) -> PathBuf {
+        self.path.clone()
+    }
 }
 
 /// 共享表格读取器，用于在多个消费者之间共享 `TableReader` 实例
@@ -1124,6 +1142,10 @@ impl TableReader for ArcTableReader {
 
     fn get_label(&self) -> XResult<String> {
         self.inner.get_label()
+    }
+
+    fn get_path(&self) -> PathBuf {
+        self.inner.get_path()
     }
 }
 

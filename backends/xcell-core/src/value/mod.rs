@@ -53,8 +53,8 @@ pub enum XCellValue {
     // Time(DateTime),
     Vector(Vec<XCellValue>),
     Enumerate(String),
-    /// 引用类型，存储引用 ID
-    Reference(i64),
+    /// 引用类型，存储引用 ID（字符串形式，支持整数和字符串主键）
+    Reference(String),
     /// 映射值
     Map(BTreeMap<String, XCellValue>),
     /// 可选值
@@ -126,7 +126,13 @@ impl XCellValue {
             XCellValue::Color(v) => serde_json::Value::String(v.to_string()),
             XCellValue::Vector(v) => serde_json::Value::Array(v.iter().map(|x| x.to_json_value()).collect()),
             XCellValue::Enumerate(v) => serde_json::Value::String(v.clone()),
-            XCellValue::Reference(v) => serde_json::Value::Number((*v).into()),
+            XCellValue::Reference(v) => {
+                if let Ok(n) = v.parse::<i64>() {
+                    serde_json::Value::Number(n.into())
+                } else {
+                    serde_json::Value::String(v.clone())
+                }
+            }
             XCellValue::Map(m) => {
                 let mut map = serde_json::Map::new();
                 for (k, v) in m {

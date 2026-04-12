@@ -257,7 +257,13 @@ impl JsonCodegen {
                 list: v.iter().map(|item| self.xcell_value_to_json(item)).collect()
             }),
             XCellValue::Enumerate(s) => JsonValue::String(s.clone()),
-            XCellValue::Reference(r) => JsonValue::Integer(*r as i64),
+            XCellValue::Reference(r) => {
+                if let Ok(n) = r.parse::<i64>() {
+                    JsonValue::Integer(n)
+                } else {
+                    JsonValue::String(r.clone())
+                }
+            }
             XCellValue::Map(m) => JsonValue::Object(JsonObject {
                 dict: m.iter().map(|(k, v)| (k.clone(), self.xcell_value_to_json(v))).collect()
             }),

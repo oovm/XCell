@@ -7,8 +7,7 @@ use crate::{XError, XResult};
 
 use crate::{WorkspaceManager, x_table::table::XTableReader};
 use calamine::Data;
-use xcell_core::{XCellTyped, XCellValue, for_3rd::BigInt};
-use std::str::FromStr;
+use xcell_core::{XCellTyped, XCellValue};
 
 /// 验证结果
 pub struct ValidationResult {
@@ -48,20 +47,20 @@ pub trait Validator {
 pub struct RefValidator;
 
 impl RefValidator {
-    /// 收集工作区中所有表的主键 ID 集合
+    /// 收集工作区中所有表的主键 ID 集合（字符串形式）
     ///
     /// # 参数
     /// * `workspace` - 工作区管理器
     ///
     /// # 返回值
-    /// 返回一个映射，键为表名，值为该表的所有主键 ID 集合
-    fn collect_all_ids(workspace: &WorkspaceManager) -> BTreeMap<String, BTreeSet<BigInt>> {
-        let mut all_ids: BTreeMap<String, BTreeSet<BigInt>> = BTreeMap::new();
+    /// 返回一个映射，键为表名，值为该表的所有主键 ID 集合（字符串形式）
+    fn collect_all_ids(workspace: &WorkspaceManager) -> BTreeMap<String, BTreeSet<String>> {
+        let mut all_ids: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
 
         for list_data in workspace.lists() {
             let mut ids = BTreeSet::new();
             for id in list_data.mapping.keys() {
-                ids.insert(id.clone());
+                ids.insert(id.to_string());
             }
             all_ids.insert(list_data.name.clone(), ids);
         }
@@ -69,9 +68,7 @@ impl RefValidator {
         for dict_data in workspace.dicts() {
             let mut ids = BTreeSet::new();
             for key in dict_data.mapping.keys() {
-                if let Ok(id) = BigInt::from_str(key) {
-                    ids.insert(id);
-                }
+                ids.insert(key.clone());
             }
             all_ids.insert(dict_data.name.clone(), ids);
         }
@@ -82,7 +79,7 @@ impl RefValidator {
     /// 验证单个引用值
     ///
     /// # 参数
-    /// * `ref_value` - 引用值
+    /// * `ref_value` - 引用值（字符串形式）
     /// * `target_table` - 目标表名
     /// * `all_ids` - 所有表的 ID 集合
     /// * `table_name` - 当前表名
@@ -93,23 +90,21 @@ impl RefValidator {
     /// # 返回值
     /// 如果引用无效，返回 Some(XError)，否则返回 None
     pub fn validate_reference(
-        ref_value: i64,
+        ref_value: &str,
         target_table: &str,
-        all_ids: &BTreeMap<String, BTreeSet<BigInt>>,
+        all_ids: &BTreeMap<String, BTreeSet<String>>,
         table_name: &str,
         field_name: &str,
         row: usize,
         column: usize,
     ) -> Option<XError> {
-        let ref_id = BigInt::from(ref_value);
-
-        if ref_value == 0 {
+        if ref_value.is_empty() || ref_value == "0" {
             return None;
         }
 
         match all_ids.get(target_table) {
             Some(ids) => {
-                if !ids.contains(&ref_id) {
+                if !ids.contains(ref_value) {
                     return Some(
                         XError::runtime_error(format!(
                             "跨表引用验证失败: 表 '{}' 字段 '{}' 第 {} 行引用了表 '{}' 中不存在的 ID: {}",
@@ -149,7 +144,7 @@ impl RefValidator {
     fn validate_list_references(
         values: &[XCellValue],
         target_table: &str,
-        all_ids: &BTreeMap<String, BTreeSet<BigInt>>,
+        all_ids: &BTreeMap<String, BTreeSet<String>>,
         table_name: &str,
         field_name: &str,
         row: usize,
@@ -160,7 +155,7 @@ impl RefValidator {
         for value in values {
             if let XCellValue::Reference(ref_value) = value {
                 if let Some(error) = Self::validate_reference(
-                    *ref_value,
+                    ref_value,
                     target_table,
                     all_ids,
                     table_name,
@@ -212,7 +207,7 @@ impl Validator for RefValidator {
                         match ref_desc.parse_cell(&xdata) {
                             Ok(XCellValue::Reference(ref_value)) => {
                                 if let Some(error) = Self::validate_reference(
-                                    ref_value,
+                                    &ref_value,
                                     target_table,
                                     &all_ids,
                                     &table_name,

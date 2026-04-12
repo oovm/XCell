@@ -25,8 +25,11 @@ url = { workspace = true }
 csv = { workspace = true }
 chrono = { workspace = true }
 calamine = { workspace = true }
+itertools = { workspace = true }
 
 # 代码生成依赖
 tempfile = { workspace = true }
 serde_json = { workspace = true }
 once_cell = { workspace = true }
+nargo-template = { path = "../../../nargo/compilers/nargo-template", features = ["dejavu"] }
+nargo-types = { path = "../../../nargo/compilers/nargo-types" }

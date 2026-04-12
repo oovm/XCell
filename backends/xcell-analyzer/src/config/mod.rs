@@ -6,15 +6,16 @@ use std::{
 };
 
 use crate::{XError, XResult};
-use xcell_core::for_3rd::{GlobSet, StreamExt, build_glob_set, file_watcher};
+use globset::GlobSet;
+use walkdir::WalkDir;
 
 use crate::{
-    LanguageManager, XClassData, XClassTable, XDictData, XDictTable, XEnumerateData, XEnumerateTable, XLanguageID, XLanguageTable, XListData, XListTable,
-    utils::{get_relative, valid_file},
-    validation::{ValidationManager, ValidationResult},
-    x_table::{enumerate::DefineManager, table::CalamineTable},
+    LanguageManager, XClassTable, XDictTable, XEnumerateTable, XLanguageID, XLanguageTable, XListTable,
+    utils::get_relative,
+    validation::ValidationManager,
+    x_table::enumerate::DefineManager,
 };
-use xcell_config::{PROJECT_CONFIG, ProjectConfig, TableConfig, TableLineMode, UnityBinaryConfig, UnityCodegen};
+use xcell_config::ProjectConfig;
 use xcell_plugin::{PluginManager, WorkspaceManager as PluginWorkspaceManager};
 
 /// 工作空间管理器，负责管理配置表文件的加载、监控和导出
@@ -80,7 +81,7 @@ impl WorkspaceManager {
             return Err(XError::table_error(format!("{} 不是目录名", input.display())));
         }
         let config = ProjectConfig::new(&root);
-        let glob_pattern = build_glob_set(&config.include).unwrap();
+        let glob_pattern = build_glob_set(&config.include)?;
         let mut workspace = Self {
             config,
             glob_pattern,
@@ -95,14 +96,14 @@ impl WorkspaceManager {
     }
     /// 首次加载目录
     pub fn first_walk(&mut self, filter: Option<&str>) -> XResult<()> {
-        let glob = build_glob_set(&self.config.include).result(|e| tracing::error!("{e}"))?;
-        let filter_glob = filter.and_then(|f| build_glob_set(f).result(|e| tracing::error!("{e}")).ok());
+        let glob = build_glob_set(&self.config.include)?;
+        let filter_glob = filter.and_then(|f| build_glob_set(f).ok());
         // 使用 project 字段作为文件遍历的根目录
         let project_path = self.config.root.join(&self.config.project);
         tracing::info!("开始遍历目录: {:?}", project_path);
         tracing::info!("Include 模式: {:?}", self.config.include);
         
-        let entries = xcell_core::for_3rd::SyncWalkDir::new(&project_path)
+        let entries = WalkDir::new(&project_path)
             .follow_links(true)
             .into_iter();
         
@@ -157,16 +158,26 @@ impl WorkspaceManager {
     }
     /// 启动文件监控，支持防抖和优雅退出
     pub async fn watcher(&mut self) -> XResult<()> {
+        use notify::Watcher;
         use tokio::time::{sleep, Duration};
 
-        let mut watcher = file_watcher(&self.config.root)?;
+        let (tx, mut rx) = tokio::sync::mpsc::channel(100);
+        let watch_path = self.config.root.clone();
+        let mut _watcher = notify::recommended_watcher(move |res: Result<notify::Event, notify::Error>| {
+            if let Ok(event) = res {
+                let _ = tx.blocking_send(event);
+            }
+        }).map_err(|e| XError::new(xcell_core::XErrorKind::IOError(e.to_string())))?;
+        _watcher.watch(&watch_path, notify::RecursiveMode::Recursive)
+            .map_err(|e| XError::new(xcell_core::XErrorKind::IOError(e.to_string())))?;
+
         let debounce_delay = Duration::from_millis(500);
 
         loop {
             tokio::select! {
-                event = watcher.next() => {
+                event = rx.recv() => {
                     match event {
-                        Some(Ok(o)) => {
+                        Some(o) => {
                             tracing::trace!("文件变更: {:?}", o);
                             sleep(debounce_delay).await;
 
@@ -204,12 +215,7 @@ impl WorkspaceManager {
                             }
                         }
                         None => break,
-                        _ => continue,
                     }
-                }
-                _ = tokio::signal::ctrl_c() => {
-                    tracing::info!("收到退出信号，停止文件监控");
-                    break;
                 }
             }
         }
@@ -307,35 +313,18 @@ impl WorkspaceManager {
             Err(XError::table_error(format!("{} 不是有效的表格类型", table.as_ref().get_header(0).field_name)).with_path(file))
         };
 
-        // 执行导出
-        if result.is_ok() {
-            // 代码生成现在由 xcell 可执行文件中的 xcell-generator 模块处理
-            // self.write_unity()?;
-            // self.write_cocos()?;
-        }
-
         result
     }
-    /// 检查表格是否符合导出条件
-    pub fn should_export(&self, table_name: &str, target: &str) -> bool {
-        for condition in &self.config.export_conditions {
-            // 使用简单的字符串匹配，后续可以使用 globset 进行更复杂的匹配
-            if condition.table_pattern == "*" || table_name.contains(&condition.table_pattern) {
-                return condition.target == "both" || condition.target == target;
-            }
+}
+
+fn build_glob_set(pattern: &str) -> XResult<GlobSet> {
+    let mut builder = globset::GlobSetBuilder::new();
+    for p in pattern.split(',') {
+        let p = p.trim();
+        if !p.is_empty() {
+            let glob = globset::Glob::new(p).map_err(|e| XError::runtime_error(e.to_string()))?;
+            builder.add(glob);
         }
-        true // 默认导出
     }
-
-    /// 生成 Unity 代码和资源文件
-    pub fn write_unity(&self) -> XResult<()> {
-        // 代码生成现在由 xcell 可执行文件中的 xcell-generator 模块处理
-        Ok(())
-    }
-
-    /// 生成 Cocos 代码和 JSON 数据
-    pub fn write_cocos(&self) -> XResult<()> {
-        // 代码生成现在由 xcell 可执行文件中的 xcell-generator 模块处理
-        Ok(())
-    }
+    builder.build().map_err(|e| XError::runtime_error(e.to_string()))
 }

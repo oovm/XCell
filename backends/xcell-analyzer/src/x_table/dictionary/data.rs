@@ -81,13 +81,13 @@ impl XDataLine {
 impl XDataLine {
     fn try_parse_data(&mut self, data: &[Data], row: usize, headers: &[XCellHeader], errors: &mut Vec<XError>) {
         for header in headers {
-            // 跳过 Unknown 类型的列
             if let xcell_core::XCellTyped::Unknown = header.typing {
                 continue;
             }
-            
+
             let data = data.get(header.column).unwrap_or(&Data::Empty);
-            match header.typing.parse_cell(data) {
+            let xdata = xcell_provider::convert_data(data);
+            match header.typing.parse_cell(&xdata) {
                 Ok(o) => self.data.push(o),
                 Err(e) => errors.push(e.with_xy(header.column, row)),
             }

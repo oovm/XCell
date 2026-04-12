@@ -98,6 +98,9 @@ oak-yaml = { git = "https://github.com/ygg-lang/oaks.git", branch = "dev", versi
 
 
 
+[patch."https://github.com/ygg-lang/oaks.git"]
+oak-dejavu = { path = "../oaks/examples/oak-dejavu" }
+
 [profile.release]
 lto = true
 strip = true

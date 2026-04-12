@@ -8,10 +8,10 @@ mod file_format;
 mod reader;
 
 pub use file_format::{FileFormat, FileFormatDetector};
-pub use reader::{CsvRows, CsvTable, ExcelTable, TableReader, TsvRows, TsvTable, XCellHeader};
+pub use reader::{convert_data, ArcTableReader, CalamineTable, CsvRows, CsvTable, TableReader, TsvRows, TsvTable, XCellHeader};
 pub use xcell_core::{XCellAccess, XDocument};
 
-use xcell_core::{TypeMetaInfo, XError, XErrorKind, XResult};
+use xcell_core::{FieldConfig, TableLineMode, TypeMetaInfo, XError, XErrorKind, XResult};
 
 /// 根据文件路径自动检测文件格式并加载表格
 ///
@@ -39,7 +39,44 @@ pub fn load_table_with_config(path: &Path, config: &TypeMetaInfo) -> XResult<Box
 
     match format {
         FileFormat::Excel => {
-            let table = ExcelTable::load(path)?;
+            let table = CalamineTable::load_with_config(path, config)?;
+            Ok(Box::new(table))
+        }
+        FileFormat::Csv => {
+            let table = CsvTable::load(path)?;
+            Ok(Box::new(table))
+        }
+        FileFormat::Tsv => {
+            let table = TsvTable::load(path)?;
+            Ok(Box::new(table))
+        }
+        FileFormat::Ods => Err(XError::new(XErrorKind::TableError("ODS 格式暂不支持读取".to_string()))),
+        FileFormat::Unknown => Err(XError::new(XErrorKind::TableError(format!("无法检测文件格式: {:?}", path)))),
+    }
+}
+
+/// 根据文件路径和完整配置加载表格
+///
+/// # Parameters
+/// - `path`: 表格文件的路径
+/// - `typing`: 类型元信息
+/// - `line`: 行模式配置
+/// - `fields`: 字段配置列表
+///
+/// # Returns
+/// - 成功时返回实现了 `TableReader` trait 的实例
+/// - 失败时返回错误
+pub fn load_table_with_full_config(
+    path: &Path,
+    typing: &TypeMetaInfo,
+    line: &TableLineMode,
+    fields: &[FieldConfig],
+) -> XResult<Box<dyn TableReader>> {
+    let format = FileFormatDetector::detect(path)?;
+
+    match format {
+        FileFormat::Excel => {
+            let table = CalamineTable::load_with_full_config(path, typing, line, fields)?;
             Ok(Box::new(table))
         }
         FileFormat::Csv => {

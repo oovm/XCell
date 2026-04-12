@@ -29,9 +29,4 @@ csscolorparser = { workspace = true, optional = true, features = ["serde"] }
 
 [features]
 default = ["num", "bigdecimal", "chrono", "csscolorparser", "oak-json"]
-typescript = []
-csharp = []
-globset = []
-notify = []
-walkdir = []
-async-walkdir = []
+

@@ -8,7 +8,7 @@ pub use xcell_core::{XError, XErrorKind};
 pub type XResult<T> = Result<T, XError>;
 
 pub use xcell_config::{
-    CocosCodegen, MergeRules, MergeStep, PROJECT_CONFIG, ProjectConfig, TableConfig, TableLineMode, UnityBinaryConfig,
+    CocosCodegen, MergeRules, MergeStep, PROJECT_CONFIG, ProjectConfig, TableConfig, UnityBinaryConfig,
     UnityCodegen,
 };
 
@@ -23,10 +23,9 @@ pub use self::{
         },
         enumerate::{DefineManager, XEnumerateTable, data::XEnumerateData},
         language::{LanguageManager, XLanguageData, XLanguageID, XLanguageTable},
-        table::CalamineTable,
     },
 };
-pub use xcell_provider::XCellHeader;
+pub use xcell_provider::{CalamineTable, XCellHeader};
 mod config;
 pub mod utils;
 pub mod validation;

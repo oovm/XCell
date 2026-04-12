@@ -1,6 +1,6 @@
 use crate::utils::comment::XComment;
-use super::*;
 use calamine::DataType;
+use super::*;
 
 impl XClassItem {
     pub fn parse_cell(data: &[Data], cfg: &XClassTable) -> XResult<Self> {
@@ -19,7 +19,6 @@ impl XClassItem {
             Some("") | None => Err(XError::runtime_error("字段名为空"))?,
             Some(s) => s,
         };
-        // TODO: 检查合法的类型名
         if cell.contains(' ') {
             Err(XError::runtime_error("字段名包含空格"))?
         }
@@ -33,7 +32,10 @@ impl XClassItem {
     }
     fn parse_default(&mut self, row: &[Data], cfg: &XClassTable) -> XResult<XCellValue> {
         match row.get(cfg.default_column) {
-            Some(s) => Ok(self.typing.parse_cell(s).map_err(|e| e.with_x(cfg.default_column))?),
+            Some(s) => {
+                let xdata = xcell_provider::convert_data(s);
+                Ok(self.typing.parse_cell(&xdata).map_err(|e| e.with_x(cfg.default_column))?)
+            }
             None => Err(XError::table_error("缺失 class 值").with_x(cfg.default_column))?,
         }
     }

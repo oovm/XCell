@@ -5,6 +5,7 @@ use std::io::Write;
 use xcell_analyzer::{WorkspaceManager, XCellHeader, XDataLine, XEnumerateData};
 use xcell_config::UnityCodegen;
 use xcell_core::XResult;
+use crate::codegen::core::csharp_ffi::{AsCSharpType, AsCSharpValue};
 
 /// Unity 枚举代码生成模板数据
 pub struct UnityEnumerateTemplate {
@@ -13,7 +14,7 @@ pub struct UnityEnumerateTemplate {
     /// 类名
     pub class_name: String,
     /// ID 类型
-    pub id_type: &'static str,
+    pub id_type: String,
     /// Unity 代码生成配置
     pub config: UnityCodegen,
     /// 枚举 ID 列表

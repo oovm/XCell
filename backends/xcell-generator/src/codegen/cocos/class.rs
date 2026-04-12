@@ -1,8 +1,7 @@
 use super::*;
-use convert_case::{Case, Casing};
-use serde::{Deserialize, Serialize};
 use xcell_analyzer::XClassData;
 use crate::template::{TemplateLoader, TemplateType};
+use nargo_types::NargoValue;
 
 impl CocosCodegen {
     /// Writes Cocos class code
@@ -14,12 +13,9 @@ impl CocosCodegen {
     /// # Returns
     /// Result of the operation
     pub(super) fn write_class(&self, ws: &WorkspaceManager, table: &XClassData) -> XResult<()> {
-        use nargo_types::NargoValue;
-        
         let table_name = format!("{}{}", table.name, self.suffix_table);
         let mut file = self.log_typescript(ws, &table_name)?;
-        
-        // 创建 NargoValue 上下文
+
         let mut context_data = std::collections::HashMap::new();
         context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
         context_data.insert("class_name".to_string(), NargoValue::String(table.name.clone()));
@@ -28,13 +24,12 @@ impl CocosCodegen {
         context_data.insert("namespace".to_string(), NargoValue::String(self.namespace.clone()));
         context_data.insert("key_name".to_string(), NargoValue::String("id".to_string()));
         context_data.insert("class_document".to_string(), NargoValue::Array(vec![]));
-        
-        // 处理 class_fields
+
         let class_fields: Vec<(Vec<String>, String, String, bool, String)> = table.items.iter().map(|item| {
             let default = item.typing.as_typescript_default();
             (vec![], item.field.clone(), item.typing.as_typescript_type(), !default.is_empty(), default)
         }).collect();
-        
+
         let class_fields_value: Vec<NargoValue> = class_fields.iter().map(|(document, name, typing, has_default, default)| {
             let mut field_data = std::collections::HashMap::new();
             field_data.insert("document".to_string(), NargoValue::Array(
@@ -47,17 +42,15 @@ impl CocosCodegen {
             NargoValue::Object(field_data)
         }).collect();
         context_data.insert("class_fields".to_string(), NargoValue::Array(class_fields_value));
-        
+
         let context = NargoValue::Object(context_data);
-        
-        // 创建模板加载器
+
         let template_dir = self.template_dir.as_deref().map(Path::new);
         let loader = TemplateLoader::new(template_dir)?;
-        
-        // 使用模板加载器渲染模板
-        let out = loader.render_template(TemplateType::Class.file_name(), &context)?;
+
+        let out = loader.render_with_dejavu(TemplateType::Class.file_name(), &context)?;
         file.write_all(out.as_bytes())?;
-        
+
         Ok(())
     }
 }

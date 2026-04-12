@@ -1,5 +1,5 @@
 use super::*;
-use crate::x_table::table::{ArcTableReader, TableReader, WrappedTableReader};
+use crate::x_table::table::{ArcTableReader, XTableReader};
 use calamine::{Data, DataType};
 use xcell_provider::TableReader as XCellTableReader;
 
@@ -9,14 +9,12 @@ impl XLanguageTable {
     }
 
     pub fn confirm(table: crate::x_table::table::ArcTableReader) -> XResult<Self> {
-        if !crate::x_table::table::TableReader::is_language_table(&table) {
+        if !table.is_language_table() {
             return Err(XError::runtime_error("首格字段不是 language-id"));
         }
         let mut out = Self::new(table.clone());
         for header in table.headers() {
-            if crate::x_table::table::TableReader::is_language_value(&table, &header.field_name) {
-                // Extract language name from field name
-                // For example, "LanguageValue_English" becomes "English"
+            if table.is_language_value(&header.field_name) {
                 let language_name = header.field_name
                     .trim_start_matches(|c: char| !c.is_alphabetic())
                     .trim_start_matches("LanguageValue")
@@ -25,7 +23,7 @@ impl XLanguageTable {
                 out.language = if language_name.is_empty() { "Unknown".to_string() } else { language_name.to_string() };
                 out.value_column = header.column;
             }
-            if crate::x_table::table::TableReader::is_group(&table, &header.field_name) {
+            if table.is_group(&header.field_name) {
                 out.group_column = header.column;
             }
         }

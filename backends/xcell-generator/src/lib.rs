@@ -1,7 +1,6 @@
 #![warn(missing_docs)]
 
 use std::collections::HashMap;
-use std::path::PathBuf;
 use tracing::{error, info};
 use xcell_analyzer::{WorkspaceManager, XClassData, XDictData, XEnumerateData, XListData};
 use xcell_core::XResult;
@@ -58,6 +57,7 @@ impl Generator {
         generators.insert("binary".to_string(), Box::new(codegen::binary::BinaryCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("typescript".to_string(), Box::new(codegen::typescript::TypeScriptCodegen::default()) as Box<dyn codegen::Codegen>);
         generators.insert("unity".to_string(), Box::new(codegen::unity::UnityGenerator::default_generator()) as Box<dyn codegen::Codegen>);
+        generators.insert("dejavu".to_string(), Box::new(codegen::dejavu::DynamicDejavuCodegen::new()) as Box<dyn codegen::Codegen>);
 
         info!("生成器实例创建完成，注册了 {} 个代码生成器", generators.len());
 

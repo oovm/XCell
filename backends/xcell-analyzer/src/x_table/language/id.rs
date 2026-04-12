@@ -1,13 +1,14 @@
 use crate::{
     XEnumerateTable,
-    x_table::table::{ArcTableReader, TableReader},
+    x_table::table::ArcTableReader,
 };
+use xcell_provider::TableReader as XCellTableReader;
 
 use super::*;
 
 impl XLanguageID {
     pub fn confirm(table: ArcTableReader) -> XResult<Self> {
-        if !crate::x_table::table::TableReader::is_language_define(&table) {
+        if !table.is_language_define() {
             return Err(XError::runtime_error("首格类型不是 LanguageID"));
         }
         Ok(Self { wrap: XEnumerateTable::force_confirm(table) })

@@ -6,8 +6,10 @@ use calamine::{Data, Reader};
 use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
-use xcell_core::{IntegerKind, TypeMetaInfo, XCellAccess, XCellTyped, XDocument, XError, XErrorKind, XResult};
+use std::sync::Arc;
+use xcell_core::{FieldConfig, IntegerKind, TableLineMode, TypeMetaInfo, XCellAccess, XCellTyped, XDocument, XError, XErrorKind, XResult};
 pub use xcell_parser::FieldConstraint;
+use xcell_parser::{norm_string, parse_field, parse_meta, TableKind};
 
 /// 表格表头信息
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -673,77 +675,165 @@ impl TableReader for TsvTable {
     }
 }
 
-/// Excel 表格读取器
+/// Calamine 表格读取器，支持 Excel 等格式的完整解析
 #[derive(Clone, Debug)]
-pub struct ExcelTable {
+pub struct CalamineTable {
     /// 表格的绝对路径
     path: PathBuf,
-    /// 原始表单
+    /// 原始表单数据
     table: calamine::Range<Data>,
-    /// 表格标签
-    label: String,
-    /// 表头信息
-    headers: Vec<XCellHeader>,
-    /// 工作表名称
-    sheet_name: String,
+    /// 类型元信息
+    typing: TypeMetaInfo,
+    /// 行模式配置
+    line: TableLineMode,
+    /// 字段配置列表
+    fields: Vec<FieldConfig>,
 }
 
-impl ExcelTable {
-    /// 加载 Excel 文件
+impl CalamineTable {
+    /// 加载 Excel 表格文件并应用类型配置
     ///
     /// # Parameters
-    /// - `path`: Excel 文件的路径
+    /// - `path`: 表格文件的路径
+    /// - `typing`: 类型元信息
     ///
     /// # Returns
-    /// - 成功时返回 ExcelTable 实例
+    /// - 成功时返回 CalamineTable 实例
     /// - 失败时返回错误
-    pub fn load(path: &Path) -> XResult<Self> {
+    pub fn load_with_typing(path: &Path, typing: &TypeMetaInfo) -> XResult<Self> {
         let path = path.canonicalize().map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
-        let mut excel: calamine::Xlsx<_> =
-            calamine::open_workbook(&path).map_err(|e| XError::new(XErrorKind::IOError(format!("{:?}", e))))?;
-        let sheet_names = excel.sheet_names();
+        let table = crate::find_first_table(&path)?;
+        Ok(Self {
+            path,
+            table,
+            typing: typing.clone(),
+            line: TableLineMode::default(),
+            fields: Vec::new(),
+        })
+    }
 
-        if sheet_names.is_empty() {
-            return Err(XError::new(XErrorKind::TableError("Excel 文件中没有工作表".to_string())));
-        }
+    /// 加载 Excel 表格文件并应用完整配置
+    ///
+    /// # Parameters
+    /// - `path`: 表格文件的路径
+    /// - `typing`: 类型元信息
+    /// - `line`: 行模式配置
+    /// - `fields`: 字段配置列表
+    ///
+    /// # Returns
+    /// - 成功时返回 CalamineTable 实例
+    /// - 失败时返回错误
+    pub fn load_with_full_config(
+        path: &Path,
+        typing: &TypeMetaInfo,
+        line: &TableLineMode,
+        fields: &[FieldConfig],
+    ) -> XResult<Self> {
+        let path = path.canonicalize().map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
+        let table = crate::find_first_table(&path)?;
+        Ok(Self {
+            path,
+            table,
+            typing: typing.clone(),
+            line: *line,
+            fields: fields.to_vec(),
+        })
+    }
 
-        let first_sheet = &sheet_names[0];
-        let range = excel
-            .worksheet_range(first_sheet)
-            .map_err(|_| XError::new(XErrorKind::TableError(format!("无法读取工作表: {}", first_sheet))))?;
-
-        // 解析表头信息，默认从第 2 行开始（1-based）
-        let mut headers = Vec::new();
-        let field_row: u32 = 1; // 0-based，对应 1-based 的第 2 行
-        
-        if (range.height() as u32) > field_row {
-            for col in 0..(range.width() as u32) {
-                if let Some(value) = range.get_value((field_row, col)) {
-                    let field_name = match value {
-                        Data::String(s) => s.to_string(),
-                        _ => String::new(),
-                    };
-                    
-                    headers.push(XCellHeader {
-                        column: col as usize,
-                        access: XCellAccess::Public,
-                        field_name,
-                        typing: XCellTyped::default(),
-                        document: XDocument::default(),
-                        complete: true,
-                        constraint: None,
-                    });
+    /// 获取表格类型
+    ///
+    /// # Returns
+    /// - 表格类型标记，如果第一行第一列包含有效的元数据表达式
+    pub fn table_kind(&self) -> Option<TableKind> {
+        let meta_row_worksheet = 0;
+        let meta_row_range = match self.table.start() {
+            Some((start_row, _)) => meta_row_worksheet - start_row,
+            None => meta_row_worksheet,
+        };
+        if let Some(value) = self.table.get_value((meta_row_range, 0)) {
+            if let Data::String(s) = value {
+                if let Ok(meta) = parse_meta(s) {
+                    return Some(meta.kind);
                 }
             }
         }
+        None
+    }
 
-        Ok(Self { path, table: range.clone(), label: String::new(), headers, sheet_name: first_sheet.to_string() })
+    /// 获取第 `index` 列的字段名和约束
+    fn get_field_name(&self, index: usize) -> Option<(String, Option<FieldConstraint>)> {
+        if let Some(field) = self.fields.get(index) {
+            if !field.name.is_empty() {
+                return Some((field.name.clone(), None));
+            }
+        }
+        let field_row_worksheet = self.line.field as u32 - 1;
+        let field_row_range = match self.table.start() {
+            Some((start_row, _)) => field_row_worksheet - start_row,
+            None => field_row_worksheet,
+        };
+        if let Some(value) = self.table.get_value((field_row_range, index as u32)) {
+            if let Data::String(s) = value {
+                if let Ok(field_expr) = parse_field(s) {
+                    return Some((field_expr.name, field_expr.constraint));
+                }
+                return Some((s.to_string(), None));
+            }
+        }
+        None
+    }
+
+    /// 获取第 `index` 列的字段类型
+    fn get_field_type(&self, index: usize) -> Option<XCellTyped> {
+        if let Some(field) = self.fields.get(index) {
+            if !field.r#type.is_empty() {
+                return Some(XCellTyped::parse(&field.r#type, &self.typing));
+            }
+        }
+        let type_row_worksheet = self.line.r#type as u32 - 1;
+        let type_row_range = match self.table.start() {
+            Some((start_row, _)) => type_row_worksheet - start_row,
+            None => type_row_worksheet,
+        };
+        if let Some(value) = self.table.get_value((type_row_range, index as u32)) {
+            let type_str = match value {
+                Data::String(s) => s.to_string(),
+                Data::Int(i) => i.to_string(),
+                Data::Float(f) => f.to_string(),
+                Data::Bool(b) => b.to_string(),
+                Data::DateTime(dt) => dt.to_string(),
+                Data::DateTimeIso(dt) => dt.to_string(),
+                Data::DurationIso(dur) => dur.to_string(),
+                _ => return None,
+            };
+            if !type_str.is_empty() {
+                return Some(XCellTyped::parse(&type_str, &self.typing));
+            }
+        }
+        None
+    }
+
+    /// 读取第 `index` 列的注释详情
+    fn read_comment_details(&self, _index: usize) -> XDocument {
+        XDocument::default()
     }
 }
 
-impl TableReader for ExcelTable {
+impl TableReader for CalamineTable {
     fn load(path: &Path) -> XResult<Self> {
-        Self::load(path)
+        let path = path.canonicalize().map_err(|e| XError::new(XErrorKind::IOError(e.to_string())))?;
+        let table = crate::find_first_table(&path)?;
+        Ok(Self {
+            path,
+            table,
+            typing: TypeMetaInfo::default(),
+            line: TableLineMode::default(),
+            fields: Vec::new(),
+        })
+    }
+
+    fn load_with_config(path: &Path, config: &TypeMetaInfo) -> XResult<Self> {
+        Self::load_with_typing(path, config)
     }
 
     fn get_name(&self) -> String {
@@ -751,93 +841,118 @@ impl TableReader for ExcelTable {
     }
 
     fn get_header(&self, index: usize) -> XCellHeader {
-        self.headers.get(index).cloned().unwrap_or_default()
+        let mut complete = true;
+        let (field_name, constraint) = match self.get_field_name(index) {
+            Some((name, constraint)) => (name, constraint),
+            None => {
+                complete = false;
+                (Default::default(), None)
+            }
+        };
+        let typing = match self.get_field_type(index) {
+            Some(s) => s,
+            None => {
+                complete = false;
+                Default::default()
+            }
+        };
+        let access = if field_name.starts_with('_') { XCellAccess::Private } else { XCellAccess::Public };
+        XCellHeader {
+            column: index,
+            document: self.read_comment_details(index),
+            typing,
+            field_name,
+            complete,
+            access,
+            constraint,
+        }
     }
 
     fn headers(&self) -> Box<dyn Iterator<Item = XCellHeader> + '_> {
-        Box::new(self.headers.clone().into_iter())
+        let width = self.table.width() as usize;
+        Box::new((0..width).map(|i| self.get_header(i)))
     }
 
     fn rows(&self) -> Box<dyn Iterator<Item = (usize, Vec<Data>)> + '_> {
-        let range = &self.table;
-        let iter = (0..range.height()).map(move |row| {
-            let mut data = Vec::with_capacity(range.width() as usize);
+        let range = self.table.clone();
+        Box::new((0..range.height()).map(move |row| {
+            let mut data = Vec::new();
             for col in 0..range.width() {
                 if let Some(value) = range.get_value((row as u32, col as u32)) {
                     data.push(value.to_owned());
-                }
-                else {
+                } else {
                     data.push(Data::Empty);
                 }
             }
             (row as usize, data)
-        });
-        Box::new(iter)
+        }))
     }
 
     fn parse_type(&self, name: &str) -> XCellTyped {
-        let info = TypeMetaInfo::default();
-        XCellTyped::parse(name, &info)
+        XCellTyped::parse(name, &self.typing)
+    }
+
+    fn parse_type_with_config(&self, name: &str, config: &TypeMetaInfo) -> XCellTyped {
+        XCellTyped::parse(name, config)
     }
 
     fn default_enumerate(&self) -> IntegerKind {
-        IntegerKind::Unsigned32
+        self.typing.enumerate.integer
     }
 
     fn is_language_define(&self) -> bool {
-        false
+        let name = self.get_header(0);
+        let norm = norm_string(&name.field_name);
+        self.typing.language.is_id(&norm)
     }
 
     fn is_language_table(&self) -> bool {
-        false
+        let name = self.get_header(0);
+        let norm = norm_string(&name.field_name);
+        self.typing.language.is_key(&norm)
     }
 
-    fn is_language_value(&self, _name: &str) -> bool {
-        false
+    fn is_language_value(&self, name: &str) -> bool {
+        let norm = norm_string(name);
+        self.typing.language.is_value(&norm)
     }
 
     fn is_class(&self) -> bool {
-        false
+        let name = self.get_header(0);
+        name.field_name.eq_ignore_ascii_case("class")
     }
 
     fn is_list(&self) -> bool {
-        if let Some(first_header) = self.headers.first() {
-            first_header.field_name.eq_ignore_ascii_case("id")
-        } else {
-            false
-        }
+        let head = self.get_header(0);
+        head.field_name.eq_ignore_ascii_case("id")
     }
 
     fn is_dict(&self) -> bool {
-        false
+        let head = self.get_header(0);
+        head.field_name.eq_ignore_ascii_case("key")
     }
 
-    fn is_group(&self, _name: &str) -> bool {
-        false
+    fn is_group(&self, name: &str) -> bool {
+        self.typing.language.is_group(name)
     }
 
-    fn is_enumerate(&self, _name: &str) -> bool {
-        false
+    fn is_enumerate(&self, name: &str) -> bool {
+        name == "enum"
     }
 
     fn is_numeric_key(&self, name: &str) -> bool {
         name.eq_ignore_ascii_case("id")
     }
 
-    fn is_document(&self, _name: &str) -> bool {
-        false
+    fn is_document(&self, name: &str) -> bool {
+        name == "document"
     }
 
-    fn set_header(&mut self, index: usize, header: XCellHeader) -> XResult<()> {
-        if index >= self.headers.len() {
-            self.headers.resize(index + 1, XCellHeader::default());
-        }
-        self.headers[index] = header;
+    fn set_header(&mut self, _index: usize, _header: XCellHeader) -> XResult<()> {
         Ok(())
     }
 
-    fn add_header(&mut self, header: XCellHeader) -> XResult<()> {
-        self.headers.push(header);
+    fn add_header(&mut self, _header: XCellHeader) -> XResult<()> {
         Ok(())
     }
 
@@ -853,12 +968,154 @@ impl TableReader for ExcelTable {
         Err(XError::new(XErrorKind::TableError("Excel 保存功能未实现".to_string())))
     }
 
-    fn set_label(&mut self, label: &str) -> XResult<()> {
-        self.label = label.to_string();
+    fn set_label(&mut self, _label: &str) -> XResult<()> {
         Ok(())
     }
 
     fn get_label(&self) -> XResult<String> {
-        Ok(self.label.clone())
+        Ok(String::new())
+    }
+}
+
+/// 共享表格读取器，用于在多个消费者之间共享 `TableReader` 实例
+#[derive(Debug, Clone)]
+pub struct ArcTableReader {
+    inner: Arc<dyn TableReader>,
+}
+
+impl ArcTableReader {
+    /// 创建新的共享表格读取器
+    ///
+    /// # Parameters
+    /// - `inner`: 被包装的表格读取器
+    pub fn new(inner: Arc<dyn TableReader>) -> Self {
+        Self { inner }
+    }
+}
+
+impl TableReader for ArcTableReader {
+    fn load(_path: &Path) -> XResult<Self> {
+        Err(XError::new(XErrorKind::TableError("ArcTableReader::load not implemented".to_string())))
+    }
+
+    fn load_with_config(_path: &Path, _config: &TypeMetaInfo) -> XResult<Self> {
+        Err(XError::new(XErrorKind::TableError("ArcTableReader::load_with_config not implemented".to_string())))
+    }
+
+    fn get_name(&self) -> String {
+        self.inner.get_name()
+    }
+
+    fn get_header(&self, index: usize) -> XCellHeader {
+        self.inner.get_header(index)
+    }
+
+    fn headers(&self) -> Box<dyn Iterator<Item = XCellHeader> + '_> {
+        self.inner.headers()
+    }
+
+    fn rows(&self) -> Box<dyn Iterator<Item = (usize, Vec<Data>)> + '_> {
+        self.inner.rows()
+    }
+
+    fn parse_type(&self, name: &str) -> XCellTyped {
+        self.inner.parse_type(name)
+    }
+
+    fn parse_type_with_config(&self, name: &str, config: &TypeMetaInfo) -> XCellTyped {
+        self.inner.parse_type_with_config(name, config)
+    }
+
+    fn default_enumerate(&self) -> IntegerKind {
+        self.inner.default_enumerate()
+    }
+
+    fn is_language_define(&self) -> bool {
+        self.inner.is_language_define()
+    }
+
+    fn is_language_table(&self) -> bool {
+        self.inner.is_language_table()
+    }
+
+    fn is_language_value(&self, name: &str) -> bool {
+        self.inner.is_language_value(name)
+    }
+
+    fn is_class(&self) -> bool {
+        self.inner.is_class()
+    }
+
+    fn is_list(&self) -> bool {
+        self.inner.is_list()
+    }
+
+    fn is_dict(&self) -> bool {
+        self.inner.is_dict()
+    }
+
+    fn is_group(&self, name: &str) -> bool {
+        self.inner.is_group(name)
+    }
+
+    fn is_enumerate(&self, name: &str) -> bool {
+        self.inner.is_enumerate(name)
+    }
+
+    fn is_numeric_key(&self, name: &str) -> bool {
+        self.inner.is_numeric_key(name)
+    }
+
+    fn is_document(&self, name: &str) -> bool {
+        self.inner.is_document(name)
+    }
+
+    fn set_header(&mut self, _index: usize, _header: XCellHeader) -> XResult<()> {
+        Ok(())
+    }
+
+    fn add_header(&mut self, _header: XCellHeader) -> XResult<()> {
+        Ok(())
+    }
+
+    fn write_row(&mut self, _row_index: usize, _data: Vec<Data>) -> XResult<()> {
+        Ok(())
+    }
+
+    fn add_row(&mut self, _data: Vec<Data>) -> XResult<()> {
+        Ok(())
+    }
+
+    fn save(&self, path: &Path) -> XResult<()> {
+        self.inner.save(path)
+    }
+
+    fn set_label(&mut self, _label: &str) -> XResult<()> {
+        Ok(())
+    }
+
+    fn get_label(&self) -> XResult<String> {
+        self.inner.get_label()
+    }
+}
+
+/// 将 calamine::Data 转换为 xcell_core::for_3rd::Data
+///
+/// # Parameters
+/// - `data`: calamine 的单元格数据
+///
+/// # Returns
+/// - 转换后的 xcell_core 数据
+pub fn convert_data(data: &Data) -> xcell_core::for_3rd::Data {
+    match data {
+        Data::Int(v) => xcell_core::for_3rd::Data::Int(*v),
+        Data::Float(v) => xcell_core::for_3rd::Data::Float(*v),
+        Data::String(v) => xcell_core::for_3rd::Data::String(v.clone()),
+        Data::Bool(v) => xcell_core::for_3rd::Data::Bool(*v),
+        Data::DateTime(v) => xcell_core::for_3rd::Data::DateTime(v.as_f64()),
+        Data::DateTimeIso(v) => xcell_core::for_3rd::Data::DateTimeIso(v.clone()),
+        Data::DurationIso(v) => xcell_core::for_3rd::Data::DurationIso(v.clone()),
+        Data::Error(v) => xcell_core::for_3rd::Data::Error(format!("{:?}", v)),
+        Data::Empty => xcell_core::for_3rd::Data::Empty,
     }
 }

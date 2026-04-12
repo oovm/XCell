@@ -2,6 +2,8 @@ use std::{fs::File, io::Read, path::Path, sync::Arc};
 use xcell_core::{XError, XResult};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
+use nargo_template::{DejaVuAdapter, DejaVuFrontend, UnifiedTemplateEngine};
+use nargo_types::NargoValue;
 
 static DEFAULT_TEMPLATES: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
     let mut templates = HashMap::new();
@@ -91,7 +93,7 @@ impl TemplateLoader {
         }
     }
     
-    /// 渲染模板
+    /// 使用 DejaVuAdapter 渲染模板
     ///
     /// # 参数
     /// * `template_name` - 模板名称
@@ -99,117 +101,48 @@ impl TemplateLoader {
     ///
     /// # 返回值
     /// 返回渲染后的内容，成功时返回 Ok(String)，失败时返回 XError
-    pub fn render_template(&self, template_name: &str, context: &serde_json::Value) -> XResult<String> {
-        let template_content = self.load_template(template_name)?;
-        
-        // 简单的模板渲染实现
-        let mut result = template_content;
-        
-        // 处理变量替换: <% variable %>
-        if let Some(obj) = context.as_object() {
-            for (key, value) in obj {
-                let placeholder = format!("<% {} %>", key);
-                let value_str = value.to_string().trim_matches('"').to_string();
-                result = result.replace(&placeholder, &value_str);
-            }
+    pub fn render_with_dejavu(&self, template_name: &str, context: &NargoValue) -> XResult<String> {
+        let mut adapter = DejaVuAdapter::new(DejaVuFrontend::new());
+
+        for (name, content) in DEFAULT_TEMPLATES.iter() {
+            adapter.register_template(name, content).map_err(|e| {
+                XError::runtime_error(format!("注册默认模板 {} 失败: {}", name, e))
+            })?;
         }
-        
-        // 处理循环结构: <% loop item in items %>
-        if let Some(obj) = context.as_object() {
-            // 寻找所有循环结构
-            while let Some(loop_start) = result.find("<% loop ") {
-                // 提取循环变量名和数组名
-                let loop_start_str = &result[loop_start..];
-                if let Some(loop_end) = loop_start_str.find(" %>") {
-                    let loop_command = &loop_start_str[6..loop_end];
-                    if let Some(in_idx) = loop_command.find(" in ") {
-                        let item_var = loop_command[..in_idx].trim();
-                        let array_name = loop_command[in_idx + 4..].trim();
-                        
-                        // 查找循环结束标记（处理嵌套循环）
-                        let end_loop = format!("<% end loop %>");
-                        let mut end_idx = None;
-                        let mut loop_count = 1;
-                        let mut pos = loop_start + 6; // 跳过 "<% loop "
-                        
-                        while loop_count > 0 && pos < result.len() {
-                            if let Some(inner_loop_start) = result[pos..].find("<% loop ") {
-                                let inner_pos = pos + inner_loop_start;
-                                if let Some(inner_end) = result[inner_pos..].find(" %>") {
-                                    loop_count += 1;
-                                    pos = inner_pos + inner_end + 2;
-                                    continue;
-                                }
-                            }
-                            
-                            if let Some(inner_end_loop) = result[pos..].find(&end_loop) {
-                                let inner_pos = pos + inner_end_loop;
-                                loop_count -= 1;
-                                if loop_count == 0 {
-                                    end_idx = Some(inner_end_loop);
-                                    break;
-                                }
-                                pos = inner_pos + end_loop.len();
-                                continue;
-                            }
-                            
-                            break;
-                        }
-                        
-                        if let Some(end_idx) = end_idx {
-                            let end_pos = loop_start + end_idx + end_loop.len();
-                            
-                            // 提取循环体
-                            let before_loop = &result[..loop_start];
-                            let loop_start_marker = &loop_start_str[..loop_end + 2]; // "<% loop ... %>"
-                            let loop_body_start = loop_start + loop_start_marker.len();
-                            let loop_body = &result[loop_body_start..loop_start + end_idx];
-                            let after_loop = &result[end_pos..];
-                            
-                            // 检查数组是否存在
-                            if let Some(array_value) = obj.get(array_name) {
-                                if let serde_json::Value::Array(array) = array_value {
-                                    // 渲染循环内容
-                                    let mut loop_content = String::new();
-                                    for item in array {
-                                        if let serde_json::Value::Object(item_obj) = item {
-                                            let mut rendered_item = loop_body.to_string();
-                                            
-                                            // 替换循环体内的变量
-                                            for (key, value) in item_obj {
-                                                // 处理 <% item_var.key %> 形式的占位符
-                                                let placeholder = format!("<% {}.{} %>", item_var, key);
-                                                let value_str = value.to_string().trim_matches('"').to_string();
-                                                rendered_item = rendered_item.replace(&placeholder, &value_str);
-                                            }
-                                            
-                                            // 处理 <% item_var %> 形式的占位符（当 item 本身是字符串或其他简单类型时）
-                                            if let Some(value) = item.as_str() {
-                                                let placeholder = format!("<% {} %>", item_var);
-                                                rendered_item = rendered_item.replace(&placeholder, value);
-                                            } else if let Some(value) = item.as_f64() {
-                                                let placeholder = format!("<% {} %>", item_var);
-                                                rendered_item = rendered_item.replace(&placeholder, &value.to_string());
-                                            } else if let Some(value) = item.as_bool() {
-                                                let placeholder = format!("<% {} %>", item_var);
-                                                rendered_item = rendered_item.replace(&placeholder, &value.to_string());
-                                            }
-                                            
-                                            loop_content.push_str(&rendered_item);
-                                        }
-                                    }
-                                    
-                                    // 重新组合结果
-                                    result = format!("{}{}{}", before_loop, loop_content, after_loop);
-                                }
-                            }
+
+        if let Some(template_dir) = &self.template_dir {
+            let entries = std::fs::read_dir(template_dir).map_err(|e| {
+                XError::runtime_error(format!("读取模板目录失败: {:?}", e))
+            })?;
+
+            for entry in entries {
+                let entry = entry.map_err(|e| {
+                    XError::runtime_error(format!("读取目录条目失败: {:?}", e))
+                })?;
+                let path = entry.path();
+
+                if path.is_file() {
+                    if let Some(file_name) = path.file_name().and_then(|n| n.to_str()) {
+                        if file_name.ends_with(".dejavu") {
+                            let mut file = File::open(&path).map_err(|e| {
+                                XError::runtime_error(format!("无法打开模板文件 {}: {:?}", path.display(), e))
+                            })?;
+                            let mut content = String::new();
+                            file.read_to_string(&mut content).map_err(|e| {
+                                XError::runtime_error(format!("无法读取模板文件 {}: {:?}", path.display(), e))
+                            })?;
+                            adapter.register_template(file_name, &content).map_err(|e| {
+                                XError::runtime_error(format!("注册模板 {} 失败: {}", file_name, e))
+                            })?;
                         }
                     }
                 }
             }
         }
-        
-        Ok(result)
+
+        adapter.render(template_name, context).map_err(|e| {
+            XError::runtime_error(format!("渲染模板 {} 失败: {}", template_name, e))
+        })
     }
 }
 

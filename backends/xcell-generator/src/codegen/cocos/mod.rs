@@ -6,12 +6,10 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
 };
-use xcell_core::{XError, XResult, XCellValue, for_3rd::ToPrimitive};
+use xcell_core::{XError, XResult, for_3rd::ToPrimitive};
 use xcell_analyzer::{XClassData, XListData, XDictData};
 use url::Url;
-use nargo_template::{DejaVuAdapter, UnifiedTemplateEngine};
-use nargo_types::NargoValue;
-use crate::template::{TemplateLoader, TemplateType};
+use crate::codegen::core::typescript::{AsTypeScriptType, AsTypeScriptDefault};
 
 mod typing;
 mod enumerate;
@@ -394,12 +392,10 @@ impl CocosCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let json_data = table.items.iter().map(|item| {
-            serde_json::json!({
-                "field": item.field,
-                "default": item.default
-            })
-        }).collect::<Vec<_>>();
+        let mut json_data = serde_json::Map::new();
+        for item in &table.items {
+            json_data.insert(item.field.clone(), serde_json::to_value(&item.default).unwrap());
+        }
         
         let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
         
@@ -421,20 +417,21 @@ impl CocosCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let json_data = table.mapping.values().map(|line| {
+        let mut json_data = serde_json::Map::new();
+
+        for (_key, line) in &table.mapping {
             let mut record = serde_json::Map::new();
             record.insert("id".to_string(), serde_json::json!(line.id.to_u64().unwrap_or(0)));
             record.insert("key".to_string(), serde_json::json!(line.key));
-            
-            // 处理数据字段
+
             for (i, header) in table.headers.iter().enumerate() {
                 if i < line.data.len() {
                     record.insert(header.field_name.clone(), serde_json::to_value(&line.data[i]).unwrap());
                 }
             }
-            
-            serde_json::Value::Object(record)
-        }).collect::<Vec<_>>();
+
+            json_data.insert(line.id.to_string(), serde_json::Value::Object(record));
+        }
         
         let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
         
@@ -456,20 +453,21 @@ impl CocosCodegen {
             tracing::debug!("created_directory: path={:?}", parent);
         }
         
-        let json_data = table.mapping.values().map(|line| {
+        let mut json_data = serde_json::Map::new();
+
+        for (key, line) in &table.mapping {
             let mut record = serde_json::Map::new();
             record.insert("id".to_string(), serde_json::json!(line.id.to_u64().unwrap_or(0)));
             record.insert("key".to_string(), serde_json::json!(line.key));
-            
-            // 处理数据字段
+
             for (i, header) in table.headers.iter().enumerate() {
                 if i < line.data.len() {
                     record.insert(header.field_name.clone(), serde_json::to_value(&line.data[i]).unwrap());
                 }
             }
-            
-            serde_json::Value::Object(record)
-        }).collect::<Vec<_>>();
+
+            json_data.insert(key.to_string(), serde_json::Value::Object(record));
+        }
         
         let json_string = serde_json::to_string_pretty(&json_data).map_err(|e| XError::runtime_error(format!("JSON serialize error: {}", e)))?;
         

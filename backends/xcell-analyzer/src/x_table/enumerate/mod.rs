@@ -11,7 +11,7 @@ use crate::{
     utils::first_not_nil,
     x_table::{
         dictionary::data::XDataLine,
-        table::{ArcTableReader, TableReader},
+        table::{ArcTableReader, XTableReader},
     },
 };
 
@@ -48,7 +48,7 @@ impl XEnumerateTable {
     }
     pub fn confirm(table: ArcTableReader) -> XResult<Self> {
         let fst = table.get_header(0);
-        if !crate::x_table::table::TableReader::is_enumerate(&table, &fst.field_name) {
+        if !table.is_enumerate(&fst.field_name) {
             return Err(XError::runtime_error("首格字段不是 enum"));
         }
         Ok(Self::force_confirm(table))
@@ -56,15 +56,14 @@ impl XEnumerateTable {
     pub(crate) fn force_confirm(table: ArcTableReader) -> Self {
         let mut out = Self::new(table.clone());
         for header in table.headers().skip(1) {
-            // skip first column
-            if crate::x_table::table::TableReader::is_numeric_key(&table, &header.field_name) {
+            if table.is_numeric_key(&header.field_name) {
                 if let Some(s) = header.typing.as_integer() {
                     out.id_column = header.column;
                     out.id_type = s.clone();
                 }
                 continue;
             }
-            if crate::x_table::table::TableReader::is_document(&table, &header.field_name) {
+            if table.is_document(&header.field_name) {
                 out.doc_column = header.column;
             }
             if !header.complete {
@@ -81,7 +80,6 @@ impl XEnumerateTable {
         let mut data_items = vec![];
         for (row, data) in self.table.rows() {
             if !first_not_nil(&data) {
-                // 首行是空的, 数据无效且不报错
                 continue;
             }
             let key = match data.get(0) {
@@ -90,7 +88,6 @@ impl XEnumerateTable {
                     errors.push(XError::runtime_error(format!("枚举首格字段不是字符串, 实际 {}", s)).with_y(row));
                     continue;
                 }
-                // 已判空
                 None => unreachable!(),
             };
             let value = self.read_id(&data, &mut available_id);
@@ -98,7 +95,8 @@ impl XEnumerateTable {
             let mut line_items = vec![];
             for header in &self.headers {
                 let cell = data.get(header.column).unwrap_or(&Data::Empty);
-                match header.typing.parse_cell(cell) {
+                let xdata = xcell_provider::convert_data(cell);
+                match header.typing.parse_cell(&xdata) {
                     Ok(o) => line_items.push(o),
                     Err(e) => {
                         errors.push(e.with_y(row));
@@ -146,8 +144,8 @@ impl XEnumerateTable {
             return None;
         }
         let id = row.get(self.id_column)?;
-
-        match self.id_type.parse_value(id) {
+        let xdata = xcell_provider::convert_data(id);
+        match self.id_type.parse_value(&xdata) {
             Ok(o) => Some(o),
             Err(e) => {
                 tracing::error!("枚举表 {} 的 id 列 {} 无法解析为整数, 错误: {}", self.enumerate_name(), self.id_column, e);

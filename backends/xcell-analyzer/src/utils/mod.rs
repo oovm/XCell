@@ -87,18 +87,4 @@ pub fn split_namespace(s: &str) -> Vec<&str> {
     all
 }
 
-pub fn norm_string(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-    for char in s.chars() {
-        if char == '-' || char == '_' || char == ' ' {
-            continue;
-        }
-        if char.is_ascii() {
-            out.push(char.to_ascii_lowercase());
-        }
-        else {
-            out.push(char);
-        }
-    }
-    out
-}
+pub use xcell_parser::norm_string;

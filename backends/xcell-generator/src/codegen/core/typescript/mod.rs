@@ -1,18 +1,53 @@
-use xcell_core::{ListDescription, MapDescription, ReferenceDescription, XCellTyped, XCellValue};
 use itertools::Itertools;
+use xcell_core::{
+    ArrayDescription, ArrayKind, DecimalKind, IntegerKind, ListDescription, MapDescription,
+    ReferenceDescription, XCellTyped, XCellValue,
+    for_3rd::{Datelike, Timelike, Utc},
+};
 
-impl XCellTyped {
-    /// 返回当前 XCell 类型对应的 TypeScript 类型名称
-    pub fn as_typescript_type(&self) -> String {
+/// 返回当前时间的 TypeScript Date 初始化字符串
+pub fn typescript_now() -> String {
+    let now = Utc::now();
+    format!(
+        "new Date({year}, {month}, {day}, {hour}, {minute}, {second})",
+        year = now.year(),
+        month = now.month() - 1,
+        day = now.day(),
+        hour = now.hour(),
+        minute = now.minute(),
+        second = now.second()
+    )
+}
+
+/// 为类型提供 TypeScript 类型名称转换的扩展 trait
+pub trait AsTypeScriptType {
+    /// 返回当前类型对应的 TypeScript 类型名称
+    fn as_typescript_type(&self) -> String;
+}
+
+/// 为类型提供 TypeScript 默认值转换的扩展 trait
+pub trait AsTypeScriptDefault {
+    /// 返回当前类型对应的 TypeScript 默认值字符串
+    fn as_typescript_default(&self) -> String;
+}
+
+/// 为类型提供 TypeScript 值转换的扩展 trait
+pub trait AsTypeScriptValue {
+    /// 返回当前值对应的 TypeScript 值字符串
+    fn as_typescript_value(&self) -> String;
+}
+
+impl AsTypeScriptType for XCellTyped {
+    fn as_typescript_type(&self) -> String {
         match self {
             XCellTyped::Boolean(_) => "boolean".to_string(),
-            XCellTyped::Integer(v) => v.kind.as_typescript_type().to_string(),
-            XCellTyped::Decimal(v) => v.kind.as_typescript_type().to_string(),
+            XCellTyped::Integer(v) => v.kind.as_typescript_type(),
+            XCellTyped::Decimal(v) => v.kind.as_typescript_type(),
             XCellTyped::String(_) => "string".to_string(),
             XCellTyped::Time(_) => "Date".to_string(),
             XCellTyped::Color(_) => "{ r: number; g: number; b: number; a: number }".to_string(),
             XCellTyped::Enumerate(v) => v.name.to_owned(),
-            XCellTyped::Array(v) => v.as_typescript_type().to_string(),
+            XCellTyped::Array(v) => v.as_typescript_type(),
             XCellTyped::Vector(v) => format!("Array<{}>", v.get_type().as_typescript_type()),
             XCellTyped::Reference(_) => "number".to_string(),
             XCellTyped::List(v) => v.as_typescript_type(),
@@ -21,15 +56,60 @@ impl XCellTyped {
             XCellTyped::Unknown => "any".to_string(),
         }
     }
+}
 
-    /// 返回当前 XCell 类型对应的 TypeScript 默认值
-    pub fn as_typescript_default(&self) -> String {
+impl AsTypeScriptType for IntegerKind {
+    fn as_typescript_type(&self) -> String {
+        "number".to_string()
+    }
+}
+
+impl AsTypeScriptType for DecimalKind {
+    fn as_typescript_type(&self) -> String {
+        "number".to_string()
+    }
+}
+
+impl AsTypeScriptType for ReferenceDescription {
+    fn as_typescript_type(&self) -> String {
+        "number".to_string()
+    }
+}
+
+impl AsTypeScriptType for ListDescription {
+    fn as_typescript_type(&self) -> String {
+        format!("{}[]", self.element_type.as_typescript_type())
+    }
+}
+
+impl AsTypeScriptType for MapDescription {
+    fn as_typescript_type(&self) -> String {
+        format!(
+            "Record<{}, {}>",
+            self.key_type.as_typescript_type(),
+            self.value_type.as_typescript_type()
+        )
+    }
+}
+
+impl AsTypeScriptType for ArrayDescription {
+    fn as_typescript_type(&self) -> String {
+        match self.kind {
+            ArrayKind::Vector2 => "[number, number]".to_string(),
+            ArrayKind::Vector3 => "[number, number, number]".to_string(),
+            ArrayKind::Vector4 => "[number, number, number, number]".to_string(),
+            ArrayKind::Quaternion4 => "[number, number, number, number]".to_string(),
+        }
+    }
+}
+
+impl AsTypeScriptDefault for XCellTyped {
+    fn as_typescript_default(&self) -> String {
         match self {
             XCellTyped::Boolean(v) => {
                 if v.default {
                     "true".to_string()
-                }
-                else {
+                } else {
                     "".to_string()
                 }
             }
@@ -37,9 +117,8 @@ impl XCellTyped {
             XCellTyped::Decimal(_) => "".to_string(),
             XCellTyped::String(v) => {
                 if v.default.is_empty() {
-                    "\"\""".to_string()
-                }
-                else {
+                    "\"\"".to_string()
+                } else {
                     format!("{:?}", v.default)
                 }
             }
@@ -57,45 +136,8 @@ impl XCellTyped {
     }
 }
 
-impl ReferenceDescription {
-    /// 返回引用类型对应的 TypeScript 类型名称
-    pub fn as_typescript_type(&self) -> &'static str {
-        "number"
-    }
-}
-
-impl ListDescription {
-    /// 返回列表类型对应的 TypeScript 类型名称
-    pub fn as_typescript_type(&self) -> String {
-        format!("{}[]", self.element_type.as_typescript_type())
-    }
-}
-
-impl MapDescription {
-    /// 返回映射类型对应的 TypeScript 类型名称
-    pub fn as_typescript_type(&self) -> String {
-        format!("Record<{}, {}>", self.key_type.as_typescript_type(), self.value_type.as_typescript_type())
-    }
-}
-
-impl XCellValue {
-    /// 返回当前时间的 TypeScript Date 初始化字符串
-    pub fn typescript_now() -> String {
-        use xcell_core::for_3rd::{Datelike, Timelike, Utc};
-        let now = Utc::now();
-        format!(
-            "new Date({year}, {month}, {day}, {hour}, {minute}, {second})",
-            year = now.year(),
-            month = now.month() - 1,
-            day = now.day(),
-            hour = now.hour(),
-            minute = now.minute(),
-            second = now.second()
-        )
-    }
-
-    /// 返回当前 XCell 值对应的 TypeScript 值字符串
-    pub fn as_typescript_value(&self) -> String {
+impl AsTypeScriptValue for XCellValue {
+    fn as_typescript_value(&self) -> String {
         match self {
             XCellValue::Boolean(v) => v.to_string(),
             XCellValue::Integer8(v) => v.to_string(),

@@ -4,9 +4,9 @@ use std::io::Write;
 use xcell_analyzer::{WorkspaceManager, XCellHeader, XDictData, XListData};
 use xcell_config::UnityCodegen;
 use xcell_provider::XCellAccess;
-use xcell_core::{
-    XResult,
-    codegen::{CSharpReader, CSharpWriter},
+use xcell_core::XResult;
+use crate::codegen::core::csharp_ffi::{
+    AsCSharpType, AsCSharpDefault, CSharpBinaryReader, CSharpBinaryWriter, CSharpReader, CSharpWriter,
 };
 
 /// Unity 字典代码生成模板数据
@@ -18,7 +18,7 @@ pub struct UnityDictionaryTemplate {
     /// 表名
     pub table_name: String,
     /// ID 类型
-    pub id_type: &'static str,
+    pub id_type: String,
     /// Unity 代码生成配置
     pub config: UnityCodegen,
     /// 键名
@@ -116,7 +116,7 @@ fn make_dict(config: &UnityCodegen, table: &XDictData, table_name: String) -> Un
         table_name,
         class_name: table.name.clone(),
         key_name: "key".to_string(),
-        id_type: "string",
+        id_type: "string".to_string(),
         class_fields: table.headers.iter().map(header_to_dict_field).collect(),
     }
 }

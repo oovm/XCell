@@ -1,11 +1,12 @@
 use super::{Codegen, CodegenContext};
-use nargo_template::{DejaVuAdapter, UnifiedTemplateEngine};
+use nargo_template::{DejaVuAdapter, DejaVuFrontend, UnifiedTemplateEngine};
 use nargo_types::NargoValue;
 use std::collections::HashMap;
 use std::{fs, path::PathBuf};
 use tracing::{debug as tracing_debug, error, info};
 use xcell_analyzer::{XClassData, XDictData, XEnumerateData, XListData};
 use xcell_core::{XError, XErrorKind, XResult};
+use crate::codegen::core::typescript::{AsTypeScriptType, AsTypeScriptDefault};
 
 /// 动态 DejaVu 代码生成器
 ///
@@ -18,7 +19,7 @@ pub struct DynamicDejavuCodegen {
 impl DynamicDejavuCodegen {
     /// 创建新的动态 DejaVu 代码生成器实例
     pub fn new() -> Self {
-        let adapter = DejaVuAdapter::new();
+        let adapter = DejaVuAdapter::new(DejaVuFrontend::new());
 
         Self {
             adapter
@@ -236,7 +237,7 @@ impl Codegen for DynamicDejavuCodegen {
         }
 
         // 创建新的 DejaVu 适配器实例
-        let mut adapter = DejaVuAdapter::new();
+        let mut adapter = DejaVuAdapter::new(DejaVuFrontend::new());
 
         // 查找所有模板文件
         let template_files: Vec<_> = fs::read_dir(&template_dir_path)
@@ -335,7 +336,7 @@ impl Codegen for DynamicDejavuCodegen {
                 XError::new(XErrorKind::RuntimeError { message: error_msg })
             })?;
 
-            info!("模板 {} 处理完成", template_stem);
+            info!("模板 {} 处理完成", template_name);
         }
 
         info!("动态 DejaVu 代码生成完成");

@@ -9,6 +9,7 @@ use url::Url;
 use xcell_core::XCellValue;
 use oak_json::language::JsonValue;
 use oak_json::language::value::{JsonArray, JsonObject};
+use crate::codegen::core::typescript::AsTypeScriptType;
 
 /// JSON 代码生成器配置
 #[derive(Clone, Debug, Serialize)]

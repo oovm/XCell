@@ -6,7 +6,7 @@ use crate::{
     utils::first_not_nil,
     x_table::{
         dictionary::data::XDataLine,
-        table::{ArcTableReader, TableReader},
+        table::{ArcTableReader, XTableReader},
     },
 };
 

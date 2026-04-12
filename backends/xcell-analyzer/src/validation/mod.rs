@@ -5,7 +5,7 @@ use std::{
 
 use crate::{XError, XResult};
 
-use crate::{WorkspaceManager, x_table::table::TableReader};
+use crate::{WorkspaceManager, x_table::table::XTableReader};
 use calamine::Data;
 use xcell_core::{XCellTyped, XCellValue, for_3rd::BigInt};
 use std::str::FromStr;
@@ -41,7 +41,7 @@ impl ValidationResult {
 /// 验证器 trait
 pub trait Validator {
     /// 验证表格
-    fn validate(&self, table: &dyn TableReader, workspace: &WorkspaceManager) -> ValidationResult;
+    fn validate(&self, table: &dyn XTableReader, workspace: &WorkspaceManager) -> ValidationResult;
 }
 
 /// 引用验证器，用于验证跨表引用的有效性
@@ -178,7 +178,7 @@ impl RefValidator {
 }
 
 impl Validator for RefValidator {
-    fn validate(&self, table: &dyn TableReader, workspace: &WorkspaceManager) -> ValidationResult {
+    fn validate(&self, table: &dyn XTableReader, workspace: &WorkspaceManager) -> ValidationResult {
         let mut result = ValidationResult::new();
 
         let all_ids = Self::collect_all_ids(workspace);
@@ -208,7 +208,8 @@ impl Validator for RefValidator {
                     XCellTyped::Reference(ref_desc) => {
                         let target_table = ref_desc.target_table.as_str();
 
-                        match ref_desc.parse_cell(cell) {
+                        let xdata = xcell_provider::convert_data(cell);
+                        match ref_desc.parse_cell(&xdata) {
                             Ok(XCellValue::Reference(ref_value)) => {
                                 if let Some(error) = Self::validate_reference(
                                     ref_value,
@@ -233,7 +234,8 @@ impl Validator for RefValidator {
                             if let Some(ref_desc) = list_desc.element_type.as_reference() {
                                 let target_table = ref_desc.target_table.as_str();
 
-                                match list_desc.parse_cell(cell) {
+                                let xdata = xcell_provider::convert_data(cell);
+                                match list_desc.parse_cell(&xdata) {
                                     Ok(XCellValue::Vector(values)) => {
                                         let errors = Self::validate_list_references(
                                             &values,
@@ -269,7 +271,7 @@ impl Validator for RefValidator {
 pub struct PathValidator;
 
 impl Validator for PathValidator {
-    fn validate(&self, table: &dyn TableReader, workspace: &WorkspaceManager) -> ValidationResult {
+    fn validate(&self, table: &dyn XTableReader, workspace: &WorkspaceManager) -> ValidationResult {
         let mut result = ValidationResult::new();
         // TODO: 实现 Path 检查逻辑
         result
@@ -280,7 +282,7 @@ impl Validator for PathValidator {
 pub struct RangeValidator;
 
 impl Validator for RangeValidator {
-    fn validate(&self, table: &dyn TableReader, workspace: &WorkspaceManager) -> ValidationResult {
+    fn validate(&self, table: &dyn XTableReader, workspace: &WorkspaceManager) -> ValidationResult {
         let mut result = ValidationResult::new();
         // TODO: 实现 Range 检查逻辑
         result
@@ -291,7 +293,7 @@ impl Validator for RangeValidator {
 pub struct ConsistencyValidator;
 
 impl Validator for ConsistencyValidator {
-    fn validate(&self, table: &dyn TableReader, workspace: &WorkspaceManager) -> ValidationResult {
+    fn validate(&self, table: &dyn XTableReader, workspace: &WorkspaceManager) -> ValidationResult {
         let mut result = ValidationResult::new();
         // TODO: 实现一致性检查逻辑
         result
@@ -312,7 +314,7 @@ impl ValidationManager {
     }
 
     /// 验证表格
-    pub fn validate(&self, table: &dyn TableReader, workspace: &WorkspaceManager) -> ValidationResult {
+    pub fn validate(&self, table: &dyn XTableReader, workspace: &WorkspaceManager) -> ValidationResult {
         let mut result = ValidationResult::new();
         for validator in &self.validators {
             let validator_result = validator.validate(table, workspace);

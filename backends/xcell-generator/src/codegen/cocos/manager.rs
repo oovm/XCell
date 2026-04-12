@@ -1,5 +1,6 @@
 use super::*;
-use chrono;
+use crate::template::{TemplateLoader, TemplateType};
+use nargo_types::NargoValue;
 
 impl CocosCodegen {
     /// Writes Cocos manager code
@@ -11,105 +12,32 @@ impl CocosCodegen {
     /// Result of the operation
     pub(super) fn write_manager(&self, ws: &WorkspaceManager) -> XResult<()> {
         let mut file = self.log_typescript(ws, &self.manager_name)?;
-        let out = self.generate_manager_code(ws);
+
+        let mut context_data = std::collections::HashMap::new();
+        context_data.insert("compiler_version".to_string(), NargoValue::String(env!("CARGO_PKG_VERSION").to_string()));
+        context_data.insert("class_name".to_string(), NargoValue::String(self.manager_name.clone()));
+        context_data.insert("instance_name".to_string(), NargoValue::String(self.instance_name.clone()));
+        context_data.insert("data_version".to_string(), NargoValue::String("1.0.0".to_string()));
+        context_data.insert("edit_time".to_string(), NargoValue::String(chrono::Utc::now().to_rfc3339()));
+
+        let tables = self.collect_tables(ws);
+        let tables_value: Vec<NargoValue> = tables.iter().map(|table| {
+            let mut table_data = std::collections::HashMap::new();
+            table_data.insert("private_name".to_string(), NargoValue::String(table.private_name.clone()));
+            table_data.insert("public_name".to_string(), NargoValue::String(table.public_name.clone()));
+            table_data.insert("typing".to_string(), NargoValue::String(table.typing.clone()));
+            NargoValue::Object(table_data)
+        }).collect();
+        context_data.insert("tables".to_string(), NargoValue::Array(tables_value));
+
+        let context = NargoValue::Object(context_data);
+
+        let template_dir = self.template_dir.as_deref().map(Path::new);
+        let loader = TemplateLoader::new(template_dir)?;
+
+        let out = loader.render_with_dejavu(TemplateType::Manager.file_name(), &context)?;
         file.write_all(out.as_bytes())?;
         Ok(())
-    }
-
-    /// Generates the manager code directly without using template engine
-    ///
-    /// # Arguments
-    /// * `ws` - Workspace manager
-    ///
-    /// # Returns
-    /// Generated manager code
-    fn generate_manager_code(&self, ws: &WorkspaceManager) -> String {
-        let mut code = String::new();
-        
-        // Header
-        code.push_str(&format!("// 代码生成, 修改无效! (XCell {})\n\n\n\n", env!("CARGO_PKG_VERSION")));
-        
-        // Documentation
-        code.push_str("/**
- * 配置表管理器
- * 
- * 热更新资源直接 set 即可
- * 释放资源直接将表设为 null 即可
- */
-");
-        
-        // Class definition
-        code.push_str(&format!("export class {} {{
-", self.manager_name));
-        
-        // Table version
-        code.push_str("    /**
-     * 配置表的版本号
-     */
-");
-        code.push_str(&format!("    static readonly TableVersion = \"1.0.0\";
-
-"));
-        
-        // Edit time
-        code.push_str("    /**
-     * 配置表的最后修改时间 (UTC)
-     */
-");
-        code.push_str(&format!("    static readonly TableEditTime = new Date(\"{}\");
-
-", chrono::Utc::now().to_rfc3339()));
-        
-        // Singleton instance
-        code.push_str(&format!("    private static _instance: {} | null = null;\n", self.manager_name));
-        code.push_str(&format!("    static get {}(): {} {{
-", self.instance_name, self.manager_name));
-        code.push_str(&format!("        if (!{}._instance) {{
-", self.manager_name));
-        code.push_str(&format!("            {}._instance = new {}();\n", self.manager_name, self.manager_name));
-        code.push_str("        }\n");
-        code.push_str(&format!("        return {}._instance;\n", self.manager_name));
-        code.push_str("    }\n\n\n\n");
-        
-        // Table properties and getters/setters
-        let tables = self.collect_tables(ws);
-        for table in &tables {
-            code.push_str(&format!("    private _{}: {} | null = null;\n", table.private_name, table.typing));
-            code.push_str(&format!("    /** {} 表 */\n", table.typing));
-            code.push_str(&format!("    get {}(): {} {{
-", table.public_name, table.typing));
-            code.push_str(&format!("        if (!this._{}) {{
-", table.private_name));
-            code.push_str(&format!("            this._{} = new {}();\n", table.private_name, table.typing));
-            code.push_str("        }\n");
-            code.push_str(&format!("        return this._{};\n", table.private_name));
-            code.push_str("    }\n");
-            code.push_str(&format!("    set {} (value: {}) {{
-", table.public_name, table.typing));
-            code.push_str(&format!("        this._{} = value;\n", table.private_name));
-            code.push_str("    }\n");
-        }
-        
-        // Reload method
-        code.push_str("    /** 重新加载所有表 */\n");
-        code.push_str("    static reload(): void {\n");
-        for table in &tables {
-            code.push_str(&format!("        {}[`{}`]._{} = null;\n", self.manager_name, self.instance_name, table.private_name));
-        }
-        code.push_str("    }\n\n");
-        
-        // Clear method
-        code.push_str("    /** 清除所有表 */\n");
-        code.push_str("    static clear(): void {\n");
-        for table in &tables {
-            code.push_str(&format!("        {}[`{}`]._{} = null;\n", self.manager_name, self.instance_name, table.private_name));
-        }
-        code.push_str("    }\n");
-        
-        // Closing brace
-        code.push_str("}");
-        
-        code
     }
 
     /// Collects all tables from workspace
@@ -121,8 +49,7 @@ impl CocosCodegen {
     /// Vector of table items
     fn collect_tables(&self, ws: &WorkspaceManager) -> Vec<TableItem> {
         let mut tables = Vec::new();
-        
-        // Add class tables
+
         for table in ws.classes() {
             let table_name = format!("{}{}", table.name, self.suffix_table);
             let private_name = format!("{}Table", table.name.to_lowercase());
@@ -133,8 +60,7 @@ impl CocosCodegen {
                 typing: table_name,
             });
         }
-        
-        // Add dict tables
+
         for table in ws.dicts() {
             let table_name = format!("{}{}", table.name, self.suffix_table);
             let private_name = format!("{}Table", table.name.to_lowercase());
@@ -145,8 +71,7 @@ impl CocosCodegen {
                 typing: table_name,
             });
         }
-        
-        // Add list tables
+
         for table in ws.lists() {
             let table_name = format!("{}{}", table.name, self.suffix_table);
             let private_name = format!("{}Table", table.name.to_lowercase());
@@ -157,7 +82,7 @@ impl CocosCodegen {
                 typing: table_name,
             });
         }
-        
+
         tables
     }
 }

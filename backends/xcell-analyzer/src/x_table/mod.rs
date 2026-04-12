@@ -10,7 +10,7 @@ use std::{
 use xcell_core::{EnumerateDescription, XCellTyped, XCellValue, for_3rd::BigInt};
 
 use crate::{
-    CalamineTable, ProjectConfig, TableConfig, WorkspaceManager, XCellHeader, XEnumerateData, XError, XResult,
+    ProjectConfig, WorkspaceManager, XCellHeader, XEnumerateData, XError, XResult,
 };
 use xcell_provider::find_first_table;
 

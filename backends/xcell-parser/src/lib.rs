@@ -6,10 +6,16 @@ mod error;
 mod ast;
 mod parser;
 mod utils;
+mod value;
 
 pub use utils::norm_string;
 
 pub use error::{ParseError, ParseErrorKind, ParseResult};
+pub use value::{
+    parse_decimal, parse_decimal_with_range, parse_integer, parse_integer_with_range,
+    parse_vector, parse_vector_with_len, parse_list, parse_list_with_len, parse_map,
+    parse_optional, KeyValuePair,
+};
 pub use ast::{
     FieldConstraint, FieldExpr, FieldMeta, MetaExpr, PrimitiveType, TableKind, TypeExpr, TypeMeta,
 };

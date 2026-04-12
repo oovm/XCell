@@ -109,6 +109,7 @@ impl WorkspaceManager {
         
         let mut file_count = 0;
         let mut matched_count = 0;
+        let mut files_to_validate: Vec<PathBuf> = Vec::new();
         
         for entry in entries {
             match entry {
@@ -137,6 +138,7 @@ impl WorkspaceManager {
                         }
                         tracing::info!("首次加载: {}", normed.display());
                         self.load_file(&file);
+                        files_to_validate.push(file.to_path_buf());
                         if let Ok(meta) = metadata(file) {
                             if let Ok(mtime) = meta.modified() {
                                 self.file_modification_times.insert(file.to_path_buf(), mtime);
@@ -154,6 +156,18 @@ impl WorkspaceManager {
         tracing::info!("遍历完成: 共 {} 个文件, 匹配 {} 个文件", file_count, matched_count);
         
         self.link_enumerate();
+
+        for file in &files_to_validate {
+            if let Ok(table) = crate::x_table::load_table(file, &self.config) {
+                let validation_result = self.validation_manager.validate(table.as_ref(), self);
+                if validation_result.has_errors() {
+                    for error in validation_result.errors {
+                        tracing::error!("{}", error.with_path(file));
+                    }
+                }
+            }
+        }
+        
         Ok(())
     }
     /// 启动文件监控，支持防抖和优雅退出
@@ -261,25 +275,24 @@ impl WorkspaceManager {
         let table = crate::x_table::load_table(file, &self.config)?;
         tracing::debug!("表格加载成功");
 
-        // 执行数据验证
-        let validation_result = self.validation_manager.validate(table.as_ref(), self);
-        if validation_result.has_errors() {
-            for error in validation_result.errors {
-                tracing::error!("{}", error.with_path(file));
-            }
-        }
-
-        // 尝试解析为 XDictTable
-        tracing::debug!("尝试解析为 XDictTable");
-        let result = if let Ok(s) = XDictTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
-            tracing::debug!("XDictTable::confirm 成功, 调用 perform");
+        // 先检查特殊类型表（Language、Enumerate、Class），再检查通用类型（Dict）
+        tracing::debug!("尝试解析表格类型");
+        let result = if let Ok(s) = XLanguageTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+            tracing::debug!("XLanguageTable::confirm 成功");
             for error in s.perform(self) {
                 tracing::error!("{}", error.with_path(file));
             }
-            tracing::debug!("XDictTable::perform 完成, 字典表数量 = {}", self.defines.dict.len());
+            Ok(())
+        }
+        else if let Ok(s) = XLanguageID::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+            tracing::debug!("XLanguageID::confirm 成功");
+            for error in s.perform(self) {
+                tracing::error!("{}", error.with_path(file));
+            }
             Ok(())
         }
         else if let Ok(s) = XEnumerateTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+            tracing::debug!("XEnumerateTable::confirm 成功");
             for error in s.perform(self) {
                 tracing::error!("{}", error.with_path(file));
             }
@@ -287,18 +300,15 @@ impl WorkspaceManager {
             Ok(())
         }
         else if let Ok(s) = XClassTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+            tracing::debug!("XClassTable::confirm 成功");
             s.perform(self)
         }
-        else if let Ok(s) = XLanguageTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+        else if let Ok(s) = XDictTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
+            tracing::debug!("XDictTable::confirm 成功, 调用 perform");
             for error in s.perform(self) {
                 tracing::error!("{}", error.with_path(file));
             }
-            Ok(())
-        }
-        else if let Ok(s) = XLanguageID::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
-            for error in s.perform(self) {
-                tracing::error!("{}", error.with_path(file));
-            }
+            tracing::debug!("XDictTable::perform 完成, 字典表数量 = {}", self.defines.dict.len());
             Ok(())
         }
         else if let Ok(s) = XListTable::confirm(crate::x_table::table::ArcTableReader::new(table.clone())) {
@@ -322,7 +332,13 @@ fn build_glob_set(pattern: &str) -> XResult<GlobSet> {
     for p in pattern.split(',') {
         let p = p.trim();
         if !p.is_empty() {
-            let glob = globset::Glob::new(p).map_err(|e| XError::runtime_error(e.to_string()))?;
+            // 如果模式不包含路径分隔符，自动添加 **/ 前缀以递归匹配子目录
+            let glob_pattern = if !p.contains('/') && !p.contains('\\') {
+                format!("**/{}", p)
+            } else {
+                p.to_string()
+            };
+            let glob = globset::Glob::new(&glob_pattern).map_err(|e| XError::runtime_error(e.to_string()))?;
             builder.add(glob);
         }
     }

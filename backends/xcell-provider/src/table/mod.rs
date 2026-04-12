@@ -104,7 +104,19 @@ pub fn load_table_with_full_config(
 pub fn find_first_table(path: &Path) -> XResult<calamine::Range<calamine::Data>> {
     use calamine::Reader;
     let mut workbook = calamine::open_workbook_auto(path).map_err(|e| XError::new(XErrorKind::IOError(format!("{:?}", e))))?;
-    let ranges = match workbook.worksheet_range_at(0) {
+    
+    // 获取文件名（不含扩展名）作为目标 sheet 名称
+    let target_sheet_name = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+    
+    // 获取所有 sheet 名称
+    let sheet_names = workbook.sheet_names();
+    
+    // 尝试找到与文件名匹配的 sheet
+    let sheet_index = sheet_names.iter().position(|name| {
+        name.eq_ignore_ascii_case(target_sheet_name)
+    }).unwrap_or(0);
+    
+    let ranges = match workbook.worksheet_range_at(sheet_index) {
         None => return Err(XError::new(XErrorKind::TableError("找不到配置表, 文件是空的, 或者表格式非法".to_string()))),
         Some(s) => s.map_err(|e| XError::new(XErrorKind::IOError(format!("{:?}", e)))),
     }?;

@@ -14,8 +14,6 @@ use crate::{
 
 use crate::{XCellTyped, XCellValue};
 
-mod parse_cell;
-
 /// 列表类型描述，用于表示元素集合
 #[derive(Debug, Clone, Serialize)]
 pub struct ListDescription {
@@ -120,5 +118,22 @@ impl XCellTyped {
     /// 如果当前类型是 List，返回 true，否则返回 false
     pub fn is_list(&self) -> bool {
         self.as_list().is_some()
+    }
+}
+
+impl ListDescription {
+    pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
+        let s = match cell {
+            Data::Error(e) => return crate::utils::syntax_error(format!("未知错误 {e}")),
+            _ => cell.to_string(),
+        };
+        let items = xcell_parser::parse_list_with_len(&s, self.delimiter, self.fixed_length)?;
+        let mut out = Vec::with_capacity(items.len());
+        for item in items {
+            let cell = Data::String(item);
+            let value = self.element_type.parse_cell(&cell)?;
+            out.push(value);
+        }
+        Ok(XCellValue::Vector(out))
     }
 }

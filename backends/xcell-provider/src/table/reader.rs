@@ -831,12 +831,7 @@ impl CalamineTable {
                 _ => return None,
             };
             if !type_str.is_empty() {
-                let parsed = XCellTyped::parse(&type_str, &self.typing);
-                tracing::debug!(
-                    "解析类型: 列={}, 类型行={}, 类型字符串='{}', 解析结果={:?}",
-                    index, type_row_range, type_str, parsed
-                );
-                return Some(parsed);
+                return Some(XCellTyped::parse(&type_str, &self.typing));
             }
         }
         None

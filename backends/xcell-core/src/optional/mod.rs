@@ -9,12 +9,10 @@ use serde::{
 
 use crate::{
     XResult,
-    for_3rd::{read_map_next_extra, read_map_next_key_lowercase, read_map_next_value},
+    for_3rd::{read_map_next_extra, read_map_next_key_lowercase, read_map_next_value, Data},
 };
 
 use crate::{XCellTyped, XCellValue};
-
-mod parse_cell;
 
 /// 可选类型描述，用于表示可能为空的值
 #[derive(Debug, Clone, Serialize)]
@@ -104,5 +102,30 @@ impl XCellTyped {
     /// 如果当前类型是 Optional，返回 true，否则返回 false
     pub fn is_optional(&self) -> bool {
         self.as_optional().is_some()
+    }
+}
+
+impl OptionalDescription {
+    pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
+        match cell {
+            Data::Empty => {
+                match &self.default {
+                    Some(default_value) => Ok(XCellValue::Optional(Some(Box::new(default_value.clone())))),
+                    None => Ok(XCellValue::Optional(None)),
+                }
+            }
+            _ => {
+                let s = cell.to_string();
+                let opt_value = xcell_parser::parse_optional(&s)?;
+                match opt_value {
+                    Some(value_str) => {
+                        let value_cell = Data::String(value_str);
+                        let value = self.element_type.parse_cell(&value_cell)?;
+                        Ok(XCellValue::Optional(Some(Box::new(value))))
+                    }
+                    None => Ok(XCellValue::Optional(None)),
+                }
+            }
+        }
     }
 }

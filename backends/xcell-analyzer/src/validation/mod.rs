@@ -74,12 +74,10 @@ impl RefValidator {
         }
 
         let mut language_ids = BTreeSet::new();
-        for key in workspace.get_language_keys() {
-            language_ids.insert(key.to_string());
+        for key in workspace.languages.store.keys() {
+            language_ids.insert(key.clone());
         }
-        if !language_ids.is_empty() {
-            all_ids.insert("Language".to_string(), language_ids);
-        }
+        all_ids.insert("Language".to_string(), language_ids);
 
         all_ids
     }

@@ -8,13 +8,12 @@ use serde::{
 use crate::{
     XResult,
     for_3rd::{Data, read_map_next_extra, read_map_next_value},
-    utils::OneOrMany,
+    utils::{OneOrMany, syntax_error},
 };
 
 use crate::{XCellTyped, XCellValue, utils::push_delimiter};
 
 mod der;
-mod parse_cell;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct VectorDescription {
@@ -22,6 +21,12 @@ pub struct VectorDescription {
     suffix: BTreeSet<String>,
     typing: XCellTyped,
     pub default: Vec<XCellValue>,
+}
+
+impl From<VectorDescription> for XCellTyped {
+    fn from(value: VectorDescription) -> Self {
+        XCellTyped::Vector(Box::new(value))
+    }
 }
 
 impl VectorDescription {
@@ -57,5 +62,22 @@ impl VectorDescription {
     {
         self.typing = typing.into();
         self
+    }
+    pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
+        let s = match cell {
+            Data::Error(e) => return syntax_error(format!("未知错误 {e}")),
+            _ => cell.to_string(),
+        };
+        if s.trim().is_empty() {
+            return Ok(XCellValue::Vector(vec![]));
+        }
+        let values = xcell_parser::parse_vector(&s)?;
+        let mut out = vec![];
+        for v in values {
+            let cell = Data::Float(v);
+            let parsed = self.typing.parse_cell(&cell)?;
+            out.push(parsed);
+        }
+        Ok(XCellValue::Vector(out))
     }
 }

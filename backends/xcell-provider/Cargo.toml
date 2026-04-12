@@ -16,6 +16,7 @@ calamine = { workspace = true }
 xcell-core = { workspace = true }
 xcell-parser = { workspace = true }
 serde = { workspace = true }
+tracing = { workspace = true }
 
 
 

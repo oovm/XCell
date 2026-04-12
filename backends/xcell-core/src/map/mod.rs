@@ -15,8 +15,6 @@ use crate::{
 
 use crate::{XCellTyped, XCellValue};
 
-mod parse_cell;
-
 /// 映射类型描述，用于表示键值对集合
 #[derive(Debug, Clone, Serialize)]
 pub struct MapDescription {
@@ -131,5 +129,28 @@ impl XCellTyped {
     /// 如果当前类型是 Map，返回 true，否则返回 false
     pub fn is_map(&self) -> bool {
         self.as_map().is_some()
+    }
+}
+
+impl MapDescription {
+    pub fn parse_cell(&self, cell: &Data) -> XResult<XCellValue> {
+        let s = match cell {
+            Data::Error(e) => return crate::utils::syntax_error(format!("未知错误 {e}")),
+            _ => cell.to_string(),
+        };
+        let entries = xcell_parser::parse_map(&s, self.delimiter, self.entry_delimiter)?;
+        let mut out = BTreeMap::new();
+        for (key_str, value_str) in entries {
+            let key_cell = Data::String(key_str);
+            let value_cell = Data::String(value_str);
+            let key_value = self.key_type.parse_cell(&key_cell)?;
+            let value_value = self.value_type.parse_cell(&value_cell)?;
+            let key_string = match &key_value {
+                XCellValue::String(s) => s.clone(),
+                other => other.to_string(),
+            };
+            out.insert(key_string, value_value);
+        }
+        Ok(XCellValue::Map(out))
     }
 }

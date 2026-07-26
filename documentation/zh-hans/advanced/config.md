@@ -10,46 +10,30 @@ XCell 使用 TOML 格式的配置文件来管理项目设置，配置文件命�
 | include | string | 包含的 Excel 文件路径模式（优先级最高） | "*.xlsx" |
 | exclude | string | 排除的 Excel 文件路径模式（优先级低于 include） | "" |
 
-### 行列配置 (line)
+### 表头布局 (layout / XCellLayout)
 
-定义表格中各信息所在的行号（从 1 开始）。
+定义表格中各信息所在的行号（从 1 开始）。**默认约定**：第 1 行字段名、第 2 行类型（`typing`）、第 3 行注释、第 4 行起数据。
 
 | 配置项 | 类型 | 说明 | 默认值 |
 |--------|------|------|--------|
-| line.field | int | 字段名所在行 | 1 |
-| line.type | int | 数据类型所在行 | 2 |
-| line.comment | int | 注释所在行 | 3 |
-| line.data | int | 数据起始行 | 4 |
+| layout.field | int | 字段名所在行 | 1 |
+| layout.typing | int | 类型所在行（旧键名 `type` 仍可读） | 2 |
+| layout.comment | int | 注释所在行；`0` = 无注释行 | 3 |
+| layout.data | int | 数据起始行 | 4 |
+
+兼容：旧配置段 `[line]` / `line.*` 与字段 `type` 仍可加载，等同于 `[layout]` / `typing`。
 
 #### 旧表迁移
 
-XCell 默认的表格格式为：
-
-| 行号 | 内容 |
-|------|------|
-| 第 1 行 | 字段注释 |
-| 第 2 行 | 字段名 |
-| 第 3 行 | 字段类型 |
-| 第 4 行+ | 数据行 |
-
-如果您的旧表格式不同，可通过 line 映射调整。例如旧表格式为：
-
-| 行号 | 内容 |
-|------|------|
-| 第 1 行 | 字段名 |
-| 第 2 行 | 字段类型 |
-| 第 3 行+ | 数据行 |
-
-配置如下：
+若旧表无注释行（field / typing / data）：
 
 ```toml
-line.field = 1
-line.type = 2
-line.comment = 0  # 无注释行
-line.data = 3
+[layout]
+field = 1
+typing = 2
+comment = 0
+data = 3
 ```
-
-> 注：`line.comment = 0` 表示无注释行。
 
 ### 类型解析配置 (type)
 

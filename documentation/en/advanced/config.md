@@ -10,46 +10,28 @@ XCell uses TOML format configuration files to manage project settings. The confi
 | include | string | Excel file path pattern to include (highest priority) | "*.xlsx" |
 | exclude | string | Excel file path pattern to exclude (lower priority than include) | "" |
 
-### Row Configuration (line)
+### Header layout (layout / XCellLayout)
 
-Defines the row numbers where various information is located in the table (starting from 1).
+1-based row roles. **Default**: field=1, typing=2, comment=3, data=4+.
 
-| Configuration Item | Type | Description | Default Value |
-|--------------------|------|-------------|---------------|
-| line.field | int | Row where field names are located | 1 |
-| line.type | int | Row where data types are located | 2 |
-| line.comment | int | Row where comments are located | 3 |
-| line.data | int | Row where data starts | 4 |
+| Item | Type | Description | Default |
+|------|------|-------------|---------|
+| layout.field | int | Field-name row | 1 |
+| layout.typing | int | Typing row (legacy key `type` still loads) | 2 |
+| layout.comment | int | Comment row; `0` = none | 3 |
+| layout.data | int | First data row | 4 |
 
-#### Legacy Table Migration
+Compatibility: legacy `[line]` / `line.*` and `type` still deserialize as `[layout]` / `typing`.
 
-XCell's default table format is:
-
-| Row Number | Content |
-|------------|---------|
-| Row 1 | Field comments |
-| Row 2 | Field names |
-| Row 3 | Field types |
-| Row 4+ | Data rows |
-
-If your legacy table format is different, you can adjust it through line mapping. For example, if the legacy table format is:
-
-| Row Number | Content |
-|------------|---------|
-| Row 1 | Field names |
-| Row 2 | Field types |
-| Row 3+ | Data rows |
-
-Configure as follows:
+#### Legacy override (no comment row)
 
 ```toml
-line.field = 1
-line.type = 2
-line.comment = 0  # No comment row
-line.data = 3
+[layout]
+field = 1
+typing = 2
+comment = 0
+data = 3
 ```
-
-> Note: `line.comment = 0` indicates no comment row.
 
 ### Type Parsing Configuration (type)
 
@@ -65,8 +47,8 @@ Configure parsing rules for various data types.
 Example:
 ```toml
 [type.bool]
-accept = ["true", "âˆš", "æ˜¯", "1"]
-reject = ["false", "x", "å¦", "0"]
+accept = ["true", "âˆ?, "æ˜?, "1"]
+reject = ["false", "x", "å?, "0"]
 ```
 
 ### Unity Code Generation Configuration (unity)
